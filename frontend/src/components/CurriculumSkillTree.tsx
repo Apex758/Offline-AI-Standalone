@@ -3,7 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquare02Icon';
 import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
 import type { MilestoneTreeNode } from '../types/milestone';
-import { getCurriculumPages, useCurriculumIndex } from '../data/curriculumLoader';
+import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
 import { useNotification } from '../contexts/NotificationContext';
 
 // Lazy-init lookups — built on first access after curriculum data loads
@@ -14,16 +14,30 @@ const relatedMap = new Map<string, string[]>();
 const pageInfoMap = new Map<string, { displayName: string; grade: string; subject: string; strand: string }>();
 
 function ensureSkillTreeLookups() {
-  const currPages = getCurriculumPages();
-  if (_skillTreeLookupsBuilt || currPages.length === 0) return;
-  currPages.forEach((p: any) => {
-    if (p.id) {
-      if (p.eloGroups) eloGroupsMap.set(p.id, p.eloGroups);
-      pageInfoMap.set(p.id, { displayName: p.displayName, grade: p.grade, subject: p.subject, strand: p.strand });
-      if (p.prerequisiteEntries?.length > 0) prereqMap.set(p.id, p.prerequisiteEntries);
-      if (p.relatedEntries?.length > 0) relatedMap.set(p.id, p.relatedEntries);
+  if (_skillTreeLookupsBuilt) return;
+  const files = getAllCurriculumFiles();
+  if (files.length === 0) return;
+  for (const file of files) {
+    const grade = file.metadata.grade;
+    const subject = file.metadata.subject;
+    for (const strand of file.strands) {
+      const id = `${grade === 'K' ? 'kindergarten' : `grade${grade}`}-${subject.toLowerCase().replace(/\s+/g, '-')}-${strand.strand_name.toLowerCase().replace(/\s+/g, '-')}`;
+      pageInfoMap.set(id, { displayName: strand.strand_name, grade, subject, strand: strand.strand_name });
+      // Build ELO groups from the strand data
+      const eloGroups: { elo: string; scoRange: [number, number]; eloId?: string }[] = [];
+      let scoIdx = 0;
+      for (const elo of strand.essential_learning_outcomes) {
+        const scoCount = elo.specific_curriculum_outcomes.length;
+        eloGroups.push({
+          elo: elo.elo_description,
+          scoRange: [scoIdx, scoIdx + scoCount - 1],
+          eloId: elo.elo_code,
+        });
+        scoIdx += scoCount;
+      }
+      if (eloGroups.length > 0) eloGroupsMap.set(id, eloGroups);
     }
-  });
+  }
   _skillTreeLookupsBuilt = true;
 }
 
@@ -307,8 +321,13 @@ interface Props {
 }
 
 const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigate, onToggleSco }) => {
-  const { loading: curriculumLoading } = useCurriculumIndex();
-  if (!curriculumLoading) ensureSkillTreeLookups();
+  const [curriculumReady, setCurriculumReady] = useState(false);
+  useEffect(() => {
+    preloadAllCurriculum().then(() => {
+      ensureSkillTreeLookups();
+      setCurriculumReady(true);
+    });
+  }, []);
   const { toastOnly } = useNotification();
   const [currentPath, setCurrentPath] = useState<number[]>([]);
   const [animKey, setAnimKey] = useState(0);

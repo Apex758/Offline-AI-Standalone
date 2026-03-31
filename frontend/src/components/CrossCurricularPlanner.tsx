@@ -51,7 +51,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
-import { useCurriculumIndex } from '../data/curriculumLoader';
+// Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface CrossCurricularPlannerProps {
   tabId: string;
@@ -508,7 +508,6 @@ const crossCurricularPlanToDisplayText = (plan: ParsedCrossCurricularPlan): stri
 };
 
 const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, savedData, onDataChange }) => {
-  useCurriculumIndex();
   const triggerCheck = useAchievementTrigger();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `cross_curricular_state_${tabId}`;

@@ -53,7 +53,7 @@ import SmartTextArea from './SmartTextArea';
 
 import { TutorialOverlay } from './TutorialOverlay';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
-import { getCurriculumPages, useCurriculumIndex } from '../data/curriculumLoader';
+import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
 import CurriculumSkillTree from './CurriculumSkillTree';
 
 interface EloGroup {
@@ -70,25 +70,32 @@ const relatedLookup = new Map<string, string[]>();
 const pageInfoLookup = new Map<string, { id: string; displayName: string; grade: string; subject: string; strand: string }>();
 
 function ensureLookups() {
-  const pages = getCurriculumPages();
-  if (_lookupsBuilt || pages.length === 0) return;
-  pages.forEach((page: any) => {
-    if (page.id) {
-      pageInfoLookup.set(page.id, { id: page.id, displayName: page.displayName, grade: page.grade, subject: page.subject, strand: page.strand });
-      if (page.eloGroups) {
-        eloGroupsLookup.set(page.id, page.eloGroups);
+  if (_lookupsBuilt) return;
+  const files = getAllCurriculumFiles();
+  if (files.length === 0) return;
+  for (const file of files) {
+    const grade = file.metadata.grade;
+    const subject = file.metadata.subject;
+    for (const strand of file.strands) {
+      const id = `${grade === 'K' ? 'kindergarten' : `grade${grade}`}-${subject.toLowerCase().replace(/\s+/g, '-')}-${strand.strand_name.toLowerCase().replace(/\s+/g, '-')}`;
+      pageInfoLookup.set(id, { id, displayName: strand.strand_name, grade, subject, strand: strand.strand_name });
+      // Build ELO groups from strand data
+      const eloGroups: EloGroup[] = [];
+      const eloTexts: string[] = [];
+      let scoIdx = 0;
+      for (const elo of strand.essential_learning_outcomes) {
+        const scoCount = elo.specific_curriculum_outcomes.length;
+        eloGroups.push({
+          elo: elo.elo_description,
+          scoRange: [scoIdx, scoIdx + scoCount - 1],
+        });
+        eloTexts.push(elo.elo_description);
+        scoIdx += scoCount;
       }
-      if (page.essentialOutcomes) {
-        eloLookup.set(page.id, page.essentialOutcomes.map((e: any) => typeof e === 'string' ? e : e.text));
-      }
-      if (page.prerequisiteEntries?.length > 0) {
-        prereqLookup.set(page.id, page.prerequisiteEntries);
-      }
-      if (page.relatedEntries?.length > 0) {
-        relatedLookup.set(page.id, page.relatedEntries);
-      }
+      if (eloGroups.length > 0) eloGroupsLookup.set(id, eloGroups);
+      if (eloTexts.length > 0) eloLookup.set(id, eloTexts);
     }
-  });
+  }
   _lookupsBuilt = true;
 }
 
@@ -103,8 +110,13 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   savedData,
   onDataChange
 }) => {
-  const { loading: curriculumLoading } = useCurriculumIndex();
-  if (!curriculumLoading) ensureLookups();
+  const [curriculumReady, setCurriculumReady] = useState(false);
+  useEffect(() => {
+    preloadAllCurriculum().then(() => {
+      ensureLookups();
+      setCurriculumReady(true);
+    });
+  }, []);
   const triggerCheck = useAchievementTrigger();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const accentColor = settings.tabColors['curriculum-tracker'] ?? '#22c55e';

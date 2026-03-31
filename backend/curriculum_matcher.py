@@ -1,265 +1,258 @@
 import os
 import json
 import re
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from pathlib import Path
+
 
 class CurriculumMatcher:
     """
-    CurriculumMatcher provides methods to search and match curriculum pages
-    from a curriculum index, supporting fuzzy matching, keyword extraction,
-    and context formatting as specified in the requirements.
+    Loads curriculum JSON files from frontend/src/data/curriculum/ and provides
+    direct lookup by grade + subject + strand, plus context formatting for LLM prompts.
     """
 
-    def __init__(self, curriculum_index_path: Optional[str] = None):
-        """
-        Initialize the matcher and load the curriculum index.
-
-        Args:
-            curriculum_index_path (str, optional): Path to curriculumIndex.json.
-                If not provided, will look for it in the default frontend location.
-        """
-        if curriculum_index_path is None:
-            # Default: look for frontend/src/data/curriculumIndex.json relative to backend
+    def __init__(self, curriculum_dir: Optional[str] = None):
+        if curriculum_dir is None:
             base_dir = Path(__file__).parent.parent
-            curriculum_index_path = base_dir / "frontend" / "src" / "data" / "curriculumIndex.json"
-        self.curriculum_index_path = str(curriculum_index_path)
-        self.pages = self._load_curriculum_index()
-        self._match_cache: Dict[tuple, List[Dict[str, Any]]] = {}
+            curriculum_dir = base_dir / "frontend" / "src" / "data" / "curriculum"
+        self.curriculum_dir = Path(curriculum_dir)
+        self.files: Dict[str, Any] = {}  # key: "grade-subject" -> loaded JSON
+        self._load_all_files()
 
-    def _load_curriculum_index(self) -> List[Dict[str, Any]]:
-        """
-        Load and parse the curriculum index JSON file.
+    def _load_all_files(self):
+        """Load all curriculum JSON files from the curriculum directory."""
+        if not self.curriculum_dir.exists():
+            raise FileNotFoundError(f"Curriculum directory not found: {self.curriculum_dir}")
 
-        Returns:
-            List of curriculum page dictionaries.
-        """
-        if not os.path.exists(self.curriculum_index_path):
-            raise FileNotFoundError(f"Curriculum index not found at {self.curriculum_index_path}")
-
-        with open(self.curriculum_index_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        return data.get("indexedPages", [])
+        for f in self.curriculum_dir.glob("*.json"):
+            with open(f, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            key = f.stem  # e.g. "grade1-language-arts", "kindergarten-belonging-unit"
+            self.files[key] = data
 
     @staticmethod
-    def _normalize(text: str) -> str:
-        text = text.lower()
-        text = re.sub(r"[^\w\s]", " ", text)
-        text = re.sub(r"\s+", " ", text)
-        return text.strip()
+    def _normalize_grade(grade: str) -> str:
+        """Normalize grade input: 'Grade 1' -> '1', 'Kindergarten' -> 'K', etc."""
+        g = grade.strip()
+        if g.lower().startswith("kindergarten") or g.lower() == "k":
+            return "K"
+        m = re.match(r"(?i)grade\s*(\d+)", g)
+        if m:
+            return m.group(1)
+        # Already a number?
+        if g.isdigit():
+            return g
+        return g
 
-    @staticmethod
-    def _tokenize(text: str) -> List[str]:
-        """
-        Tokenize text into words, normalized.
+    def _get_file_key(self, grade: str, subject: str) -> Optional[str]:
+        """Map grade + subject to the file key."""
+        g = self._normalize_grade(grade)
+        grade_prefix = "kindergarten" if g == "K" else f"grade{g}"
+        subject_slug = subject.strip().lower().replace(" ", "-")
+        key = f"{grade_prefix}-{subject_slug}"
+        if key in self.files:
+            return key
+        return None
 
-        Args:
-            text (str): Input text.
+    def get_curriculum_data(self, grade: str, subject: str) -> Optional[Dict]:
+        """Get the full curriculum data for a grade + subject."""
+        key = self._get_file_key(grade, subject)
+        if key is None:
+            return None
+        return self.files.get(key)
 
-        Returns:
-            List[str]: List of tokens.
-        """
-        return CurriculumMatcher._normalize(text).split()
-
-    @staticmethod
-    def _fuzzy_score(a: str, b: str) -> float:
-        """
-        Compute a simple fuzzy match score between two strings.
-        Uses token overlap and partial ratio.
-
-        Args:
-            a (str): First string.
-            b (str): Second string.
-
-        Returns:
-            float: Score between 0 and 1.
-        """
-        tokens_a = set(CurriculumMatcher._tokenize(a))
-        tokens_b = set(CurriculumMatcher._tokenize(b))
-        if not tokens_a or not tokens_b:
-            return 0.0
-        overlap = tokens_a & tokens_b
-        overlap_score = len(overlap) / max(len(tokens_a), len(tokens_b))
-        # Partial ratio: how much of a is in b and vice versa
-        partial_a = sum(1 for t in tokens_a if t in tokens_b) / len(tokens_a)
-        partial_b = sum(1 for t in tokens_b if t in tokens_a) / len(tokens_b)
-        return 0.5 * overlap_score + 0.25 * (partial_a + partial_b)
-
-    @staticmethod
-    def _extract_keywords(text: str, max_keywords: int = 8) -> List[str]:
-        """
-        Extract keywords from text using simple frequency and length heuristics.
-
-        Args:
-            text (str): Input text.
-            max_keywords (int): Maximum number of keywords to extract.
-
-        Returns:
-            List[str]: List of keywords.
-        """
-        tokens = CurriculumMatcher._tokenize(text)
-        freq = {}
-        for t in tokens:
-            if len(t) > 2:
-                freq[t] = freq.get(t, 0) + 1
-        # Sort by frequency, then by length, then alphabetically
-        sorted_tokens = sorted(freq.items(), key=lambda x: (-x[1], -len(x[0]), x[0]))
-        return [t for t, _ in sorted_tokens[:max_keywords]]
+    def get_strand_data(self, grade: str, subject: str, strand: str) -> Optional[Dict]:
+        """Get a specific strand's data."""
+        data = self.get_curriculum_data(grade, subject)
+        if not data:
+            return None
+        for s in data.get("strands", []):
+            if s.get("strand_name", "").lower() == strand.lower():
+                return s
+        # Partial match
+        for s in data.get("strands", []):
+            if strand.lower() in s.get("strand_name", "").lower():
+                return s
+        return None
 
     def find_matching_pages(
         self,
         query: str,
         top_k: int = 5,
-        min_score: float = 0.25,
+        min_score: float = 0.0,
         grade: str = "",
         subject: str = ""
     ) -> List[Dict[str, Any]]:
         """
-        Find curriculum pages that best match the query.
-        When grade and/or subject are provided, filters exactly on those first,
-        then ranks by fuzzy + keyword score within that filtered set.
-
-        Args:
-            query (str): User query (topic, strand, keywords).
-            top_k (int): Number of top results to return.
-            min_score (float): Minimum score threshold.
-            grade (str): Exact grade to filter (e.g., "2", "K").
-            subject (str): Exact subject to filter (e.g., "Mathematics").
-
-        Returns:
-            List[Dict]: List of matching curriculum page dicts, sorted by score.
+        Find curriculum strands matching the query. When grade and subject are provided,
+        directly loads that file and returns matching strands.
+        Falls back to searching all files if grade/subject not specified.
         """
-        cache_key = (query, top_k, grade, subject)
-        if cache_key in self._match_cache:
-            return self._match_cache[cache_key]
+        results = []
+        query_lower = query.lower().strip()
+        query_tokens = set(re.findall(r'\w+', query_lower))
 
-        query_norm = self._normalize(query)
-        query_keywords = set(query_norm.split())
-        results: List[Tuple[float, Dict[str, Any]]] = []
-
-        # Normalize grade for comparison (handle "Kindergarten" -> "K", "Grade 2" -> "2")
-        grade_norm = grade.strip()
-        if grade_norm.lower().startswith("kindergarten"):
-            grade_norm = "K"
-        grade_norm = re.sub(r'(?i)^grade\s*', '', grade_norm).strip()
-
+        grade_norm = self._normalize_grade(grade) if grade else ""
         subject_norm = subject.strip().lower()
-        has_filters = bool(grade_norm or subject_norm)
 
-        for page in self.pages:
-            # Exact grade/subject filtering when provided
-            if grade_norm and page.get("grade", "").strip() != grade_norm:
+        for key, data in self.files.items():
+            meta = data.get("metadata", {})
+            file_grade = meta.get("grade", "")
+            file_subject = meta.get("subject", "").lower()
+
+            # Filter by grade/subject if provided
+            if grade_norm and file_grade != grade_norm:
                 continue
-            if subject_norm and page.get("subject", "").strip().lower() != subject_norm:
+            if subject_norm and file_subject != subject_norm:
                 continue
 
-            # Combine searchable fields (focused on topic/strand, not outcomes)
-            fields = [
-                page.get("displayName", ""),
-                page.get("strand", ""),
-                " ".join(page.get("keywords", [])),
-                page.get("summary", ""),
-            ]
-            page_text = " ".join(fields)
-            page_norm_text = self._normalize(page_text)
-            page_keywords = set(page.get("keywords", []))
-            # Fuzzy score
-            fuzzy = self._fuzzy_score(query_norm, page_norm_text)
-            # Keyword overlap
-            keyword_overlap = len(query_keywords & page_keywords) / (len(query_keywords) + 1e-6)
-            # Weighted score: 70% fuzzy, 30% keyword
-            score = 0.7 * fuzzy + 0.3 * keyword_overlap
+            for strand in data.get("strands", []):
+                strand_name = strand.get("strand_name", "")
+                strand_slug = strand_name.lower().replace(" ", "-")
+                grade_prefix = "kindergarten" if file_grade == "K" else f"grade{file_grade}"
 
-            # When grade/subject filters are active, include all matching pages
-            # (the filtering already ensures relevance)
-            effective_min = 0.0 if has_filters else min_score
-            if score >= effective_min:
-                results.append((score, page))
+                # Build searchable text from strand content
+                search_parts = [strand_name.lower()]
+                for elo in strand.get("essential_learning_outcomes", []):
+                    search_parts.append(elo.get("elo_description", "").lower())
+                    for sco in elo.get("specific_curriculum_outcomes", []):
+                        search_parts.append(sco.get("description", "").lower())
+                search_text = " ".join(search_parts)
+                search_tokens = set(re.findall(r'\w+', search_text))
 
-        # Sort by score descending
-        results.sort(key=lambda x: -x[0])
-        matched = [
-            {**page, "matchScore": round(score, 3)}
-            for score, page in results[:top_k]
-        ]
-        self._match_cache[cache_key] = matched
-        return matched
+                # Score: token overlap
+                if query_tokens:
+                    overlap = len(query_tokens & search_tokens)
+                    score = overlap / len(query_tokens) if query_tokens else 0
+                else:
+                    score = 0.5 if grade_norm or subject_norm else 0
 
-    def search_by_query(
-        self,
-        query: str,
-        top_k: int = 5
-    ) -> List[Dict[str, Any]]:
+                if score >= min_score or (grade_norm and subject_norm):
+                    results.append({
+                        "id": f"{grade_prefix}-{file_subject.replace(' ', '-')}-{strand_slug}",
+                        "displayName": strand_name,
+                        "grade": file_grade,
+                        "subject": meta.get("subject", ""),
+                        "strand": strand_name,
+                        "route": f"/curriculum/{grade_prefix}-subjects/{file_subject.replace(' ', '-')}/{strand_slug}",
+                        "matchScore": round(score, 3),
+                        "_strand_data": strand,
+                    })
+
+        results.sort(key=lambda x: -x["matchScore"])
+        return results[:top_k]
+
+    def get_curriculum_context(self, page_id: str = "", grade: str = "", subject: str = "", strand: str = "") -> Optional[str]:
         """
-        Search curriculum pages by query, returning top matches.
-
-        Args:
-            query (str): User query.
-            top_k (int): Number of results.
-
-        Returns:
-            List[Dict]: List of matching curriculum page dicts.
+        Get formatted curriculum context for LLM consumption.
+        Can be called with page_id (backward compat) or with grade+subject+strand.
+        Now includes assessment strategies and learning strategies.
         """
-        return self.find_matching_pages(query, top_k=top_k)
+        strand_data = None
+        grade_label = ""
+        subject_label = ""
+        strand_name = ""
 
-    def get_curriculum_context(
-        self,
-        page_id: str
-    ) -> Optional[str]:
-        """
-        Get a formatted context string for a curriculum page by its ID.
-        Structured for clear LLM consumption with numbered outcomes.
+        if grade and subject and strand:
+            s = self.get_strand_data(grade, subject, strand)
+            if s:
+                strand_data = s
+                g = self._normalize_grade(grade)
+                grade_label = "Kindergarten" if g == "K" else f"Grade {g}"
+                subject_label = subject
+                strand_name = s.get("strand_name", strand)
 
-        Args:
-            page_id (str): The curriculum page ID.
+        elif page_id:
+            # Parse page_id to find the strand: e.g. "grade1-language-arts-listening-speaking"
+            for key, data in self.files.items():
+                meta = data.get("metadata", {})
+                file_grade = meta.get("grade", "")
+                file_subject = meta.get("subject", "")
+                grade_prefix = "kindergarten" if file_grade == "K" else f"grade{file_grade}"
+                sub_slug = file_subject.lower().replace(" ", "-")
 
-        Returns:
-            str or None: Formatted context string, or None if not found.
-        """
-        page = next((p for p in self.pages if p.get("id") == page_id), None)
-        if not page:
+                for s in data.get("strands", []):
+                    sn = s.get("strand_name", "")
+                    strand_slug = sn.lower().replace(" ", "-")
+                    expected_id = f"{grade_prefix}-{sub_slug}-{strand_slug}"
+                    if expected_id == page_id:
+                        strand_data = s
+                        grade_label = "Kindergarten" if file_grade == "K" else f"Grade {file_grade}"
+                        subject_label = file_subject
+                        strand_name = sn
+                        break
+                if strand_data:
+                    break
+
+        if not strand_data:
             return None
 
-        grade = page.get('grade', '')
-        grade_label = 'Kindergarten' if grade == 'K' else f'Grade {grade}'
-
         lines = [
-            f"--- {page.get('displayName', '')} ({grade_label} {page.get('subject', '')}) ---",
-            f"Strand: {page.get('strand', '')}",
+            f"--- {strand_name} ({grade_label} {subject_label}) ---",
         ]
 
-        eo = page.get('essentialOutcomes', [])
-        if eo:
-            eo_text = eo[0].get('text', '') if isinstance(eo[0], dict) else eo[0]
-            lines.append(f"\nEssential Outcome: {eo_text}")
+        for elo in strand_data.get("essential_learning_outcomes", []):
+            elo_desc = elo.get("elo_description", "")
+            elo_code = elo.get("elo_code", "")
+            lines.append(f"\nEssential Outcome{f' [{elo_code}]' if elo_code else ''}: {elo_desc}")
 
-        so = page.get('specificOutcomes', [])
-        if so:
             lines.append("\nSpecific Outcomes (students should be able to):")
-            for outcome in so:
-                o_text = outcome.get('text', '') if isinstance(outcome, dict) else outcome
-                lines.append(f"  - {o_text}")
+            for sco in elo.get("specific_curriculum_outcomes", []):
+                code = sco.get("sco_code", "")
+                desc = sco.get("description", "")
+                lines.append(f"  - [{code}] {desc}" if code else f"  - {desc}")
+
+            # Include assessment strategies
+            strategies = elo.get("inclusive_assessment_strategies", [])
+            if strategies:
+                lines.append("\nAssessment Strategies:")
+                for strat in strategies[:5]:
+                    lines.append(f"  - {strat[:200]}")
+
+            # Include learning strategies
+            learning = elo.get("inclusive_learning_strategies", [])
+            if learning:
+                lines.append("\nLearning Strategies:")
+                for strat in learning[:5]:
+                    lines.append(f"  - {strat[:200]}")
 
         return "\n".join(lines)
 
     def get_page_by_id(self, page_id: str) -> Optional[Dict[str, Any]]:
-        """
-        Get the raw curriculum page dictionary by its ID.
+        """Get curriculum strand data by page ID."""
+        for key, data in self.files.items():
+            meta = data.get("metadata", {})
+            file_grade = meta.get("grade", "")
+            file_subject = meta.get("subject", "")
+            grade_prefix = "kindergarten" if file_grade == "K" else f"grade{file_grade}"
+            sub_slug = file_subject.lower().replace(" ", "-")
 
-        Args:
-            page_id (str): The curriculum page ID.
-
-        Returns:
-            dict or None: The page dict, or None if not found.
-        """
-        return next((p for p in self.pages if p.get("id") == page_id), None)
+            for s in data.get("strands", []):
+                sn = s.get("strand_name", "")
+                strand_slug = sn.lower().replace(" ", "-")
+                expected_id = f"{grade_prefix}-{sub_slug}-{strand_slug}"
+                if expected_id == page_id:
+                    return {
+                        "id": expected_id,
+                        "displayName": sn,
+                        "grade": file_grade,
+                        "subject": file_subject,
+                        "strand": sn,
+                        "strand_data": s,
+                    }
+        return None
 
     def all_page_ids(self) -> List[str]:
-        """
-        Get a list of all curriculum page IDs.
-
-        Returns:
-            List[str]: List of page IDs.
-        """
-        return [p.get("id") for p in self.pages if "id" in p]
+        """Get all curriculum page IDs."""
+        ids = []
+        for key, data in self.files.items():
+            meta = data.get("metadata", {})
+            file_grade = meta.get("grade", "")
+            file_subject = meta.get("subject", "")
+            grade_prefix = "kindergarten" if file_grade == "K" else f"grade{file_grade}"
+            sub_slug = file_subject.lower().replace(" ", "-")
+            for s in data.get("strands", []):
+                sn = s.get("strand_name", "")
+                strand_slug = sn.lower().replace(" ", "-")
+                ids.append(f"{grade_prefix}-{sub_slug}-{strand_slug}")
+        return ids

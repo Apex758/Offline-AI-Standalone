@@ -1,0 +1,972 @@
+{
+  "metadata": {
+    "filename": "grade1-social-studies-curriculum.pdf",
+    "curriculum": "OECS Harmonised",
+    "grade": "1",
+    "subject": "Social Studies"
+  },
+  "strands": [
+    {
+      "strand_name": "Historical and Cultural Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand that our celebrations help us build pride in our identity",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G1-HC-SCO1.1",
+              "description": "K - State different forms of celebrations that are practiced in families to build pride and identity."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.2",
+              "description": "K - Identify aspects of culture such as food, music, dance that are relevant to celebrations in families."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.3",
+              "description": "S - Demonstrate different forms of celebration in the family and explain the importance of preserving local culture."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.4",
+              "description": "V - Appreciate their cultural heritage."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.5",
+              "description": "K - List religious and national festivals celebrated by the family."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.6",
+              "description": "S - Investigate and report how the family, school and nation celebrate various religious and national festivals."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.7",
+              "description": "V - Respect that families celebrate religious and national festivals in different ways, and that the families may choose not to celebrate some or all of these occasions."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.8",
+              "description": "K - Identify the national symbols of their country."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.9",
+              "description": "S - Describe the national symbols through drawing, painting and /or other expressions."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO1.10",
+              "description": "V- Appreciate that their national symbols are unique and special to their country and should be respected."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation: As students respond to oral questions based on videos/pictures/items, are they able to show that they are aware of celebrations in their families and community? Teachers make notes of students’ responses.",
+            "Product: Can students develop a page with relevant celebration vocabulary? Are they able to read their page out loud?",
+            "Conversation: Based on the story, can students define the term culture?",
+            "Conversation: From viewing these pictures and items, can students demonstrate that they know the foods, music and dance in family celebrations that promote pride and identity?",
+            "Product: Using pictures/items, can students categorize cultural and non-cultural food, music and dance items?",
+            "Product/ Observation: Can students identify which foods, music or dances are reserved for special family celebrations? Teachers take notes of students’ responses.",
+            "Conversation: Are students able to state one reason why it is important to keep family traditions?",
+            "Product: Are students able to write or depict through drawing various forms of family celebrations?",
+            "Product: Can students perform at least one verse of the folk song learnt. Assess as a class or small group (Include dance and music).",
+            "Observation/ Conversation: Are students able to tell family traditions that are unique to them?",
+            "Observation: During the gallery walk, do students demonstrate an appreciation of each other’s family cultural celebrations / heritage traditions?",
+            "Observation: Four Corners As part of the pre-assessment, the teacher can observe the celebration choices that students take part in, noting their different preferences.",
+            "Conversation: What do students know about the national and religious festivals and to what extent do they participate in these?",
+            "Conversation: Students will be asked the following: 1. What questions does this video raise in your mind? 2. What do you like most about the festivals? 3. What don’t you like about the festivals? 4. Where could you find other information about festivals?",
+            "Product - Based on the video, can students draw and label one to three important expressions of traditions they observed? (E.g., music, colours, costumes etc.)",
+            "Conversation: Through the discussion, is it evident that students respect that other families may choose to celebrate differently from their own?",
+            "Observation: As teachers observe students play the game, are they able to match the correct celebration with the time of year it is celebrated?",
+            "Product: Do students’ posters reflect elements of celebrations that their families celebrate?",
+            "Product: Using matching items or similar assessment, are students able to summarize how their family, school and nation celebrate various religious and national festivals?",
+            "Product: Do students’ reflections show respect for individual differences in family celebrations?",
+            "Matching Game: (Pre & Post Assessments): Can students match names to the national symbols?",
+            "Conversation: Can all students define the meaning of a symbol and share examples? Are students able to identify at least 5 national symbols - 1. bird 2. anthem 3. pledge 4. flag 5. dish 6. drink",
+            "Product: Wall Montage: Are students able to create models that use the national colours?",
+            "Conversation: Given simple scenarios, are students able to distinguish between respectful behaviours and disrespectful behaviours to national symbols? For example: The Independence ceremony has finished. Tom throws his flag on the ground and stomps on it. Is he being respectful? Why? What do you think he should have done?",
+            "Observation: Are students demonstrating respect for national symbols?"
+          ],
+          "inclusive_learning_strategies": [
+            "Oral Questioning, Visual Deduction or Visual Art and Cultural Inferences - Teachers show students videos/pictures/items that highlight aspects of celebrations. E.g., birthdays, weddings, cake, dance, christening/baptism, wakes, Christmas, Easter.",
+            "Teachers probe students to share what these images have in common, state the word ‘celebrations’ and then deduce the meaning of celebration; and then make a list of family celebrations that build pride and identity.",
+            "Story Telling: Remind students that this unit is about looking at family celebrations that are part of their culture. Help students define ‘culture’ by sharing a short story of celebrations. Then ask the students to tell stories of examples of their family culture.",
+            "Read story, “My Two Grandads” https://www.youtube.com/watch?v=GsTG_intfEs.",
+            "Students respond to oral questions about these stories (asked by the teacher).",
+            "Picture Inferencing: Present several pictures/items of foods including those common to their island (E.g., breadfruit, provisions, rice and peas, mangoes, fish, stew, wild meat, sorrel); traditional musical instruments (E.g., drums, steel pan, shak-shaks, tambourine); traditional dance and song (E.g., maypole, quadrille, folk songs) and link to the different celebrations through conversation/discussion.",
+            "Question and Response: Students share their thoughts about how the foods/dance/music relate to cultural celebrations - as guided by teachers.",
+            "Role Play: Students view a video of various forms of celebrations in the family. Students discuss the video as guided by the teacher, focusing on the celebrations and why they are important in preserving local culture. In groups, students role play aspects of these celebrations.",
+            "Pop-up Books: Create Pop-up Books re: Family Celebrations. The book should include vocabulary and colourful images about the foods/ dance / music that are part of family celebrations. Each student can pick a term/concept and create one page. Glue the pages together to create a book for their class library. The book can be a pop-up.",
+            "Read Aloud: Once the book is compiled, students read the book out loud to the class. The book is then placed in the classroom library so students can read.",
+            "Modelling: Students learn at least ONE simple folk song and ONE traditional song from their country/community/family.",
+            "Performance can be published on the school's social media page/website.",
+            "Discussion: Discuss with the students how these celebrations reflect their family traditions that are unique to them and reasons why it is important for families to keep their traditions.",
+            "Gallery Walk (Culminating Activity): Students write or depict through drawing, reasons why it is important to keep family traditions. These will be displayed on the classroom walls and students will walk through to observe and share.",
+            "Journaling (Write/Draw/Speak/ Create Video): Students are guided to speak, write or draw their likes and dislikes about the celebrations. For example: I like .... I do not like .... I wish ...... Devices can also be used to complete this activity. Students will respond using emojis. Students' responses will be displayed on smart boards, etc.",
+            "Four Corners: Get all students involved by asking them to share their opinions on a statement on national and religious festivals through the “Four Corners” activity.",
+            "Four Corners Activity: Teachers label each corner of the room with specific statements relating to religious or national festivals such as Easter, Independence, Christmas, Carnival. E.g., My family celebrates Easter; My family celebrates Christmas. Students stand in the corner that best represents the festival their family celebrates most. Students engage in conversation about the national and religious festivals that their families celebrate the most.",
+            "Video Analysis, Inferring and Questioning: Students watch a video of the local religious and national festivals celebrated by families – E.g., Christmas, Easter, Carnival, La Rose Flower Festival, Creole Day/Jouen Kweyol, Nine Mornings, National Heroes’ Day. Get students to fold a piece of paper in three parts. Based on the video, students will draw and label one to three pictures of three important visuals they observed in the video in which families express their traditions through celebrations. Inferring - In a whole group discussion, students are asked to infer their likes and dislikes about festivals celebrated by their families in the video and give reasons to justify their responses using the conversation questions.",
+            "Research and Report & Think-Pair-Share: Students are guided to state that families celebrate different religious and national festivals; thus, it is important to respect different views.",
+            "Teacher creates an interview prompt to guide students to talk to /interview a family member or old person in the community about a cultural practice /activity that was done in their time and continues to happen today. They share orally using Think-Pair-Share.",
+            "Students will be reminded of the importance of respecting each other’s views.",
+            "Games: 1. Pass the Ball - Teacher explains while modelling how the game is played. Students pass around a ball while music is playing. When the music stops, whoever is holding the ball says one thing about how his/her family celebrates a specific religious or national festival. 2. Matching Game – Play a game that matches aspects of culture with the season or time of year, E.g., Calypso – Carnival; Folk song – Independence; Green Pigeon Peas - Christmas. A smart board, devices or pictures may be used.",
+            "Poster Design & Presentation: Students design and present a poster on a specific religious or national event celebrated by their families. Teacher evaluates using rubric.",
+            "Journaling: Students state in writing/ orally one way they can show respect to people who celebrate religious and national festivals differently than they do. Students can create video journals.",
+            "Definition of Terms: Students look at a display of familiar signs and symbols, E.g. - stop sign, traffic lights, emojis, ringing of the bell, gestures; and state what they represent. Students give other examples and what they represent. Students are guided to state that a symbol is something that stands for or represents something else. Students view a display of national symbols - items/ pictures /images, and/or videos. Students place name cards next to the correct symbols. Students are guided by the teacher to construct the definition of the term ‘national symbols’. They learn that the national symbols are unique to their country.",
+            "Paper Fold and Reveal (to establish national colours): Fold paper and reveal in parts to display national colours. (See Figure ... for examples)",
+            "Students are guided to state that these are the national colours of the country.",
+            "Show and Tell: Teacher models to the students how show and tell is conducted by displaying different national symbols and talking about it (pictures/videos/items). Students are encouraged to bring symbols of their own and talk briefly about it. Create Poster /Collage /Picture Book of national symbols (Group activity)",
+            "Model Building & Display Corners /Wall Montage: Students create models of national symbols using play dough or other appropriate materials. Create Display Corners of national symbols and facilitate students’ oral expressions through discussions about the symbols.",
+            "Draw/Colour: Students work in small groups to draw or colour the national flag and other symbols.",
+            "Hand printed shirt: In small groups, students create a hand stamped T-shirt using colours of the national flag.",
+            "National Colours Day / Rep Yo’ Colours Day- Students showcase national colours using clothing or other items. Students are encouraged to showcase national colours using clothing. (May use T-shirts and everyday wear)",
+            "Modelling: Students observe teachers as they model how to show respect for the national symbols, E.g., standing correctly when the national anthem is being sung (played), when repeating the pledge and caring for the flag etc.",
+            "Demonstrate Respect for National Symbols: Students practice showing respect for national symbols. They are guided by teachers."
+          ],
+          "elo_code": "SS-G1-HC-ELO1"
+        },
+        {
+          "elo_description": "To understand that we have roles and responsibilities in our families, school, and community",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G1-HC-SCO2.1",
+              "description": "K-Understand the importance of keeping their home, school, and community tidy and clean."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO2.2",
+              "description": "S- Practice putting garbage and litter in trash cans at school and home."
+            },
+            {
+              "sco_code": "SS-G1-HC-SCO2.3",
+              "description": "V-Observable and appreciate places in their environment that are kept clean and tidy."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Observation: Are students able to identify which environment they would prefer and give reasons why?",
+            "Conversation: Are students able to identify and list things that can be done to make the classroom and other places clean and tidy?",
+            "Conversation: Are students able to identify reasons why we need to keep these places clean and tidy?",
+            "Observation: Are students able to determine which individuals are contributing to keeping the environment clean and tidy?",
+            "Product: Do students’ sentence frames identify how they feel when their environment is clean and when it is dirty?",
+            "Product: Do students’ posters correctly identify location of bins and sufficiently encourage others to use them?",
+            "Observation: Do students show a willingness to participate in the clean-up campaigns and monitor systems for their environment?"
+          ],
+          "inclusive_learning_strategies": [
+            "Students are shown two pictures - one of a clean classroom, and one of an untidy and dirty classroom. They are asked to indicate which one they will prefer to be in and why.",
+            "Invite students to discuss what they can do to make the dirty classroom clean. (song “bits of paper”) Then students are placed in groups and each group is given a picture of a dirty house, playing field, beach (or other places in their environment). Ask students to brainstorm ideas to clean that area, as well as how to keep that area clean.",
+            "After group discussion students observe and discuss following videos: Cleanliness At Home | Now You Know Book C | Periwinkle, Cleanliness At School | Now You Know Book C | Periwinkle, CLEANLINESS IN SCHOOL | KIDS KNOWLEDGE | ENGLISH",
+            "Students and teacher hold whole class discussions about why it is important to keep their environment clean and tidy.",
+            "Provide students with scenarios involving actions of individuals so that they can determine whether or not the individual is contributing to keeping the environment clean and tidy or not. Students use ‘thumbs up’ or ‘thumbs down’ to indicate. (6-8) Example of scenarios: 1. Johnny just sharpened his pencil and left the shavings on his tabletop."
+          ],
+          "elo_code": "SS-G1-HC-ELO2"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Printed materials",
+          "links": [],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Folk Songs",
+          "links": [
+            {
+              "text": "Vincentian folk songs",
+              "url": "http://tourism.gov.vc/tourism/index.php/svg-festivals/folk-songs"
+            },
+            {
+              "text": "St. Lucian Folk Music",
+              "url": "https://music.apple.com/us/album/traditional-st-lucia-folk-music-vol-3/1024228633"
+            },
+            {
+              "text": "Dominican Folk song",
+              "url": "https://www.youtube.com/watch?v=9w1atvkVQnE"
+            },
+            {
+              "text": "Grenada Folk song",
+              "url": "https://www.youtube.com/playlist?list=PL2kGl4P_Kr9kXQu2wB13jkiaZQDT78159"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "National Anthems",
+          "links": [
+            {
+              "text": "St. Vincent and the Grenadines",
+              "url": "https://www.youtube.com/watch?v=j-fV1oaP-yU"
+            },
+            {
+              "text": "St. Lucia",
+              "url": "https://www.youtube.com/watch?v=JFtM4xZYa78"
+            },
+            {
+              "text": "Commonwealth of Dominica",
+              "url": "https://www.youtube.com/watch?v=GmyIDJ9Ad8U"
+            },
+            {
+              "text": "Grenada",
+              "url": "https://www.youtube.com/watch?v=rcsktFQs-Qw"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "National Symbols",
+          "links": [
+            {
+              "text": "St. Lucia National Symbols worksheet",
+              "url": "https://www.liveworksheets.com/worksheets/en/Social_Studies/National_Symbols/St._Lucia_National_Symbols_on1566653px"
+            },
+            {
+              "text": "National Symbols of St. Lucia by Miss Melisamcjh",
+              "url": "https://www.youtube.com/watch?v=iqUCVOp0IM0&list=PL1H0vRnM-9lhJmNdmtB23cNFT0kGHsCyM"
+            },
+            {
+              "text": "Commonwealth of Dominica national symbols",
+              "url": "https://www.youtube.com/watch?v=iqUCVOp0IM0&list=PL1H0vRnM-9lhJmNdmtB23cNFT0kGHsCyM"
+            },
+            {
+              "text": "St. Vincent and the Grenadines national symbol",
+              "url": "http://foreign.gov.vc/foreign/index.php/the-national-flag"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Celebrations and Festivals",
+          "links": [
+            {
+              "text": "St. Vincent and the Grenadines culture festivals",
+              "url": "https://www.gov.vc/index.php/visitors/culture-festivals"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Additional Resources and Materials",
+          "links": [
+            {
+              "text": "I am Special because! | Read with Akili and Me",
+              "url": "https://www.youtube.com/watch?v=dAmABKdj51w"
+            },
+            {
+              "text": "Nursery Rhymes I am Special Songs with lyrics",
+              "url": "https://www.youtube.com/watch?v=jc0m7bxZ0QA"
+            },
+            {
+              "text": "How to make Kids Hand Printed T-Shirt Design",
+              "url": "https://www.youtube.com/watch?v=oKZPGnngU3c"
+            },
+            {
+              "text": "Live worksheets",
+              "url": "https://www.liveworksheets.com"
+            },
+            {
+              "text": "YouTube video",
+              "url": "https://www.youtube.com/watch?v=GsTG_iutfEs"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Books",
+          "links": [],
+          "category": "Reading/Texts"
+        }
+      ]
+    },
+    {
+      "strand_name": "Civic Participation",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand that we have roles and responsibilities in our families, school, and community",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G1-CP-SCO1.1",
+              "description": "K-Understand the importance of keeping their home, school, and community tidy and clean."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.2",
+              "description": "S- Practice putting garbage and litter in trash cans at school and home."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.3",
+              "description": "V-Observable and appreciate places in their environment that are kept clean and tidy."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.4",
+              "description": "K - Recognize that when everyone in our family shares and helps one another we all benefit."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.5",
+              "description": "S - List the ways that our siblings, parents, grandparents, and other relatives help us and vice versa."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.6",
+              "description": "V - Appreciate that helping other family members is important for our collective wellbeing."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.7",
+              "description": "K - Identify persons to turn to when they need help"
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.8",
+              "description": "S - Communicate ways to express when they feel unsafe"
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.9",
+              "description": "V - Appreciate feeling safe in their environment"
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.10",
+              "description": "K - Understand what a leader is."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.11",
+              "description": "S - Identify leaders in their home, school, church, community, and nation"
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.12",
+              "description": "V - Appreciate that leaders are an important part of our well-being."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.13",
+              "description": "K - Recognize the appropriate manners and behaviours towards adults in positions of authority."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.14",
+              "description": "S - Practice using proper manners when interacting with adults"
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO1.15",
+              "description": "V - Respect persons in authority"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Observation: Are students able to identify which environment they would prefer and give reasons why?",
+            "Conversation: Are students able to identify and list things that can be done to make the classroom and other places clean and tidy?",
+            "Conversation: Are students able to identify reasons why we need to keep these places clean and tidy?",
+            "Observation: Are students able to determine which individuals are contributing to keeping the environment clean and tidy?",
+            "Product: Do students’ sentence frames identify how they feel when their environment is clean and when it is dirty?",
+            "Product: Do students’ posters correctly identify location of bins and sufficiently encourage others to use them?",
+            "Observation: Do students show a willingness to participate in the clean-up campaigns and monitor systems for their environment?",
+            "Observation: Are students able to see how keeping their classroom and home tidy and clean is a form of sharing and helping others?",
+            "Observation: Can the students identify examples of sharing that they do at home and at school?",
+            "Product: Do students show how they share with others?",
+            "Observation: Can students write and read the words in their sentence frames and those of others?",
+            "Observation: Are students engaged in listening to the story?",
+            "Conversation: Are students able to identify why the sharing that the rainbow fish did is important for the well-being of self and other fish?",
+            "Conversation: Are students able to identify that there are situations when sharing with others is not appropriate?",
+            "Conversation: Are students able to indicate that they are feeling unsafe in a particular situation?",
+            "Observation: Are students able to identify the different individuals they can go to for help?",
+            "Product: Are students able to identify a place where they feel safe?",
+            "Conversation: Can students identify some of the situations where they may be unsafe or some situations where they may need help?",
+            "Observation: Are students able to work cooperatively to complete role plays?",
+            "Conversation: Are students able to identify and discuss ways to protect themselves?",
+            "Observation: Are students able to identify who they can go to when they are faced with a challenge or problem?",
+            "Conversation: Do students know when to ask for help?",
+            "Observation: Are students able to choose the best person to help fix a problem?",
+            "Observation: Are students able to identify pictures of leaders in the home, school, community and the nation?",
+            "Conversation: Can students provide a definition of who a leader is?",
+            "Conversation: Are students able to suggest other ways a leader can fix a problem?",
+            "Product: Are students able to recognize that they too play a part with the leader to help fix a problem?",
+            "Product: Do students’ drawings and sentences of leaders demonstrate their understanding of who a leader is?",
+            "Conversation: Are students able to discuss the qualities or characteristics of a good leader?",
+            "Conversation: Are students able to demonstrate examples of problems that may arise at home, school and the community and how these problems can be addressed through the intervention of a leader through role play?",
+            "Observation: How do students react to the principal entering the classroom?",
+            "Observation: Are children able to identify persons in authority in their home, school and community?",
+            "Observation: Do student’s responses show that they understand persons in authority and how they should react to them?",
+            "Observation: Do student’s responses show an understanding of having manners for persons at school?"
+          ],
+          "inclusive_learning_strategies": [
+            "Students are shown two pictures - one of a clean classroom, and one of an untidy and dirty classroom. They are asked to indicate which one they will prefer to be in and why.",
+            "Invite students to discuss what they can do to make the dirty classroom clean. (song “bits of paper”) Then students are placed in groups and each group is given a picture of a dirty house, playing field, beach (or other places in their environment). Ask students to brainstorm ideas to clean that area, as well as how to keep that area clean.",
+            "After group discussion students observe and discuss following videos Cleanliness At Home | Now You Know Book C | Periwinkle Cleanliness At School | Now You Know Book C | Periwinkle CLEANLINESS IN SCHOOL | KIDS KNOWLEDGE | ENGLISH",
+            "Students and teacher hold whole class discussions about why it is important to keep their environment clean and tidy.",
+            "Provide students with scenarios involving actions of individuals so that they can determine whether or not the individual is contributing to keeping the environment clean and tidy or not. Students use ‘thumbs up’ or ‘thumbs down’ to indicate. (6-8) Example of scenarios: 1. Johnny just sharpened his pencil and left the shavings on his tabletop.",
+            "Review the learning from the previous SCO in which they identified ways they help around their home and classroom to keep things tidy and clean. Introduce the idea that they are now going to explore the importance of sharing with others.",
+            "Ask students to brainstorm some examples of sharing that they do at school and at home. List these examples of the board and discuss them.",
+            "Invite students to draw a picture that shows how they share something with others in their home. Place these pictures on a bulletin board and help students complete the following sentence frame about each of their pictures. “At home I share ________”. Label each child’s picture with their own sentence frames.",
+            "Use this same approach to explore how other members of their family such as parents, brothers and sisters, cousins, uncles and aunts or grandparents share with them and how this helps them. Have students draw pictures of how these family members help them. Place these pictures on a bulletin board and help students complete the following sentence frame about each of their pictures. “My ________ helps me to ________”. Label each child’s picture with their own sentence frames. The teacher can also return to these sentence frames for follow up at several times to help children reinforce vocabulary and concepts.",
+            "Storyline Online - The Rainbow Fish log on to the storylineonline site and share the Rainbow Fish with your students. Engage students in a discussion about how the sharing by the rainbow fish helped the well-being of other fish. The teacher can also discuss how the sharing affected the feelings of the Rainbow Fish.",
+            "Students could also be taught that sharing isn't just about sharing your toys and belongings. Sharing is also about sharing your thoughts, feelings and ideas with others. The teacher can model examples of sharing of feelings, and how this can be helpful for getting along. Eg. When students are feeling sad, tired, hungry. A share chair can be a designated spot for students to share their writing, or art with their classmates.",
+            "Students can also be taught that sharing is not always good. Sometimes, sharing too much can be harmful. Examples might be, sharing too much of their lunch and going hungry,",
+            "Introduce the lesson by asking Students to pair-share to answer the question, “What are some examples of problems we might get help for?” Circulate among students during the pair-share and take note of students’ understandings of some of the situations they may feel unsafe. Ask students to share what they discussed with their partner and record their ideas on the board.",
+            "“Whom do you go to when you have a problem?” Ask students to share their ideas. Expect examples such as friends, family members, pastors, priests, police, nurses, teachers, or siblings.",
+            "Students draw a picture depicting a place where they feel safe or a place they can go to for help.",
+            "Discuss with students some ways to tell others that they are feeling unsafe. Use the following sorts of examples: 1. They are walking home, and other children begin to tease or bully them. 2. They are playing with friends at school, and someone touches them in an inappropriate place. 3. There is a heavy downpour of rain, and they are outside and do not have an umbrella or raincoat.",
+            "Students are placed in groups to role play different scenarios to depict how they can communicate that they are unsafe or need help.",
+            "Protect Yourself Rules - Bullying Students look at video and discuss ways to protect themselves.",
+            "Introduce the lesson by asking, “Whom do you go to when you have a problem?”",
+            "Ask students to share their ideas. Expect examples such as friends, family members, pastors, priests, teachers, or siblings.",
+            "Explain to students that problems can arise in a family or neighbourhood community just like they can in school. People can ask others for help when they have a problem.",
+            "People go to leaders for help fixing their problems.",
+            "Define the word leader. A leader is a person who is responsible for guiding or directing a group.",
+            "Add the word leader to the social studies word wall.",
+            "Students pair-share to answer the question, “What are some examples of problems we might get help for from leaders?”",
+            "Circulate among students during the pair-share and take note of students’ understandings of some of the problems leaders might help them with, and how they too can play a part to help resolve the issue with the leader.",
+            "Ask students to share what they discussed with their partner and record their ideas on the board.",
+            "Display images of leaders from their home, school, church, community, and nation or arrange online jigsaw puzzles of well-known leaders (prime minister, principal…)",
+            "https://im-a-puzzle.com/make-puzzle",
+            "Ask the students: – Do they look familiar? – Who are they? How do they know who they are?",
+            "Explain that we are going to explore leadership traits of community members. Remind them of the definition that: A leader is a person who a group of people follow or look up to.",
+            "Ask students why these people might be leaders.",
+            "Pose the question, “Why is it important to have good community and government leaders?”",
+            "Asking them what makes these people helpful using examples such as honesty, caring, hard-working, wise, smart, or generous.",
+            "Discuss the idea that leaders can help solve problems and support our well-being and safety.",
+            "Characteristics of a Good Leader",
+            "Read aloud of the story the “Little Red Hen.”",
+            "Have students identify the leader in the story, provide reasons for their selection, state whether the character was a good/bad leader and provide reasons for stating good or bad, list the character traits of the leader (graphic organization). State whether the problem was handled appropriately or not. Give reasons.",
+            "Draw a picture of a leader",
+            "What qualities does your leader have?",
+            "What important problems does this leader solve? (Accompany drawing with a sentence stating the quality of the chosen leader and the problem he/she solves. Example ___________ is a ___________ leader. He/She helps to ___________ at home/school/community.",
+            "Show and tell - have students bring a picture of a leader and tell the class about that leader.",
+            "Arrange students in groups to role play problems that may arise in school, home and the community and the appropriate leader is asked to help.",
+            "Ask students how they should react when the principal enters the classroom and why. Introduce the concept of authority to students.",
+            "Ask children who are the persons in authority in the home, school and community.",
+            "Song: Who are the people in authority in your neighbourhood.",
+            "Students brainstorm how they show manners and respect for persons in the home school and community."
+          ],
+          "elo_code": "SS-G1-CP-ELO1"
+        },
+        {
+          "elo_description": "To understand that we have roles and responsibilities in our families, school, and community.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G1-CP-SCO2.1",
+              "description": "K - Recognize the appropriate manners and behaviours towards adults in positions of authority."
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO2.2",
+              "description": "S - Practice using proper manners when interacting with adults"
+            },
+            {
+              "sco_code": "SS-G1-CP-SCO2.3",
+              "description": "V - Respect persons in authority"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Observation: How do students react to the principal entering the classroom?",
+            "Observation: Are children able to identify persons in authority in their home, school and community?",
+            "Observation: Do student’s responses show that they understand persons in authority and how they should react to them?",
+            "Observation: Do student’s responses show an understanding of having manners for persons at school?",
+            "Product: Do the students' mobiles creatively display words used to show manners and respect?",
+            "Product: Do the students’ response on the checklist show understanding of appropriate manners and respect?"
+          ],
+          "inclusive_learning_strategies": [
+            "Ask students how they should react when the principal enters the classroom and why. Introduce the concept of authority to students.",
+            "Ask children who are the persons in authority in the home, school and community.",
+            "Song: Who are the people in authority in your neighbourhood.",
+            "Students brainstorm how they show manners and respect for persons in the home school and community.",
+            "Students brainstorm some ways disrespect is shown- crossing arms, rolling eyes, hair flip, slamming doors, sucking teeth, disobey.",
+            "Students role-play how they would respond to the principal, class teacher, other teachers and staff members, education officer, security officers, and their peers.",
+            "The Manners Song tune of Twinkle Twinkle Little Star We say, \"Thank you.” We say, \"Please.” We don't interrupt or tease. We don't argue. We don't fuss -- Listen when folks talk to us. Share our toys and take our turn. Manners are easy to learn.",
+            "Students create mobiles with manners words from the song: such as Please, Thank You, Listen, Share",
+            "Students respond to the good manners checklist. DIRECTIONS: Put a checkmark next to each behavior that is a way to show respect. 1. When asking for something say “please” 2. Not listening to others 3. When receiving something say “thank you” 4. Saying “Sir” or “Ma’am” 5. Do not interrupt grown-ups who are speaking to each other unless it is an emergency. 6. If you need to get somebody’s attention right way, the phrase “excuse me” is the politest way to do so. 7. Littering 8. When you have any doubt if you are allowed to do something, ask permission of an adult. 9. Calling people names 10. When an adult asks you how you are, tell them, then ask them how they are.",
+            "1. Not pitching in to help around the house. 2. When you have spent time at a friend’s house remember to thank their parents for having you over 3. Not saying “please” and “thank you.” 4. Knock on closed doors and want to hear a response before entering. 5. Not following rules 6. As you walk through a door, look to see if you can hold it open for someone else. 7. Interrupting others when they are speaking. 8. Always offer to help others when there is something to be done. 9. When an adult asks you for a favour, do it without grumbling and with a smile. 10. When someone helps you say “thank you”",
+            "Showing Respect: Respect means treating others with honor and dignity. Treating people with respect is an important part of maintaining relationships.",
+            "Read each scenario below. Then respond to the scenario by showing respect.",
+            "1. Your mom asks you to take on a few chores around the house.",
+            "2. You notice an elderly adult walking home from the store with groceries.",
+            "3. An adult greets you at church and asks you how you are."
+          ],
+          "elo_code": "SS-G1-CP-ELO2"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Song for Teaching children the importance of Sharing",
+          "links": [
+            {
+              "text": "https://youtu.be/gKv9KniC4uk",
+              "url": "https://youtu.be/gKv9KniC4uk"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Video on showing respect",
+          "links": [
+            {
+              "text": "https://youtu.be/GOzrAK4gOSo",
+              "url": "https://youtu.be/GOzrAK4gOSo"
+            }
+          ],
+          "category": "Videos"
+        }
+      ]
+    },
+    {
+      "strand_name": "Spatial Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand how we shape the local environment and the local environment shapes who we are and how we live.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G1-ST-SCO1.1",
+              "description": "K - Identify where your family lives"
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.2",
+              "description": "S - Locate your home in relation to your closest neighbours."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.3",
+              "description": "V - Appreciate that your family is part of a neighbourhood."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.4",
+              "description": "K - Identify basic terms to describe relative location in your local environment such as near and far."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.5",
+              "description": "S - Distinguish between and show near and far in your immediate environment."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.6",
+              "description": "S - Use relative location to describe places in their neighbourhood."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.7",
+              "description": "V - Recognize the importance of being able to describe relative location for finding places and knowing your way around your immediate environment"
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.8",
+              "description": "V - Appreciate that relative location can influence activities that families engage in."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.9",
+              "description": "K - Name and illustrate the four cardinal directions."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.10",
+              "description": "S - Describe the location of your home using cardinal directions in relation to natural and built features in the community."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.11",
+              "description": "V - Appreciate the value of directions for finding your way from one location to another."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.12",
+              "description": "K - List the activities that you and your family engage in because of where you live."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.13",
+              "description": "S - Classify family activities activities as having a positive or negative impact on the neighbourhood."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.14",
+              "description": "V - Recognize that where we live influences how our families live and that the things we do, have an impact on our neighbourhood."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.15",
+              "description": "K - Identify natural hazards such as hurricanes, tsunamis, volcanic eruptions, earthquakes which may pose a threat to your family because of where you live."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.16",
+              "description": "S - Demonstrate how to follow evacuation procedures in your school."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.17",
+              "description": "V - Respect the dangers posed by natural disasters."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.18",
+              "description": "K - List the activities that you and your family are able engage in because of where you live."
+            },
+            {
+              "sco_code": "SS-G1-ST-SCO1.19",
+              "description": "S - Classify these activities as positive or negative for the neighborhood."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation: Are students able to state where they live? Are students able to state their full address?",
+            "Can students describe their home?",
+            "Observation: What do you observe in students’ drawings and ask them questions to identify what is missing and what is included.",
+            "Conversation: Do students know who their neighbours are?",
+            "Observation: Are they able to differentiate their homes from their neighbours’?",
+            "Conversation: Can students identify important places in their neighbourhood?",
+            "Are students able to state why these places are important?",
+            "Assessment",
+            "Conversation: Do students use vocabulary related to relative location? Do students understand what is meant by the term relative location?",
+            "Conversation: Can students correctly identify objects/people/places that are near or far in relation to each other.",
+            "Conversation: Can students name places on their neighbourhood map that are near and far from their home and other important places?",
+            "Observation: Are students able to identify places near and far in relation to other places in their environment?",
+            "Product: Are students able to draw and label or make models of places near and far from the school.",
+            "Product: Can students correctly colour code places on a map to show near and far?",
+            "Observation: Are students able to correctly play the game by identifying objects that are near and far?",
+            "Observation: Are students able to identify the correct cardinal direction outside?",
+            "Observation: Are students able to correctly label the cardinal points on the map.",
+            "Product: Are students able to construct a simple compass rose placing the cardinal points in the correct order.",
+            "Observation: Are students able to correctly match the words to the letters.",
+            "Conversation: Can students describe location using the four cardinal points?",
+            "Conversation: Are students able to understand the importance of direction for finding their way?",
+            "Observation: Are students able to use cardinal direction to find their way?",
+            "Conversation: Are students aware of the activities that take place in their neighbourhood?",
+            "Conversation: Are students able to identify similarities and differences in the activities that their families engage in their neighbourhood.",
+            "Conversation: Are students aware that different persons in different neighbourhoods engage in different activities because of where they are located?",
+            "Product: Are students able to represent activities, through the use of drawings or pictures, that they or their family engage in within their neighbourhood?",
+            "Observation: Are students able to identify activities that impact their neighbourhood positively or negatively?",
+            "Are students demonstrating a willingness to engage in positive activities after they have shared their thoughts on how the activities their family engage in impacts their neighbourhood?",
+            "Conversation: Are students able to define the term natural hazard? Are they able to demonstrate an understanding of what a natural hazard is based on their own experiences?",
+            "Observation: Are students able to draw a mind/concept map? Note what is included and missing?",
+            "Conversation: Can students explain their mind map, to the class, and the reasoning for some of their inclusions?",
+            "Conversation: Are students able to identify natural hazards that pose a threat to their neighborhood and their school? What were some of the effects of these hazards on them? What emotions did students display as they spoke about the hazard.",
+            "Product: Were students able to create a poster that illustrated the natural hazard assigned to them.? Did they illustrate the effects the natural hazard may have on their neighbourhood?",
+            "Observation: Are students' ideas related to a natural hazard? Do students’ ideas",
+            "demonstrate that they have real experiences with natural hazards? Observation: Are students able to explain their simulation of the natural hazard?",
+            "Product: Were students able to create a model or simulate to the class the natural disaster assigned to the group? Did students explain the effects that their natural hazard could have on their family and their neighbourhood?",
+            "Conversation: Are students able to indicate what they and their family could do to prepare for various types of natural hazards.",
+            "Conversation: Are students aware of school emergency evacuation routes? Do students know where safety points are located?",
+            "Observation: Can the students draw and label the school emergency route accurately?",
+            "Product: Are the students able to use symbols to represent real life features and to understand the importance of locating them for fire drills.",
+            "Observation: Are students able to follow instructions during an emergency/evacuation drill?",
+            "Observation: Are students able to demonstrate what to do during and after an earthquake?",
+            "Conversation: Are students able to identify what they did correctly and what was not done well?",
+            "Product: Were students able to create a storyboard showing the steps of the school’s emergency plan during and after a natural hazard?"
+          ],
+          "inclusive_learning_strategies": [
+            "Introduce the topic with this read aloud. (Stop at time stamp 2:54)",
+            "Engage students in a discussion about where they and their families live.",
+            "Have students say where they live: their address, (in standard English, creole, informal language).",
+            "Have them describe where they live: type of home, do they have a yard etc.",
+            "Have students draw a picture of their house.",
+            "Engage students in a discussion about who lives next to them. Who lives to their left, their right, in font, behind or across from them.",
+            "Have students draw a picture of their closest neighbours’ homes.",
+            "Have students talk about and draw pictures of important places in their neighbourhood e.g., bridges, hills, rivers, stores, trees, churches, and schools etc.",
+            "Have students cut out the pictures and glue them together to create a neighbourhood map. Connect the buildings and places by drawing the roads and pathways they walk or ride in their neighbourhood. Discuss with students what would be an appropriate title for the map and have them write the title.",
+            "Label the places they have drawn.",
+            "Near and far",
+            "Have students explain how they would give directions to the bathroom (or any other location in the school) to a new student in the class. Take note of the various terms that are used. Introduce students to the term relative location.",
+            "Have students view the following video on relative location. https://www.youtube.com/watch?v=RcPP15JaW1w8",
+            "Have each student give the location of their home in relation to the school.",
+            "Read Aloud Activity: Read a picture book and have students identify whether objects/people/places in the story are near or far in relation to each other.",
+            "Have students use the map previously drawn to identify places in their neighbourhood that are near and far from their home including their favourite and scary places and important landmarks.",
+            "Take students on a tour in the environment and as they walk through have them identify places that are near the school as well as in relation to other buildings or things in their environment.",
+            "Have students draw a map or make models of the school environment, made from sand, play dough or blocks and include places that are near and far from the school.",
+            "The teacher introduces the idea that we will focus on how we find our way around our school and neighbourhood. Have students play the Game: “North- South-East- West! Choose the one you love the best” The teacher then places the letters N, S, W, E on the walls of the classroom.",
+            "Take students outside and have them stand in an open space with 4 items strategically positioned (items can be in the physical environment or the teacher can provide the items) Students describe the location of items in relation to themselves. Have students change positions to identify objects to their North, South, East and West. During this activity discuss in your creole culture how you give directions in terms of North, South, East and West (e.g., North- Nò, East- sòlèy lévan)",
+            "Have students include the cardinal points on the map of their neighbourhoods drawn in the previous lesson.",
+            "Cut and paste activity - students are given cut outs of N S W E- Students establish what each letter stands for. Students use the acronym Never Eat Slimy Worms to position the letters correctly. Students stick the letters correctly on a small circular piece of laminating paper to construct a model of a simple compass rose (Paper used must be transparent).",
+            "Engage students in a discussion where they take turns sharing what activities take place in their neighbourhood. (Sample Guide questions: What do adults normally do together in the neighbourhood? Do they farm, fish, work, sing Christmas Caroling, etc., together? What types of work take place in the neighbourhood? Do they have weekend parties or ‘block-O’s? Do the children in the neighbourhood play together on weekends or afterschool? Do the people in your family participate? What are the things (activities) that you don’t like in your neighbourhood?",
+            "Have students compare and contrast the different activities that take place in different neighbourhoods.",
+            "Ask students why they are unable to participate in some of the activities that their classmates have listed in their own neighbourhood.",
+            "Have students draw scenes to show some activities their families do together in their neighbourhood.",
+            "Have students create a book display illustrating the ways in which their families live and culturally express themselves as a result of the neighbourhood they live in. Have students share or read their books to their classmates and talk about similarities and differences.",
+            "Have students watch a video on natural hazards to introduce the concept. . NATURAL DISASTERS for kids - EARTHQUAKE 🌋 VOLCÁN 🌊 TSUNAMI 🌪️ HURRICANE 🌪️ TORNADO 🔥 WILDFIRE Natural Disasters and Our Caribbean Environment",
+            "Have students draw a natural hazard mind map/ concept map about hazards. (Students are to draw, write everything they know about natural hazards).",
+            "Have students identify any that may pose a threat to their family in the neighbourhood in which they live",
+            "Have students talk about how they felt during the natural hazard/ disaster they experienced. Were they scared/excited etc and why?",
+            "Sample Guide Questions: Ask what natural hazard is most likely to happen whilst in school. Ask what they must do when there is a natural disaster emergency (during and after). Ask do they think it is important to have an emergency plan and why? Ask if it was a natural hazard would an emergency plan be needed?",
+            "Have students bring in pictures and create a poster/collage of an assigned natural hazard and its effects on their neighbourhood (in groups). Students can be reminded that not all natural hazards become natural disasters. Natural Hazards vs. Natural Disasters",
+            "Have students in their assigned groups brainstorm ideas on how to simulate the natural hazard assigned in the poster/ collage activity and then demonstrate to their class.",
+            "Explain the group's simulation of the natural disaster.",
+            "Use the poster or collage created by the group to explain the effects of the hazard. demonstrated to the class. Use Creole words such as siklonn, afalay, volkan.",
+            "Have students watch videos on emergency preparedness and state what you and your family can do to prepare for a natural hazard that poses a threat to you where you live. Disaster Dodgers: Introduction to Emergency Planning Tips to prepare your home and family for natural disasters",
+            "Conduct a discussion with students on appropriate evacuation routes in case of an emergency.",
+            "Have students draw an emergency route map for their school. Label all the important areas along the route and review e.g., of terms near and far in relation to the classroom, meeting point etc.",
+            "Have students practice an emergency/evacuation drill.",
+            "Have students discuss what they did correctly and what was not done well.",
+            "Ask students whether they believe that the fire drill route is used effectively and what would they change about the route and why?",
+            "Have students discuss what to do if there was an earthquake whilst at the school. (Twanblanntè- Creole term for earthquake)",
+            "Simulate an earthquake by shaking a desk and have students role-play what they would do during and after the earthquake.",
+            "Have students create a storyboard (teachers can also provide pictures and have students place in the correct sequence) showing what emergency/ evacuation procedures students are to follow at the school if there is a threat of a natural hazard. (The teacher may wish to use words from local dialect such as siklonn, afalay, volkan.",
+            "Students select the words – north, south, west, and east from a basket prepared prior to class, match the word to the correct letter and stick the corresponding pairs (S - south, N - north, W - west, E - east). Also have students spell out the words North, South, East, and West.",
+            "Have students use the simple compass created above, place it on their map and describe the location of various natural and built features from their home using cardinal directions. Remind students what are natural and built features.",
+            "Read aloud the story of Hansel and Gretel and discuss how the compass could be useful to the children. Ask students how things would have been different if Hansel and Gretel knew cardinal directions.",
+            "Have students talk about a time they were lost and how cardinal directions could have helped them.",
+            "Group students in 4s. Hide items in various places on the school compound. Give each group a direction card and time them to see how well they follow instructions in retrieving the items and returning to class. Use realistic directions on the cards e.g., north of the principal’s office, south of the school’s canteen etc."
+          ],
+          "elo_code": "SS-G1-ST-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Video for introducing the topic",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=cNYQUl3vxv0",
+              "url": "https://www.youtube.com/watch?v=cNYQUl3vxv0"
+            }
+          ],
+          "category": "Videos"
+        }
+      ]
+    },
+    {
+      "strand_name": "Economic Decision Making",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To be aware that we all have things we need and things we want",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G1-ED-SCO1.1",
+              "description": "K - Identify basic human needs."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.2",
+              "description": "S - Distinguish between our basic needs and our wants."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.3",
+              "description": "V - Appreciate the difference between needs and wants."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.4",
+              "description": "K - Understand that we meet most of our needs and wants through goods and services."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.5",
+              "description": "S - Categorise our needs and wants as goods or services."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.6",
+              "description": "V - Appreciate that goods and services are necessary to meet our needs and wants."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.7",
+              "description": "K - Identify things in the environment that we use."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.8",
+              "description": "S - Discuss how we use things in the environment."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.9",
+              "description": "V - Appreciate that the environment can be used to provide our needs and wants."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.10",
+              "description": "K - Understand the various forms of transportation in your local environment."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.11",
+              "description": "S - Distinguish different forms of transportation and their benefits and limitations."
+            },
+            {
+              "sco_code": "SS-G1-ED-SCO1.12",
+              "description": "V - Appreciate the importance of exercising safety around transportation."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Observation: Are the children able to identify basic human needs from the materials displayed?",
+            "Conversation: As the children share their ideas are they able to explain why they may not need all the foods and toys?",
+            "Observation: Are the children engaged in the story and do they understand the differences between the needs and wants in the story?",
+            "Product: Do children’s lists show that they can appreciate that some items are needed more than others?",
+            "Product: Use this to assess their poster",
+            "Product: Do students correctly categorize the examples of needs and wants?",
+            "Observation: Teacher observes interaction and students’ shopping behaviour and identifies if students can distinguish between needs and wants during role play.",
+            "Observation: With the use of a checklist, the teacher observes that children naturally know the needs of a baby.",
+            "Picture talk: Are students able to conclude that people may have specific needs that are different from the needs of others?",
+            "Compare and contrast: Are the students able to differentiate and find similarities of the needs for both children?",
+            "Product: (I am working on a worksheet)",
+            "Observation: Are the students able to distinguish between goods and services as you share examples?",
+            "Product: Are students able to draw chores they do at home, and can they name these as services to their family?",
+            "Critical Thinking: Differentiating Between Goods and Services Product: Are students able to identify goods? Are students able to differentiate between the act of making a product, e.g., baking and selling the product - the bread. Are students able to articulate that the baker bakes bread (the good) whilst the breadshop does the service of selling parents the finished product? Shops and supermarkets provide a service by giving us goods!",
+            "Observation: Are the students able to categorize their needs and wants as goods and services?",
+            "Product: Are the students able to categorize their needs and wants as goods and services?",
+            "Conversation: Are the students able to categorize their needs and wants as goods and services? Product: Are the students able to categorize their needs and wants as goods and services? Observation: Are the students learning to appreciate that goods and services that these individuals provide are necessary to meet their needs and wants? Conversation: Are the students learning to appreciate that goods and services that their families acquire are necessary to meet their needs and wants?",
+            "Conversation: Using this checklist can students self-assess as follows: 1. I know/can explain what goods are. 2. I know/can explain what a service is. 3. I know/can tell the difference between a good and a service. 4. I can explain ways that people exchange goods and services. 5. I understand how people earn money by working at a job. 6. I can explain the idea of exchanging money to purchase goods and services.",
+            "Brainstorm a list of services that their families receive. Have students draw pictures of these services and help them write words to show how these services help their families.",
+            "Share their pictures and discuss whether these services are needs or wants.",
+            "Students can sort their goods and services and paste them in their notebooks and note if they are needs or wants.",
+            "Critical thinking: Are students able to determine at least one profession which they would like to work in? Are students able to give an ORIGINAL choice & reason? Are students regurgitating the thoughts of other students? Are students aware of the importance of people who perform services that are considered menial or dirty? Were students able to change their thinking on those who perform such tasks? Have student appreciation for all jobs improved.",
+            "Show and Tell/ Public Speaking Career Choices: Product: Are students able to tell what their chosen profession entails? Does student speech show a clear understanding of the difference between goods and services? Score student presentation on the given rubric. How does the student presentation rate on the given rubric?",
+            "Discussion: Are students able to identify the resources they use in the classroom? At home?",
+            "Categorising: Process Example: Small group work: Provide groups with a variety of pictures of natural and man-made resources. Allow students to categorise the pictures under two groups. Things made by God (Natural resources) and Things made by Man (Man-made Resources). They can categorise using bins/ table or floor space. After all groups have sorted, students will go around the class to view and discuss how the other groups have sorted their items. Teacher corrects misconceptions. Teacher provides students with a worksheet. They are to write N under the pictures that are natural resources and MM for those that are man-made. They can colour the pictures after.",
+            "Product: Are students able to correctly discuss and determine which picture belongs to which category?",
+            "Observation: Are children able to recognise if a group has a picture in the wrong category?",
+            "Observation: Do children make the necessary corrections based on discussion/ observation of other groups' stations?",
+            "Product: Are students able to independently categorise pictures into natural and manmade resources?",
+            "Observation: Are students able to give examples of resources in the video?",
+            "Product: Are students able to correctly match 90% of the items to the natural resources?",
+            "Observation: Can students identify the Natural resource in our everyday activities?",
+            "Observation: Checklist of things to observe: 1. Did students plan how they will use the resource? 2. Did they determine the best way to get the most use out of their water? 3. Do students' actions show they recognise the need to conserve their water? 4. Were they knowledgeable enough to split the water to maximise the use and reuse of the water. 5. Did they use original means to solve the problem? 6. Did they blindly copy another group's actions? 7. Did they observe and borrow and modify another group's process to solve the problem?",
+            "Conversation: Are students able to recognise that there can be a shortage of natural resources and appreciate the need to use resources wisely?",
+            "Product: Are students able to answer questions on the quiz that show they can distinguish various types of natural resources and recognize and appreciate their importance for the survival of living things.",
+            "Conversation: Can the students identify the things in the environment we need and those we want?",
+            "Product: Can students identify things in the environment that can be used to provide our needs and wants?",
+            "Observation: Can the student identify the physical parts of the environment?",
+            "Observation: Are students able to draw and explain the things on their walk that are provided by nature such as food, materials and water.",
+            "Conversation: Are students able to explain how their family uses specific resources on a regular basis and are they able to discuss what would happen if the resource ceased to exist?",
+            "Observation: Are students able to identify ways they can conserve the use of water at home or in school?",
+            "Product: Are students able to create illustrations of how people care for and do not care for the environment?",
+            "Conversation: Are students able to describe examples of conservation?",
+            "Observation: Using a rubric, teacher observes students throughout the discussion and records the student’s ability to share how they get from home to school, and do they understand that this is a form of transportation?",
+            "Conversation: Are the students able to come up with examples of what they observed or heard about transportation.",
+            "Product: Are students able to present their forms of transportation in the form of a drawing, or to describe it orally?",
+            "Conversation: Are students able to elaborate on their forms of transportation to illustrate their understanding of the concept of transportation and that this is how people move from place to place?"
+          ],
+          "inclusive_learning_strategies": [
+            "Create a community circle. The teacher will display a wide variety of manipulatives such as food, toys, candy, etc. pictures can be used also. Each student will select one item on display. The students will then share about the item they selected.",
+            "1. Why did they choose the item?",
+            "2. Is this item needed for your survival? why?",
+            "Class discussion. Do you think we will need all the food items here? Do we need all the toys we see? How do we tell what our needs are?",
+            "Read A-Loud: Lily Learns about Wants and Needs Read Aloud Introductory activity/ Read the story.",
+            "After reading the story, have students make a list of all the things they want. Once they have made their list, help them to prioritize their items by placing a star next to the items that they need. This will help them to see that some of the things they want are actually needs.",
+            "Search through a store catalog or online for wants and needs categorise needs and wants on a poster. Use a sheet of paper and divide it into four squares. Write needs in three and wants in the last square. Look through magazines and catalogues and cut out three needs and one want.",
+            "Students are shown diagrams of needs and wants and categorize accordingly.",
+            "Needs and wants interactive worksheet (liveworksheets.com) Needs vs Wants Interactive Worksheet",
+            "Role Play Activities: A class shop is organized, and students fill it with various items that are needed and wanted by human beings. Students take turns shopping and selling to identify needs and wants.",
+            "Students bring a doll/ teddy bear to school and role play taking care of the doll. Teachers can question why a child does certain things in the role play activity.",
+            "Picture talk: Provide students with a picture of a child in a wheelchair or a child with hearing aids. Ask students what the needs of this child would be.",
+            "Compare and contrast: Guide students to compare and contrast the needs of the able-bodied child and a disabled child.",
+            "Introduce this series of teaching activities by sharing the following information: Goods are things that you buy and can hold (Goods are produced or purchased). Goods are things that you can keep, eat, or use. If you go to the store and buy an apple, you get to keep the apple and take it home with you, so it is a ‘good’.",
+            "A service is something that you do to help another. A service is something that someone does for you. When you buy a service, you hire people to perform work. You are not buying something you can touch or hold. If your car is broken, you might hire someone to fix it. You are paying for a service.",
+            "Share some examples of each.",
+            "Draw and write about a job that you do at home (chore). This will help students understand that they are providing a service to their household.",
+            "Draw a picture of a good related to food/school.",
+            "Have the children post their drawings on a bulletin board categorized under goods and services.",
+            "Critical Thinking: Differentiating Between Goods and Services YouTube: Goods and Services for Kids Pay attention to 2:52-2:54 for critical thinking. Discuss the act of baking the cake and buying the finished product",
+            "Draw and color, or cut from magazines and newspapers, pictures that show “goods” and some that provide a “service” and create a mini scrapbook.",
+            "Students can create a mural or brochure to identify a need or want and determine ways in which it could be satisfied through goods and services.",
+            "Scenarios to help students differentiate between goods and services & whether these are supplying wants/needs. You are sick or hurt and need help; where do you go? Explain what happens there? Is a want/need being met. You need to cut your hair. Where do you go? Explain what happens there? You want to learn how to do math. Where do you go? Explain what happens there? Your mum needs her nails done. Where does she go? Explain what happens there? Your family needs to eat. Where can you go? What are the goods? What is the service provided? The car has run out of gas. Where can mum or dad go? What goes on there? What is the good provided? Will there be a service provided? identifying.pdf (mathworksheets4kids.com) (Identifying Goods and Services worksheet)",
+            "Invite speakers from the community to come in as resource persons to speak on the services/goods they offer with as much manipulatives as they can bring (butcher, farmer, fireman, nurse, doctor, veterinarian, teacher, pastor, priest), to help students differentiate between the goods and services they provide (a field trip is another option). Ask students to interview their parents on how they are able to attain goods and services they need and want. Allow for class discussion the next day. This will allow students to understand how people earn money to attain goods and services and solidify in their minds that goods and services help use meet our needs (pay the rent/ mortgage, purchase food & clothing) and satisfy our needs and wants. Make a chart on the board that includes the following and ask the students to use this to fill in their favorite goods: Favorite Goods | Picture Have students share their pictures and discuss which goods are needs and which are wants.",
+            "Brainstorm a list of services that their families receive. Have students draw pictures of these services and help them write words to show how these services help their families.",
+            "Share their pictures and discuss whether these services are needs or wants.",
+            "Students can sort their goods and services and paste them in their notebooks and note if they are needs or wants.",
+            "Critical thinking: Teacher poses questions to elicit discussion and critical thinking. Example: What would you like to be when you grow up? Why? (Teacher accepts student reasoning since at this age children are not yet sure what they want to be. Teacher only corrects gross misconceptions. Would you like to be a garbage collector? Based on student answers teacher guides students to appreciate the importance of all jobs especially those that are dirty and smelly. OR Teacher can put up three large posters of three service providers: A garbage collector, A cleaner, A pilot. Teacher asks: -What does each do? -Do you know one? -Have you seen one? -Whose job do you think is the most important? Why? (Every answer is correct) Teacher guides students into appreciating the equal importance of the job done by each service provider.",
+            "Show and Tell/ Public Speaking Career Choices: Prior engagement: Students and parents were provided with a rubric. Students dress up as the professional they would like to be when they grow up. Guided by teacher’s questions they will say what the job entails and if they provide a good or a service.",
+            "Discussion: Engage students by asking questions about the everyday things they use. For example, what do you: write with? drink from? go to school in/on? wear? bathe in? play on the beach in? ect.",
+            "Explicit instruction: tell students that all the things we use are important; they are resources. The difference between man-made and natural resources. Use visuals, stories and information texts to introduce students to a variety of relationships between people and their natural environments. These could show differences in work, play, homes, food, clothing, and recreation. Concepts of conservation can be introduced. Environment Short Story for Children: Drip-Drop-Drip Environment Cleanliness Kids | Short Story | Rooney’s Adventures: The Friendly Octopus | Story #4",
+            "Extra practice https://www.liveworksheets.com/worksheets/en/Science/Natural_Resources/Natural_and_Manmade_Resources_Drag_and_Drop_mv1853879jo",
+            "Pair work with Peer Work Enable students to make the correlation, that the things we use, and the things man makes, come from natural resources. Viewing & Speaking Play the song. Have students dance and sing along. The Natural Resources SONG | Science for Kids | Grades K-2 Ask questions related to the video. For example: I saw a train in the video, it is a man-made resource. People use it to travel so it is a need, because they may have to travel far distances on foot. Do the same for a natural resource. I see a _______ We use it for _______ It is a natural resource.",
+            "Process: Matching Game Example: Provide students with picture cards. Everyday items and natural resources. Student pairs are to match common items with the natural resources they originate from. For example: Wood----- pencil/ desk cotton plant— clothing gold– earrings fruit— juice Whole class sharing of matches. Teacher corrects any misconceptions.",
+            "Introduction to Natural Resources: The natural resources that are used every day in some way in our society. Some examples could include petroleum, coal, iron ore, water, wood, or fertile soil. 1st Grade Natural Resources",
+            "Role Play - Using resources wisely",
+            "Small group work - Implicit teaching Example: Teacher gives students a bucket of water as well as three tasks they are to accomplish with it. Task: wash hands/plastic fruits Task: water a plant/plants Task: wipe the desks Teacher explains the task without giving the students the solution. 1. Everyone gets the same amount of water. 2. There are no refills. 3. Use your resources wisely. 4. There are extra containers if you need it. After the activity, the teacher brings the class together and discusses the outcome. How were groups able to accomplish the task set? Teacher will introduce words like conserving, scarcity and expand on vocabulary that will be used, for example, wastage.",
+            "Natural Resources Google Docs https://docs.google.com/forms/d/1fqFD_EflrRYLo7I44UrKdjeviE3A0HI-wImc33W978/edit Be sure to make a copy of this assessment and add it to your drive. Change the settings where applicable. OR Printed Worksheet PDF https://www.generationgenius.com/wp-content/uploads/2019/06/Natural-Resources-Worksheet-GG.pdf",
+            "Introductory Teacher plays a silent video of images of the Environment. After the video teacher constructs a KWL chart as the springboard for further activities. \"The fairy Tale moment\" The teacher will ask students to tell their own fairy tales about • A world without trees, rivers, animals, and Sunlight. • Their perfect world Teacher Introduces the lessons with a video on the environment. What is Environment and How to Keep It Clean? | Environmental Studies for Kids | Vid #1 Build your Environment. The teacher will allow students to utilize materials found in the playground to build their own place, village or town. Teacher can do a guided approach as seen in video - eco environment model 3d making using cardboard | DIY | howtofunda | still model",
+            "or utilize self discovery, allowing students to make their own.",
+            "Nature walks",
+            "From a nature walk along a beach area students will draw/ create sketches of a natural environment in their journals and be asked to draw examples of things that they see that can be eaten or drank. Students could collect shells and create shell bracelets (a want), and students will see how again the environment can meet our wants.",
+            "When back in the classroom the teacher can use explicit instruction to bring across to students that we use trees, rivers, oceans, forest, etc.",
+            "Teacher can utilize pictures.",
+            "Video Resources can be utilized Types of environment/Grade 1/Environmental video for kids/types of environments",
+            "Teachers allow students to choose environments such as bush, ocean, beaches and hills, and discuss with students how natural features may vary between different natural environments.",
+            "Students can interview their parents to find out: how does the family use the identified resource on a regular basis? what do they think would happen if the resource ceased to exist? Then, the next day, each group member would share their responses with their group and the group would share with the whole class.",
+            "Teachers can, using water as one example of a natural resource, display a bottle of clean water and invite discussion about what they see. Ask questions as to where this water came from, etc. Have children work in groups to show ways that they use water on a daily basis. Share their work with the whole group and brainstorm ways they can conserve the use of water at home or in school. Some examples could include turning off the water when brushing their teeth and not wasting water at the fountain. Relate to the global level by discussing the fact that some children in the world do not have clean water for drinking.",
+            "Draw a cartoon or comic strip of how humans can care for the environment.",
+            "Draw a cartoon or create a comic strip of how humans destroy the environment.",
+            "Introduce the term “conservation” at this point.",
+            "explain how this will help preserve the environment since they will now understand the importance of the environment in providing our needs and wants.",
+            "Transportation is moving people or things from one place to another place.",
+            "Teacher invites students to share how they get from place to place?",
+            "The teacher asks students: “How do you get from home to school? Does your friend use the same means to get to school?”",
+            "Read aloud suggestion:",
+            "https://www.youtube.com/watch?v=slf9zs_VPXI",
+            "Read Aloud: A read aloud, or video can be used to introduce other forms of transportation.",
+            "We want students to be able to compare the modes of transportation they see in the read aloud or video.",
+            "Ask students to draw their own forms of transportation in groups and to come up with interesting forms of transportation. They can draw, describe orally and label their forms of transportation.",
+            "Invite the students to share their drawings and/or descriptions of transportation with the rest of the class.",
+            "https://kids.kiddle.co/Transport#Kinds_of_transportation use this site to look at images of transportation for children.",
+            "Ask students to place their drawings on a bulletin board called “Things that go.”",
+            "Students will discuss orally what is similar and different about the modes of transportation depicted on the bulletin board. This discussion can allow students to categorize the vehicles as land, air and water transportation.",
+            "Take a walk around the community. After the walk, ask the students: Where did we walk? Did you notice any signs or markings on or near the road? How did the vehicles move on the road? What did we do before we crossed the road? Who helps people and vehicles keep safe on the road? What are people who walk near the road called? What could happen if we are not safe when on or near the road?",
+            "Do you think only people walking on or near the road should stay safe?",
+            "How do people inside the vehicles on the road stay safe?",
+            "To enrich this discussion a resource person (example: a traffic officer) could briefly address the students on road safety rules.",
+            "Students are invited to share their thoughts on safety in other forms of transportation such as in boats. Make sure we reinforce the fact that there is always an element of safety when they are travelling. Sharing examples of these here.",
+            "Students can be asked to design pictures of transportation and to include examples of safety features. Students could work in groups on this.",
+            "Culminating Activity: Students are invited to choose a travel route and choose the most appropriate form of transportation for this route. Links can be made to math for shapes.",
+            "Vocabulary: water, air, land, boats, cars, automobiles, ships, sailing, walking, movement, bicycle, sled, canoe, airplane, truck, school bus, skateboard, skates, airport, vehicles, driver, pilot, captain, traffic light, horn, windshield wipers, safety belts, steering wheel, trains, fuel, gas, tires, dump truck, pick-up truck, station-wagon, sports car, garage, tractors.",
+            "Discussion/Field Trips: Discuss different modes of transportation on land, sea and in the air. Talk about how people get to where they are going (school bus, ferry boat, car etc.) Incorporate field trips wherever possible. Take a trip on a school bus, walk around the school parking lot to look at cars, visit the airport, bus station or train station. Watch videos that show different forms of transportation. Look at travel magazines. Ask if anyone has been on a plane ... a train ... a horse ... etc. Ask how students get to school everyday. How do kids in other countries travel? Leave lots of time for discussion. Make sure to review safety rules (seat belts in cars, obeying traffic signals, walk and don’t walk signs). Don’t forget to discuss how products are delivered ... couriers with trucks, airplanes etc. How does the mail travel?",
+            "Activities: BULLETIN BOARD ACTIVITY: Students can collect images of different types of transportation and add them to a bulletin board that has been divided into Land, Sea and Air.",
+            "TRANSPORTATION MURAL: Students can work together to create a transportation mural (one for land, one for sea and one for air).",
+            "SOUND PICTURES: What sounds do the various modes of transportation make? (Train whistle, truck horn, police car siren) How would these sounds appear if we were to draw them? Provide crayons and paper for students to experiment with the colors and shapes of transportation sounds.",
+            "TOY CAR PRINTMAKING: Using old toy cars and tempera paint, allow students to dip the cars into paint and “drive” them across paper to see what kinds of marks the tires make.",
+            "LICENSE PLATE RUBBINGS: Using old license plates (or plate on cars in the parking lot) allow students to do rubbings of the plates. Provide paper and crayons for the rubbings.",
+            "SHAPE VEHICLES: See how many types of transportation vehicles can be created using the basic geometric shapes (triangles, squares, circles, rectangles). Have students cut their shapes out of construction paper and arrange them to create vehicles.",
+            "PAPER BOATS: Make paper boats using the directions found HERE. Decorate them with bright crayon colors.",
+            "PAPER AIRPLANES: Make paper airplanes. Decorate them with bright crayon colors.",
+            "TRANSPORTATION MOBILE: What You Need: String or yarn; coat hangers; thick paper; paint; brushes; scissors; hole punch; markers or crayons. What You Do: After discussing how people and products get from place to place, students can create drawings and paintings of various modes of transportation on thick paper. The pictures can be painted or decorated with markers or crayons. Once complete, the pictures can be cut out and put together in a mobile ... by punching holes in the pictures and hanging them from a coat hanger that has been wrapped with yarn or raffia. **Have your students write facts on the back of each of their modes of transportation. (i.e., trucks deliver newspapers; people travel on airplanes etc.)",
+            "We also brought transportation to our lives by charting how we get home! zcxhttps://www.structural-learning.com/post/multisensory-learning-in-the-classroom-a-teachers-guidezcxhttps://www.structural-learning.com/post/multisensory-learning-in-the-classroom-a-teachers-guide."
+          ],
+          "elo_code": "SS-G1-ED-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Opportunities for Subject Integration: Math link, Discovery learning, Math 2: Problem Solving, Needed materials",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Comprehension Link: Sequencing, Speaking/reading: Buddy Share, QAR, Comprehension Skill: Attention to Detail",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Composition Link: Activity 1: Make a Shopping list, Activity 2: Topic: Things I need, Public Speaking: Topic: I want..., Life lesson: It is okay to want something. But our needs must be met first.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: (Links to professional sources that connect back to the Curriculum and Assessment Principles of Learning and Principles of Assessment)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Inclusive Resources and Materials from Regional Specialists",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Additional Resources and Materials",
+          "links": [
+            {
+              "text": "Let's Go to Work - Garbageman",
+              "url": "https://www.youtube.com/watch?v=example"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Opportunities for Subject Integration: Language Arts Action words (verbs)",
+          "links": [
+            {
+              "text": "Garbage Collectors (Abdo Kids) | Reading Books for Kids",
+              "url": "https://www.abdokids.com"
+            },
+            {
+              "text": "Hooray For Garbage Collector by: Tessa Kenan",
+              "url": "https://www.readaloud.org"
+            },
+            {
+              "text": "Read Aloud | Garbage Collectors",
+              "url": "https://www.readaloud.org"
+            },
+            {
+              "text": "\"Sam The Garbage Man\" Music Video | Songs for Kids | TheBeatBuds",
+              "url": "https://www.youtube.com/watch?v=example"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Resources for a learner who is struggling: Multisensory Approach: Kinesthetic activities Eg. colouring, cut and paste/drag and drop, visual and verbal cues, e.g., Jingles.",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: (Links to professional sources that connect back to the Curriculum and Assessment Principles of Learning and Principles of Assessment)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "YouTube video for introducing transportation",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=slf9zs_VPXI"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Kids Kiddle website for images of transportation",
+          "links": [
+            {
+              "text": "Kids Kiddle Transport Page",
+              "url": "https://kids.kiddle.co/Transport#Kinds_of_transportation"
+            }
+          ],
+          "category": "Websites"
+        }
+      ]
+    }
+  ]
+}

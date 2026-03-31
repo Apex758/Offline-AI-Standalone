@@ -1,0 +1,379 @@
+{
+  "metadata": {
+    "filename": "kindergarten-belonging-unit.pdf",
+    "curriculum": "OECS Harmonised",
+    "grade": "K",
+    "subject": "Kindergarten"
+  },
+  "strands": [
+    {
+      "strand_name": "Listening and Speaking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Introduction to the Integrated Unit : Language Arts and Social Studies - Belonging",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-LS-SCO1.1",
+              "description": "1.2 demonstrate interest, curiosity, engagement in sharing the experiences of others and with oral stories and information sharing."
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.2",
+              "description": "1.3 use social listening and speaking skills to interact with a variety of audiences with sensitivity and respect"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.3",
+              "description": "1.4 interact and collaborate with the teacher and children who have diverse interests, backgrounds and languages"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.4",
+              "description": "1.5 become aware of how effective listening enhances understanding"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.5",
+              "description": "1.7 use Home Language(s) and, as Standard English develops, share their thoughts, feelings and questions about engaging events, stories and conversations with increasing confidence"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.6",
+              "description": "1.8 develop increasing clarity and focus when sharing stories or experiences"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.7",
+              "description": "2.1 interact meaningfully with a wide range of genres and text forms"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.8",
+              "description": "2.3 connect background knowledge to the titles and pictures of fiction and nonfiction passages to build a foundation of understanding"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.9",
+              "description": "2.4 develop understanding and application of the Concepts of Print"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.10",
+              "description": "2.5 develop knowledge about the purpose and variety of texts that are read or read to them"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.11",
+              "description": "3.3 feel a sense of belonging in their surroundings (V)"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.12",
+              "description": "1.1 listen to music, conversation and environmental sounds for personal enjoyment"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.13",
+              "description": "1.2 demonstrate interest, curiosity, engagement in sharing the experiences of others and with oral stories and information sharing."
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.14",
+              "description": "1.3 use social listening and speaking skills to interact with a variety of audiences with sensitivity and respect"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.15",
+              "description": "1.4 interact and collaborate with the teacher and children who have diverse interests, backgrounds and languages"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.16",
+              "description": "1.5 become aware of how effective listening enhances understanding"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.17",
+              "description": "1.7 use Home Language(s) and, as Standard English develops, share their thoughts, feelings and questions about engaging events, stories and conversations with increasing confidence"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.18",
+              "description": "1.9 engage in active phonological awareness activities and word play to discriminate between various sounds in their environment, letters of the alphabet, rhyme and meaningful sound patterns"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.19",
+              "description": "2.7 demonstrate understanding of some environmental print and pictorial information"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.20",
+              "description": "2.9 demonstrate understanding by responding to read-alouds with images, model making, discussions, or temporary writing."
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.21",
+              "description": "2.10 connect words and images in pre-emergent and emergent level texts to background knowledge"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.22",
+              "description": "2.11 recognise and use a variety of high frequency words of personal importance, such as names and pre-emergent level high-frequency words"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.23",
+              "description": "2.12 participate in shared reading and use the meaning and flow of the language to anticipate upcoming words"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.24",
+              "description": "2.13 begin to demonstrate fluency and phrasing during shared reading, independent and guided reading of emergent level passages"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.25",
+              "description": "2.14 identify an increasing number of letter names and letter sounds, beginning with those of personal importance"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.26",
+              "description": "2.15 use known letter sounds to decode upcoming words in emergent level passages"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.27",
+              "description": "3.2 assign meaning to experimental drawing and writing"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.28",
+              "description": "3.5 learn to print the upper and lower case letters of the alphabet"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.29",
+              "description": "3.6 connect spoken language(s) to written language and other representations (e.g.drawing)"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.30",
+              "description": "3.7 connect phonological awareness to letter shapes"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.31",
+              "description": "3.8 spell name and some words of personal importance correctly"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.32",
+              "description": "1.2 demonstrate interest, curiosity, engagement in sharing the experiences of others and with oral stories and information sharing."
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.33",
+              "description": "1.3 use social listening and speaking skills to interact with a variety of audiences with sensitivity and respect"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.34",
+              "description": "1.4 interact and collaborate with the teacher and children who have diverse interests, backgrounds and languages"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.35",
+              "description": "1.5 become aware of how effective listening enhances understanding"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.36",
+              "description": "1.7 use Home Language(s) and, as Standard English develops, share their thoughts, feelings and questions about engaging events, stories and conversations with increasing confidence"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.37",
+              "description": "1.8 develop increasing clarity and focus when sharing stories or experiences"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.38",
+              "description": "3.2 assign meaning to experimental drawing and writing"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.39",
+              "description": "1.3 use social listening and speaking skills to interact with a variety of audiences with sensitivity and respect"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.40",
+              "description": "1.4 interact and collaborate with the teacher and children who have diverse interests, backgrounds and languages"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.41",
+              "description": "1.5 become aware of how effective listening enhances understanding"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.42",
+              "description": "1.7 use Home Language(s) and, as Standard English develops, share their thoughts, feelings and questions about engaging events, stories and conversations with increasing confidence"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.43",
+              "description": "1.8 develop increasing clarity and focus when sharing stories or experiences"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.44",
+              "description": "1.2 demonstrate interest, curiosity, engagement in sharing the experiences of others and with oral stories and information sharing."
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.45",
+              "description": "1.3 use social listening and speaking skills to interact with a variety of audiences with sensitivity and respect."
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.46",
+              "description": "1.4 interact and collaborate with the teacher and children who have diverse interests, backgrounds and languages."
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.47",
+              "description": "1.5 become aware of how effective listening enhances understanding"
+            },
+            {
+              "sco_code": "XX-GK-LS-SCO1.48",
+              "description": "1.7 use Home Language(s) and, as Standard English develops, share their thoughts, feelings and questions about engaging events, stories and conversations with increasing confidence"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "The teacher will enter information into the checklist for Listening and Speaking Outcomes 1.2, 1.3, 1.4, 1.5, 1.7 and 1.8 based on observation and conversation with the learners.",
+            "The teacher will enter information into the checklist for Reading and Viewing Outcomes 2.1, 2.3, 2.4 and 2.5 based on observation and conversation with the learners.",
+            "The teacher will enter information into the checklist for Myself – Spatial Thinking Outcome 3.3 based on observation and conversation with the learners.",
+            "Language Arts: Observation and Conversation",
+            "Shared Reading Observation Please see Curriculum Outcomes and Guide for Effective Strategies for suggestions of how to engage children in a Shared Reading Activity (hyper link here).",
+            "The teacher will enter information into the checklist for Listening and Speaking Outcomes 1.1, 1.2, 1.3, 1.4, 1.5, 1.7, 1.8 and 1.9 based on observation and conversation with the learners.",
+            "The teacher will enter information into the checklist for Reading and Viewing Outcomes 2.1, 2.3, 2.4, 2.5, 2.7. 2.9. 2.10, 2.11, 2.12, 2.13, 2.14 and 2.15 based on observation and conversation with the learners.",
+            "Language Arts: Product",
+            "The teacher will have the children’s drawings of themselves, which provides data for the Writing and Representing outcomes.",
+            "The teacher may want to transfer data about Writing and Representing (for example Concepts of Print, knowledge of sight words, recognition of letters/sounds) to a list of related LA SCOs. Please see the Curriculum Outcomes and Guide for Effective Strategies for more information about this process",
+            "The teacher will enter information into the checklist for Writing and Representing Outcomes 3.2, 3.5, 3.6, 3.7, and 3.8 based on observation and conversation with the learners.",
+            "Social Studies Product: The teacher will see whether or not the children illustrate personal characteristics to show they are special and unique through the creation of simple pictures of themselves.",
+            "Language Arts: Observation and Conversation: The teacher will enter information into the checklist for Listening and Speaking Outcomes 1.2, 1.3, 1.4, 1.5, 1.7, and 1.8 based on observation and conversation with the learners.",
+            "The teacher will enter information into the checklist for Writing and Representing Outcomes 3.2 and 3.8 based on observation and conversation with the learners.",
+            "Social Studies- Observation and Conversation: The teacher will enter information into the checklist for Myself – Historical and Cultural Thinking Outcomes 1.1.1 based on observation and conversation with the learners.",
+            "Language Arts: The teacher will enter information into the checklist for Listening and Speaking Outcomes 1.3, 1.4, 1.5, 1.7 and 1.8 based on observation and conversation with the learners.",
+            "Mathematics: Observation and Conversation: The teacher will enter information into the checklist for Number Sense Outcomes 1.1.1 and 1.1.8 based on observation and conversation with the learners.",
+            "Social Studies- Observation and Conversation: The teacher will enter information into the checklist for Myself – Historical and Cultural Thinking Outcome 1.1.2 based on observation and conversation with the learners.",
+            "Language Arts: Observation and Conversation: The teacher will enter information into the checklist for Listening and Speaking Outcomes 1.2, 1.3, 1.4, 1.5, 1.7 and 1.8 based on observation and conversation with the learners."
+          ],
+          "inclusive_learning_strategies": [
+            "The Ugly Duckling",
+            "https://youtu.be/X4o5_8cEAHs?si=A-OE4y8zA6R7gJIN",
+            "The teacher will ask the learners to view the video. The teacher will use these questions to initiate a discussion on belonging and what it means to belong.",
+            "1.How did the other animals treat the ugly duckling at the beginning of the story? How did this make the duckling feel?",
+            "2. In what ways did the ugly duckling try to fit in with the other ducks and animals? Why do you think he felt like he didn't belong with them?",
+            "3.Have you ever felt like you didn't belong or fit in with a group of friends or classmates? How did it make you feel?",
+            "4.How can we make sure that everyone feels like they belong in our classroom or community? What are some things we can do to help others feel included and valued?",
+            "The teacher will help the children role play some parts of the story.",
+            "Finally, the teacher should ask the children the essential question for this Integrated Unit: Is it important to belong? Why? The teacher should accept all answers. If possible, the teacher should take notes of what the children say, to compare with the children’s ideas by the end of the unit.",
+            "Language Arts and Social Studies Discussion: I Am Special",
+            "The teacher will have learners sing along to/ view the video : I am Special -",
+            "https://youtu.be/rhsGJXzEfsM?si=tlpxsq1AFR_3pfDc.",
+            "The teacher will engage learners in discussion What makes you special? Learners will speak about what makes them special.",
+            "The teacher will have learners sing the song “I am Special”.",
+            "The teacher will make a chart with the words of the chorus of the song, and use that chart for Shared Reading, finding letters, sounds, sight words. Please refer to the Curriculum Outcomes and Guide for Effective Strategies for suggestions for Shared Reading.",
+            "The teacher will talk with the children about their names, ages, likes and dislikes, physical attributes (colour of skin, type of hair, the shape of face , colour of eyes). The teacher will be emphasizing that being special might also mean being different, and that is okay and good.",
+            "The teacher could help the children to discover that even their fingerprints are unique. Please see this video for a description of how to make fingerprints with scotch tape and pencil-rubbed thumbs. https://www.youtube.com/watch?v=DHlqBNahOU8",
+            "The teacher will have learners create pictorial representations of themselves by drawing simple pictures depicting their unique physical attributes. Teachers could have learners draw /paint/ build models pictures of themselves.",
+            "The teacher will ask the children to print their name, or copy a short sentence “This is me.”",
+            "The learners’ pictures will be displayed via the class bulletin board.",
+            "Oral Exit Slip Learner will say one thing that was learned from the day’s lesson",
+            "Language Arts and Social Studies – All About Me Collage: The teacher will have learners create \"All About Me\" Collage: Provide magazines, newspapers, and pictures for children to cut out images that represent themselves – what are their favourite things, foods, etc? Have them bring pictures of themselves from home to make collage.",
+            "The teacher will have the children show their collage to the class and to talk about their favourite things. The teacher will reinforce the idea that each child is unique and special.",
+            "Language Arts, Mathematics and Social Studies -Counting Body Parts: The teacher will have learners speak about the different body parts as their physical attributes, some people have one arm, one leg as they were born differently (or they might have been in an accident). The teacher will make a list/chart/graph to show what body part do we usually have ONE of? What body part(s) do we usually have TWO of? Are there any body parts that we have THREE of? FIVE of? TEN of? The teacher will have the learners count the number of different body parts that they have.",
+            "The teacher will share with the class that they will all be special friends. The teacher will then ask learners; Can you help me count how many special friends are in our classroom today?",
+            "Language Arts and Social Studies - Discussion - What Makes Me Special?: The teacher might start the lesson with a discussion about what makes each learner special. The teacher might hand out mirrors to observe their unique features from the mirror. The teacher might ask learners to identify a physical trait that is unique to themselves. The teacher will invite learners to work in pairs to share one special thing about themselves. The teacher will explain the concept of uniqueness and diversity in simple terms to the learners."
+          ],
+          "elo_code": "XX-GK-LS-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Video: I am Special",
+          "links": [
+            {
+              "text": "I am Special",
+              "url": "https://youtu.be/rhsGJXzEfsM?si=tlpxsq1AFR_3pfDc"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Video: How to make fingerprints with scotch tape and pencil-rubbed thumbs",
+          "links": [
+            {
+              "text": "Fingerprint Activity Video",
+              "url": "https://www.youtube.com/watch?v=DHlqBNahOU8"
+            }
+          ],
+          "category": "Videos"
+        }
+      ]
+    },
+    {
+      "strand_name": "Historical and Cultural Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Introduction to the Integrated Unit : Language Arts and Social Studies - Belonging",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-HC-SCO1.1",
+              "description": "1.1.1 demonstrate an understanding of “me” as a unique child (K)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.2",
+              "description": "1.1.2 distinguish personal characteristics that make each child unique (physical traits, mannerisms) (S)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.3",
+              "description": "1.1.1 Demonstrate an understanding of “me” as a unique child (K)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.4",
+              "description": "1.1.2 distinguish personal characteristics that make each child unique (physical traits, mannerisms) (S)"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Social Studies Product: The teacher will see whether or not the children illustrate personal characteristics to show they are special and unique through the creation of simple pictures of themselves.",
+            "Social Studies- Observation and Conversation: The teacher will enter information into the checklist for Myself – Historical and Cultural Thinking Outcomes 1.1.1 based on observation and conversation with the learners.",
+            "Social Studies- Observation and Conversation: The teacher will enter information into the checklist for Myself – Historical and Cultural Thinking Outcome 1.1.2 based on observation and conversation with the learners."
+          ],
+          "inclusive_learning_strategies": [
+            "Language Arts and Social Studies – All About Me Collage: The teacher will have learners create \"All About Me\" Collage: Provide magazines, newspapers, and pictures for children to cut out images that represent themselves – what are their favourite things, foods, etc? Have them bring pictures of themselves from home to make collage.",
+            "The teacher will have the children show their collage to the class and to talk about their favourite things. The teacher will reinforce the idea that each child is unique and special.",
+            "The teacher will share with the class that they will all be special friends. The teacher will then ask learners; Can you help me count how many special friends are in our classroom today?",
+            "Language Arts and Social Studies - Discussion - What Makes Me Special?: The teacher might start the lesson with a discussion about what makes each learner special. The teacher might hand out mirrors to observe their unique features from the mirror. The teacher might ask learners to identify a physical trait that is unique to themselves. The teacher will invite learners to work in pairs to share one special thing about themselves. The teacher will explain the concept of uniqueness and diversity in simple terms to the learners."
+          ],
+          "elo_code": "XX-GK-HC-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Number Sense",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Introduction to the Integrated Unit : Language Arts and Social Studies - Belonging",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-NS-SCO1.1",
+              "description": "1.1.1 say the number sequence to 10 by 1s"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.2",
+              "description": "1.1.8 count with meaning to 10, by building quantities."
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.3",
+              "description": "1.2.2 Answer the question “How many are in a set?” using the last number counted in a set"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Mathematics: Observation and Conversation: The teacher will enter information into the checklist for Number Sense Outcomes 1.1.1 and 1.1.8 based on observation and conversation with the learners."
+          ],
+          "inclusive_learning_strategies": [
+            "The teacher will share with the class that they will all be special friends. The teacher will then ask learners; Can you help me count how many special friends are in our classroom today?"
+          ],
+          "elo_code": "XX-GK-NS-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Writing and Representing",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Introduction to the Integrated Unit : Language Arts and Social Studies - Belonging",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-WR-SCO1.1",
+              "description": "3.2 assign meaning to experimental drawing and writing"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.2",
+              "description": "3.8 Spell name and some words of personal importance correctly"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "The teacher will enter information into the checklist for Writing and Representing Outcomes 3.2 and 3.8 based on observation and conversation with the learners."
+          ],
+          "inclusive_learning_strategies": [
+            "The teacher will have the children show their collage to the class and to talk about their favourite things. The teacher will reinforce the idea that each child is unique and special."
+          ],
+          "elo_code": "XX-GK-WR-ELO1"
+        }
+      ],
+      "resources": []
+    }
+  ]
+}

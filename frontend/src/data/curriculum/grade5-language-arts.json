@@ -1,0 +1,2022 @@
+{
+  "metadata": {
+    "filename": "grade5-language-arts-curriculum.pdf",
+    "curriculum": "OECS Harmonised",
+    "grade": "5",
+    "subject": "Language Arts"
+  },
+  "strands": [
+    {
+      "strand_name": "Listening and Speaking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "The learner will explore, use, and critically apply oral language for pleasure, personal growth, to foster relationships and to develop an appreciation and celebration of culture and of oral languages.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "LA-G5-LS-SCO1.1",
+              "description": "1.1 Clarify opinions by responding to the questions and ideas/opinions of others through providing evidence to support thinking."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.2",
+              "description": "1.2 Continue to use intonation, tone, and expression to communicate ideas and feelings in a variety of situations, considering audience and purpose."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.3",
+              "description": "1.3 Discuss news, current events, opinions, feelings, strengths, challenges, future jobs and hopes in class discussions."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.4",
+              "description": "1.4 Reflect on and identify their strengths as listeners and speakers, areas for improvement and the strategies they found most helpful in oral communication situations."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.5",
+              "description": "1.5 Participate as active listeners in group learning activities by listening to: identify the main points, determine the sequence events, give an accurate account, take notes"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.6",
+              "description": "1.6 Report on a topic or text, tell a story, or recount an experience in an organized manner, using appropriate facts and relevant descriptive details to support main ideas or themes; speak clearly at an understandable pace."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.7",
+              "description": "1.7 Follow agreed-upon rules for discussions and carry out assigned roles."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.8",
+              "description": "1.8 Create and/or use visual aids in presentations when appropriate to enhance development of themes and/or main ideas (e.g., Graphics, sound)"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.9",
+              "description": "1.9 Use appropriate facial expressions and gestures to support, accentuate, or dramatize the message"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.10",
+              "description": "1.10 Adapt speech to a variety of contexts and tasks, using formal English when appropriate to task and situation."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.11",
+              "description": "1.11 Orally present an argument or perspective"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.12",
+              "description": "1.12 Create, presents, participates in mini debates/speeches using persuasive techniques e.g., promises, dares, flattery, glittering generalities, intonations that persuades people to buy or do something."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.13",
+              "description": "1.13 Identify the reasons and evidence a speaker provides to support points."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.14",
+              "description": "1.14 Respond to and to give sequential multi-step directions and instructions with increasing detail"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.15",
+              "description": "1.15 Listen to identify and discuss critically persuasive techniques used in advertisements"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.16",
+              "description": "1.16 Critically listen to the ideas and perspectives of others in a variety of collaborative learning experiences showing growing control of when to listen and when to speak."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.17",
+              "description": "1.17 Develop ability to adjust level of language used to suit the specific communication situation."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.18",
+              "description": "1.18 Reflect critically upon a variety of oral presentations evaluating the speaker’s perspective"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.19",
+              "description": "1.19 Make language choices that affirm sensitivity and respect the ideas and experiences of others"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.20",
+              "description": "1.20 Listen to understand and respond appropriately in a variety of situations and for a variety of purposes"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.21",
+              "description": "1.21 Review the key ideas expressed and draw conclusions considering information and knowledge gained from the discussions."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.22",
+              "description": "1.22 Engage in self and peer reflection on accuracy of providing or identifying information"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.23",
+              "description": "1.23 Consider others’ responses and begin to offer opinions supported with some evidence"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.24",
+              "description": "1.24 Ask questions to check understanding of information presented, stay on topic, and link their comments to the remarks of others."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.25",
+              "description": "1.25 Ask a speaker for clarification about the subject matter of his / her contribution."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.26",
+              "description": "1.26 Talk confidently in complete sentences using appropriate intonation and courteous expression with peers and in various levels of formality."
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.27",
+              "description": "1.27 Create age-appropriate media messages (e.g., videos, podcasts, print advertisements) for evaluation, focusing on effectiveness of the message"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.28",
+              "description": "1.28 Converse and collaborate in a variety of situations with increasing sensitivity and respect, considering cultural contexts, audience, and purpose"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.29",
+              "description": "1.29 Explain ideas and opinions with supporting details, and respond to others’ questions and ideas"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.30",
+              "description": "1.30 Speak clearly in an audible voice using volume, pitch, phrasing, pace,"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.31",
+              "description": "1.31 Listen to distinguish between Standard English and nonstandard varieties spoken in the Caribbean"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.32",
+              "description": "1.32 Use complex sentences that incorporate specific vocabulary and style to enhance oral presentations"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.33",
+              "description": "1.33 Use words for their figurative and metaphorical meanings in their oral presentations"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.34",
+              "description": "1.34 Interpret the meanings of words in the contexts in which they are used"
+            },
+            {
+              "sco_code": "LA-G5-LS-SCO1.35",
+              "description": "1.35 Paraphrase portions of a text read aloud, or information presented in diverse media and formats, including visually and orally"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Formative assessment of listening and speaking helps teachers identify strengths and weaknesses, enabling them to improve communication and language proficiency. Through conversations and observations, teachers gain a better understanding of an individual's abilities. Conversations assess understanding, response, and engagement, while observations evaluate non-verbal cues like body language and facial expressions, offering insights into comprehension and communication skills.",
+            "CONVERSATIONS",
+            "https://www.presentermedia.com/powerpoint-clipart/business-interview-person-pid-19739",
+            "Interviews: Learners interview a local artist e.g., a calypsonian to discuss the subject of their work, purpose, thematic content, and societal impact. Create the questions with learners and allow different persons to ask the questions. Learners take turns to ask the questions and take note, summarize their findings, and share orally. Assess learners’ ability to effectively listen and accurately record information.",
+            "Interview questions: 1. What inspired you to become a calypso artist? 2. Can you share a memorable performance or experience you had while performing calypso music? 3. Are there any specific themes or messages you like to share through your music? 4. Who are some of your biggest influences in the calypso genre? 5. How do you feel about the current state of calypso music in your country? 6. How do you feel calypso music reflects local culture and traditions? 7. How do you think calypso music can continue to thrive in today's music industry? 8. What advice would you give to aspiring calypso musicians? 9. What challenges have you faced as a calypsonian and how have you overcome them?",
+            "https://clipart-library.com/cliparts-nervous-speech.html",
+            "Impromptu talk - Give the learners familiar topics to speak about. Allow 30 seconds to think about it and one minute to speak. Consider factors like appropriate content, clarity of speech and ability to respond promptly. Take anecdotal notes of learners’ listening and speaking behaviour during responses. Use one of the checklists below to assess the speaker (Checklist can be modified for use in Grade 5)",
+            "https://www.scusd.edu/sites/main/files/file-attachments/book_4_grade_2_speaking_and_listening_checklist.pdf",
+            "Checklist for assessing oral reports Scoring key – Process clearly demonstrated Some evidence of process being demonstrated Process not demonstrated by pupils.",
+            "Process yes no Pupils appears interesting in the topic Is knowledgeable about the topic States main points clearly Uses examples or reasons to make point clear Summarizes main point at the end of the talk Select words that expresses ideas clearly Keeps attention of audience during talk Uses appropriate pictures, objects or diagrams Appears to be at ease Uses appropriate non-verbal signals and gestures",
+            "https://balbrigganetns.scoilnet.ie/blog/files/2016/06/3.0392-English-Assessing-oral-language.pdf",
+            "Dialogue – Engage in a roundtable dialogue with learners on a familiar topic where they can give information, ask questions, and respond appropriately. Encourage them to elaborate on their answers and share additional details. Have them assess listening and speaking skills using a rubric or checklist (see assessment). Reflect on the conversation and discuss with the learners what went well and areas for improvement. Assess learners’ ability to actively, respond appropriately, and engage in a meaningful conversation. Provide opportunities for practice and further development of listening and speaking skills. Use a rubric or checklist to evaluate their listening and speaking skills objectively. Rubric adapted from Roundtable discussion rubric from the link below: 8 6 4 2 Listening -make eye contact with speaker -refers to or questions other students’ comments -Sometimes makes eye contact with speaker Sometimes refers to or questions other -makes little eye contact with speaker - barley questions or refers to other students comments -never makes eye contact with speaker - never refers to or questions other students comments",
+            "-speaks clearly and convincingly",
+            "-uses a loud voice and articulates",
+            "-Makes eye contact with the group",
+            "- precise content specific vocabulary used",
+            "-speaks clearly",
+            "-uses a loud voice",
+            "-makes eye contact with the group",
+            "-overuses prohibited words",
+            "- unclear",
+            "-sometimes uses a loud voice",
+            "-sometimes makes eye contact with the group",
+            "- relies on slang or colloquial language",
+            "- irrelevant comments",
+            "-does not speak at all",
+            "-unclear – offensive language used",
+            "-mumbles incoherently",
+            "Prompt and Observe: Expose learners to different forms of text/media (such as a poem, news item, passage, videos, podcasts, etc.). Give them specific speaking prompts or discussion topics to guide their conversations and observe them as they engage in active discussions in groups. Monitor discussion and give relevant feedback. During these tasks, observe learners closely. Take note of how well they listen to instructions, engage in conversations, articulate their thoughts: and respond to others. After the observation, provide feedback to each student.",
+            "https://www.edu.gov.mb.ca/k12/tech/imvm/6/tblm/tole_7_4.pdf",
+            "observation checklist for listening and speaking",
+            "Anecdotal note - Complete the story – Observe learners as they complete an activity. For example, one person starts a story by giving one sentence and then everyone takes turns to continue the story from the last person’s idea. The point is to build on the previous sentence to make a coherent story. During the task, observe learners closely. Take note of how well they listen to follow the sequence, engage in the activity, and articulate their thoughts.",
+            "Listening comprehension - Administer listening assessments where learners listen to recordings or live reading and answer questions orally. Observe responses and take note of learners who had difficulties responding to the questions",
+            "PRODUCTS",
+            "Learners create an anchor chart depicting effective listening and speaking skills. Encourage the use of online tools such as Canva and adobe to design and create the chart.",
+            "Listening Journals: Assign learners to keep listening journals where they record their reactions, thoughts, or reflections on audio clips, podcasts, or songs they have listened to both in and out of class. Instruct them to write entries that focus on the purpose, language, and thematic content of the material, and enable them to make connections to their own experiences or prior knowledge. Learners will share, discuss, and will use a checklist to critique the content of their journals in small group interactions.",
+            "Assessing comprehension - One learner reads a text aloud to his/her peers and asks questions. The others respond to the questions. Assess peers ability to retain information and comprehend. Switch roles at the end of the activity.",
+            "Oral reading assessment - Pair learners and have them read aloud a text focusing on expression tone and fluency. See link below for reading passages.",
+            "Use a checklist such as the following to assess reading",
+            "Encourage learners to reflect on their own listening and speaking abilities, identifying strengths and areas for improvement. Use the checklist below to self- assess. Self-assessment speaking checklist",
+            "I stood straight and confident",
+            "I let my audience know when I was finished speaking."
+          ],
+          "inclusive_learning_strategies": [
+            "ELO 1 emphasizes the development of learners' listening and speaking abilities, which are essential for their academic, social, and professional advancement. Engaging in these activities helps foster personal growth, strengthen interpersonal connections, and promote appreciation and respect for diverse cultures and languages.",
+            "Listen and speak for pleasure and personal growth",
+            "Listen to understand; speak to be share information (1.1, 1.2, 1.4, 1.7, 1.8,)",
+            "Begin the year with a shared viewing of the Communication Olympics https://www.youtube.com/watch?v=BW82k7lw1_U Pause at each section and discuss.",
+            "Throughout the year, organize learners into small groups and have them listen to a podcast to practice their listening skills. Visit https://www.commonsensemedia.org/podcast-lists for podcast selections.",
+            "What does it mean to be a good listener? (SCO 1.4, 1.7)",
+            "Share a blank anchor chart with the title: What does it mean to be a good listener? With the learners. Explain that over the next few days and months, they'll be working together to find the answer to this question. Begin with a discussion about what they've learned so far about effective listening. After this discussion, invite learners to conduct research by interviewing peers and family by asking the following questions: - “What does it mean to be a good listener?” - “How do you feel when you know someone is / is not listening to you?” - “When you share information, how do you make sure your message is clear?”",
+            "- Solicit additional research questions from the learners After individual learners have conducted their research, learners work in groups and share their research results with each other. Decisions are made about the most important qualities of a good listener and each group presents their research as a PPT, a classroom anchor chart, a video of a “person in the street” interview, etc.",
+            "Upon completion of this research and presentation, engage the learners in a follow up discussion focused on the question Why is listening so important.",
+            "For more information and activities, visit https://www.centervention.com/active-listening-exercises/",
+            "A good speaker: speaks clearly and confidently",
+            "is engaging and captivating",
+            "Active listening - Morning message (SCO 1.4, 1.5, 1.6) Engage learners in activities throughout the year where they develop and demonstrate active listening skills. This helps improve their concentration and retention of information. It also promotes effective communication skills and enhances critical thinking abilities. Share daily ‘morning messages’ with the class. For example, a news item on a topic of interest or importance to the community. Learners listen and may wish to take notes. Learners retell the message in their own words (see links for more information on morning message and active listening activities).",
+            "https://www.weareteachers.com/morning-message-ideas/",
+            "CROSS CURRICULAR INTEGRATION - Impromptu speaking - Select a list of familiar topics from different subject areas – Science, Social Studies, Health, and Family Life etc. Place these topics in a bag and have learners randomly pick one to talk about. Allow 30 seconds for them to prepare their thoughts and speak for 1 minute. Use a checklist to assess",
+            "speaking skills (see assessment for speaking checklist)",
+            "https://www.istockphoto.com/illustrations/debate-clipart",
+            "Debate- Converse, Convince (SCO 1.7, 1.9, 1.10, 1.11, 1.12) Refresh your understanding of debate techniques by visiting this information on the “Candy Bar Method” of debate preparation. Based on your conversation of learners’ conversations, choose a relevant and engaging topic that encourage critical thinking and discussion and create a debate question. (Samples available at https://www.boredteachers.com/post/debate-topics",
+            "Review or introduce the basic rules of debate. Guide learners to work collaboratively to research and structure their arguments logically with an introduction, main points, and a conclusion. During the debate, allow learners to assess the debaters using a checklist (see IAS column for checklist). Provide constructive feedback on learners’ speaking skills, including voice projection, clarity, and confidence. (See link below for debating tips)",
+            "https://pointavenue.co.th/blog/tips-to-improve-speaking-skills-and-debating-competency/",
+            "Speak up! Stand out! Communication is key. (SCO 1.2, 1.3, 1.8, 1.13) Direct one learner to act as a customer with a complaint, and another as a supervisor handling the issue, or create the opportunity for mock interviews where learner take turns interviewing each other about their hobbies, interests, or favourite things. Learners record the activities and share with the class",
+            "Dialogue - Engage in a roundtable dialogue with learners on a familiar topic where they can give information, ask questions, and respond appropriately. Encourage them to elaborate on their answers and share additional details.",
+            "Listen and speak to form and foster relationships",
+            "https://www.readingrockets.org/classroom/strategies/listen-read-discuss",
+            "Pre-reading discussion (SCO 1.19, 1.20, 1.21, 1.22, 1.23) Before your daily Teacher Read Aloud, engage learners in discussion to activate their prior knowledge and generate interest in the topic or story. Share a question about the text to set a clear purpose for listening. Introduce key vocabulary or concepts, allow predictions about the text, and discuss relevant background knowledge.",
+            "Following the Read Aloud, learners engage in a \"Think-Pair-Share\" activity where learners think about a question, discuss with a partner, and share with the class.",
+            "https://www.istockphoto.com/illustrations/round-table-discussion",
+            "Engage and connect - Roundtable discussion (SCO 1.19, 1.20, 1.22, 1.23, 1.24) Arrange interactive discussions for groups of learners seated around a table to delve into engaging topics relevant to daily life. Equip them with resources and guidelines, appoint a moderator to guide the conversation, ensuring all participants have a chance to speak. Encourage active listening and note-taking for questions. Reserve time for a question and answer session to promote interaction and sharing of thoughts.",
+            "Analyse language use in both formal and informal contexts. Provide constructive feedback on speaking skills, highlighting areas for enhancement.",
+            "BRAIDING THE STRANDS",
+            "Read aloud a text and allow learners to summarize in 3 or more written sentences. To accommodate the different learners, encourage them to listen carefully and follow along by drawing what they hear.",
+            "https://clipart-library.com/speaker-person-cliparts.html",
+            "Listen and Learn - Enrich your minds (SCO 1.16, 1.17, 1.18, 1.19, 1.22, 1.23, 1.24) Invite a guest speaker to talk to the class on a topic of interest. Have learners prepare questions in advance. Assign roles such as introducing the speaker and giving a vote of thanks. Encourage active listening during the talk. Afterward, facilitate a feedback session for questions, evaluations, and reflections. Allow learners to interact informally with the speaker for further questions and connections.",
+            "Act it out! (SCO 1.15, 1.16, 1.17, 1.19) Incorporate interactive games into language learning activities.",
+            "Assign roles to learners and have them act out different scenarios, such as ordering food in a restaurant, a tourist asking for directions or a receptionist taking calls at a hotel. These activities enhance speaking and listening skills in a fun way. For more listening games, visit:",
+            "Listen and speak to develop appreciation and celebration of culture and oral languages. In the Caribbean region, there are specific times of the year when each nation celebrates its unique culture. Take advantage of these occasions to enhance learners ' oral language skills while they express their cultural appreciation",
+            "Show, Tell, Discuss (SCO 1.27, 1.28, 1.29, 1.31) Encourage learners to bring in objects representing traditions, history, or aspects of the community like traditional clothing, instruments, artwork, or historical objects. Use pictures of the artifacts for conversations where learners share opinions, describe what they see, and discuss their cultural and historical significance. Give constructive feedback on their speaking skills",
+            "BRAIDING THE STRANDS Have each learner choose an artifact and conduct research and prepare a presentation, including the history, cultural significance, and personal connections. Create a class booklet of local artifacts then and now.",
+            "Explore the beauty of language (SCO 1.29,1.30, 1.32, 1.33) Listening to text in a dialect is a great way to immerse oneself in the language and culture of a specific region. Select a local story with dialect. Allow learners to view and listen e.g., on You Tube.",
+            "Guide learners to listen to: identify words used in dialect, pronunciation and grammar, share insights to the local culture, understand the context and meaning of the text",
+            "Create a chart showing words used in Standard English and dialect. Allow learners to research and view clips of Caribbean news, podcast or videos and discuss varieties in",
+            "accents, pronunciation and word choice used in different islands in the Caribbean e.g.,\nWords\tDialect Pronunciation\nchild\tchile\n\tpickney\n\tzafan\nhttps://www.dreamstime.com/illustration/caribbean-music.html\nMusic in our bones (SCO 1.32, 1.33, 1.34)\nEncourage students to listen to and recognize appropriate musical genres from the Caribbean. Prompt them to discuss their favorite genre.\nProvide the opportunity for learners to perform a song from any genre in class. Record and play back the performance for positive feedback.\nEvaluate students' pronunciation. Teach traditional songs or rhymes in the local dialect in a fun way to improve listening skills and speaking vocabulary.",
+            "BRAIDING THE STRANDS\nAnalyse the lyrics of a popular genre and identify vocabulary, phrases, and unfamiliar expressions and tell how language choice contributes to the overall message of the song. Or analyse a text written in dialect and transpose pieces to Standard English and discuss the effect/impact of the change.\nEmbrace your dialect; Ah Fu Ah We! (It is Ours!) (SCO 1.27, 1.29, 1.30, 1.32, 1.33)\nSet aside a specific day to immerse in oral language activities using the variety of dialects spoken by the learners (for example Creole Day is celebrated in Dominica once a year). Create the opportunity for learners to listen to, perform and dramatize dialect in various art forms. For example, play the YouTube video of the poem ‘Song of the Banana Man’\nhttps://www.youtube.com/watch?v=FXjdjCyYG80",
+            "Ask learners to view and listen carefully and allow them to share their thoughts on the poem's mood, tone, and impact. Have them share words used in dialect and give the Standard English version. Encourage learners to interact with and explore other examples of Caribbean dialect in local plays, videos, stories to cultivate their appreciation of language, culture, and West Indian history. (See assessment tools for assessing learners’ activities)"
+          ],
+          "elo_code": "LA-G5-LS-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Fluency Practice Passages",
+          "links": [
+            {
+              "text": "https://mrswarnerarlington.weebly.com/fluency-practice.html",
+              "url": "https://mrswarnerarlington.weebly.com/fluency-practice.html"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Fluency Student Checklist",
+          "links": [
+            {
+              "text": "https://www.lexialearningresources.com/powerup/licensed/fluency/PowerUp_Fluent_Reading_Student_Checklist.pdf",
+              "url": "https://www.lexialearningresources.com/powerup/licensed/fluency/PowerUp_Fluent_Reading_Student_Checklist.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "String Listen Game Illustration",
+          "links": [
+            {
+              "text": "https://creazilla.com/nodes/1663989-string-listen-game-illustration",
+              "url": "https://creazilla.com/nodes/1663989-string-listen-game-illustration"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "12 Fun Speaking Games",
+          "links": [
+            {
+              "text": "https://www.edutopia.org/discussion/12-fun-speaking-games-language-l earners",
+              "url": "https://www.edutopia.org/discussion/12-fun-speaking-games-language-l earners"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Children of the World Clipart",
+          "links": [
+            {
+              "text": "https://clipart-library.com/children-of-the-world.html",
+              "url": "https://clipart-library.com/children-of-the-world.html"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Cooking on a Cast Iron Coal Pot Stove",
+          "links": [
+            {
+              "text": "https://www.bajanthings.com/cooking-on-a-cast-iron-coal-pot-stove/",
+              "url": "https://www.bajanthings.com/cooking-on-a-cast-iron-coal-pot-stove/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Student Self-Assessment Speaking Skills Activity Sheet",
+          "links": [
+            {
+              "text": "https://www.scribd.com/document/407864318/ca2-pa-9-student-selfassessment-speaking-skills-activity-sheet",
+              "url": "https://www.scribd.com/document/407864318/ca2-pa-9-student-selfassessment-speaking-skills-activity-sheet"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Pop Story Gimme - YouTube Video",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=F-jBu5P8llw",
+              "url": "https://www.youtube.com/watch?v=F-jBu5P8llw"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "ELO 1 focuses on allowing learners to explore, use, and critically apply oral language for pleasure, and personal growth, to foster relationships and to develop an appreciation and celebration of culture and oral languages. The following suggested resources and materials would assist the teacher in accomplishing the ELO. Teachers can also access information from Chatbot, Viola and other similar sources which will also provide information about familiar stories, songs, etc. of other cultures and languages. Note also that the school environment is filled with opportunities for listening and speaking for learners in the upper grades. Debates, impromptu speaking",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "To support ELO 1 Speaking and Listening: Remember that the entire school, school grounds and community provide excellent opportunities to learn about and develop oral",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Video Creator for Schools",
+          "links": [
+            {
+              "text": "How to teach listening (youtube.com)",
+              "url": "https://www.youtube.com"
+            },
+            {
+              "text": "SC-834483_L.jpg (1000×1000) (dkoutlet.com)",
+              "url": "https://dkoutlet.com"
+            }
+          ],
+          "category": "Videos"
+        }
+      ]
+    },
+    {
+      "strand_name": "Reading and Viewing",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Students will demonstrate a variety of ways to use background knowledge and interests to select and engage critically with a range of culturally diverse paper based, visual, and digital texts for pleasure and personal growth.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "LA-G5-RV-SCO1.1",
+              "description": "2.1 Select engaging paper based and digital, visual texts for Independent Reading based on: - interests - learning needs - appropriate level of difficulty - various genres - diverse cultures"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.2",
+              "description": "2.2 Utilise background knowledge to:"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.3",
+              "description": "2.3 Read widely and experience a variety of literature from the Caribbean and other cultures"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.4",
+              "description": "2.4 Reflect on and identify their strengths and areas for improvement as readers while utilizing the strategies they found most useful during reading."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.5",
+              "description": "2.5 Use pictures and illustrations, word structures and text features to locate information and verify their understanding of the information:"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.6",
+              "description": "2.6 Continue to develop and demonstrate critical questioning strategies to gather information from favourite visual, musical, and written text re:"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.7",
+              "description": "2.7 Apply problem-solving strategies to follow written multi-step instructions effectively (e.g., how to assemble a product or play a game) while reflecting on their learning processes"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.8",
+              "description": "2.8 Use Independent Reading Time to develop - - reading fluency (accuracy, phrasing, and intonation)"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.9",
+              "description": "2.9 Use all sources of information (meaning, structure, visual) to search, check, self-monitor, and self-correct with grade appropriate, instructional-level text"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.10",
+              "description": "2.10 Develop an understanding of how illustrations enhance mood, establish setting, and advance plot in written or visual text"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.11",
+              "description": "2.11 Foster critical thinking skills and appreciation for the relationship between words and images in storytelling."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.12",
+              "description": "2.12 Apply higher-order thinking skills including analysis, synthesis, inference, and application to critically evaluate visual and/or text-based information"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.13",
+              "description": "2.13 Deepen understanding of the purpose and influences of different types of popular texts (e.g., websites, advertisements, social media, etc.)"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.14",
+              "description": "Read and view to use background knowledge and interests to select books"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.15",
+              "description": "- better comprehend a topic, picture, or title before, during and after reading"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.16",
+              "description": "- question and analyse information in text read"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.17",
+              "description": "- share connections between their experiences and the themes or settings of the books read"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.18",
+              "description": "- table of contents"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.19",
+              "description": "- headings and subheadings"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.20",
+              "description": "- glossaries"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.21",
+              "description": "- indices"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.22",
+              "description": "- structures of narrative and different types of expository text and key ideas"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.23",
+              "description": "- point of view/perspective"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.24",
+              "description": "- purpose"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.25",
+              "description": "- bias"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.26",
+              "description": "- subtle messages"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.27",
+              "description": "- cultural perspective"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.28",
+              "description": "recognise quotation marks and marker words (said, shouted, whispered, etc.) to determine the mood of the speaker in the text"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.29",
+              "description": "-connect punctuation in text to meaningful interpretation of sentences and paragraphs"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.30",
+              "description": "-change the rate of reading depending on the mood of the text"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.31",
+              "description": "-practice meaningful word solving strategies (root word, chunking, affixes, context clues)"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO1.32",
+              "description": "-develop the art of skimming and scanning"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "The focus of ELO 2 is Independent Reading Time. As learners are reading, teachers have an excellent opportunity to use formative assessment. (Conversation, Observation, and Product) to observe and assess learners’ reading proficiency.",
+            "At the beginning of the school year and at regular intervals throughout the year, use an oral reading to assess each learner’s progress.",
+            "CONVERSATION: Schedule regular individual conferences with learners about books read independently to gain a better understanding of how well the learners have comprehended the text.",
+            "Guiding questions: What is the main idea of the passage?",
+            "Can you give at least 3 important details that support the main idea?",
+            "What have you learned from the passage?",
+            "Did you know anything about the topic before reading?",
+            "How has this information helped you to understand the passage?",
+            "OBSERVATION: As learners read independently, schedule 2-3 minutes with 1 or 2 students each day to listen to them read. Listen to ensure: - They are reading with phrasing and expression - The difficulty level of the text they are reading matches their reading progress thus far - They notice errors and attempt self-correction - They employ a variety of strategies for self-correction (chunking groups of letters, rereading, etc.) - They can provide you with a brief overview of what they were reading. Use the notes from these observations to plan the next mini lesson to begin Independent Reading.",
+            "NOTE: When assessing fluency, use a rubric such as https://www.timrasinski.com/presentations/multidimensional_fluency_rubric_4_factors.pdf. This rubric connects rate of reading to meaning making and not speed. NOTE: Speed of reading is not a good indicator or reading progress.",
+            "Reading and Viewing Logs: Use learner reading logs to assess the variety of text read and viewed and their appropriateness in terms of abilities and interest.",
+            "Text - A Woman I Know by Niesha John. Teacher observes students as they engage in reading activities and uses the rubric to assess the learner's progress.",
+            "Rubric: Engaging with Texts for Pleasure: Criteria: Engagement; 4 (Excellent): Actively engages with a variety of texts, showing enthusiasm and interest; 3 (Good): Engages with texts, participating in discussion; 2 (Fair): Shows some interest in texts, participating minimally; 1 (Needs Improvement): Shows little engagement with texts",
+            "Think critically about texts, making connections and asking insightful questions",
+            "Demonstrates basic critical thinking skills by making connections and asking questions",
+            "Shows limited critical thinking, making few connections or asking basic questions",
+            "Shows minimal critical thinking",
+            "Reflects on personal responses to texts, expressing insights and connections",
+            "Attempts to reflect on personal responses but with limited insights",
+            "Reflects minimally on personal responses lacking insights",
+            "Shows little on personal responses",
+            "Consistently reads and views a variety of texts, actively seeking new opportunities",
+            "Regularly reads and views texts occasionally seeks new opportunity",
+            "Occasionally reading and views texts, rarely seeking new opportunities",
+            "Shows inconsistent reading and viewing habits",
+            "Learners Self-Assessment Checklist: Choosing Books",
+            "Find Books That Match",
+            "Have I used the library or asked for recommendations to find books that fit my interests?",
+            "Did I read a bit about the book to see if it seems like something I'd enjoy"
+          ],
+          "inclusive_learning_strategies": [
+            "ELO 2 focuses on Independent Reading time, a time when learners’ practice and demonstrate a variety of ways to engage in strategic Reading and Viewing. Each Independent Reading session begins with a mini lesson, based on the ILSs provided below, that reviews or introduces a reading and viewing strategy. It also emphasizes the learners’ need to utilize background knowledge and interests to select a range of culturally diverse paper based, visual, and digital texts. Learners’ selection and engagement with text will be useful for both pleasure and personal growth.",
+            "Read and view to use background knowledge and interests to select books",
+            "Text Exploration (SCO: 2.1, 2.2, 2.3): Engage learners in opportunities to explore and interact with text in an in-depth and meaningful way. Provide",
+            "learners with a variety of visual texts such as comic books, graphic novels, illustrated storybooks, and magazines.",
+            "- Encourage them to explore the texts individually, flipping through the pages and examining the illustrations and layout.",
+            "- Ask learners to select one or more texts that appeal to them based on their personal interests, hobbies, or favourite topics.",
+            "- Learners would then write a brief reflection explaining why they chose their selected texts and what elements of the visuals attracted them.",
+            "- Discuss as a class the different types of visual texts chosen and the reasons behind their selections.",
+            "Comprehend - Connect - Reflect Reading (SCO 2.1, 2.2): Develop learners’ ability to reflect on what they read, by introducing or reviewing reading strategies in a mini lesson before the Independent Reading session begins. As learners read, they practice the focus of the mini lesson and provide a brief reading response focussed on the lesson. For example:",
+            "Comprehend-The learners will choose a text and debate its title, image, or issue. The learners will ask who, what, when, where, why, and how while they read.",
+            "Connect- The learners will search the text for key information, or answers. They will look for connections between the story and their own lives.",
+            "Reflect-Learners will explain to peers how the story applies to their lives.",
+            "Multicultural Book Club (SCO: 2.3, 2.6): Give learners texts from a range of cultural backgrounds, such as Caribbean literature, literature about the Americas (Mayas Aztecs, Incas). Use the steps below: 1. Assign learners to small groups so they can read and discuss books from other civilizations that highlight certain cultural origins. 1. Learners will examine authors from the Caribbean and other cultures, talking about their origins and the themes they explore in their writing. 2. Deepen awareness of many cultures, by having learners analyse and contrast themes, settings, and characters in the literature. At this grade level, encourage learners to think about how various cultures are represented. Are they represented as “real people” or are they represented stereotypically. For a",
+            "video about stereotyping, visit https://www.youtube.com/watch?v=hNBNuHDQW1U",
+            "Subject Integration: Use text from Social Studies about the early settlers to gain a deeper understanding of different cultures and their positive or negative impact on local cultures.",
+            "Text Feature Scavenger Hunt (SCO: 2.5): Provide each learner or group a worksheet listing text features like table of contents, headings, glossaries, and indices. As a review, learners find examples of each listed text feature in the texts, noting where they found it and briefly describing its purpose. Throughout the process, encourage learners to use strategies",
+            "for collaboration and peer discussion. Learning during listening and speaking lessons.",
+            "Gather as a class to discuss the identified text features, their locations, and how they help in finding information and understanding text.",
+            "'Chatting' with the text (SCO 2.6) Encourage learners to ask and answer questions of a text being read. Learners can generate their own questions or use prompts provided by the teacher. Use the question guide below: 1. Who is the narrator of this story? 2. What sentence from the passage best supports the author’s point of view? 3. How does the narrator’s point of view affect the events in the narrative? 4. What events in the narrative would change if the narrative was written from a different character’s point of view? 5. Why do you think the narrator said......?",
+            "1. Do you agree with the author’s point of view? Why or why not? 2. What would you have done differently from the main character? Why? Once questions are generated, the text is passed to a peer to answer and add more questions.",
+            "Read and view to select and engage critically with a range of texts for personal growth",
+            "Multimodal Reading Stations (SCO: 2.9, 2.10, 2.11, 2.13) Create different reading stations around the classroom, each featuring a variety of texts and media formats (e.g., books, audiobooks, videos, graphic novels, articles). Learners rotate through these stations during a class period or over several days. Each station should have a set of guiding questions and activities to help learners engage with the material critically.",
+            "Guiding Questions Station One: Paper based books or articles Character Analysis: Who is the main character in the book, and what are their key traits? How do their actions and decisions influence the story?",
+            "Theme Exploration: What is the central theme of the book? Provide examples from the text that illustrate this theme.",
+            "Station 2: Audiobooks Listening and Interpretation: How does listening to the audiobook differ from reading the text? What emotions did you experience when hearing the story read aloud?",
+            "Station 3: Videos Visual and Content Analysis: What is the main message of the video? How do the visuals (images, colours, and movements) help convey this message effectively?",
+            "Station 4: Graphic Novels Combination of Text and Images: How do the illustrations in the story enhance your understanding of the story? Describe a specific scene where the images make your understanding clearer.",
+            "Storybook Analysis (SCO: 2.11, 2.12) Provide each learner or group with a picture book or comic strip. Learners to discuss the relationship between the",
+            "pictures and words in the book or comic strip, by asking the questions below: \n• How do words and images work together to convey meaning? \n• Are there instances where they convey conflicting or opposing messages? \n• How does the layout of the storybook or comic strip affect storytelling?",
+            "Visual Thinking Routines (SCO2.12, 2.13, 2.14) Guide learners through the process of analysing and interpreting visual information, such as images, infographics, or videos. Use routines such as: \n• See - Learners observe the images, videos etc. \n• Think - Learners discuss what they think is happening, the literal and inferential messages the image or video conveying, and the purpose of the messages \n• Wonder - Learners pose questions about the image or video and how it could be used to influence the viewer’s thinking",
+            "Interactive Graphic Organizers for Text Analysis (SCO: 2.12) Provide learners with graphic organizers such as Venn diagrams, T-charts, or story maps. Review how a \"Story Elements Map\" can help them analyse characters, settings, plots, conflict, resolution, and themes. Learners complete a Cause and Effect Chart or Venn diagram to be used to compare and contrast, infer, and draw conclusions in non-fiction texts.",
+            "The Purpose is.... (SCO 2.11, 2.12, 2.13) Distribute a variety of popular texts, advertisements and websites to learners in groups of three or four, Allow learners to identify the purpose of each type of text using the checklist below: \n• The purpose of this text /website is clear \n• The purpose of this text/website is to entertain readers/viewers \n• The purpose of this text/website is to inform readers/viewers \n• The purpose of this text/website is to persuade readers /viewers. \n• The message in this text/website is clear \n• The message in this text/website is hidden"
+          ],
+          "elo_code": "LA-G5-RV-ELO1"
+        },
+        {
+          "elo_description": "Students will interact with understanding and critical thought to a variety of genres and text forms using vocabulary, comprehension strategies and graphophonic cues.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "LA-G5-RV-SCO2.1",
+              "description": "3.1 Use prior knowledge and critical thinking skills to support comprehension of grade-appropriate texts"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.2",
+              "description": "3.2. Demonstrate continuing ability to use a repertoire of comprehension strategies, including those listed below, to understand and critique a range of genres and text forms: - determining main idea - making connections - predicting - visualising - sequencing - inferring - analysing - synthesising - summarizing - questioning"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.3",
+              "description": "3.3. Continue to utilize contextual clues to derive meaning from language used in a variety of genres."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.4",
+              "description": "3.4. Deepen the ability to make connections that promote understanding of information read and viewed across a variety of genres: -text-to-self connections -text-to-text connections -text-to-world connections"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.5",
+              "description": "3.5. Continue to utilize print and digital dictionaries to aid comprehension of written text across a range of genres."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.6",
+              "description": "3.6 Deepen and widen vocabulary through reading a range of genres, topics and work produced by a variety of authors."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.7",
+              "description": "3.7 Utilize with greater competence, print, digital and personal dictionaries to comprehend unfamiliar words and add them to vocabulary repertoire."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.8",
+              "description": "3.8. Continue to gain vocabulary through engagement of visual and graphical presentations: -movies -videos -art -posters -infographics -advertisements"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.9",
+              "description": "3.9. Continue to build vocabulary through the use and application of: - homonyms (homophones & homographs) - antonyms - synonyms"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.10",
+              "description": "3.10. Utilize existing knowledge of figurative devices to enhance understanding of text: - similes - metaphors - onomatopoeia - personification - alliteration"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.11",
+              "description": "3.11. Continue to extend vocabulary through the use of words encountered in cross-curricular content."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.12",
+              "description": "3.12. Extend the ability to apply knowledge of word structure to read unfamiliar vocabulary: - word roots - prefixes - suffixes - inflectional endings"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.13",
+              "description": "3.16. Demonstrate a deeper understanding of how word order impacts meaning"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.14",
+              "description": "3.17. Continue to apply knowledge of how reading fluency impacts understanding"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.15",
+              "description": "3.18 Deepen participation in shared reading opportunities to: - improve fluency - guide intonation - convey the mood and intent of the text - expand vocabulary"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.16",
+              "description": "3.19 Strengthen the awareness of how word choice and phrasing may be used to describe persons and events in positive or negative ways"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.17",
+              "description": "3.20 Improve their reading comprehension by confidently using background information and context clues to grasp and understand unusual words"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.18",
+              "description": "3.21 Improve reading comprehension and word recognition by applying knowledge of roots, prefixes, suffixes, and syllabication"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.19",
+              "description": "3.22 Strengthen their ability to use phonological and word analysis to decipher words, improving reading speed and accuracy: - vowel patterns"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.20",
+              "description": "3.23 Apply background knowledge and information from poetry, expository, narrative, persuasive, and descriptive texts to make and modify predictions"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.21",
+              "description": "3.24 Differentiate, with greater competence, main ideas from supporting information in poetry, expository, narrative, persuasive and descriptive texts"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.22",
+              "description": "3.25 Demonstrate appropriate use of prior knowledge of written and visual information to form a judgment about a particular point or issue"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.23",
+              "description": "3.26 Exhibit a strong understanding of meaningful and critical use of text features to locate and use information (titles, subtitles, table of contents, glossary, index, etc.)"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.24",
+              "description": "3.27 Appreciate the contribution visual components make to facilitate comprehension and promote a deeper understanding of poetry, exposition, narration, and description. - fonts - charts - images - maps"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.25",
+              "description": "3.28 Strengthen ability to recognize and provide examples of how author’s choice of vocabulary, phrases, and sentences evoke emotions, enhance description, and create humour"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.26",
+              "description": "3.29 Provide examples to demonstrate how illustrators create mood in visual text"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.27",
+              "description": "3.30 Utilize prior knowledge to discuss the effectiveness and possible hidden messages of emoticons and social media posts"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.28",
+              "description": "Read and view to interact with understanding and critical thought to a wide range of genres and text forms using comprehension strategies"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.29",
+              "description": "Reading text features (SCO 3.27)"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.30",
+              "description": "(SCO 3.28) Word choice reflection tool"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.31",
+              "description": "What do pictures say? (SCO 3.29)"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.32",
+              "description": "Retelling: learners retelling information or a story they have listened to."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.33",
+              "description": "Connecting - When learners preview text, they tap into what they already know (Funds of Knowledge), which will help them to understand the text they are about to read. This provides a framework for any new information they listen to and read."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.34",
+              "description": "Visualising - learners who visualize while reading often have better listening comprehension. Readers can take advantage of illustrations that are embedded in the text or create their mental images or drawings when reading text without illustrations."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.35",
+              "description": "Predicting - When learners make predictions about the text they are about to read, it sets up expectations based on their prior knowledge about similar topics. As they read, they may mentally revise their prediction as they gain more information."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.36",
+              "description": "Recognizing Literal Meaning: Questions about facts, details or information explicitly stated in the audio story (or other genre)."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.37",
+              "description": "Making Inferences: Questions asking learners to make inferences as they listen to audio stories, interpreting what is said by going beyond the literal meaning."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.38",
+              "description": "Identifying Main Idea: Questions asking learners to identify the central idea or gist of an audio story (or other genre)."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.39",
+              "description": "Drawing Conclusions: Questions asking learners to conclude by synthesizing information in an audio story (or other genre)."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.40",
+              "description": "Analysing Reasoning: Questions asking learners to analyse reasoning supporting a claim in an audio story (or other genre)."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO2.41",
+              "description": "Finding Evidence: Questions asking learners to identify statements or details in an audio story that provide evidence to support claims."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Gathering information Teacher Conversation, Observation, and Product (COP). COP allows the teacher to determine learning before, during, and after instruction.",
+            "CONVERSATION: Provide learners with the opportunity to use discussions to share their thoughts on a specific topic before reading commences. This discussion continues during reading. At the end of the reading session, learners would share their learning experiences. Learners will make connections: Text to self, Text to text and, Text to world.",
+            "For example, learners will use the Think Aloud strategy to make predictions before reading. Here they can make any of the three connections above. This text reminds me of ... From analysing the text, I can see the following structures are parts ... Here are two inferences I can make based on what I have read ...",
+            "OBSERVATIONS: Running Records: Use running records to gather data about the learner's reading ability. The use of running records is to capture data related to the learner’s reading behaviours. As the teacher, you document everything you see and hear while the learner is reading the text.",
+            "Running Record",
+            "Diagnostic Tests: These tests are used before instruction. They are used to gather data about the learner as to his or her strengths and weaknesses. It is on these premises that the instruction is planned. For example, if the teacher wishes to teach finding the main idea in expository text, a pre or diagnostic test is done. The next step is to analyse the data. The teacher would then take the necessary action based on what the data analysis reveals. One such next step could be creating an intervention plan to address the reading weaknesses of the learners.",
+            "Anecdotal notes can be taken about students’ strengths and weaknesses. Next steps need to be documented as well.",
+            "Reading Response Journals: These allow learners to do several things from interacting with the text. These include reflecting on what was read and analysing specific parts of the text including setting, character, plot, themes, etc. They can also express their thoughts and feelings by interacting with the text. The teacher can also provide prompts to aid learner’s responses and analyses of the text.",
+            "Presentations: This can be a creative way for learners to showcase or demonstrate their understanding of the text. Presentations could be done on devices using software like PowerPoint and Google Slides. They also provide a high level of interaction between the presenter and the audience. Presentations highlight and nurture skills such as communication, research, and writing.",
+            "SELF-ASSESSMENT",
+            "Fluency: Having understood the concept of fluency the learners should be able to do some self-assessment. This could be achieved using the checklist below. Share the Rasinski rubric provided in ELO 2 https://www.timrasinski.com/presentations/multidimensional_fluency_rubric_4_factors.pdf for learners to self-assess their fluency.",
+            "The above tool can be used by learners to assess their peers. Learners can also ask their peers questions of areas of their reading fluency that they have concerns about. These may include: Did I make the correct stops at commas and full-stops? Did I repeat words and phrases? Did I use different intonations?",
+            "Vocabulary: Below is the Vocabulary Knowledge Scale (VKS) that is used for learners to self-assess and apply strategies to boost their vocabulary.",
+            "Scoring instructions: https://shorturl.at/rANS5",
+            "Fluency checklist: Provide learners with checklists such as the one below which will enable them to monitor their own rate of reading and how it affects their understanding of how groups of words work together to make meaning and assist one’s understanding of what they are reading. Name: _______________ Story or Book Title: _______________ - My expression is natural. I sound like I am talking to a friend. - The volume of my voice is loud enough for someone sitting next to me to hear every word.",
+            "- I group words into phrases that show I understand the meaning of what I am reading. - I pay attention to punctuation. I pause when I see commas and periods and change my voice when I see question marks and exclamation points. - My reading is smooth and accurate. If I make a mistake, I correct it and continue reading. - My pace is conversational. I am not reading as quickly as I can, and I am not reading so slowly that the text loses meaning. What did I do well? What can I improve?",
+            "Source: https://shorturl.at/i9kiV",
+            "PEER ASSESSMENT: Gallery walks: Learners display their responses to a reading assignment in a designated area in the classroom. Peers can then walk around the classroom providing feedback in the form of questions and comments and use sticky notes to attach each response to the work. Peer Review Worksheets: This worksheet is designed with specific prompts that the learners",
+            "will use to evaluate specific aspects of their peers' reading comprehension, such as summarization skills, ability to identify key ideas, use of evidence from the text to support claims, and clarity of expression. The peer assessor will provide comprehensive feedback based on the prompts",
+            "Source: https://tinyurl.com/ms774j9n",
+            "",
+            "Assessment of students’ reading and viewing enables the teacher to monitor the learner’s growth and development over time and to identify their strengths and needs. Formative assessment provides opportunities for the teacher to gather information through COP: Conversation, Observation, and Product. It allows teachers to determine learning prior to instruction and observe learner progress during and after instruction.",
+            "Peer Assessment: Card Exchange. Provide peers with the same material to read or view. Then give each learner a card to write their choice of a reflection, illustration, summary, report, or questions for the author about a story, character, advertisement, or point of view from an article. Learners will complete the card then exchange it with peers to"
+          ],
+          "inclusive_learning_strategies": [
+            "ELO 3 focuses on providing the learner with opportunities to further develop and apply critical strategies in reading and viewing. Activities and strategies which assist in the attainment of critical thinking are of paramount importance as they will enable learners to see beyond the surface of what they are reading.",
+            "Read and view to interact with understanding and critical thought to a wide range of genres and text forms using comprehension strategies",
+            "Grand discussions (SCO 3.1, 3.4): Braiding the Strands: Connect listening and speaking with reading and viewing with Grand discussions. Engage learners in discussions to activate prior knowledge before they read material. Ask students to skim through the text. They should look at pictures, graphs, maps, or tables used. Guiding questions for discussion may include: -What does the title of the material remind you of in your life? - What do you think the material would be about based on the title? -What do the pictures remind you of in your life? -What do you think the material would be about based on the pictures, graphs or maps seen? -Does the material remind you of anything in your own life? In what way? -How does the knowledge you have about the material help you to understand what you are reading?",
+            "Modelling (SCO 3.2, 3.3, 3.4): Schedule regular opportunities for learners to model their use of individual comprehension strategies and provide Think Alouds to demonstrate how comprehension strategies can, and should, be combined. For example: - determining main idea combines with sequencing and making connections - predicting is often based on visualising and synthesising - questioning is often dependent on analysing and synthesising and often leads to predicting",
+            "The possibilities for strategic combinations are endless. Learners at this stage are developing an understanding of how meaning making is a multi-faceted problem solving process. At the end of each opportunity to read, include a reading response or an exit slip that provides an opportunity for learners to demonstrate their application of the comprehension strategies. Visit https://www.readingrockets.org/classroom/classroom-strategies/exit-slips for information and exit slip templates.",
+            "Context Clues Pinwheel (SCO 3.3): Instruct learners in the use of varying visual (pictures and illustrations) and written context clues. Knowledge of the different types of context clues will provide students with a strategy to understand a variety of genres read. The pinwheel below can be used to remind students of how synonyms, antonyms, and definitions are context clues.",
+            "Dictionary Use (SCO 3.5): Encourage learners to bring along their print dictionaries to class. Refer them to the dictionaries when they ask for the meaning of an unknown word. Learners should also be taught how to access and use digital dictionaries. Learners create their own personal dictionaries for new vocabulary learner. This personal dictional should be accessed during writing projects.",
+            "Building Reading Vocabulary (SCO 3.6): Engage learners in reading activities which will deepen and broaden their vocabulary and its use in various contexts. Through exposure to a variety of genres through activities such as reading to younger grades, recording reading of news / sports / entertainment stories, etc. learners revisit known vocabulary and learn new vocabulary and its application of various contexts.",
+            "Braiding the Strands: Speaking Reading & Writing. As learners read texts to extend their vocabulary, they are given opportunities to search for new vocabulary in fiction, nonfiction, and poetry. Provide “Search for a word the class may not know”.",
+            "Once found, groups of learners research the word for root, history, etc., post the new vocabulary on the New Vocabulary Word Wall, and use the new vocabulary words in their creative writing and speaking or oral presentation experiences.",
+            "Figurative device checklist (SCO 3.10): Build on learners’ knowledge of figurative devices: - similes - metaphors - onomatopoeia - personification - alliteration. Guide learners through various ways to identify and understand the meaning of figurative devices encountered in reading to aid their understanding of what they are reading. Provide them with the checklist below to help them regulate their own understanding. - I know what the <figurative device> is - I can define the <figurative device> used - I understand how the <figurative device> is used in what I am reading",
+            "I can explain how the <figurative device> helps me to understand what I am reading.",
+            "I can interpret what the author is trying to communicate through the use of <figurative device>.",
+            "Cross-curricular words (SCO 3.11): Draw learners’ attention to words and phrases that are used across content areas. Choose vocabulary from various subject areas. Discuss the word, and, when applicable, deconstruct its root word, syllables, prefixes, etc. to determine meaning and, to broaden their vocabulary, learners search for multiple meanings in various contexts. For example: cyclical, preconception, contrast, illustrate",
+            "Subject integration: Have learners’ research scientific words and say how their use in science is different to their use in Language Arts. For example: digest, chip, sandwich, medium, culture",
+            "Read and view to recognise and use language structures",
+            "Sentence scrambles (SCO 3.16, 3.17): Subject integration: Create sentences based on a text the learners have encountered in language Arts of other subject area. Cut up the sentences into words and/or phrases Engage learners in a sentence scramble activity. - Place learners in groups to place complex cut-up sentences in the correct order. - Accept that some words may be altered from the original and the sentence will still have meaning. - Learners read their sentences with fluency. - Learners identify the parts of speech in their sentences. (nouns, verbs, adjectives, adverbs, etc.) - They should also be encouraged to justify the choice of word order for their sentences. - To add challenge, ask for variations of verbs, nouns, adjectives, etc.",
+            "Descriptive reading checklist (SCO 3.19): Share a selected descriptive passage (person or place) with learners. Strengthen learners’ awareness of the importance of describing words by reading a passage individually and using the checklist below to add examples: - This passage contains a variety of adjectives. Examples: - This passage contains sensory words. Examples: - The descriptive words help my understanding of what is being described. Examples: - I can see a mental picture of what is described. Examples: - The sensory details appeal to three or more of the senses.",
+            "BRAIDING THE STRANDS: Given a specific topic, learners will use sensory words and adjectives to write a descriptive paragraph.",
+            "Read and view to interact with and meaningfully apply Early/Transitional graphophonic cues to a variety of genres and text forms",
+            "Think aloud (SCO 3.20): As you model the use of word solving techniques, express out loud what you are doing and why you are doing it (see below).",
+            "This will remind learners of strategies they can use to help them understand what they are reading. I don't know what this word means but: - I can use context clues to help me. - I can “chunk” the word by using syllables, root words, prefixes, and suffixes - The picture, graph, or chart can also help. - My peers may know this word. - A dictionary or thesaurus also. Learners then work in groups to create their own word solving think alouds.",
+            "Strong Readers Routines (SCO 3.22) Encourage learners to use context, their prior knowledge of vowel patterns, blends, words with silent letters etc. when reading. These reminders can be inserted as a daily “One Minute Word Solve”. Write a word in a sentence or connect it to an illustration and let the word solving begin! Visit: https://greenlight.com/learning-center/parenting-and-family/spelling-words-5th-graders for sample words. With repeated use, learners will internalise these reminders when reading. The reminders can also be displayed in class.",
+            "Strong readers- > Pay attention to words as they read > Break down large unknown words into smaller known words > Know how to use blends to help them pronounce unknown words > Know which letters are silent in words e.g., calm, when and knowledge. > Can use word solving rules to help them sound out unfamiliar words. Read and view to develop understanding and recognise how the use of genres and text features influence meaning",
+            "Main Idea Guide (SCO 3.24) Support learners as they practice differentiating between the main idea and the supporting details across genres. The guide below can be displayed in class or provided to students for them to keep individually. Learners refer to this guide as reading responses are being completed. Visit https://www.scholastic.com/teachers/teaching-tools/articles/five-minute-reading-responses-class.html For free reading response templates.",
+            "Prior knowledge checklist (SCO 3.25) Support learners’ use of prior knowledge to form a judgement about selected issues and establish their own perspectives on issues. Checklists such as the one below will aid students analyse the usefulness of information they possess. 1. What do I know anything about this topic? Yes/No 2. Is this information factual or an opinion? Yes/No 3. Is this information useful and relevant to the point? Yes/No 4. Do I know where I can locate more factual information to back up my point? Yes/No",
+            "Text features and me (SCO 3.26) Review the purpose of text features and where this sort of information can be located when they are reading. The table",
+            "below can be displayed in class or provided to learners for individual use.\n\nText features and me. Where do I find information that...\nTells me about poem, passage or story I am reading | The title\nTells me about sections of a passage poem or story that I am reading | The subtitles\nShows me where to locate information by page. Usually found at the front of a book | The glossary\nLet's me know about words I do not understand | The table of contents\nTells me about key concepts or people in the book I am reading. Usually found at the back of a book | The index\n\nReading text features (SCO 3.27)\nAs text features are encountered in various subjects, learners co-create a tool such as the one provided below demonstrate their understanding and application of how the use of text features impacts meaning.",
+            "Fonts | The size of the font and if it bolded tells you to pay attention eg The day Anansi danced with Chicken\nCharts | These provide information about what I am reading. They are especially useful if I am reading expository text\nImages | Images can be any drawing, photo etc which readers can use to help them understand what they are reading.\nPictures | These help me to visualize what you are reading. They can represent many objects, places and people.\nMaps | Maps provide information about particular places and locations and help you see these places as you read about them\n\nRead and view to develop understanding and recognise how vocabulary and language use influence the meaning and mood of the text\n(SCO 3.28) Word choice reflection tool\nEngage learners in the discussion of how word choice can affect readers’ understanding and emotions by providing them with a selection of text poetry, stories, advertisements, songs, etc.).",
+            "Guide the discussion with the use of the self-reflection tool below. Encourage learners to use the tool to record examples of how word choice affects them. Affects a passage’s meaning.\n- The author/poet uses a mixture of simple and complex sentences. <example>\n- The author/poet uses a mixture of simple and difficult words. <example>\n- The author/poet uses several descriptive words. <example>\n- The author/poet makes me feel certain emotions by the way he/she chose his/her words. <example>\n- I can explain how the author/poet makes me feel. <example>\n- I understand that authors/poets select words to help readers feel and understand what they are reading. <example>\n\nWhat do pictures say? (SCO 3.29)\nAssist learners to understand how illustrations contribute to mood and meaning in written and visual texts. Do this by providing students with a variety of texts, with embedded illustrations. Allow students time to review the illustrations and discuss:\n- how they make them feel\n- how they contribute to their understanding of what they are reading/viewing\n- their purpose\n- if they are effective",
+            "ELO 4 focuses on the development of learners’ understanding of author’s purpose (to persuade, inform, and entertain) and style (persuasive, narrative, expository, descriptive) of writing. It is important for learners to be exposed to all genres both in print and digital format in order to understand the author’s intention, hidden messages, and unique styles.",
+            "Genre often influences an author’s purpose. Begin the year by reviewing the genres and subgenres.",
+            "Compare and Contrast Venn Diagram (SCO 4.1, 4.2, 4.3) Provide learners with examples of various subgenres of fiction and nonfiction texts. - nonfiction: history, biography, autobiography, self-help, textbook, etc."
+          ],
+          "elo_code": "LA-G5-RV-ELO2"
+        },
+        {
+          "elo_description": "Students will develop their understanding of how an author’s choice of vocabulary, language, genre, text form, text features and style influence the meaning of text and define the author’s craft.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "LA-G5-RV-SCO3.1",
+              "description": "4.1 Continue to develop the skills to compare and contrast various formats of fiction, nonfiction, poetry, and drama"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.2",
+              "description": "4.2 Demonstrate growing awareness that fiction, nonfiction, and poetry reflect a purpose and a point of view"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.3",
+              "description": "4.3 Identify different purposes for reading from selected passages"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.4",
+              "description": "4.4 Describe the author’s theme/purpose and cite supporting evidence"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.5",
+              "description": "4.5 Respond critically to text by identifying instances where language is"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.6",
+              "description": "4.6 Discuss text with reference to purpose and style of a variety of illustrators of fiction, nonfiction, and poetry - to inform - to entertain - to persuade"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.7",
+              "description": "4.7 Demonstrate understanding of an author’s style of plot development of fiction: fables, folk tales, fairy tales, and adventure stories. - use of time sequence - use of descriptive language - use of dialogue"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.8",
+              "description": "4.8 Identify different genres of texts such as fiction, nonfiction, poetry, and drama and explain how each genre influences the reader's understanding and interpretation of the text."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.9",
+              "description": "4.9 Recognize and analyse text features such as headings, subheadings, illustrations, and captions to understand their influence on the meaning and comprehension of the text."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.10",
+              "description": "4.10 Compare and contrast the use of paragraphing in fiction and nonfiction texts to understand how it impacts the organization and clarity of ideas."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.11",
+              "description": "4.11 Analyse stanzas and rhyme schemes in poetry to comprehend how they contribute to the overall meaning and mood of the poem."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.12",
+              "description": "4.12 Examine dialogue markers (e.g., said, shouted, nodded, exclaimed, etc.), scenes, and stage directions in drama to understand their role in shaping characters, conflicts, and plot development"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.13",
+              "description": "4.13 Generate questions based on graphical representations e.g., charts, diagrams, posters, billboards, videos, etc."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.14",
+              "description": "4.14 Recognise how authors use imagery, descriptive language, and vocabulary to create the tone and mood within the text"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.15",
+              "description": "4.15 Analyse the purpose of messages relayed through social media platforms as agents to inform, influence, misinform, bully, entertain, etc."
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.16",
+              "description": "4.16 Identify examples of how an author uses and develops characters through: - descriptive language - informal and formal language - Home Language(s) and Standard English - dialogue"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.17",
+              "description": "4.17 Recognize and interpret authors’ viewpoints through critical lens to determine the implied and explicit messages in all genres in advertisements in product labels"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.18",
+              "description": "4.18 Further develop understanding of an illustrator’s use of implied and explicit messages"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.19",
+              "description": "4.19 Recognize how vocabulary usage creates imagery and aids interpretation and understanding of text"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.20",
+              "description": "being used to manipulate, persuade or control"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.21",
+              "description": "Identifying meaning and mood (SCO 4.1, 4.18, 4.19)"
+            },
+            {
+              "sco_code": "LA-G5-RV-SCO3.22",
+              "description": "Analyzing Point of View (SCO 4.17)"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Assessment of students’ reading and viewing enables the teacher to monitor the learner’s growth and development over time and to identify their strengths and needs. Formative assessment provides opportunities for the teacher to gather information through COP: Conversation, Observation, and Product. It allows teachers to determine learning prior to instruction and observe learner progress during and after instruction.",
+            "Peer Assessment: Card Exchange. Provide peers with the same material to read or view. Then give each learner a card to write their choice of a reflection, illustration, summary, report, or questions for the author about a story, character, advertisement, or point of view from an article. Learners will complete the card then exchange it with peers to",
+            "discuss individual responses to the reading and discover similarities, differences, opinions, views, and other perspectives. Teachers collect these responses and make note of the quality and depth of the response.",
+            "Timeline Gallery Walk: Learners walk the classroom gallery of reading and viewing and read and or view segments of content that have been placed in an out of sequence array. Learners work together to discuss all the pieces read and determine the correct order or sequence of the events or text and arrange them in the correct order. Once placed in ordered, they self-check the teacher key for accuracy. Teacher observes and makes note of collaborative behaviours and understanding of sequence.",
+            "OBSERVATION",
+            "Mock News Room: Set up a “newsroom desk” for learners to present what they have learned through reading the news, sports, or weather. Other learners (who have also read the same news reports) observe, ask questions, or provide feedback on numerous aspects: (accuracy, tone, eye contact, pronunciation, phrasing, confidence, facial expression, and body language). Teacher observes and braids reading and speaking strands by observing learner’s oral language skills and overall reading comprehension.",
+            "Four Corners: Post short pieces of text in the four corners of the room. Individual learners move around the room and read the texts then stick them in the correct column of a chart with headings reflecting various purposes for writing. (To inform, to entertain or to persuade). Once complete, learners share their results with peers, compare, and then check with the teacher. Teachers makes note of overall and individual understanding of the concept of author’s purpose and uses this information to inform further teaching on the topic.",
+            "Example of chart: Purpose - To Inform, To Entertain, To Persuade",
+            "PRODUCT",
+            "Reading Response Journals: A Reading Response Journal is a place for learners to write, draw, and share their opinions, ideas, or respond to text that was read in class. How to use Reading Response Journal: 1. For quick writes – a place for learners to jot down their thoughts quickly. Learners make predictions before reading. 2. To respond to text – as learners read text, they record their impressions, questions, observations in their journal. 3. For retelling - Reading Response Journals are the perfect place for learners to retell a story in their own words. Learners can self-assess using the following questions: Retelling checklist: Were the main details clear and sequential? Did you use your own words to relate the story? Did you give reference to the title and author whose work you are retelling?",
+            "Did you provide an opinion or a recommendation?",
+            "Reading Portfolios: A reading portfolio can be as simple as a file folder of information about reading progress for each learner in the classroom. It can include a variety of sources of information about learners as readers. These include: 1. Samples of learners’ work - Reading logs - Book reports - Reading Tests Samples (class IRI) 2. Learners’ self-evaluations - Questions/checklists - Response journals 3. Anecdotal/progress notes by teacher and learners. - Reading conference notes 4. Teacher’s observation notes - Checklists - Reading attitude interview",
+            "The portfolio is designed to give a profile of the learner as a reader and is helpful for conferencing with the child, parents, or special needs educator.",
+            "Home Language/Standard English Broadcast: Provide opportunities for learners to create very short videos consisting of content with the Home Language and the Standard English form to match. The content can be in varying formats- example song, poem, and story. Teacher reviews the broadcast and the learner’s use of both forms of language.",
+            "SELF-ASSESSMENT: Vocabulary challenge: Post vocabulary challenge activities in an envelope on word wall, learner take a challenge sheet from the envelope and complete the questions. Include challenges such as: - find the root word, prefix and suffix - search for the meaning of the root word, prefix and suffix - use the word in a sentence - find a synonym, antonym, or rhyming word - search for word’s country of origin - etc.",
+            "When complete, teacher provides the learner with the answer key. The learner creates a new vocabulary challenge and answer key to add to the vocabulary challenge envelope.",
+            "PEER ASSESSMENT: Supporting Evidence Chart: Learners will complete a chart following reading or viewing by recording supporting details for given topic sentence(s), or in determining answers to questions asked. Learners will exchange their charts with peers to review and evaluate the information recorded.",
+            "https://www.twinkl.com.au/resource/us-l-157-main-idea-graphic-organizer-activity-sheet"
+          ],
+          "inclusive_learning_strategies": [
+            "ELO 4 focuses on the development of learners’ understanding of author’s purpose (to persuade, inform, and entertain) and style (persuasive, narrative, expository, descriptive) of writing. It is important for learners to be exposed to all genres both in print and digital format in order to understand the author’s intention, hidden messages, and unique styles.",
+            "Genre often influences an author’s purpose. Begin the year by reviewing the genres and subgenres.",
+            "Compare and Contrast Venn Diagram (SCO 4.1, 4.2, 4.3) Provide learners with examples of various subgenres of fiction and nonfiction texts. - nonfiction: history, biography, autobiography, self-help, textbook, etc.",
+            "- fiction: science-fiction, mystery, folk tales, etc. Review and discuss the overall purpose of both genres, using model texts to guide the discussion. Present learners with copies of Venn diagrams or guide them into creating their own, one for fiction and one for nonfiction. Each Venn diagram should have a centre circle with circles for each subgenre connected to it.",
+            "Learners work in pairs or groups to write similarities and differences of subgenres on their Venn diagrams. What’s the purpose of this? (SCO 4.3 – 4.6) Remind learners of discussions in previous grades about author’s purpose by viewing a video such as https://www.youtube.com/watch?v=enm4afX-izA together. Pause after each description of a purpose (inform, persuade, entertain) style (persuasive, narrative, expository, descriptive) Learners find a book or passage that reflects each purpose and or style and share with peers. Groups of peers work together to create a purpose library. NOTE: Learners repeat this activity with digital texts (see below)",
+            "Websites are created with a purpose in mind (4.3-4.6): Collect a variety of learner appropriate websites and schedule opportunities for learners to visit the websites to determine its purpose. Examples include: Inform: https://kids.nationalgeographic.com/ Entertain: https://www.ducksters.com/jokes/food.php Persuade: use online ads for popular products. As learners review each site, they ask critical questions of self and peers, such as: - what am I learning? - how do I know this is true?",
+            "- where can I find information to prove it is true? - is this funny? Why? - could this hurt someone’s feelings? Why? - what is this ad trying to sell me? - do I need this or do I want this? - does this look like a good value? - what is the impact of this product on the environment?",
+            "Time Sequence as a style of writing (SCO 4.7): Engage the learners in reading activities that consist of texts written in a style that employs time sequencing words (recipe, directions, narrative, etc.) or time transition words. This will help them to recognize the order of events and make connections between the sequence of events. Provide opportunities for learners to keep a bank of time sequencing words so that they will be familiar with these and recognize them in texts easily. To begin, refer to known time sequencing words. To build vocabulary and the subtleties of language, add words such as occasionally, frequently, afterwards, preceding, etc. Source: GWickham",
+            "Examples of Time Sequencing Words: https://tinyurl.com/y7xfuurp https://tinyurl.com/bddt8ufn",
+            "BRAIDING THE STRANDS: Incorporate speaking and writing activities which utilize the use of time sequence words.",
+            "Read and view to develop understanding and recognise use of genres and text features influence meaning",
+            "E- Text Features Scavenger Hunt (SCO 4.9): - Present learners with e-texts that contain various text features. (arrows, back buttons, links to other sources, tabs, etc.) -Working in pairs or small groups, learners will read the e-texts, use the e-text features and describe their purpose for this e-text. -Learners complete the “Let’s Examine our E-Text” worksheet.",
+            "-Conclude by asking learners to discuss the differences and similarities of text features used for the paper based on e-text genres and share how each feature aided in their understanding of the texts. For a checklist of paper based and digital text features, visit: https://www.readingrockets.org/sites/default/files/2023-07/Print-and-Digital-Text-Features.pdf",
+            "Paragraph Bridge (SCO 4.10, 4.11): Aid learners to compare and contrast the types of paragraphs or stanzas used in fiction and nonfiction texts and poetry. -Highlight the format of paragraphs used in fiction e.g., beginning, middle and end. -Draw attention to the format of paragraphs used in non-fiction e.g., introduction, body, and conclusion. -Encourage learners to analyse the similarities and differences between both formats -Build on this prior knowledge by discussion what is included in each paragraph (detail, description, sequence, etc.) and compare fiction and nonfiction",
+            "Source: GWickham: -Model how the differences and similarities in format can be used to understand both fiction and nonfiction text. -Model how learners can use such knowledge to aid the understanding of texts.",
+            "Guiding Questions (SCO 4.13): Encourage learners to create questions to use as peers interact with paper based and e-content content from charts, diagrams, posters, billboards, videos, Tik Tok etc. that you have collected and filed. Create the opportunities for both teacher and learners to demonstrate the process in order to develop competency. - What is the main message or theme? - Who was this information written for? - What is being represented on the chart/graph/poster? - What is the most popular ____?",
+            "- What is the video promoting?\n- Which information is fact?\n- Which information is opinion?\n- According to the video, what are the benefits of ...?\n- Do you think enough information was provided for you to decide if you agree or disagree?\n- Do you agree with the information shared? Why? Why Not?",
+            "Read and view to develop understanding of how vocabulary and language use influence the meaning and mood of the text",
+            "Begin a lesson on mood by sharing a variety of photos from local sources such as newspapers, billboards, advertisements, community notices, etc. With each photo, ask,\n- “What information was the photographer planning to give you? How do you know?”\n- “How does this make you feel? Why?” Engage learners in a discussion of the meaning and mood ensuring that they understand that mood refers to the reader’s feelings, while meaning refers to the writer’s photographer’s purpose.",
+            "Then, present learners with a series of short passages, and repeat the steps below using each passage:\n1. Have learners read each passage individually, with a peer or in small groups.\n2. Ask learners to provide adjectives to describe how the text made them feel. Create an anchor chart of adjectives generated by learners.\n3. Ask learners to highlight or underline the words or phrases in the text that made them feel the way they did about the text.\n4. Discuss with learners, using evidence from the texts, how the author used words to create mood.\nRepeat the steps for the teaching of tone. Video clips may be used initially to add interest and cement understanding of the concepts.",
+            "BRAIDING THE STRANDS\nLearners draw emojis at the top of their writing paper, and then write short stories or scenes that are in keeping with the chosen emojis.\nReverse the process: Learners share their writing with a peers and the peers draw or use an emoji representing what they feel is the mood and tone.",
+            "first person point of view- a character is the narrator who tells the story\nthird person point of view- story is told by an outside observer who is not in the story",
+            "Visit: https://www.youtube.com/watch?v=NUZDL5AbES0 for information to introduce first and third person point of view. This video connects point of view with the pronouns in each point of view, providing learners with an easy way to determine the author’s perspective.\nConduct a conversation with learners on point of view of various narratives you’ve chosen. Sitting in a circle or with a small group, pose questions about various points of view. Learners read and analyze the text, and respond to questions such as:\n- What is the narrative’s point of view?\n- How does this point of view influence your interpretation of the story?\n- How does the author develop the point of view through the narrator?\n- Who told the story? Was the narrator a character in the story? How did the narrator affect your reading of the story?\n- How would the text have changed if a different character told the story?\n- Why do you think the author chose the narrator he/she did to tell the story?",
+            "Suggestions for books to teach point of view are available at: https://teachingmadepractical.com/books-point-of-view/ (note, while this is a commercial site, many of these books are available on YouTube).",
+            "Question Answer Relationship (QAR) (SCOs 4.17, 4.18)",
+            "Introduce the QAR strategy (see below) by explaining the four types of question/answer relationships.",
+            "Model the strategy using a short passage, and then engage learners in a shared practice activity.",
+            "Provide opportunities for independent practice, ensuring that the length and complexity of reading texts are gradually increased.",
+            "Facilitate a discussion among learners about how thinking about the relationships between questions and answers can help in understanding explicit and implied messages.",
+            "https://www.readingrockets.org/classroom/classroom-strategies/question-answer-relationship-qar",
+            "Creating Sensory Experiences (SCO 4.19)",
+            "Model the reading of the poem “The River” out loud.",
+            "Have learners take turns reading the poem out loud, and then silently.",
+            "They will highlight or underline the words that relate to their senses - sight, hearing, smell, taste, or touch.",
+            "Once senses are identified, review the meaning and purpose of simile and metaphor and which is used in The River.",
+            "Learners share their choice of sensory words and discuss how these words aided in their understanding of the poem.",
+            "The River by Valerie Bloom\nThe River's a wanderer.\nA nomad, a tramp,\nHe doesn't choose one place\nTo set up his camp.\n\nThe River's a winder,\nThrough valley and hill\nHe twists and be turns,\nHe just cannot be still.\n\nThe River's a boarder,\nAnd be buries down deep\nThose little treasures\nThat be wants to keep.\n\nThe River's a baby,\nHe gurgles and bums,\nAnd sounds like be's happily\nSucking his thumbs.",
+            "The River's a singer,\\nAs he dances along,\\nThe countryside echoes\\nThe notes of his song,\\n\\nThe River's a monster\\nHungry and vexed,\\nHe's gobbled up trees\\nAnd he'll swallow you next.",
+            "Braiding the Strand\\nLearners add the sensory words to their personal word banks and use them in poetry writing focussed on creating similes and metaphors.",
+            "INTEGRATING THE SUBJECTS: Utilize content from different subject areas, both written and digital to create poems, expository, descriptive, narrative, and persuasive pieces, posters, songs, etc."
+          ],
+          "elo_code": "LA-G5-RV-ELO3"
+        }
+      ],
+      "resources": [
+        {
+          "description": "The chart, see below, list some ways in which teachers can activate background knowledge",
+          "links": [
+            {
+              "text": "https://files.readinguniverse.org/Taxonomy/Language-Comprehension/Background-Knowledge/12-ways-to-activate-background-knowledge-reading-universe-new.pdf",
+              "url": "https://files.readinguniverse.org/Taxonomy/Language-Comprehension/Background-Knowledge/12-ways-to-activate-background-knowledge-reading-universe-new.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "This site provides teachers with online stories/videos that can be used for reading for pleasure and engagement. These can be a welcome variation from the classroom library.",
+          "links": [
+            {
+              "text": "https://storylineonline.net/",
+              "url": "https://storylineonline.net/"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Epic is a digital library designed for kids 12 and under, offering unlimited access to over 40,000 high-quality books, learning videos, and quizzes to foster a love of reading and learning.",
+          "links": [
+            {
+              "text": "https://www.getepic.com/",
+              "url": "https://www.getepic.com/"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "The following site provides the teacher with resources to help link students' background knowledge and experiences with classroom content, making learning more accessible and engaging for learners.",
+          "links": [
+            {
+              "text": "https://www.readingrockets.org/topics/background-knowledge/articles/connect-students-background-knowledge-content-ell-classroom",
+              "url": "https://www.readingrockets.org/topics/background-knowledge/articles/connect-students-background-knowledge-content-ell-classroom"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Teachers can use this website to gain information and tips on holding Socratic seminars for students. The website also outlines the advantages of student-led discussions in promoting critical thinking, academic language, and a sense of belonging. The content illustrates choosing suitable texts, preparing students, laying out the classroom, creating thought-provoking questions, and setting rules for productive and respectful conversations.",
+          "links": [
+            {
+              "text": "https://www.wherethemagichappensteaching.com/2021/07/socratic-seminars-for-elementary-students.html",
+              "url": "https://www.wherethemagichappensteaching.com/2021/07/socratic-seminars-for-elementary-students.html"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "This site provides opportunities for motivating students to read. It furnishes teachers with resources and offers strategies for integrating reading into the daily routine of students, supporting their literacy development through various activities and materials designed to enhance their enjoyment and motivation to read.",
+          "links": [
+            {
+              "text": "https://clpe.org.uk/system/files/Reading%20for%20Pleasure.pdf",
+              "url": "https://clpe.org.uk/system/files/Reading%20for%20Pleasure.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "In the typical Caribbean classroom, there is a variety of abilities, interests, and other needs. This site provides guidance and strategies to help teachers foster a love of reading among students. It includes approaches for creating a positive reading environment, encouraging students to connect with texts emotionally, and developing self-regulation strategies to enhance reading comprehension. It also emphasizes the importance of tailored instruction to meet diverse student needs and offers various techniques for monitoring and supporting student progress in literacy.",
+          "links": [
+            {
+              "text": "https://www.education.vic.gov.au/Documents/school/teachers/teachingresources/discipline/english/literacy/Reading_Engagement_and_Enjoyment_Oct2023.pdf",
+              "url": "https://www.education.vic.gov.au/Documents/school/teachers/teachingresources/discipline/english/literacy/Reading_Engagement_and_Enjoyment_Oct2023.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Developing Critical thinking skills in learners. Teachers can use the following video to plan activities. It offers various strategies for teachers to develop learners' critical thinking abilities during speaking exercises. It underscores the significance of interactive methods like debates, discussions, and problem-solving assignments that prompt learners to express their ideas, challenge assumptions, and assess evidence critically. The video also emphasizes the value of fostering a welcoming classroom atmosphere where learners are encouraged to share their thoughts and participate in meaningful conversations.",
+          "links": [
+            {
+              "text": "https://www.bing.com/videos/riverview/relatedvideo?q=resources+for+listening+and+speaking+for+teachers&mid=1E1473372B46DC7DAAF71E1473372B46DC7DAAF7&FORM",
+              "url": "https://www.bing.com/videos/riverview/relatedvideo?q=resources+for+listening+and+speaking+for+teachers&mid=1E1473372B46DC7DAAF71E1473372B46DC7DAAF7&FORM"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "The following video provides practical advice for educators to improve critical thinking in the classroom through techniques like asking open-ended questions, fostering debate, using real-world problems, and encouraging reflective thinking. It stresses the significance of establishing a supportive environment for learners to question assumptions and consider diverse viewpoints.",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=4rXptKkXIDQ",
+              "url": "https://www.youtube.com/watch?v=4rXptKkXIDQ"
+            },
+            {
+              "text": "https://www.youtube.com/watch?v=xRkB1crU1a4",
+              "url": "https://www.youtube.com/watch?v=xRkB1crU1a4"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Venn diagram for fiction and nonfiction subgenres",
+          "links": [
+            {
+              "text": "Venn diagram image",
+              "url": "https://guides.lib.wayne.edu/c.php?g=174739&p=1152065"
+            },
+            {
+              "text": "Children's book types",
+              "url": "https://www.yourdictionary.com/articles/childrens-book-types"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Video on author's purpose",
+          "links": [
+            {
+              "text": "YouTube video",
+              "url": "https://www.youtube.com/watch?v=enm4afX-izA"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Websites for analyzing purpose",
+          "links": [
+            {
+              "text": "National Geographic Kids",
+              "url": "https://kids.nationalgeographic.com/"
+            },
+            {
+              "text": "Ducksters Jokes",
+              "url": "https://www.ducksters.com/jokes/food.php"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Time sequencing words chart",
+          "links": [
+            {
+              "text": "Time Words chart",
+              "url": "https://www.yourdictionary.com/articles/childrens-book-types"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Readers’ Theatre: These videos provide useful tips and steps to help teachers implement Readers Theatre in their classroom. Have students view the video then discuss each component with them.",
+          "links": [
+            {
+              "text": "Readers’ Theatre",
+              "url": "https://youtube.com/playlist?list=PLg5_HJO86d4fp_r-GhStIJ0XturZaEAtS&si=0fi4jkfUBaPD_yJM"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "This site provides a wide range of reading passages for students from grade 3 upwards. The passages are accompanied by questions designed to assist students in grasping the author's language usage, text features, and styles.",
+          "links": [
+            {
+              "text": "https://www.commonlit.org/",
+              "url": "https://www.commonlit.org/"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Newsela offers free articles from various genres, adapted to different reading levels. The articles are accompanied by questions and activities that prompt students to analyse vocabulary and text features.",
+          "links": [
+            {
+              "text": "https://newsela.com/",
+              "url": "https://newsela.com/"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "This site provides free interactive reading lessons and activities, along with tools for analysing texts and comprehending various literary",
+          "links": [
+            {
+              "text": "https://www.readwritethink.org/",
+              "url": "https://www.readwritethink.org/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Explaining the author’s purpose",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=R_bgo8j6jxc",
+              "url": "https://www.youtube.com/watch?v=R_bgo8j6jxc"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "This blog post explains the importance of text features and how they can be taught.",
+          "links": [
+            {
+              "text": "https://www.voyagersopris.com/vsl/blog/what-are-text-features-and-how-to-teach-them",
+              "url": "https://www.voyagersopris.com/vsl/blog/what-are-text-features-and-how-to-teach-them"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "This article introduces the concept of “Text Feature Walk”. It explains how this strategy can be used along with common text features.",
+          "links": [
+            {
+              "text": "https://www.readingrockets.org/topics/comprehension/articles/guiding-learners-through-expository-text-text-feature-walks",
+              "url": "https://www.readingrockets.org/topics/comprehension/articles/guiding-learners-through-expository-text-text-feature-walks"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "The link provides information on text features and suggestions for teaching them in groups according to their purpose.",
+          "links": [
+            {
+              "text": "https://whatihavelearnedteaching.com/text-features/",
+              "url": "https://whatihavelearnedteaching.com/text-features/"
+            }
+          ],
+          "category": "Teacher Materials"
+        }
+      ]
+    },
+    {
+      "strand_name": "Writing and Representing",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Learners will generate, gather, and organize thoughts to explore, clarify and reflect on thoughts, feelings, and experiences as they create a written or representative draft, independently and collaboratively, for a range of audiences and purposes.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "LA-G5-WR-SCO1.1",
+              "description": "5.1 Generate, gather and organize ideas and information to write for an intended purpose and audience."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.2",
+              "description": "5.2 Reflect on and identify their strengths as writers, areas of improvement and the strategies they found most useful at different stages of the writing process."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.3",
+              "description": "5.3 Brainstorm content for short research projects that build knowledge about a topic."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.4",
+              "description": "5.4 Continue to use personal interests or community experiences, music, books, documentaries, videos, pictures as writing prompts"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.5",
+              "description": "5.5 Maintain writing portfolios - drafts, revisions, personal writing prompts, etc."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.6",
+              "description": "5.6 Use a variety of paper-based and digital resources to gather information to support and enhance the brainstorming process"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.7",
+              "description": "5.7 Examine samples of different genres as models for organizing a sequence of events, changes in setting, and character development"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.8",
+              "description": "5.8 Develop competence in organizing and arranging ideas and information to write for an intended purpose and audience."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.9",
+              "description": "5.9 Organize and strengthen writing during drafting stage"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.10",
+              "description": "5.10 Create and use simple paper based or digital graphic organizers to aid the organization of ideas (e.g., five-finger plan, story map, web, list, five Ws, and graphic organizers for specific forms of writing.)"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.11",
+              "description": "5.11 Continue to explore and experiment with various ways to express their thoughts and ideas in various text forms (e.g., Narrative, Descriptive, Expository, Persuasive)"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.12",
+              "description": "5.12 Continue to utilize strategies to organize ideas into a draft that supports the topic, enhances clarity, and sequences logically"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.13",
+              "description": "5.13 Demonstrate understanding by using linking words and phrases to develop a logical progression of ideas and thoughts (e.g., linking/connecting words for emphasis, contrast, reasoning, illustration, etc.)"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.14",
+              "description": "5.14 Continue to explore and represent in written pieces: - introductory/topic sentences - concluding sentences - paragraphs"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.15",
+              "description": "5.15 Continue to develop purpose and use of the form of simple, compound, and complex sentences."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.16",
+              "description": "5.16 Build on existing knowledge of the various genres: - narrative writing -expository writing -descriptive writing -persuasive writing -poetry - (rhyme, limerick, shape) -book reports"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO1.17",
+              "description": "Write and represent to generate and gather thoughts to explore ideas, feelings and experiences"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "The focus of formative assessment throughout the writing process shifts according to the stage of writing: ELO 5: Brainstorming and prewriting: focus on the exploration and generation of ideas and details",
+            "ELO 5: Drafting: focus on organization of ideas and details to match the genre of writing",
+            "ELO 6: Revising: Focus on sentence fluency, word choice and grammar",
+            "ELO 7: Editing and Presentation: Focus on Spelling, Tidiness and Presentation",
+            "CONVERSATIONS AND OBSERVATIONS: ELO 5 provides teachers with an opportunity to focus their observations and feedback on the generation of ideas and the initial organizing of those ideas into a draft. As such, feedback provides questions that lead learners to think of more possibilities.",
+            "Begin the year with a general sense of how writing progresses from Grade 3 to senior high, visit https://educationnorthwest.org/sites/default/files/5-pointwriters-rubric.pdf for a comprehensive rubric.",
+            "For more specific genre based information about learner progress from grades 3-5, visit: https://tb2cdn.schoolwebmasters.com/accent_586545/site_586546/Documents/5th-Grade-Formative-Writing-Evaluation-Guide.pdf",
+            "Products: Reflection Journals: Learners document their thoughts, feelings, and experiences throughout the drafting and prewriting process. Ongoing communication with the teacher and peers provides opportunities for anecdotal notes about learner progress and a foundation for feedback.",
+            "Genre Knowledge: By Grade 5, learners are developing more confidence in distinguishing the format and content of various genres. Braid the strands of Reading and Writing by encouraging discussions about the writing of style of authors encountered during Teacher Read Aloud and Learner Independent Reading. Ask questions such as: Which genre is this? - biography -science fiction -mystery Why do you think that? Find another text that is the same genre.",
+            "During the drafting stage, make anecdotal notes about the learner’s understanding of the genre being studied.",
+            "Peer and Self-Assessment: Learners evaluate their own work and provide feedback to their peers. This simple checklist provides learners with a series of statements that allow for check-ins throughout all stages of the writing process. https://www.readingrockets.org/topics/assessment-and-evaluation/articles/simple-ways-assess-writing-skills-students-learning"
+          ],
+          "inclusive_learning_strategies": [
+            "ELO 5 provides opportunities for learners to engage in the processes of brainstorming and creating a first draft. Learners will be provided with a versatile and expressive framework for generation, gathering, and exploring thoughts, ideas, feelings, and experiences, ultimately fostering self-discovery, communication, and personal growth.",
+            "As the writing process begins, you may wish to share sections of this video as a reminder of how the process unfolds. The Writing Process",
+            "Write and represent to generate and gather thoughts to explore ideas, feelings and experiences",
+            "Graphic Organizers: (SCO 5.1, 5.3, 5.13)",
+            "Remind students of why brainstorming and prewriting activities are the beginning of the writing cycle.",
+            "Then, demonstrate the process by writing an idea on the board (or software such as WordCloud) and think aloud as you",
+            "generate words, phrases, additional ideas related to the idea. To demonstrate the benefit of peer sharing, encourage learners to share their ideas. They can in a given time frame. This helps students expand their vocabulary and generate diverse ideas.",
+            "Once this demonstration has been completed. Learners work individually or in pairs to create their own brainstorm.",
+            "Next, provide learners with a choice of graphic organizers to visually map out their ideas",
+            "Use of Mentor Text (SCO 5.7): Remind learners of the genre and subgenre of the writing assignment by reading aloud an excerpt of a mentor text that reviews the purpose and format of the genre / subgenre. Engages learners in a discussion of how the mentor text reflects the genre / subgenre. Learners then explore various digital and paper based texts that demonstrate the genre / subgenre.",
+            "Peer Modelling: (SCO 5.2): Pair learners with varying skill levels and have them observe each other's prewriting and drafting. This will support learning from their peers and promote inclusivity and collaboration in the classroom. OR, Encourage learners to interview each other about their thoughts, experiences, or opinions about a writing topic. Learners take notes that may be useful as they begin their idea generation or drafting.",
+            "Independent Writing (SCO 5.5): Schedule time (10 minutes, 2-3 times a week) for learners to write in their private e-journals or paper based journals. This writing is not for marking; simply an opportunity for learners to explore their ideas and thoughts. For example, a learner may wish to write a letter to themselves, someone else, or even an abstract concept (e.g., fear, hope) to express thoughts, feelings, and experience the power of shower thoughts in writing.",
+            "Portfolios (SCO 5.4, 5.5): Use a portfolio to keep track and authentically capture the progress of students’ writing. Throughout the year, Learners will create an inventory of topics/ideas/writing prompts to begin writing as well as drafts, revisions and final copies. Visit: https://jenniferfindley.com/writing-portfolios/",
+            "Gallery Walk: (SCO 5.4, 5.7): Display examples of ideas and drafts around the classroom. Learners observe different approaches to idea generation, drafting and prewriting, and gather inspiration for their own writing. NOTE: Before posting learner work, ask for permission from the learner and ensure the class realizes that posted ideas and drafts are intended to share ideas, not to assess by peers.",
+            "Online mind mapping tools: (SCO 5.10) Once brainstorms and prewriting activities are complete, demonstrate how to use an online mind mapping tool and encourage students to map out their ideas.",
+            "INTEGRATING THE SUBJECTS: Mind mapping provides an opportunity for learners to maintain written records of content learned and explored in other subject areas.",
+            "Storyboarding: (SCO 5.10) Demonstrate or provide examples storyboards and provide opportunities for Learners create paper based or digital storyboards or visual outlines of their writing ideas using drawings, images, or symbols.",
+            "Learners can also use a website in creating a story: https://www.imagineforest.com/story/creator Learners use this website to create newspaper articles,(variety of genres) https://www.fodey.com/generators/newspaper/snippet.asp Learners use this website to create and expand on their persuasive writing. https://interactives.readwritethink.org/persuasion-map?_gl=1*101av7y*_ga*MzQ5NTIxMzA5LjE3MTMyNDQzOTg.*_ga_PPJBE9BR3H*MTcxNjgzMTM1My4xLjEuMTcxNjgzMTM1My4wLjAuMA",
+            "Write and represent to create a written or representative draft",
+            "Anchor Texts and Mentor Texts (SCO 5.11): Throughout the writing process for each assignment, refer to anchor texts and mentor texts by author to remind learners of the purpose and format of each genre and subgenre.",
+            "INTEGRATING THE SUBJECTS: Choose anchor texts from social studies, science, health and wellness, or the arts to remind learners that writing and genre study encompasses all learning experiences.",
+            "Becoming familiar with drafting digital tools: (SCO 5.12) Text Expansion Tools: Use text expansion software like Text Expander or Phrase Expander to create shortcuts for frequently used phrases, prompts, or templates. This can save time and streamline your writing process, especially for repetitive tasks.",
+            "Timeline Tools: Use timeline software such as Tik-Tok or Timelines to visually represent chronological sequences of events, experiences, or ideas. Timelines help see patterns, progressions, and relationships over time.",
+            "The following links provide a variety of story organizers that can be used throughout the year and with learners requiring varying degrees of support. This link is designed to help learners outline the key elements of a story, including the setting, main characters, and sequence of events https://www.readingrockets.org/sites/default/files/2023-11/graphic-organizer-story-frame.pdf",
+            "This link provides help for learners detail the main characters, setting, problem, and solution of a story https://www.readingrockets.org/sites/default/files/migrated/pdfs/storymap_complex3.pdf",
+            "Scan codes to download the supportive templates:",
+            "Event Pyramid",
+            "Story Map"
+          ],
+          "elo_code": "LA-G5-WR-ELO1"
+        },
+        {
+          "elo_description": "Learners will revise the organization and language use in drafted writing or representation, collaboratively and independently, for a variety of purposes and audiences.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "LA-G5-WR-SCO2.1",
+              "description": "6.1 Analyse and identify different organization styles used in written drafts and representations, including narrative, descriptive, expository, persuasive structures"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.2",
+              "description": "6.2 Evaluate the effectiveness of organization styles within various subgenres."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.3",
+              "description": "6.3 Revise written drafts to improve organization by selecting and applying appropriate organization styles based on the purpose, audience, and content of the writing."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.4",
+              "description": "6.4 Demonstrate proficiency in using graphic organizers, outlines, and other planning tools to structure and organize ideas effectively in written drafts."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.5",
+              "description": "6.5 Communicate ideas clearly and coherently through written drafts, employing transitions, topic sentences, and logical sequencing to enhance organization and flow."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.6",
+              "description": "6.6 Reflect on their own writing process and make strategic decisions to refine organization styles based on feedback from peers and teachers."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.7",
+              "description": "6.7 Apply organization principles learned in writing drafts to other forms of representation, such as presentations, posters, and multimedia projects, to effectively communicate information and ideas."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.8",
+              "description": "6.8 Expand their vocabulary repertoire by identifying and incorporating a variety of precise and descriptive vocabulary words into their written drafts."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.9",
+              "description": "6.9 Demonstrate the ability to select appropriate synonyms and antonyms to enhance the clarity, depth, and richness of their vocabulary choices in written compositions"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.10",
+              "description": "6.10 Apply context clues and word analysis strategies to infer the meanings of unfamiliar vocabulary words encountered in written drafts and effectively incorporate them into their writing."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.11",
+              "description": "6.11 Revise and refine their written drafts by replacing generic or repetitive vocabulary with more specific and nuanced language to convey precise meanings and evoke vivid imagery."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.12",
+              "description": "6.12 Analyse the impact of word choice on the tone, mood, and overall effectiveness of their written compositions, making deliberate decisions to select vocabulary that aligns with the intended rhetorical purpose and audience."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.13",
+              "description": "6.13 Reflect on their vocabulary learning process, identifying strengths and areas for growth, and setting goals for further expanding and diversifying their vocabulary skills in future writing endeavours."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.14",
+              "description": "6.14 Engage in peer collaboration and feedback sessions to receive input on their vocabulary usage in written drafts, providing constructive suggestions for improvement and implementing revisions based on peer and teacher feedback."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.15",
+              "description": "6.15 Identify and correct grammatical errors in written drafts, including errors related to verb tense, subject-verb agreement, punctuation, and sentence structure."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.16",
+              "description": "6.16 Revise written drafts to enhance sentence fluency, ensuring that sentences are varied in length and structure, and flow smoothly from one to the next."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.17",
+              "description": "6.17 Apply knowledge of sentence-level grammar rules and conventions to improve the clarity, coherence, and readability of written compositions."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.18",
+              "description": "6.18 Demonstrate mastery of transitional devices and cohesive elements to connect ideas within and between sentences, paragraphs, and sections of written drafts."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.19",
+              "description": "6.19 Analyse the impact of different sentence structures and stylistic choices on the overall effectiveness and tone of written compositions."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.20",
+              "description": "6.20 Collaborate with peers to provide and receive constructive feedback on grammar and sentence fluency in written drafts, incorporating feedback to revise and improve the quality of writing."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.21",
+              "description": "6.21 Reflect on personal growth and development in language use, identifying areas of strength and areas for improvement in grammar and sentence fluency skills."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.22",
+              "description": "6.22 Apply revision strategies and techniques learned in the writing process to independently revise and polish written drafts for grammar and sentence fluency prior to final submission."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.23",
+              "description": "6.23 Demonstrate an enhanced ability to effectively express ideas and convey meaning through written and visual representations, employing appropriate language use, clarity, and coherence."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.24",
+              "description": "6.24 Understand and use formal, informal, Home Language and Standard English as appropriate to the purpose, topic, setting, plot line and characters in writing."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.25",
+              "description": "6.25 Continue to engage in individual and peer revision opportunities to share drafts and provide/ receive feedback on elements of grammar and sentence fluency such as: -use of simple verb tenses (e.g., I walked; I walk; I will walk) -comparative and superlative adjectives and adverbs, -subject and verb and pronoun-antecedent agreement -use of simple, compound and complex sentence patterns"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.26",
+              "description": "6.26 Make use of reference material (e.g., dictionaries, glossaries, thesauruses), both print and digital, to find the pronunciation and determine or clarify the precise meaning of key words and phrases for use in their writing."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.27",
+              "description": "6.27 Make use of figurative language to revise and enhance their writing (e.g., similes, metaphors, onomatopoeia, hyperbole, idioms, alliteration, etc.)"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO2.28",
+              "description": "-determining complete and incomplete sentences"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Formative is an ongoing cycle of observation, reflection, and feedback promotes a growth mindset and enables students to critically analyse and improve their work, ensuring it effectively serves various audiences and purposes. Throughout ELO 6, formative assessments focus on revision: improving organization, sentence fluency, word choice, and grammar. (ELO 7 focuses on spelling, capitalization, presentation and tidiness.)",
+            "Writing Conference: Schedule individual or small group conferences to discuss specific organization, vocabulary, grammar, and sentence fluency progress and next steps in students' drafts. Use anecdotal notes to record progress and the next steps of instruction. Always share your notes with the learner as you peruse the learner’s revisions together. Begin with statements about what’s been accomplished, followed by a heads up about the next stage of learning and expectations.",
+            "Reflection Journal: The Learner’s Observation Journal helps learners evaluate their development and receive targeted feedback from the teacher and peers.",
+            "SELF ASSESSMENT: Use the 6 +1 Traits of Writing to help learners understand the process in writing their drafts. By self-monitoring each step of the writing process, learners will develop proficiency in generating, gathering, and organizing ideas and information while writing for an intended purpose and audience to complete writing up to their final draft. ELO 5: Ideas and Organization",
+            "ELO 6: Organizations, Word Choice, Sentence Fluency, Grammar",
+            "ELO 7 Conventions and presentation",
+            "At the beginning of the year, co-create a class rubric with learners using learning friendly language. Provide a copy for learners to place in their portfolio as a self check. Visit https://www.smekenseducation.com/use-a-six-traits-rubric-for-efficient-assessment/ for an interesting video of how this process unfolds.",
+            "PEER ASSESSMENT: Learners will use a variety of assessment tools to engage in independent and peer revision of their drafts. Using the revision column only (editing occurs in. ELO 7), peers will facilitate the revision process by providing feedback highlighting what has been accomplished.",
+            "Two Stars and a Wish: This strategy is a simple and effective feedback method often used in educational settings to help students improve their work. This strategy involves providing two positive comments (the \"stars\") and one suggestion for improvement (the \"wish\"). Star 1: \"Your characters are very well-developed, and their dialogues feel realistic and engaging.\" Star 2: \"The plot is well-structured, with a clear beginning, middle, and end that keeps the reader interested.\" Wish: \"I wish you would add more sensory details in the setting descriptions to help the reader visualize the scenes more vividly.\"",
+            "https://www.youtube.com/watch?v=8uPemctju5g: Gallery Walks Continue the Gallery Walks started during ELO 5 for learner supplied examples of the revision process. Gallery Walk.",
+            "CONVERSATIONS: Examples of teacher learner conversations include: Teacher-student conferences, Student feedback/free talk, Small group discussion and feedback",
+            "Padlet: Padlet is an online bulletin board platform where students create digital portfolios by adding text, images, links, and documents. Students can",
+            "organize their vocabulary entries into customizable columns or categories, making it easy to navigate and update their portfolios. https://padlet.com/",
+            "Grammar and Sentence Fluency Checklists: Choose samples of drafts and final copies to display in writing stations. Learners will move through each station and focus on a specific aspect of grammar or sentence fluency (e.g., sentence variety, transition words, descriptive language, etc.) to review."
+          ],
+          "inclusive_learning_strategies": [
+            "ELO 6 highlights the importance of both collaborative and independent revisions of organization, word choice, sentence fluency, grammar and voice recognizing the value of applying new learning, feedback, and ongoing self-assessment. Ultimately, it prepares learners to adapt their work for various purposes and audiences, ensuring clear, coherent, and effective communication.",
+            "Treasure Hunt (SCO 6.1, 6.2): Provide learners with short sections of written drafts. Learners review, name the subgenre represented and form explanations of how they know it is this subgenre by making reference to knowledge of their different organization styles.",
+            "Graphic Organizers: (SCO 6.2, 6.4, 6.5): Referring to the drafts created during the drafting stages of ELO 5, demonstrate how to use various graphic organizers to help learners structure their writing and visually represent their ideas (e.g., mind maps, flowcharts, Venn diagrams, and story maps). Once demonstrated, learners choose a graphic organizer to further develop their draft and guide their revisions.",
+            "Think-Pair-Share (SCO 6.6, 6.7): Share a think aloud as you read aloud your writing and consider revisions to the organisation. For paper based example, use arrows to show movement of text or strikeout to remove text. For digital examples, demonstrate how to use revision tools. Once demonstrated learners work together or in pairs to revise the organization of their drafts.",
+            "Visual Supports (SCO: 6.8, 6.11): INTEGRATING THE SUBJECTS: Collect words of interest throughout all subject areas. Discuss their use and meaning and place on a word wall. Learners will make use of words from the word wall to reinforce vocabulary usage for writing.",
+            "Vocabulary Portfolio: (SCO 6.8-6.11): Insert a “Vocabulary I’ve Learned” page in each learner’s writing portfolio. Learners will be provided with a tangible record of their vocabulary growth and serves as a valuable resource for self-assessment, reflection, and goal-setting.",
+            "Word Wall Jeopardy (SCO: 6.10): Learners will solve riddles from clues related to the words on the wall to find the correct word based on the clue and use it in a sentence.",
+            "Vocabulary Words Jeopardy",
+            "Learning Centres for Writing: (SCO: 6.20, 6.21, 6.22): Remember that writers may proceed through the various stages of the writing process at different rates. Create learning centres to support the different stages of the writing process. Offer tiered assignments, flexible grouping, and scaffolding strategies to support students who may require additional assistance or challenge. For example: Brainstorm centre: Provide various brainstorming techniques such as mind mapping, freewriting, or listing. Offer prompts related to personal experiences, fictional scenarios, or current events to inspire story ideas. Writing centre: Offer a quiet space for students to focus on writing their composition. Provide resources such as writing prompts, graphic organizers, or sentence starters for students who need additional support.",
+            "Peer review centre: Set up a station where students can exchange their drafts with peers for feedback. Provide guidelines or rubrics to guide peer reviews and constructive criticism.",
+            "Multimedia centre: Offer multimedia resources for students to explore visual storytelling techniques, such as photography, video clips, or artwork. Provide inspiration for incorporating visuals into their compositions.",
+            "Reflection Center: Create a reflective space where students can assess their progress, identify strengths and areas for growth, and set goals for future writing tasks.",
+            "Grammar Workshop: (SCO: 6.20, 6.21, 6.22): Offer short, focused mini-lessons on common grammar issues such as subject-verb agreement, punctuation, verb tenses, and sentence structure. Begin each mini lesson by viewing pieces of writing that demonstrate the concept. These specific mini-lessons activities assist learners as they revise their draft to improve writing.",
+            "BRAIDING THE STRANDS: During oral language activities, reinforce the concepts mentioned above.",
+            "Let’s Explore (SCO: 6.24, 6.26): Schedule 2 minutes transition time opportunities for learners use their digital dictionaries and thesauri to explore characteristics of new words in Standard English or Home Language that have appeared in news items, teacher read Alouds, Independent Reading, etc. (definitions, synonyms, antonyms, word origins etc.)",
+            "Collaborative Writing and visual projects: (SCO 6.25): During Independent Writing Time (2-3 times weekly for 5-10 minutes) learners may write independently or work in groups to create their choice of story books or posters, integrating written and visual elements.",
+            "Game On (SCO 6.27): Learners participate in various games which encourage them to practice the use of figurative language. After each correct or incorrect response, the learners explain why.",
+            "Figurative language game - Teaching resources",
+            "The language of lyrics (SCO 6.27) Listen to popular songs and make note figurative language used. Learners choose phrases or expressions from the song to enhance their writing. Remember that an author’s unique phrases and expressions must be attributed."
+          ],
+          "elo_code": "LA-G5-WR-ELO2"
+        },
+        {
+          "elo_description": "Learners will use their knowledge of spoken language, written language and writing conventions to refine the precision and enhance the meaning and clarity of their written work.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "LA-G5-WR-SCO3.1",
+              "description": "7.1 Continue to apply learning and further develop proficiency in spelling, contributing to the overall quality of written work (affixes, synonyms, antonyms, root words)"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.2",
+              "description": "7.2 Transfer understanding of spelling conventions across various subjects"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.3",
+              "description": "7.3 Further develop self-monitoring strategies to notice and correct spelling errors"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.4",
+              "description": "7.4 develop proficiency in the use of punctuation conventions, including: full stops, commas, apostrophes, other punctuation marks as needed to accurately convey meaning and enhance the clarity of written work."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.5",
+              "description": "7.5 Begin to make decision about the strategic use of punctuation, considering the potential impact on sentence structure and overall coherence of the passage"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.6",
+              "description": "7.6 Connect punctuation choice to decisions about style and format"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.7",
+              "description": "7.7 Develop the ability to choose a variety presentation formats throughout the year based on the nature of the content and the intended audience"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.8",
+              "description": "7.8 Integrate visual elements, including images, charts, graphs, and other graphics, into written work to enhance overall clarity and appeal to the reader."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.9",
+              "description": "7.9 Publish written work for varying audiences using various tools"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.10",
+              "description": "7.10 Engage in collaborative projects to create and present written content using various formats."
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.11",
+              "description": "7.11 Add titles, cover images, tables of content, glossaries, book blurbs, information about the author, etc. as needed"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.12",
+              "description": "Develop and make use of the writing conventions to enhance the meaning and clarity of their written work with increased attention to develop spelling conventions"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.13",
+              "description": "Write and represent to develop punctuation conventions to enhance the meaning and clarity of their written work"
+            },
+            {
+              "sco_code": "LA-G5-WR-SCO3.14",
+              "description": "Write and represent to develop presentation formats to enhance the meaning and clarity of their written work"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "ELO 7 requires the learners to use their knowledge of the conventions of spoken and written language to enhance their written work. The assessment strategies which follow are a few suggestions to assess progress in the conventions (spelling and punctuation), tidiness and presentation.",
+            "CONVERSATIONS",
+            "Teacher-student conference - Learners will enhance their writing with ideas focused on conventions generated from the conference with the teacher. Learners are encouraged to review their own writing before the conference and find 5 examples of correct conventions and 2-3 conventions of which they are unsure.",
+            "Peer Editing- Help A Friend - Learners will engage in peer editing to edit and review the writing of their peers.",
+            "https://sharemylesson.com/teaching-resource/peer-editing-narratives-278168",
+            "OBSERVATION",
+            "Teachers spend a LOT of time correcting errors in learners’ writing. Here’s a way to save some time ad build student independence. Rather than correcting all errors in a learner’s writing, put a dot in the margin of the line with a spelling error and a dash in the margin for a punctuation error. This signals the student to find the error and use the strategies and resources they’ve been taught to correct the error.",
+            "NOTE: For learners who make frequent errors, choose only the most “important” errors that provide the learner with a chance to self-correct. This provides the learner with success and a sense of confidence.",
+            "Tools Make it Better - Learners will make use of a variety of tools (checklists, rubrics, peer review forms, etc.) to refine and publish their work in suitable formats (written, digital). This example, used in ELO 6 for revision, may be revisited for the editing process.",
+            "I'm a Reviewer: Learners use punctuation checklists to review and improve their writing.",
+            "TAG Me: As students and teachers read or listen to students’ published work, they may leave a comment or critique using TAG strategy",
+            "TAG Strategy: T - tell something you like, A - ask a question, G - give a suggestion",
+            "SELF-ASSESSMENT: Students will conduct a personal reflection of their writing experience, highlighting their successes as well as challenges.",
+            "PRODUCTS: Podcasts - Interview the author - questions may be asked of the writers centred on their writing experience - for example, how they decided on this particular story, challenges in creating ideas for their story, etc. Interviews are recorded and published in Google Classroom and other acceptable digital platforms.",
+            "Anchor charts: In groups, create a classroom punctuation poster which highlights the punctuation marks and their functions.",
+            "As an assessment, provide learners will be given a piece of writing missing punctuation marks to punctuate."
+          ],
+          "inclusive_learning_strategies": [
+            "The following suggestions for learning strategies will assist learners to refine the precision and enhance the meaning and clarity of their written work.",
+            "Develop and make use of the writing conventions to enhance the meaning and clarity of their written work with increased attention to develop spelling conventions",
+            "Word Walls (SCO 7.1, 7.2, 7.3)",
+            "INTEGRATING THE STRANDS Engage learners in the development of Word Walls throughout the year by suggesting words encountered in all subject areas.",
+            "As words are entered on the Word Wall, take time point out interesting features of the words that may help learners to connect meaningfully with the spelling - a suffix or prefix that can be removed to change the meaning, an ending that may rhyme with other words, an unusual combination of letters, words from other languages",
+            "To build independence, encourage learners to refer to word walls, digital dictionaries, and Word editing tools before asking for spelling assistance from their peers and teacher.",
+            "Spelling Instruction that makes sense (7.1, 7.2,7.3) Ensure spelling instruction is always connected to words and texts that are authentic to classroom learning. Using a site such as https://www.nightzookeeper.com/language-arts/spelling/grade-5 as a guide, gather words from all subject areas that connect to one of the common spelling patterns taught in Grade 5. Provide time to read the words in sentences, deconstruct each word in to roots, prefixes, suffixes, etc. and practice writing the words in the context of a sentence. Rather than weekly word lists, provide regular opportunities for learners to demonstrate their knowledge of spelling in the context of sentences and paragraphs.",
+            "Additional suggestions for spelling instruction that makes sense are available at https://www.edutopia.org/article/11-ways-to-boost-elementary-students-spelling-skills/",
+            "Let’s Edit (SCO 7.3) Introduce learners to common editing marks used in revising writing and their meanings (see below). Then provide writing samples to practice editing using the editing marks which they learnt",
+            "Write and represent to develop presentation formats to enhance the meaning and clarity of their written work",
+            "Patrol Your Writing (Call the Cops) (SCO: 7.4, 7.5, 7.6): Engage learners in an exploration of various punctuation marks and how they affect and enhance writing. Read individual sentences aloud without and with punctuation and discuss the difference. They will then use them to improve their writing. For some examples, visit: https://digitalsynopsis.com/tools/punctuation-marks-importance-rules-usage/",
+            "Punctuation, Who Do You Know (SCO: 7.6): Assign a punctuation mark to individual students to personify. Engage in a panel discussion where each punctuation panellist describes their role and why their role is MOST important. Observing students decide which punctuation is the most important and justify their choice.",
+            "Punctuation and Social Media (SCO: 7.4): Schedule time for learners to research how emojis have had an influence on our use of punctuation marks. They will then make a presentation to the class on the meaning and uses of the emoji vs the punctuation mark showing examples.",
+            "Digitize my story (SCO: 7.8, 7.9): Create ‘publications’ of their writing pieces using free websites such as Story Jumper, Bloom Library, these may be printed or kept in digital format. Students may add illustrations, audio as well as share their projects.",
+            "Publishing Party(SCO: 7.10): Host an author celebration of the wide range of genres, topics, formats (paper based or digital) and publishing styles learners have accomplished within the year. Learner choose the piece of writing they wish to share.",
+            "Teacher may wish to create an inexpensive red carpet (a piece of red fabric or strip of craft paper with stars painted on it) students may dress up, take turns walking the red carpet while photos are taken; they share their writing with the audience. Make use of the various presentation styles: Use of Microsoft (PowerPoint, Word) and Google (Slides) tools to present their writing pieces. Use of Google Classroom - students may place their writing in a shared drive which can be shared with others to access and leave comments after reading their writing pieces.",
+            "Schedule time for an audience Q and A.",
+            "Writing Portfolios (SCO: 7.9): Use writing portfolios to make a compilation of published pieces of writing. Learners will use folders to create their writing portfolios."
+          ],
+          "elo_code": "LA-G5-WR-ELO3"
+        }
+      ],
+      "resources": [
+        {
+          "description": "5-Point Writers Rubric",
+          "links": [
+            {
+              "text": "5-Point Writers Rubric",
+              "url": "https://educationnorthwest.org/sites/default/files/5-pointwriters-rubric.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "5th Grade Formative Writing Evaluation Guide",
+          "links": [
+            {
+              "text": "5th Grade Formative Writing Evaluation Guide",
+              "url": "https://tb2cdn.schoolwebmasters.com/accent_586545/site_586546/Documents/5th-Grade-Formative-Writing-Evaluation-Guide.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Free Graphic Organizer Templates",
+          "links": [
+            {
+              "text": "Free Graphic Organizer Templates | Houghton Mifflin Harcourt",
+              "url": "https://hmhco.com"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Simple Ways to Assess Writing Skills",
+          "links": [
+            {
+              "text": "Simple Ways to Assess Writing Skills",
+              "url": "https://www.readingrockets.org/topics/assessment-and-evaluation/articles/simple-ways-assess-writing-skills-students-learning"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Writing Portfolios",
+          "links": [
+            {
+              "text": "Writing Portfolios",
+              "url": "https://jenniferfindley.com/writing-portfolios/"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Online mind mapping tool",
+          "links": [
+            {
+              "text": "online mind mapping tool",
+              "url": "https://www.imagineforest.com/story/creator"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Website for creating newspaper articles",
+          "links": [
+            {
+              "text": "https://www.fodey.com/generators/newspaper/snippet.asp",
+              "url": "https://www.fodey.com/generators/newspaper/snippet.asp"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Website for persuasive writing",
+          "links": [
+            {
+              "text": "https://interactives.readwritethink.org/persuasion-map?_gl=1*101av7y*_ga*MzQ5NTIxMzA5LjE3MTMyNDQzOTg.*_ga_PPJBE9BR3H*MTcxNjgzMTM1My4xLjEuMTcxNjgzMTM1My4wLjAuMA",
+              "url": "https://interactives.readwritethink.org/persuasion-map?_gl=1*101av7y*_ga*MzQ5NTIxMzA5LjE3MTMyNDQzOTg.*_ga_PPJBE9BR3H*MTcxNjgzMTM1My4xLjEuMTcxNjgzMTM1My4wLjAuMA"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Graphic organizer for story elements",
+          "links": [
+            {
+              "text": "https://www.readingrockets.org/sites/default/files/2023-11/graphic-organizer-story-frame.pdf",
+              "url": "https://www.readingrockets.org/sites/default/files/2023-11/graphic-organizer-story-frame.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Story map for characters, setting, problem, solution",
+          "links": [
+            {
+              "text": "https://www.readingrockets.org/sites/default/files/migrated/pdfs/storymap_complex3.pdf",
+              "url": "https://www.readingrockets.org/sites/default/files/migrated/pdfs/storymap_complex3.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Storyboard templates to assist learners in structuring and arranging their writing digital stories.",
+          "links": [
+            {
+              "text": "Storyboard Template - Search Images (bing.com)",
+              "url": "https://www.bing.com/images/search?q=storyboard+template"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Video on Story Elements for shared writing projects.",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=1M0pFLXegG0"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Editing & Revision Tools: Google Scholar, OneLook Thesaurus, QuillBot proofreading Tool.",
+          "links": [],
+          "category": "Tools"
+        },
+        {
+          "description": "Visual aids and templates to help young learners organise ideas and enhance storytelling skills.",
+          "links": [
+            {
+              "text": "Image 1",
+              "url": "https://i.pinimg.com/736x/fd/d5/0f/fdd5e0f7353c6fcbdeb9daca0d716453.jpg"
+            },
+            {
+              "text": "Image 2",
+              "url": "https://i.pinimg.com/247x/3d/4a/fc/3d4afec2a13c36b8880ba10657384acc.png"
+            },
+            {
+              "text": "Image 3",
+              "url": "https://i.pinimg.com/564x/d9/f7/a6/d9f7a63b9b9aba1133df717c15000394.jpg"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: Strategies for technology integration, interactive activities, and differentiated instruction.",
+          "links": [
+            {
+              "text": "YouTube Video on Engagement and Learning",
+              "url": "https://www.youtube.com/watch?v=bGjm2nau9SI"
+            },
+            {
+              "text": "Website on Integrating Writing Across the Curriculum",
+              "url": "https://www.hmhco.com/blog/how-to-integrate-writing-across-the-curriculum"
+            },
+            {
+              "text": "Platform on Integrating Writing Across Subjects",
+              "url": "https://www.readingrockets.org/classroom/classroom-strategies/transition-words"
+            },
+            {
+              "text": "Collection of Writing Prompts",
+              "url": "https://www.bhamcityschools.org/cms/lib5/AL01001646/Centricity/Domain/131/Writing%20Prompts.pdf"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Opportunities for Subject Integration.",
+          "links": [
+            {
+              "text": "The Literacy Loft: How to Integrate Writing Across Content Areas",
+              "url": "https://theliteracyloft.com/2018/07/how-to-integrate-writing-across-content-areas/"
+            },
+            {
+              "text": "Bing Videos",
+              "url": "https://www.bing.com/videos"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Additional Online Writing & Revision Resources",
+          "links": [
+            {
+              "text": "Khan Academy",
+              "url": "https://www.khanacademy.org/"
+            },
+            {
+              "text": "Grammarly",
+              "url": "https://www.grammarly.com/"
+            },
+            {
+              "text": "Sadlier Vocabulary Workshop",
+              "url": "https://www.sadlier.com/online"
+            },
+            {
+              "text": "Writing - The Curriculum Corner 4-5-6",
+              "url": "https://www.thecurriculumcorner.com/"
+            },
+            {
+              "text": "Easy Teacher Worksheets",
+              "url": "https://www.easyteacherworksheets.com/"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Storyboarding and Writing Tools",
+          "links": [
+            {
+              "text": "Imagine Forest Story Creator",
+              "url": "https://www.imagineforest.com/story/creator"
+            },
+            {
+              "text": "Fodey Newspaper Generator",
+              "url": "https://www.fodey.com/generators/newspaper/snippet.asp"
+            },
+            {
+              "text": "ReadWriteThink Persuasion Map",
+              "url": "https://interactives.readwritethink.org/persuasion-map?_ga=2.101av7y*_ga*MzQ5NTIxMzA5LjE3MTMyNDQzOTg.*_ga_PPJBE9BR3H*MTcxNjgzMTM1My4yNDMC4wLjA."
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Dictionary Cube Activity",
+          "links": [
+            {
+              "text": "Sample Dictionary Cube",
+              "url": "https://www.readwritethink.org/classroom-resources/lesson-plans/dictionary-cube-30818.html"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher",
+          "links": [
+            {
+              "text": "What is the Writer’s Purpose?",
+              "url": "https://www.twinkl.com.au/teaching-wiki/writers-purpose"
+            },
+            {
+              "text": "Six Traits for Middle Schools Handbook",
+              "url": "https://ademaio.weebly.com/uploads/1/3/7/6/13760533/sixtraitsofwritinghandbook.pdf"
+            },
+            {
+              "text": "What is the Author’s Craft?",
+              "url": "https://www.youtube.com/watch?v=GnyE6NtqjJI"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Accessibility and Reflective Writing",
+          "links": [
+            {
+              "text": "Dyslexia Friendly Style Guide",
+              "url": "https://www.bdadyslexia.org.uk/advice/employers/creating-a-dyslexia-friendly-workplace/dyslexia-friendly-style-guide"
+            },
+            {
+              "text": "Reflective Writing Journals",
+              "url": "https://www.teachervision.com/writing/reflective-journals"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Opportunities for Subject Integration - Socratic Seminar Strategy",
+          "links": [
+            {
+              "text": "Ten Steps of Socratic Seminars for Writing",
+              "url": "https://westmore.wusd.k12.ca.us/documents/Programs/Avid/AVID%20Locker/Socratic%20Seminar%20Introduction.pdf"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Peer Editing Resource",
+          "links": [
+            {
+              "text": "Peer Editing - Narratives",
+              "url": "https://sharemylesson.com/teaching-resource/peer-editing-narratives-278168"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Spelling Instruction Guide",
+          "links": [
+            {
+              "text": "Night Zookeeper Grade 5 Spelling",
+              "url": "https://www.nightzookeeper.com/language-arts/spelling/grade-5"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Spelling Skills Article",
+          "links": [
+            {
+              "text": "11 Ways to Boost Elementary Students' Spelling Skills",
+              "url": "https://www.edutopia.org/article/11-ways-to-boost-elementary-students-spelling-skills/"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Editing Marks Clipart",
+          "links": [
+            {
+              "text": "Editing Marks Clipart",
+              "url": "https://clipart-library.com/clipart/2069843.htm"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Editing Checklist for Self- and Peer Editing",
+          "links": [
+            {
+              "text": "Editing Checklist for Self- and Peer Editing",
+              "url": "https://www.readwritethink.org/classroom-resources/lesson-plans/editing-checklist-self-peer-30775.html"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Clipart for 'Call the Cops' activity",
+          "links": [
+            {
+              "text": "Clipart for 'Call the Cops'",
+              "url": "https://clipart-library.com/clipart/2069843.htm"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "TAG Strategy Printout",
+          "links": [
+            {
+              "text": "Print out of TAG strategy",
+              "url": "https://twitter.com/PBLWorks/status/1761176637276664126/photo/1"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Creating Podcasts with your Students",
+          "links": [
+            {
+              "text": "Creating Podcasts with your Students",
+              "url": "https://www.edutopia.org/article/creating-podcasts-your-students"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Anchor chart resource for punctuation",
+          "links": [
+            {
+              "text": "Anchor chart resource for punctuation",
+              "url": "https://www.literacyworldwide.org/docs/default-source/member-benefits/e-ssentials/ila-e-ssentials-8065.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Human Resources: Use of local authors as facilitators at writing workshops for students and teachers alike. Some authors include: Grenada - Kamille John, David Ambrose, Paul Keens-Douglas, Amy Jones, Jervis DaBreo; SVG - Cecil Browne, Jazey Wallace Samuel, Shefflon Ballantyne; Ant/Bar. - Jamaica Kincaid, Joanne C. Hillhouse, Kariam Christian, Barbara A. Arrindell; SLU - Sadier Verneuil, Cheri Alphonse Haye. N.B. This list is not exhaustive, but teachers can use other authors they may know, to host workshops with the children.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Writing and Publishing Websites: The read Write Think website provides free interactive tools and resources to help elementary teachers enhance their students' reading and writing skills; Teachers can also use Microsoft Word, to create and publish writings; Microsoft tools help students improve their writing skills and work together by allowing them to create, edit, and share their work easily.",
+          "links": [
+            {
+              "text": "Read Write Think",
+              "url": "https://www.readwritethink.org"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Videos: YouTube provides a wealth of educational videos that elementary teachers can use to supplement their lessons and engage students. To use these videos as resources, teachers can use specific parts and integrate them into lessons. Here are some videos that grade 5 teachers may find useful.",
+          "links": [
+            {
+              "text": "YouTube Video 1",
+              "url": "https://www.youtube.com/watch?v=ZG09WmwrTr4"
+            },
+            {
+              "text": "YouTube Video 2",
+              "url": "https://www.youtube.com/watch?v=w7oGNyHX81I"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: This resource gives an overview of the importance of spelling in reading instruction and provides teachers with practical strategies to improve students' spelling skills; Here are some helpful resources that provide examples and strategies for integrating writing across different curriculum areas to enhance student learning; The following resource offers a guide on implementing the writing process in the classroom, including detailed strategies and activities.",
+          "links": [
+            {
+              "text": "Importance of Spelling in Reading Instruction",
+              "url": "https://www.readnaturally.com/research/5-components-of-reading/spelling"
+            },
+            {
+              "text": "Integrating Writing Across the Curriculum",
+              "url": "https://learningfocused.com/writing-across-the-curriculum-examples-and-strategy-review/"
+            },
+            {
+              "text": "Implementing Writing Process Guide",
+              "url": "https://www.readwritethink.org/professional-development/strategy-guides/implementing-writing-process"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "This website provides grade 5 teachers with valuable strategies and resources to help their students become effective writers. It provides opportunities for exposure to writing models, providing regular writing practice, and incorporating peer review sessions to enhance students' writing skills.",
+          "links": [
+            {
+              "text": "Teaching Elementary School Students to Be Effective Writers",
+              "url": "https://www.readingrockets.org/topics/writing/articles/teaching-elementary-school-students-be-effective-writers"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "This resource provides a plethora of digital and printed resources that offer guidance and tips for educators on how to publish and celebrate student writing, fostering a greater appreciation for student work.",
+          "links": [
+            {
+              "text": "Publishing Student Writing",
+              "url": "https://cdn.ncte.org/nctefiles/about/awards/resources%20for%20publishing%20student%20writing.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "The primary school teacher provides instruction, and hence assessment activities across the curriculum. The following video provides teachers with ideas to share with students to empower them to own their assessments.",
+          "links": [
+            {
+              "text": "Empowering Students to Own the Assessment Process",
+              "url": "https://www.youtube.com/watch?v=8WxvVgXC_NY"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Checklists: Checklists are used for many academic tasks and writing is a common one.",
+          "links": [
+            {
+              "text": "How to Improve Student Writing With Writing Checklists - Rockin Resources",
+              "url": "https://www.rockinresources.com/how-to-improve-student-writing-with-writing-checklists/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Rubrics: A scoring rubric is a tool teachers use to assess students’ performance. It is an assessment guide that describes evaluation criteria (or grading standards) based on students’ expected outcomes and performances.",
+          "links": [
+            {
+              "text": "3 Examples of Scoring Rubric for English Writing | Tenrycolle.com",
+              "url": "https://www.tenrycolle.com/3-examples-of-scoring-rubric-for-english-writing/"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Read the importance of spelling as it relates to improved student reading.",
+          "links": [
+            {
+              "text": "How Spelling Supports Reading",
+              "url": "https://www.readwritethink.org/professional-development/strategy-guides/implementing-writing-process"
+            }
+          ],
+          "category": "Reading/Texts"
+        }
+      ]
+    }
+  ]
+}

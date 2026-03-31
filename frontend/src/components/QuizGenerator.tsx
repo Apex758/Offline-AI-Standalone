@@ -68,7 +68,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
-import { useCurriculumIndex } from '../data/curriculumLoader';
+// Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -239,7 +239,6 @@ const formatQuizText = (text: string, accentColor: string) => {
 
 const ENDPOINT = '/ws/quiz';
 const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
-  useCurriculumIndex();
   const triggerCheck = useAchievementTrigger();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();

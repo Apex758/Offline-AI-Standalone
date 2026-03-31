@@ -10,6 +10,7 @@ const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSPropertie
 
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 import { getStrands, getELOs, getSCOs, getELOsStructured, getSCOsStructured, type OutcomeEntry } from '../../utils/curriculumHelpers';
+import { useCurriculum as useCurriculumLoader } from '../../data/curriculumLoader';
 import SmartTextArea from '../SmartTextArea';
 
 interface MultigradeAlignmentFieldsProps {
@@ -41,6 +42,9 @@ export default function MultigradeAlignmentFields({
   accentColor,
   validationErrors,
 }: MultigradeAlignmentFieldsProps) {
+  // Load curriculum data for the first grade level + subject
+  useCurriculumLoader(gradeLevels[0] || '', subject);
+
   const [eloDropdownOpen, setEloDropdownOpen] = useState(false);
   const [scoDropdownOpen, setScoDropdownOpen] = useState(false);
   const eloDropdownRef = useRef<HTMLDivElement>(null);

@@ -19,7 +19,8 @@ import BrainIconData from '@hugeicons/core-free-icons/Brain01Icon';
 import AnalyticsIconData from '@hugeicons/core-free-icons/Analytics01Icon';
 import { useAchievementContext } from '../contexts/AchievementContext';
 import { useSettings } from '../contexts/SettingsContext';
-import type { AchievementDefinition, AchievementCategory, AchievementRarity } from '../types/achievement';
+import AchievementUnlockModal from './modals/AchievementUnlockModal';
+import type { AchievementDefinition, AchievementCategory, AchievementRarity, NewlyEarnedAchievement } from '../types/achievement';
 
 const RARITY_COLORS: Record<AchievementRarity, string> = {
   common: '#9ca3af',
@@ -88,6 +89,7 @@ export default function Achievements({ tabId }: AchievementsProps) {
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'earned' | 'locked'>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [headerHovered, setHeaderHovered] = useState(false);
+  const [viewingAchievement, setViewingAchievement] = useState<NewlyEarnedAchievement | null>(null);
 
   const earnedIds = useMemo(() => new Set(earned.map(e => e.achievement_id)), [earned]);
   const earnedMap = useMemo(() => {
@@ -369,9 +371,26 @@ export default function Achievements({ tabId }: AchievementsProps) {
               earnedAt={earnedMap[defn.id]}
               progress={progress[defn.id]}
               index={i}
+              onView={(def, eAt) => setViewingAchievement({
+                achievement_id: def.id,
+                earned_at: eAt || '',
+                name: def.name,
+                description: def.description,
+                category: def.category,
+                icon_name: def.icon_name,
+                rarity: def.rarity,
+                points: def.points,
+              })}
             />
           ))}
         </div>
+
+        {/* View achievement modal */}
+        <AchievementUnlockModal
+          achievement={viewingAchievement}
+          onDismiss={() => setViewingAchievement(null)}
+          viewOnly
+        />
 
         {sortedDefinitions.length === 0 && (
           <div className="text-center py-12" style={{ color: 'var(--dash-text-sub)' }}>
@@ -412,12 +431,14 @@ function AchievementCard({
   earnedAt,
   progress,
   index,
+  onView,
 }: {
   definition: AchievementDefinition;
   isEarned: boolean;
   earnedAt?: string;
   progress?: { current: number; target: number };
   index: number;
+  onView?: (def: AchievementDefinition, earnedAt?: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -445,6 +466,7 @@ function AchievementCard({
       className="achievement-glare achievement-card-enter rounded-2xl overflow-hidden relative flex flex-col"
       onMouseEnter={() => isEarned && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => isEarned && onView?.(definition, earnedAt)}
       style={{
         animationDelay: `${Math.min(index * 40, 600)}ms`,
         minHeight: 180,
@@ -465,7 +487,7 @@ function AchievementCard({
         transition: 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease',
         filter: isEarned ? 'none' : 'grayscale(0.65) brightness(0.8)',
         zIndex: hovered ? 2 : undefined,
-        cursor: isEarned ? 'default' : 'default',
+        cursor: isEarned ? 'pointer' : 'default',
       }}
     >
       {/* Large watermark background icon */}

@@ -1,0 +1,1001 @@
+{
+  "metadata": {
+    "filename": "grade2-social-studies-curriculum.pdf",
+    "curriculum": "OECS Harmonised",
+    "grade": "2",
+    "subject": "Social Studies"
+  },
+  "strands": [
+    {
+      "strand_name": "Historical and Cultural Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To Appreciate How Our Past and Present Shape Our Identity",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G2-HC-SCO1.1",
+              "description": "HCT Knowledge 1 - Identify the early groups of people who settled in our community and explain why and how they came"
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.2",
+              "description": "HCT Skill 1 - Identify on a map the locations from which the early people that settled in our community came."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.3",
+              "description": "HCT Values 1 - Recognise that the community is made up of families of different ethnic origins."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.4",
+              "description": "Learners will be expected to: HCT Knowledge 2 Know that family relationships can be represented on a family tree."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.5",
+              "description": "HCT Skills-2 Represent relationships of families on a simple family tree."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.6",
+              "description": "HCT Values -2 Appreciate that our family tree is made up of a diverse range of people who share a common heritage."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.7",
+              "description": "HCT Knowledge – 3 State the ways individuals and families share positive human interactions with others."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.8",
+              "description": "HCT Skills – 3 Investigate how families in various communities fulfill their need for interaction."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.9",
+              "description": "HCT Values – 3 Appreciate that there are diverse ways that people fulfil their need for human interaction"
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.10",
+              "description": "HCT Knowledge 4 Describe occasions when people in the community come together to share."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.11",
+              "description": "HCT Skills 4: Practice caring for one another in families, classrooms, and communities."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.12",
+              "description": "HCT Values 4: Appreciate the value of community members supporting one another in times of celebrations, grief, and need."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.13",
+              "description": "Learners will be expected to: HCT Knowledge- 5 State examples of festivals celebrated in their country."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.14",
+              "description": "HCT Skills -5 Discuss the reasons for celebrating various festivals in their country."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.15",
+              "description": "HCT Values - 5 Appreciate that festivals can be an important way to build community, national cohesion and pride."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.16",
+              "description": "Learners will be expected to: HCT Knowledge-6 List examples of the oldest historical sites in our community."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.17",
+              "description": "HCT Skills - 6 Investigate the location, the age, significance of these historical sites."
+            },
+            {
+              "sco_code": "SS-G2-HC-SCO1.18",
+              "description": "HCT- Values-6 Appreciate that historical sites can help us understand our identity."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation-Video/Picture Inferencing: Are students able to identify at least two features of the various ethnic groups in their community based on the video/picture inference activity?",
+            "Product - Locating information and representing data on a map: As students engage in map work activity, are they able to locate the different places from which their ancestors came? (Students can use an interactive map on a personal device or smart board, or use a printed map.) (See https://contrib.pbslearningmedia.org/WGBH/rttt12/rtt12_int_samap/index.html)",
+            "Product - Discussion and Analysis of Data: Can students use pictographs to present data on the ethnic composition of their class and community?",
+            "Product - Discussion and Analysis of Data: Can students use pictographs to present data on the ethnic composition of their class and community?",
+            "Observation - Four Corners: As students engage in the four corners activity, are they able to demonstrate that they know the origins of their ancestors? Are they able to recognize that our ancestors came from different places and settled in our community?",
+            "Product- Checklist (Peer Assessment): Are students able to present a community that represents the different ethnic groups (drawings, devices, paintings, playdough, etc.) within their community? Teacher provides a checklist to guide students.",
+            "Conversation - Scrapbook: As students share their pictures and drawings, can they explain their family relationships using pictures or drawings?",
+            "Product:",
+            "Visually representing information: Can students label a simple family tree showing three generations.",
+            "Summative Assessment: (Question and Response) Can students answer questions based on a given family tree?",
+            "Conversation - Student Reflection: Are students able to reflect on lessons? i.What did I like most about the lesson? ii.What did I not like?",
+            "Conversation- Guided Discussion: Are students able to share their experiences when they interacted with families in positive ways?",
+            "Observation- Roleplay: After watching video/listening to a story, are students able to role-play positive aspects?",
+            "Product-Reflection: Do students' drawings reflect positive interactions? Are the reasons plausible?",
+            "Conversation-Stand or Sit Trivia: After listening to the scenarios, can students identify positive human interactions in their communities?",
+            "Conversation: Can students compare and contrast positive and negative human interactions using a digital worksheet?",
+            "Product- Critical thinking: Are students able to create a list of occasions where people come together to share?",
+            "Observation- Mock Celebration: During mock celebrations, are students able to demonstrate positive actions to care for others?",
+            "Observation-Role Play: Are students able to demonstrate caring actions during role play?",
+            "Product-Sumative Assessment: Are students able to create a poster or draw a picture of people coming together in the community to share? (Students may write, draw, speak or use playdough)",
+            "Observation-Community Service Learning Project: Are students displaying positive attitudes while planning and executing the project?",
+            "Observation- Community Service Learning Project: Are students actively participating in the activity?",
+            "Conversation: Critical Thinking: Are students able to identify the festivals celebrated in their country and state why they are important?",
+            "Product- Match Up Game: Are students able to match keywords to the correct festivals?",
+            "Observation/Conversation: Can students identify important historical sites and why they may have been designated as such?",
+            "Conversation: Can students describe features of historical sites?",
+            "Observation-Map Work: Are students able to locate historical sites on the map?",
+            "Conversation-Reflection/Exit Form: As students reflect on their experiences with historical sites, can they discuss how historical sites help us better understand who we are?",
+            "Product-Poster Collage: Can students present examples of historical sites in their community using a picture collage? (Age/date of establishment, location)"
+          ],
+          "inclusive_learning_strategies": [
+            "Introduction - (Identifying Different Ethnic Groups in the Community)",
+            "Video/Picture Inferencing: Students view images (pictures, videos, models/dolls) of people from different ethnic backgrounds OR selected students in the class from different ethnic backgrounds are asked to stand. Students state what they observe about the physical features (E.g. hair texture, skin colour) with guidance from the teacher. Students name the different ethnic groups of the images/students with teacher’s probing. Students then create a list of two/three physical features of the various ethnic groups. Students discuss ways in which the groups are similar and ways they are different",
+            "Map Work - Identifying Locations: Using a map, the students are guided by the teacher, to identify the various regions where our ancestors were located before they came to our community. Interactive maps can be used. (See https://contrib.pbslearningmedia.org/WGBH/rttt12/rtt12_int_samap/index.html) Students then colour the various regions from which our ancestors came on a blank map of the word.",
+            "Oral Inquiry/ Research: (Location of Early People) Students ask a family member about the origin of their ancestors. For example: i. Which ethnic group(s) did our ancestors belong to? (Amerindian, European, African, East Indian, Garifuna) ii. Where did our ancestors come from? Students share their findings with the class. Students are guided by the teacher to present the data on a pictograph. Students discuss and evaluate data to explain the ethnic composition of the class, and how this composition is reflected in their community.",
+            "Games: a. Take Me Home: In preparation for this activity, students will make different types of transportation (E.g. during art class). On a map, students will use a paper boat to sail to the location from which their ancestors came before they settled in our community based on scenarios created by the teacher. For example: i. Jiang is of Asian descent. She wants to visit her ancestral home in Asia. Use the sailboat to help her find her destination. ii. Duvale, an Amerindian descendant, is moving to his ancestors’ home in South America. Help him find his way.",
+            "b. Game Four Corners: Students go to a corner labeled with a specific geographic location that best represents the origin of their ancestors; e.g. Asia, Africa, Europe, South America, when prompted to do so. Teacher labels the corners before class.",
+            "Listening/Viewing & Reporting: (How and Why They Came) In groups, students view a video OR read a short article OR listen to resource personnel on how and why our ancestors came. Students report orally and in writing how and why our ancestors came.",
+            "Model Building and Display Corner: Students work in small groups to create a community of persons of different ethnic origins by drawing, painting, using play dough or devices. Students use a checklist to determine their completion of the assigned task. See example below: Student Checklist: Place a smiley face next to each ethnic group that you created. African, Asian, Europeans, Amerindians",
+            "Students display their creations in class.",
+            "Song (culminating activity) Students listen and dance to the song ‘So Many Colours, So Many Shapes’ (See https://youtu.be/ZiOSzuXjDD0, https://youtu.be/R4csXJXHVGA?si=HUKFHQzkk_f0XmDz) or ‘Different Colours One People’. (See https://youtu.be/R4csXJXHVGA?si=HUKFHQzkk_f0XmDz)",
+            "Introductory Activity: Students listen to song “Baby Shark” (See (25) Baby Shark Baby songs Compilation - Nursery Rhymes & Kids Songs - YouTube) Students are guided to identify the different relations within the family and then make a list.",
+            "Guided Research: Students construct a simple interview prompt to present information about their relationship to other family members within their household. Students (Using Google Jamboard) show pictures or drawings of family members in their home and state their relationship to them.",
+            "Scrapbook: [My Family Album] Students create a scrapbook using the pictures/drawings of family members.",
+            "Students will label pictures and identify the relationship. For example: Jane Joseph - Grandmother",
+            "Family Bracelet: (To show family relationships) Students make personalized bracelets (E.g. mummy, daddy, brother, sister and grandparents) using letter beads to gift to a family member. See example below.",
+            "Family Train: (To show family relationships) Students label cars named as different family members, then connect the cars to form a train.",
+            "Family Tree: Students are introduced to the concept of the family tree by the teacher explaining that family relationships are represented using a family tree. Students view and discuss examples of a family tree. See https://youtu.be/x0mnJpy78E.",
+            "Students label a model/diagram of a family tree.",
+            "Students take turns stating their relationship to the other members of their family on the family tree.",
+            "Students insert labelled cars on the floor or 3D model/diagram of a family tree.",
+            "Family tree should reflect EITHER maternal OR paternal side of his/her family. (grandparents, parents, children and siblings)",
+            "Guided Discussion: Teacher guides students to share their experiences on times they enjoyed with family members and to give reasons why they feel happy on these occasions.",
+            "Story Telling/ Video Viewing and Roleplay: (Group Activity) Students are divided into groups, then given a short story or video showing how people in their community interact. E.g. Activities In Our Community (See https://www.youtube.com/watch?v=SrbwgyOIjV8)",
+            "Teacher guides students to discuss positive interactions and explain why they think they are positive.",
+            "In their groups, students role-play different aspects of the short story or video of family life that highlight positive interactions.",
+            "Reflection: Students draw a picture of their favourite positive family interaction and write one sentence about the reason they enjoy this activity.",
+            "Stand or Sit Trivia: Students listen to scenarios that depict positive and negative interactions. Students who think that a statement is positive will stand up, those who think otherwise will remain seated. For example: i.Chris is new boy in class. Jim and his friends invite him to the village kids' football game. ii.On Christmas Day, Rosita’s big sister helps to cook the food while Rosita helps to clean the dishes. iii.Pam and other children, along with their parents, gather to celebrate Emancipation Day. iv.Priya and her family decorate the porch with lights in preparation for Diwali. Her neighbour complained and ripped them down.",
+            "Students discuss why scenarios are negative or positive.",
+            "Interactive Puzzle - Jigsaw Puzzles - Students work in groups to complete jigsaw puzzles (provided by the teacher) depicting positive human interactions in a particular culture. (See https://tinyurl.com/j9shpp8f and https://www.youtube.com/shorts/mn9L7i5cnbE) Students then discuss the interactions depicted in the puzzle.",
+            "Spin the Wheel / Think and Share- Students spin word wheel [web generated] with slots representing different cultural celebrations/festivals. E.g. Christmas Day, Harvest, All Saints Day. Students are given time to reflect and then discuss the chosen celebrations/festivals. The following questions can be used as prompts: i.How do people recognise/ mark this celebration/festival in your community? ii.What activities do people engage in together during these festivals? Students write an email or create a voice note to tell a friend in another country how any two festivals are celebrated in their country.",
+            "Traditional Games Afternoon (School Community): Students engage in a traditional games afternoon. Games may include marble pitching, hand games, skipping, cricket, sack race, lime and spoon etc. Reflection: Students reflect (in writing, drawing, song/jingle etc.) on how this games afternoon fostered positive human interaction?",
+            "Introduction: (KWL Chart) Students will complete the first two columns of the KWL chart.",
+            "Charades: Students select a card that depicts an example of community members coming together to share. Students describe using words, actions or drawings to show what the card depicts. Students then take turns to guess what each action, word or drawing depicts.",
+            "Students then name other occasions when people come together to share.",
+            "Students list and discuss the different occasions where people come together to share.",
+            "Simulation: Mock Celebration (birthday, school anniversary, national festival): Students engage in a mock celebration to depict an occasion where people in the community share.",
+            "Role Playing: Students role play different scenarios of people caring for each other in the classroom, families and communities. For example: i.An old person in the community died. How does the community show support to the family? ii.Your aunt is getting married. What can your family do to show support? iii.Your brother is turning five years old. What can your family do to celebrate this occasion?",
+            "Community Service Learning Project: Students plan and engage in a service learning project of their choice to demonstrate care and support for selected community members or institutions. Students will reflect on how they felt while planning and after completing the project. (Students will use any format of their choice to reflect. E.g. video, audio recording, text, emojis).",
+            "Self Assessment: With teacher’s guidance, students create a 4 question checklist to evaluate the poster.",
+            "Introduction: Flip Tile App (Word Wall) Students explore a series of two sided tiles by tapping to zoom and swiping flip which will reveal examples of festivals celebrated in their country. Students then identify the festivals that are unique to their country.",
+            "Whole group discussion on festivals: Students describe the activities for each festival. Students state other festivals celebrated in their country.",
+            "Think Pair Share: Students are divided into teams to discuss reasons why each festival is celebrated. Students share their reasons with the teacher and the class about reasons why each festival is celebrated. Students and teachers engage in discussion about the importance of festivals in building national pride.",
+            "Match up Game: Students use their devices to match keywords correctly to images depicting festivals. (E.g costume - Carnival, christmas tree - Christmas, cross - Easter)",
+            "Class Cultural Expo: Students bring items that represent different festivals celebrated in their country. Students display items in the classroom followed by a gallery walk.",
+            "Students state which festival each item represents. (E.g. Can black cake, sorrel, ginger beer, (Christmas), The National Flag (Independence), hot cross buns, crucifix (Easter))",
+            "Introduction: Students view a slide show on historical sites in their country. Students develop a definition for the term historical sites based on the slide show.",
+            "Field Trip to Historical Sites in the Community: Students tour the oldest historical sites in their community. They use a digital camera or phone to take pictures during their tour. Students without access to these devices can use a sketchpad to draw and or make note of features of the sites. Students will look for information boards/signs/markings at the sites which provide details of their historical significance.",
+            "Reflection/ Exit Form: Students will write or state orally a short reflection of their trip to the oldest historical sites using an exit form. (Must include name/location/date of establishment/significance of the site.) For Example: Reflection Form: Field Trip to Oldest Historical sites, 2 sites I visited, 2 Things I Found Interesting about the sites :, 1 Question I Have:",
+            "Students share and discuss responses with classmates.",
+            "Map Work: In groups, students locate sites on virtual map, eg. Google Maps or World Heritage Interactive Map https://whc.unesco.org/en/interactive-map/Google Earth. Students will take turns placing markers/pictures of the historical sites in their correct location.",
+            "Discussion: Students, guided by the teacher will discuss the significance of the historical sites r. Example: i.Why are the old churches built from stone? ii.Why were these sites important to the people who built them?",
+            "Poster Collage: ”Historical Sites that Make My Community Special: Students collect images of historical buildings/sites, then create a poster promoting the sites in their community. Collage is posted on the school's social media pages."
+          ],
+          "elo_code": "SS-G2-HC-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Interactive map resource for locating ancestral origins",
+          "links": [
+            {
+              "text": "Interactive Map Resource",
+              "url": "https://contrib.pbslearningmedia.org/WGBH/rttt12/rtt12_int_samap/index.html"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "History of The Caribbean For Kids | Bedtime History",
+          "links": [
+            {
+              "text": "History of The Caribbean For Kids | Bedtime History",
+              "url": "https://www.youtube.com/watch?v=rw9SfJUkX4A"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Caribbean Culture and Heritage",
+          "links": [
+            {
+              "text": "Caribbean Culture and Heritage",
+              "url": "https://www.youtube.com/watch?v=3UCI2jBc52Q"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Family Tree Diagram",
+          "links": [
+            {
+              "text": "Family Tree Image",
+              "url": "https://i.pinimg.com/474x/43/23/e4/4323e445b709a84615e607e11238925f.jpg"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Video on Community Interactions",
+          "links": [
+            {
+              "text": "Activities In Our Community",
+              "url": "https://www.youtube.com/watch?v=SrbwgyOIjV8"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "KWL Chart Template",
+          "links": [
+            {
+              "text": "kwl chart template - Bing images",
+              "url": "https://www.bing.com/images"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: Countries celebrate different festivals. Some examples: are i.Christmas, i.Easter, i.Carnival, v.Divali, v.Independence i.Creole, La Rose",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Additional Resources and Materials: (Additional material and resources that are not included in the Inclusive Learning and/ or Inclusive Assessment Strategies that may be useful for lesson planning)",
+          "links": [
+            {
+              "text": "OECS Virtual Historic Tour Video",
+              "url": "https://www.oecs.org/empower/ebook/images/OECS%20Virtual%20Historic%20Tour%20Video%20(Final%20Update).mp4"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: Finding out about our past.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Opportunities for Subject Integration: Language Arts: Research, Read and Report; Art & Craft: Create poster collage; Mathematics: Measurements",
+          "links": [],
+          "category": "Teacher Materials"
+        }
+      ]
+    },
+    {
+      "strand_name": "Spatial Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Understand that our islands are made up of many diverse regions and communities",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G2-ST-SCO1.1",
+              "description": "Learners will be expected to: ST Knowledge-1 State and label the four cardinal directions"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.2",
+              "description": "ST – Skills 1 -Give directions to your community in relation to other districts or parishes using cardinal direction."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.3",
+              "description": "Floor Map Activity"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.4",
+              "description": "Mapping the Location of My Community"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.5",
+              "description": "ST – Values 1 Appreciate the value of directions for finding your way"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.6",
+              "description": "Learners will be expected to: ST Knowledge 2 -Describe the important natural and built features of your community."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.7",
+              "description": "Conversation: Are students able to differentiate between a natural and built feature? Are students able to accurately summarize what they learned from the video? Are students able to recognize natural and built features from the list of examples they shared? Are students naming both natural and built features?"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.8",
+              "description": "Observation: Are students taking turns to discuss examples? Are students listening while others are speaking? Are students taking note of the examples?"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.9",
+              "description": "Product: Are students able to correctly classify the list of examples"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.10",
+              "description": "Conversation: Are students able to identify natural and built features in their communities. Are students able to identify common and unique features in the various communities?"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.11",
+              "description": "ST Skills-2 Observe and illustrate the various natural and built features of your community."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.12",
+              "description": "ST Values 2 -Appreciate the unique landmark features of your community that you find interesting"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.13",
+              "description": "Product: Do the posters depict a natural or built feature?"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.14",
+              "description": "Conversation: Are students able to articulate why they find this feature interesting?"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.15",
+              "description": "Learners will be expected to: ST Knowledge 3-Identify the basic features of a map including title, key, compass rose, border"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.16",
+              "description": "ST Skills 3 -Draw a map of your community which includes basic features"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.17",
+              "description": "ST Values 3- Appreciate that a map can be used to show our important landmarks in the community."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.18",
+              "description": "ST Knowledge - 4- Identify some of the plants and animals in your community"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.19",
+              "description": "ST Skills - 4 Classify the animals according to wild, domestic, food or pets."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.20",
+              "description": "ST Knowledge 5- Identify some of the plants in your community"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.21",
+              "description": "ST- Skills 5 - Classify the plants according to wild, domestic and uses such as food, medicine."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.22",
+              "description": "ST – Values 5 -Appreciate the importance of caring for/protecting the plants and animals in our community"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.23",
+              "description": "ST Knowledge -6 Describe weather patterns in your community."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.24",
+              "description": "ST Skills -6- Assess the impact of weather conditions on the community at different times of the year."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.25",
+              "description": "ST Values 6- Appreciate how the weather affects the environment."
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.26",
+              "description": "ST Knowledge 7 -Identify the natural environment as a resource"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.27",
+              "description": "ST Skills 7 -Investigate how resources found in the local environment are useful to us"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.28",
+              "description": "ST - Values-7 Value the importance of the local environment and its link to human survival"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.29",
+              "description": "ST Knowledge -8 -Identify ways in which people harm the environment"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.30",
+              "description": "ST Skills - 8 -Gather information on the ways we harm and protect our environment"
+            },
+            {
+              "sco_code": "SS-G2-ST-SCO1.31",
+              "description": "ST Values - 8 -Appreciate each other’s role in caring for the environment"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Pre-Assessment: Observation: Are the students raising their hands when one of the four directions is read? How many students have prior knowledge of the cardinal direction? As students listen and respond to the poem, teacher uses a checklist or take notes to record how many can identify north, south, west and east as cardinal directions. ?",
+            "Critical Thinking Conversation: Use probing questions to encourage critical thinking. Are students able to identify the main ideas in the video? Are students grasping the concepts of direction, cardinal direction?",
+            "Group Conferencing Observation: As students are working, walk around to observe and conference with the groups. Take records of how students are working, if they are discussing the content, if they are understanding and applying the content correctly. Are students working collaboratively? Are students applying their knowledge of cardinal directions? Take note of group dynamics: who is leading, who is being silent etc.",
+            "Oral Presentation: Are students able to create a song/poem/mnemonic to remember the cardinal points?",
+            "Conduct both teacher and student peer assessment using the checklist provided to students.",
+            "Compass Activity: Observation: Are students able to locate north, south, west and east using the compass?",
+            "Drawing/Model Construction Observation: Are students able to create an accurate model or drawing of the compass rose? Product: Is the model/drawing an accurate representation of the compass rose? Use a simple mark scheme or rubric to assess the final product. Note: The important thing is that students have the cardinal points in the correct location. Craftsmanship is not to be assessed.",
+            "Map Skills Observation/Conversation: Walk around as students work to observe and talk to them. Are the students able to identify the compass rose?? Are students able to identify districts/parishes in the four cardinal directions? Take records of students' responses. Note how many can identify north, south, west and east.",
+            "Conversation: Are students able to state the districts / parishes located to the N, S, W and E of where the teacher is standing?",
+            "Observation: Are students able to stand facing north in the district where their community is located? Are students able to identify the districts / parishes located to the N, S, W and E of where they live?",
+            "Product: Are students able to identify the district that their community is in on the map? Are students able to correctly identify the parishes or districts that are located to the north, south, west or east of where they live?",
+            "Conversation: Are students able to confidently state the location of their district in relation to other districts/ parishes using the four cardinal directions",
+            "Observation: Are students able to correctly fill in the blanks? Does the statement align with their maps?",
+            "Conversation: Are students able to express logically the importance of cardinal direction? Do students recognize the importance of being able to give directions?",
+            "Pre-Assessment: KWL Conversation: Are students able to give examples of features in the environment?",
+            "Conversation: Are students able to differentiate between a natural and built feature? Are students able to accurately summarize what they learned from the video? Are students able to recognize natural and built features from the list of examples they shared? Are students naming both natural and built features?",
+            "Observation: Are students taking turns to discuss examples? Are students listening while others are speaking? Are students taking note of the examples?",
+            "Product: Are students able to correctly classify the list of examples",
+            "Conversation: Are students able to identify natural and built features in their communities. Are students able to identify common and unique features in the various communities?",
+            "-Observation: Are students drawing both natural and built features from their communities? Are students placing their cut outs/slips in the correct pocket.",
+            "Observation: Are students actively listening to the story Are they",
+            "Product: Do the posters depict a natural or built feature?",
+            "Conversation: Are students able to articulate why they find this feature interesting?",
+            "Conversation: Are students able to recognize that persons are lost or trying to find their way? Are students aware that George has a map? Are students familiar with a map? Are students aware of the purpose of a map? Do students have prior knowledge of the basic features of a map",
+            "Conversation: Are students able to state the features mentioned in the video?",
+            "Observation: Are students able to identify title, key, compass rose, border?",
+            "Map Product: Do students’ maps include important features of a map? Are the symbols used appropriate representations? Is the compass rose accurate?",
+            "Observation: Are students able to follow the map? Do students understand the symbols used? How many pairs were able to find the treasure?",
+            "Conversation: Are students able to outline what maps are used for and why they are important?",
+            "Product: Can students complete a statement explaining why maps are important.",
+            "Conversation: Are students aware of the different animals and plants in their community?",
+            "Product: Are the animal representative of animals found in the country?",
+            "Observation: Are students depicting animals found in the local community? Are students depicting the sounds of the animals accurately?",
+            "Conversation: Are students able to differentiate between wild and domestic animals? Are students able to identify animals which provide us with food? Are students able to identify animals we keep as pets?",
+            "Product: Are students able to classify the animals found in their community, correctly?",
+            "Observation: Are students observing the plants? Are students recording their observations? Are students able to use the plant identifier app?",
+            "Conversation: Are students able to identify the plants they observed? Are students knowledgeable about plants in their community? Do students know the local or scientific names of plants?",
+            "Product : Are students' pictures representative of plants in the local community? Are students able to identify, label correctly plants in their community?",
+            "Observation: Are students being attentive? Are students asking relevant questions? Do students seem to understand the information being shared?",
+            "Conversation: Are students aware of the various uses of plants? Can students identify plants that are used as food, medicine or decoration?",
+            "Observation: Are students bringing in three categories of plants? Are students labelling plant names correctly?",
+            "Conversation: Are students aware of the negative consequences if there were no plants or animals? Are students aware of the role that plants and animals play in our survival?",
+            "Product: Do students drawings demonstrate care and concern for plants and animals? Do students statements demonstrate understanding of the importance of caring and protecting animals? Are students demonstrating willingness to care for and protect plants and animals?",
+            "Conversation: Are students demonstrating understanding of the concept of a pattern? Are students able to connect the weather to the concept of pattern? What prior knowledge do students have about weather patterns?",
+            "Observation: Are students able to identify the various conditions of weather? Observation: Are students completing their daily weather log? Product: Do the weather logs created by students have the relevant components? Do students understand how to use the weather log?",
+            "Conversation: Are students able to analyse the sample data? Are they able to observe patterns? Product: Do the reports align with their weather logs? How well did students analyse the data from their logs? How well do the reports describe the weather pattern?",
+            "Conversation: Can students describe what they observe about the environment? Can students identify differences in the environment from the pictures? Can students describe how the environment is affected by rain and sun? Can students express what would be different about the environment if there was no sun or rain?",
+            "Product: Do the drawings depict sunny and rainy days accurately?",
+            "Conversation: Do students’ responses demonstrate appreciation for different types of weather?",
+            "Conversation: Are students able to state what the environment is?",
+            "Conversation: Are students able to identify natural resources found in their community?",
+            "Product: Do the drawings depict natural resources? Are students able to identify accurately two uses of each resource?",
+            "Conversation: Are students able to identify the natural resources used to make the item? Are students able to explain how these items are useful to people?",
+            "Product: Do students statements demonstrate an understanding of the importance of the natural environment? Do the statements show that they understand the link between the natural environment and human survival?",
+            "Conversation Are students able to identify parts of the environment after taking the tour of the school compound? Can students describe ways in which humans harm the environment?",
+            "Observation: Are students collecting the right information? What sources are they gathering information from? Is the data being recorded?",
+            "Conversation: Are students aware of actions that harm the environment? Do students understand the impact of these actions?",
+            "Product: Are students able to create a collage depicting ways in which we harm the environment? Are the pictures used appropriate for illustrating harm to the environment?",
+            "Product: Can students come up with relevant questions to ask the resource person? Observation: Are students being attentive? Are students asking questions? Are students’ contributions demonstrating awareness of their own responsibility?",
+            "Product: Do the jingles demonstrate measures we can take to protect the environment?",
+            "Product: Do the skits display how the action can harm the environment? Do the skits display the proper actions we can take to protect the environment?"
+          ],
+          "inclusive_learning_strategies": [
+            "Pre-Assessment Activity: Have the students listen to the poem “geese on the go”. https://media.nationalgeographic.org/assets/file/Cardinal_Directions_Poetry.pdf and have the students raise their hand each time they hear a cardinal direction.",
+            "Portfolio Activity: Have students create a lap book/portfolio with blank pages. (Students can use large sheets of Bristol board or purchase a large drawing book). Have students design the cover page and write the cover title “My Social Studies Big Book” and also chapter one “The Cardinal Points”.",
+            "Viewing of video and whole class discussion: Have students view a video on cardinal directions, for example: https://www.youtube.com/watch?v=fBKjwTzImYE. After students view the video, have a class discussion. Ask them questions such as: What are the main ideas/points in the video? How would you explain the term direction to a classmate? Explain what cardinal directions are? In what situations do we use cardinal direction?",
+            "Group Work and Oral Presentation: Have students work in groups to create a song/poem/mnemonic to recall the four main cardinal directions. Present them with a simple checklist to guide their work. Explain to them how to use the checklist. Have the group make oral presentations of their work. Display students' work and have each student include a copy under chapter one in their portfolio books.",
+            "Compass Activity: Have students use a compass (where possible download a compass app) to explore various positions to locate north, south, west and east.",
+            "Compass Rose Model: Have students draw or create a 2D model of a compass rose with the four cardinal points using materials of their choice and have students label the points of the compass rose. Have students display their models for their peers to see.",
+            "Map Work: Have students examine a map of their country in the atlas. . Have them point out the compass rose. Ask students to identify districts/parishes located in the north, south, west and east of the country.",
+            "Floor Map Activity: Draw a large sketch/es of the country on the classroom floor (or in the school yard outlining the districts or parishes. Stand, facing north, in any one of the districts or parishes and have students state which areas are located to the north, south, west and east of where you are standing. Then have students take turns to stand, facing north, in the district/parish where their community is located and ask students to jump to the district or parish that is to the north, south, west or east of their community.",
+            "Map Work: Locating My Community: Present students with a blank political map of the country outlining the districts or parishes. Have students colour the district they live in. Then have students use colour codes to identify the districts or parishes that are to the north, south, west and east of where they live. Have them write the title “Location of My Community” and place their maps in their portfolio.",
+            "Oral Presentations: Have students make oral statements describing the location of their district/ parish in relation to other districts/ parishes in the country using the four cardinal directions and complete the following “fill in the blank statement” under the map in their portfolio. I live in the district/parish of -------------. It is to the north of ------------------, the south of ------------------, the west of ------------------ or the east of",
+            "Oral Discussion: Have students discuss why cardinal directions are important. Have students discuss what would happen if they did not know how to give the directions.",
+            "KWL: Draw a KWL chart on the board or on a large sheet of paper. Ask students to say what they know about features in the environment (examples etc) and what they want to know. Have students give examples of natural and built features in their environment. Write the information in the relevant columns.. Tell students they will discuss this after viewing a video.",
+            "Video and Guided Discussion\n- Have students view the following video https://www.youtube.com/watch?v=rZVQjQWuoGE.\n- After watching the video, have a guided discussion with students.\n  - What does the term feature mean?\n  -What is the difference between a -natural and a built feature?\n  -state one thing that you learned from the video.\n  Which examples on the board are natural or built features and which are not?",
+            "Classifying Information\n- Present a table with the two columns labelled built/man-made and natural. Using the list of examples written on the board, have students take turns to place them under the correct column to identify which ones are natural and which are built/man-made.",
+            "Group Work and Oral Discussion\n- Group students according to their community/district or parish. Have students discuss and take note of the various natural and built features they have observed in their shared community. Groups will report their findings to the class.\n- Have students discuss what the communities have in common and what is unique to each community.",
+            "Lap Book Activity\n- Have students start chapter two of their lap books titled “Features of My Community”. Then have students create two pockets on the page one labelled Natural and the other Built.\n- students will draw, colour and cut out various natural and built features within their communities (or they can simply write these on slips of paper) and place cut outs/slips in the correct pocket.",
+            "StoryRead Aloud\n- Have students listen to this story. https://www.youtube.com/watch?v=GIHVIguHeD0\n- Have them discuss what the story is about. How is the story linked to their communities?",
+            "Poster Presentation: After listening to the story tell students, they are now going to create a poster showcasing one natural or built feature in their community that they find interesting. (This can also be a homework assignment). Have students present their poster and say why they find this feature interesting. Explain that everyone may have a different feature which they find interesting and that it’s important that they share their ideas, no matter how different they are. Help students appreciate that people give varying importance to different places because of their experiences.",
+            "KWL Chart: Have students complete the last column of the chart by stating one thing they have learned.",
+            "Introduction: Video and Discussion: Have students view the following video. https://www.youtube.com/watch?v=ck3mbJUbN1A. Engage students in a guided discussion: -What is happening in the video? -What does George have in his hand? -Have you ever seen one of these? -What is George using the item for? -Can you describe the item?",
+            "View a Video: Have students watch the video: Learn About Maps - Symbols, Map Key, Compass Rose - YouTube https://www.youtube.com/watch?v=mtsx8V3mE8o https://www.youtube.com/watch?v=Czk4p5QmLSA. After watching the video have students state the main features of a map identified in the video. Show students an example of a simple community map. Point out the main features: title, key, compass rose, border. Then distribute or show some more examples of simple maps. This time, have students point out the main features: title, key, compass rose, border. Add words related to maps to your word wall",
+            "Lap Book Activity: Mapping My Community: Have students listen to the story https://www.youtube.com/watch?v=gZqYCwixTzA. Have students start chapter three in their big book titled “A Map of My Community”. Have students draw a picture of their community in their lap books, which includes their homes, neighbours’ homes, important built features such as bridge, church and school, natural features such as rivers, waterfalls. Have them include major connecting roads. Have students give their maps a title and include a key, border and compass rose.",
+            "Treasure Hunt: Engage students in a treasure to assess their map skills. Hide treasure in different places around the school. Draw and make copies of a simple map of the school which includes a symbol to indicate where the treasures are located. Have students work in pairs to follow the map to find the treasure (each pair canshould have to find a different location). The activity can be timed to up the challenge.",
+            "Video and Discussion: Have students watch the video. https://www.youtube.com/watch?v=BTKv0X__5vM After viewing the video have students discuss why maps are important. Have them complete the statement “Maps are important because _________________.",
+            "Introduction: Animal Song: Have students listen to the song. https://www.youtube.com/watch?v=yS1zl4g7HLA After listening to the song, have students recall the animals mentioned. Ask students to state which animals mentioned can be found in their community. Ask them to name other animals in their community which were not mentioned.",
+            "Lap Book Activity: Have students work on chapter four of their lap books titled “Animals in My Community. Have students bring in pictures of animals found in their community to stick in their lap books. Those who wish to draw may do so. Have students label the animals by name.",
+            "Role Play: Have students role play the sounds and movement of their favourite animal found in the community.",
+            "Classifying Animals: Discussion: Have students view the video. https://www.youtube.com/watch?v=xyHagfDgvmw After viewing the video engage students in a guided discussion: What is a wild animal? What is a domestic animal? Which animals do we use for food? Which animals do we keep as pets?",
+            "Lap Book Activity: Have students classify the pictures of the animals in their lap books for example placing a W next to those which are wild, a D next to those which are domestic, a P next to those which are pets and an F next to those which provide us with food. Let students know that some animals may be classified under more than one category.",
+            "School Tour\n- Take students on a walk around the school compound to observe the various plants they come across.\n- Have students record in writing or drawing the plants they observe.\n- (Optional) Have students download a plant identifier app to get information on the various plants as they explore. Students can also take pictures of the plants.",
+            "Oral Discussion\n- Engage students in a post tour discussion about the plants they observed:\n  -Which plants were familiar to you?\n  -Which ones were you able to identify?\n  -Which plants have you observed in your community?\n  -Can you name some other plants that are found in your community?\n  -Do all communities have the same plants?",
+            "Lap Book Activity\n- Have students start chapter five in their lap books titled “Plants in My Community”.\n- Have students bring in pictures of plants in their community to stick in their lap books. Those who wish to draw may do so. Have students label the plants.",
+            "Resource Person\n- Invite a resource person (farmer, herbalist, forestry officer) to speak to students about and show them samples of the types of plants found in the country and their uses.",
+            "Oral Discussion\n- Engage students in a guided discussion where they share their knowledge of different plants found in their community:\n  Do you know of any plants that can be used for food?\n  Do you know of any plants that are used as medicine?\n  Do you know of any plants that are used to decorate?",
+            "Exhibition and Gallery Walk\n- Have students bring in one plant each used for food, medicine and decoration. Ask students to research the name of the plant (local or scientific) and what it is used for.\n- Have students display their plants according to the three categories. Have students prepare labels which identify the name and use of each plant.\n- Have students do a gallery walk to learn about the various plants. Ask students to identify plants others brought in that are found in their community and those that they do not recognize?",
+            "Oral Discussion\n- Discuss with students the importance of these plants for their community well-being and why we should protect them.\n- Engage students in a reflective discussion on what would happen/how would they feel if there were no plants and animals.",
+            "Lap Book Activity\n- Engage students in a reflective activity where they:\n  -draw how they would feel if there were no plants or animals.\n  -complete the statements 'It is important to care for and protect plants and animals in the community because _________________.\n  I promise to help care for animals by _________.\n  I will help protect the plants by ___________.",
+            "Introduction: Oral Discussion - Show students examples of a pattern to introduce the concept of a pattern to students (this can be linked with patterns in Mathematics). Ask students to find examples of patterns around the classroom. Guide students to come up with a definition of pattern. Discuss with students how weather can be connected to the concept of pattern. -Have you observed patterns when it comes to the weather? -What patterns have you observed when it comes to weather? -How can you predict what the weather will be like tomorrow?",
+            "Weather Log - Have students recall the main weather conditions (rainy, sunny, cloudy, hot, cold etc). Then have students watch the video https://www.youtube.com/watch?v=Uo8lbeVVb4M. Tell students that they are going to be weather watchers for the week who will investigate weather patterns in their communities. Add the weather related words to your word wall. - Have students start chapter six in their lap books titled “Weather Patterns in My Community” Have students create or provide them with a template for a weather log which they will stick in their lap books. https://www.twinkl.com/resource/roi-t-25943-my-weather-record-activity-sheet Make sure students understand how to use the weather log. - Have students observe and record the weather in their communities for 3-5 days both in the morning and afternoon. Students can write or draw a picture to record the weather.",
+            "Oral Discussion - Using an example demonstrate to students how they can analyse the information from their weather logs. Discuss with students -Generally, what was the weather like for the week? -How many sunny days, mornings or afternoons were there? -How many rainy days were there? (Have students count the number of rainy and sunny days) -What time of day was it usually sunny? -What time of day was it usually rainy? -Did you observe any patterns? -What do you think the weather will be like on the weekend or next week? Weather Report - Provide students with a report template such as https://www.google.com/imgres?imgurl=https%3A%2F%2Fdryuc24b85zbr.cloudfront.net%2Ftes%2Fresources%2F11804273%2Fimage%3Dwidth%3D500%26height%3D500%26version%3D1634033790989&tbnid=4EAQ_8zw5ojbxM&vet=12a hUKEwjXuZa-7cX_AhWwXTABHRK5AR8QMygNegUIA which they will use to write a few sentences to report on the weather patterns in their communities. (The same questions can be used to guide their writing).",
+            "Oral Discussion: Have students go outside to explore their surroundings. As they explore, ask them what they observe about the colour of the leaves, what they observe about the grass etc. Show students pictures depicting different times of the year (dry season and rainy season). Ask students if the surroundings always look like what they observe outside or in the pictures. Have them tell you what is different and when do they notice these differences. Ask students if they know about the rainy season and the dry season and when they usually occur. Focus on the sun and rain and have students outline how the sun and rain affect the environment (soil, animals, plants, rivers etc) differently. Ask students what outside would look like if there was no rain at all or if there was no sun at all.",
+            "Reflection: Have students draw a picture of the environment when it is sunny and when it is rainy. Have students say what is their favourite type of weather and why?",
+            "Video and Discussion: Have the students watch the video. https://www.youtube.com/watch?v=05spudqST8U. Have students talk about what they understood in the video to come up with a definition for the term environment.",
+            "Oral Discussion: Bring in a set of goods made from natural resources commonly used around the home or school to display. Ask students to identify the materials used to make these items. Record their responses on the board. Ask students where these materials come from. Ask students to name one thing they cannot live without. Tell them to think about where this thing came from or how it is made. Ask students if they know the word for things in the natural environment which are useful to us. Have students define the term natural resource.",
+            "Video: Have students view the video https://www.youtube.com/watch?v=dsTgyb_ITtk (stop at 2:32). Ask students to name natural resources found in their community",
+            "Lap book Activity: Graphic Organizer: Have students start chapter seven in their lap books titled “Resources in My Community. Have students draw and colour an outdoor scene which includes natural resources found in their community such as trees, a river/sea/waterfall and land. Have them draw a line from each resource and write down at least two items we get from the resource e.g trees give us lumber and paper.",
+            "Oral Presentation: Have students select one natural resource. Ask them to bring in one item that they or their family members use. In the oral presentation ask them to state the material from the natural environment the item is made from and explain how it is useful to people.",
+            "Reflection ● Have the students reflect on the question “Can human beings survive without the natural environment?’ and them complete statements such as: -The natural environment is important because _______________. -Human beings depend on the natural environment for _______________. -Human beings can/cannot (circle one) survive without the natural environment because_______________.",
+            "School/Community Walk ● Have the students walk around the school compound to observe ways in which people harm the environment . Have the students talk about harmful practices they observed in their environment. ● Engage students in a discussion on the ways that human beings harm the environment.",
+            "Investigation ● Have students assume the role of Guardians of the Environment. They are to observe or talk to persons in their home, school and neighbourhood over 2-3 days to find out ways in which we harm the local environment. Select two students to record data. Each day students are to report to the recorders what they found out. e.g. a person threw a bottle out the window of a vehicle. Students can record the information on large sheets of Bristol board placed on the classroom wall.",
+            "Oral Discussion ● Engage the students in a discussion on their observations. Guide them to talk about what is wrong with these actions, how they are bad for the environment and how the actions of one person can affect the environment for all persons.",
+            "Collage ● Have the students create a collage showing the various ways in which people harm the environment.",
+            "Resource Person ● Invite an environmental officer to speak to students about ways in which they can help protect the environment. Have students prepare questions that they can pose to the officer.",
+            "Jingle: Have students listen to the following song. https://www.youtube.com/watch?v=yfhyXx1kCz0 Ask them what the song is about and what is the purpose of the song. Then place students In groups, and tell them they are going to create their own jingle to encourage others to protect the environment.",
+            "Drama/Role play: Place students in small groups. Place a few scenarios in a bag. Students a scenario from the bag. and then provide them with a guide (simple rubric) to help them prepare a short skit on how the action selected causes harm to the environment and how each individual can play a part in caring for the environment."
+          ],
+          "elo_code": "SS-G2-ST-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Video for guided discussion on natural and built features",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=rZVQjQWuoGE"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Story for read aloud activity",
+          "links": [
+            {
+              "text": "YouTube Story",
+              "url": "https://www.youtube.com/watch?v=GIHVIguHeD0"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Video for understanding the environment",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=05spudqST8U"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Video for identifying natural resources",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=dsTgyb_ITtk"
+            }
+          ],
+          "category": "Videos"
+        }
+      ]
+    },
+    {
+      "strand_name": "Civic Participation",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Understand how our rights and responsibilities are important for building strong communities",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G2-CP-SCO1.1",
+              "description": "CP Knowledge 1- Identify features that make a community unsafe and healthy."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.2",
+              "description": "CP Skills 1- Engage in actions to improve one’s community."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.3",
+              "description": "CP Values 1-Appreciate the positive benefits of helping to keep their communities safe and healthy."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.4",
+              "description": "CP Knowledge 2 - Identify examples of conflict in our communities and neighbourhoods."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.5",
+              "description": "CP Skills -2- Role play ways to resolve differences and arguments."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.6",
+              "description": "CP Values -2- Appreciate the role of police and other community helpers in dealing with conflict."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.7",
+              "description": "CP Knowledge – 3 Describe how our local community is governed."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.8",
+              "description": "CP Skills - 3- Gather information about different local services that are organized at our community level."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.9",
+              "description": "CP Values - 3 Appreciate the advantages of local community involvement to assist families to meet their needs."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.10",
+              "description": "CP Knowledge -4- List possible causes of accidents and injuries at home and in our community."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.11",
+              "description": "CP Skills - 4- Investigate how community workers help keep families and children safe."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.12",
+              "description": "CP Values - 4- Appreciate the importance of following safety procedures."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.13",
+              "description": "K5-Recognize that children have the right to be safe in their community."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.14",
+              "description": "S5- Describe ways that their community helps ensure that its members are safe."
+            },
+            {
+              "sco_code": "SS-G2-CP-SCO1.15",
+              "description": "V5- Appreciate that family and community members are responsible for helping children feel safe and cared for."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation -: Are students able to state the name of their neighbourhood and briefly describe their neighbourhood?",
+            "Product - Are students able to identify features of safe and unsafe communities from the pictures collected/taken during the field trip.",
+            "Conversation: Are students able to report on the different locations that can be considered safe and healthy from unsafe and unhealthy in the neighborhood.",
+            "Product: After viewing pictures of neighbourhoods, are students able to differentiate between safe and healthy neighbourhoods versus unsafe and unhealthy neighbourhoods.",
+            "Conversation: Are students presenting ideas that their community and its members can take to keep the community safe and healthy?",
+            "Conversation: Are students able to suggest community projects they can undertake to improve the health and safety in their community?",
+            "Product: Are students able to successfully implement a project in their community such as: creating signs, flyers etc. that promote practices that keep their community safe and healthy?",
+            "Conversation: Are students able to state the benefits of their project in helping to keep their communities safe and healthy?",
+            "Product: Can students write two simple sentences about what they have learned while doing the project?",
+            "Conversation: Are students able to recognize and explain that Paul and Jane are having a disagreement or a conflict?",
+            "Are students able to define the term conflict?",
+            "Conversation: Are students able to identify examples of conflict in our classrooms, homes, and communities?",
+            "Observation: Are students able to distinguish between situations that are conflict and those that are not?",
+            "Product: Are students able to write in their journals about ways they have solved or can solve different conflicts?",
+            "Conversation: Are students able to brainstorm ways to resolve conflicts?",
+            "Product: Are students able to write what they have learned about resolving conflicts?",
+            "Conversation: Are students able to determine when it is suitable to seek the help of others,",
+            "Have students represent data in the form of a pictograph/block or bar graph.",
+            "Conversation: Are students able to describe the way the local community is governed?",
+            "Observation: Are students able to identify leaders in the community?",
+            "Conversation: Are students able to provide examples of the local services that are organized in a community?",
+            "Product: Are students able to represent a model of their community about different local services that are organized at a community level?",
+            "Observation: From the scenarios, are students able to recognize families that need help?",
+            "Conversation: Are students able to articulate how the community can get involved to assist families in need?",
+            "Conversation: Are students able to articulate the meaning of accident in their own words?",
+            "Observation: Are students able to name different types of accidents that can occur at home and in the community?",
+            "Conversation: Can students identify the causes of accidents at home and in our community?",
+            "Product: Are students able to predict during oral presentations what can happen if safety procedures are not followed based on given pictures or orchestrated situations?",
+            "Conversation: Are students able to identify community workers who help keep families and children safe using pictures and/or videos?",
+            "Are students able to dramatize the role of a community worker in keeping families and children safe and treating injured persons?",
+            "Can students identify where these workers are located within their communities and how they can be reached when they are needed?",
+            "Conversation: Are students able to list examples of safety procedures?",
+            "Product: Can students make oral presentations on the importance of following safety procedures?",
+            "Product: Are students able to show their appreciation for the importance of having safety procedures and more so following them by writing brief reflections in their journals and/or creating simple artwork depicting safety procedures they should follow?",
+            "Conversation: Do students have a basic understanding of their rights?",
+            "Are students able to explain that they have the right to be safe in their community?",
+            "Product:",
+            "Can students rewrite the specific right(s) that deals with safety in their community?",
+            "Product: Can students write sentences in their journals about what they have learned about rights and responsibilities?",
+            "Conversation: Are students able to identify things done by the community to ensure its members are safe?",
+            "Observation: Can students identify the personnel responsible for the measures implemented by the community to promote safety?",
+            "Product: Can students make oral presentations of ways they think their community ensures that its members are safe?",
+            "Product: Are students able to create signs and posters that promote different safety measures to protect children and families in the community service project(s)?"
+          ],
+          "inclusive_learning_strategies": [
+            "Introduction: Introduce the concept of ‘Safe/unsafe’ and healthy/unhealthy OR activate prior knowledge.",
+            "Have students take turns to state where they live and use guided questions to get them to describe the kind of neighbourhood they live in (do most houses have burglar proof bars? Guard dogs? Is it safe to be out late at night? Is it clean? How often does the garbage truck pick up garbage?) Therefore, using one word would you say that your neighborhood is.... (safe, unsafe, clean)",
+            "Field Trip: Students take a mini field trip around their school community (where school is located) and observe the environment checking for the areas that are unsafe and unhealthy. Students will record their observations (remind students to bring along their devices to take pictures).",
+            "Discussion: Using the language Experience Approach (LEA), have students state, report, and recall their observations made from field trip. Project pictures from students so that they can be used to stimulate discussions and memory. Students list/draw features of safe and unsafe communities and healthy/unhealthy communities",
+            "Seatwork/mapwork: Distribute sketch maps of the community showing locations that can be considered safe/unsafe. Let students draw smiley face/frown face emojis to identify safe /unsafe or healthy/unhealthy communities.",
+            "Reflection: let students draw, write, make models, or do oral presentation to show the ways they can keep their environment safe and healthy.",
+            "Presentation: Using information from the community trip, students in groups will brainstorm actions that they and community members can take to keep the community safe and healthy.",
+            "Tally Chart: Have students vote for which action they believe can work best to improve the community. Get students to count votes and present diagrams.",
+            "Community Service Learning project: The teacher guides students to engage in community projects such as: creating and erecting signs, podcasts, clean-up campaign, planting of trees, distributing flyers, health, and safety talk to other classes.",
+            "Reflective Thinking: Teacher guides students to write several sentences about what they have learned about the benefits of their project in helping to keep their community safe and healthy. Students role play ways to keep the community safe and the benefits to community members.",
+            "Read Aloud/Discussion: Read the following scenario to the students (teacher may use names of students in the class): Paul and Jane were good friends. One day, after school, Paul took his bat and cricket ball and went over to Jane’s house to play cricket. Paul said he would bat first and told Jane that she would field. However, Jane did not want to field, she wanted to bat first. This led to a big argument between the two friends. Paul then took his bat and went back to his home. Jane took her bike and started riding in her yard. Get students to define conflict by probing them based on the scenario: What is happening between Paul and Jane? What do we call a situation like this? Invite students to provide examples of conflicts that may occur between or among classmates, family members and community members.",
+            "Picture Inferencing/Conflict Scenarios: Show various pictures to students to differentiate between conflicts and non-conflicts. Allow students to identify ways in which they think people can resolve the conflicts identified in the pictures. Show students a video on conflict resolution https://youtu.be/Zm1NRbNsFmo. Let students take turns to share what they have learned about resolving conflict based on the video.",
+            "Journaling: Write in their journals about one action they would take or have taken to address or solve conflicts in their homes, school, or communities. Prompt: I solve conflicts by...",
+            "Group Work: Role Play: Place students in groups to role play different scenarios of conflict in the classroom, school, and their community for example: (Conflict at play: two students collide while running on the corridor, Jack borrows Wendy’s eraser without her permission and loses it break time, vehicle accident - both drivers argue about who is wrong and who is right, neighbors are quarrelling over fruits or vegetables that were stolen by one of their children).",
+            "Developing Self-Assessment Skills: Guide students to create pupil made trivia questions on the topic.",
+            "Developing Tools for Investigation: Place pupils in groups to create a survey/questionnaire/poll/interview on the topic to gather data from members of their communities.",
+            "Guided Learning: Students are provided with several examples of conflicts that range from mild to severe. Students will be invited to share examples of when these conflicts may require outside help from police or community leaders. teacher will engage with the students to help them see the value in seeking outside help when conflict cannot be resolved.",
+            "Read Aloud/Discussion: Read the story “The Upside Down Elephant” http://mrjonathan.com/mxrm9files/AR/THE%20UPSIDE%20DOWN%20ELEPHANT.pdf. Question students based on the story to review the meaning of community. Question the students on the characteristics of Mr. Ghatak to deduce that he was a leader in the community (Did Mr. Ghatak run away from the problem? Did he pass on the problem to someone else? What did he do? So, then we can say that Mr. Ghatak was a....)",
+            "Digital Seat Work: Have students solve the digital jigsaw puzzle to reveal pictures of local leaders https://im-a-puzzle.com/make-puzzle. Or display a PowerPoint presentation of pictures of local leaders to initiate a discussion on leaders and how these leaders play a role in governing the community. Record students’ responses on the board or on chart paper in the form of a graphic organizer. Discuss with students which of the community leaders they think was able to get members of the community to help the elephant. Identify some ways these leaders were able to get the community involved to help the elephant.",
+            "Project: Building model communities: Construct a model of a selected community and highlight the different local services that are offered in the community, (club house, building that host after school programmes, soup kitchen, recreation (steelpan, sports etc.). Students are invited to bring materials such as cardboard and plant materials from their communities to include in their models. Group students based on the communities that they are from to collect the various items from their communities. Gallery walk: the teacher can invite other classes, teachers, parents and members of the community to view the models and invite the students to share their thinking about their models and how they represent services in their community.",
+            "Group Work: Think-Pair-Share/Artwork/Role Play: Present scenarios accompanied with pictures of families in need (babysitting, house fire, medical assistance, building a home, flooding...) to the students. Place students in pairs to think-pair-share on ways the community can get involved to assist families to meet their needs. Students are invited to share their Think-pair-share with other classmates. Class can collaborate with local community service groups (Rotary, JCI, Kiwanis, Lions, Leos, Red Cross) to conduct community services.",
+            "Guided Discussion: Show the class pictures and videos of various accidents that occurred in the home, class, or community. Question students about what they see and what may have caused each incident. Invite students to share their stories about accidents they have experienced. Have students state in their own words what an accident means. Have students come up with causes of accidents.",
+            "Group Work: Place students in pairs to observe pictures depicting an accident that will be likely to happen. Have students write in their own words what will happen next using scenarios such as: (a child standing at the edge of a stool trying to reach a glass on a high shelf, a child about to touch a hot pot on a stove, a child running across the street to get a football whilst a vehicle is approaching, a driver texting and driving...)",
+            "Game: Set up a scavenger hunt activity for students to find unsafe household items or situations that may create an accident (plastic knife on the table, empty bleach bottle, empty match box, baby doll crawling towards small Legos blocks on the floor...)",
+            "Follow up activity: Home Investigation: Students are asked to go home and look around their house and yards and identify at least one potential hazard to share with the class the following day (or next class). Students take turns sharing with the class and provide examples of ways to address these hazards.",
+            "Discussion: Together with students, identify some community helpers and who keep them safe using pictures and videos. Record students responses on the board or chart, for example (nurses, doctors, police, dentist, garbage collectors, traffic wardens, bus conductors, teachers, security guards)",
+            "Roleplay: Community workers roles in keeping us safe. Place students into groups (pairs, groups of three) to research the roles or how these workers help to keep them safe in their communities. Have community helpers give students information on how they can be contacted, their locations, and the roles they play in the community. Let students role play community workers in action based on their research, for example: helping the injured person (s) in the community, traffic warden crossing students across the road.",
+            "Discussion on safety procedures: Lead a classroom discussion on the meaning of safety procedures, and their importance, provide some examples such as: crossing the road, using the pedestrian crossing, using their devices online, playing with matches, taking medications not prescribed or prescribed. Let students take turns to share suggestions of safety procedures that they have adhered to in the past, for example discarding a used match, calling an adult when the kettle is whistling. The teacher gives examples of how the internet is also a place where we need to exercise safety such as encouraging safe internet habits. teacher can share information from the following regional internet safety sources: https://oicaribbean.org/internet-safety-day-2022/, https://safetyandsecuritynet.org/, https://www.facebook.com/getsafeonlinecaribbean/",
+            "Journaling/Artwork: Have students journal their understanding and appreciation of following safety procedures.",
+            "Or have students represent their understanding and appreciation of following safety procedures through artwork based on the presentation by resource person.",
+            "Read Aloud/Discussion: Have students listen to the video of a Read Aloud “I Have the Right to be a Child” to identify the rights that children have. https://www.youtube.com/watch?v=ERKhP7bQ6Os&t=45s",
+            "Question students based on the video: What is the meaning of rights? What are two examples of rights that children have? What rights were mentioned about safety?",
+            "Record students' responses on chart paper or on the board.",
+            "Explain to students that just as they have rights at home and at school, they also have the right to be safe in their community.",
+            "Journal Entry: Have students make an entry in their journal (Today I learned that...)",
+            "Guided Discussion: Present pictures of various signs and marking used throughout the community to promote safety of community members, for example: warning and stop signs, pedestrian crossings, railings, garbage bins, traffic lights, sidewalks, safety signs on beaches and lakes etc.",
+            "Ask students to identify similar measures implemented in their individual communities to keep its members safe.",
+            "Together with students, discuss the reasons for the various signs and who in the community is responsible for ensuring that signs are adhered to, for example: lifeguards on the beach, traffic wardens at pedestrian crossings,",
+            "Ask students who they think are responsible for employing these people in the communities.",
+            "Community Service Project: Students will be placed in groups.",
+            "Students and parents/guardians in collaboration with community safety personnel will create or repair signs or paint safety markings in their communities.",
+            "Students will create scrapbook of pictures of the project to be presented to the class."
+          ],
+          "elo_code": "SS-G2-CP-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Economic Decision Making",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Understand how our communities provide goods and services to meet our needs and wants",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G2-ED-SCO1.1",
+              "description": "EDM Knowledge -1: Identify people in the community that are resource persons"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.2",
+              "description": "EDM Skills -1: Categorize human and natural resources in your local environment."
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.3",
+              "description": "EDM Values - 1 -Appreciate the importance of respecting the value of our human and natural resources for meeting our basic needs"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.4",
+              "description": "EDM Knowledge -2 -Describe different uses of land in your community"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.5",
+              "description": "EDM Skills -2 -Explain how land use affects the environment"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.6",
+              "description": "EDM Values -2 -Value the need to treat land with respect"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.7",
+              "description": "EDM- Knowledge 3- Identify some of the people who live and work in the community"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.8",
+              "description": "EDM- Skills-3 -Draw pictures to illustrate the roles of workers in the community"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.9",
+              "description": "EDM Values-3 -Appreciate the diverse range of people who make up my community"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.10",
+              "description": "EDM- Knowledge-4 -Identify goods and services available in my community."
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.11",
+              "description": "EDM-Skills-4 -Classify workers who provide goods and services"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.12",
+              "description": "EDM-Values-4"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.13",
+              "description": "-Appreciate that goods and services provide both needs and wants"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.14",
+              "description": "EDM-Knowledge-5 -Identify types of jobs in the community"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.15",
+              "description": "EDM-Skills- 5 -Compare the types of jobs traditionally done by males and females or both and discuss how this has changed"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.16",
+              "description": "EDM-Values-5 -Appreciate that jobs can be done by both men and women"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.17",
+              "description": "Learners will be expected to: EDM-Knowledge-6 -Understand that rules help workers in the workplace"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.18",
+              "description": "EDM-Skills-6 - Recognize how to safely follow appropriate rules when carrying out jobs"
+            },
+            {
+              "sco_code": "SS-G2-ED-SCO1.19",
+              "description": "EDM-Values-6 -Appreciate the importance of rules and laws in protecting our rights"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation: Are students able to identify people in their community as human resources?",
+            "Categorizing information: Can students categorize people as human resources using samples of: Pictures, Videos, Comprehension passages, Show and Tell",
+            "Product: Using an assessment menu provide options for students to showcase their understanding",
+            "Product: Can students use an assessment menu to showcase their understanding by choosing one or more of the following: Drawings, Role play, Match these, Cut/paste ( Scraping), Projects/ poster, Journals, Presentation, Career day, Resource person ( show and tell), Video recording, Song or Dance or Poem, Game- The Sims, etc",
+            "Figure 1 : Assessment Menu",
+            "Conversation: Can students identify resources used in the environment to provide goods and services?",
+            "Sample Videos: https://www.youtube.com/watch?v=ajk-pvm5vfQ ( 0-1:34)",
+            "Observation: Are students able to work cooperatively with one another?",
+            "Product: Do students appreciate the importance of natural resources for meeting their basic needs in the community?",
+            "Product: Can students highlight reasons why natural and human resources are important for meeting our basic needs?",
+            "Sample Activities Conversation: Are students able to identify the various uses of the land in their community and how each serves a specific purpose?",
+            "Product: Small Groups work Can students create a model or draw a picture of a feature of the land and identify its uses? This could be done during the class under the teacher’s supervision.",
+            "Sample Activity Observation: Are the students able to identify that their drawings/pictures and models show different local land uses?",
+            "Conversation: How did the man-made features change the natural landscape? How does this change affect the animals, people and plants in the area?",
+            "Conversation: Are students able to identify the negative consequences of overusing, misusing the land?",
+            "Conversation: Can students recognize and list different conservation practices?",
+            "Can students describe simple practices that contribute to the conservation of land such as reusing materials, reducing waste and planting new tees?",
+            "Conversation: Are students able to identify individuals who live and work in their community?",
+            "Product: Are students able to illustrate individuals who provide needs and wants in their community?",
+            "Conversation: When students discuss the individuals in their community, are they able to point out features that distinguish them from others?",
+            "Observation: Can students demonstrate their appreciation for the diverse roles and contributions of individuals in their community through interviews and research?",
+            "Product: Will students demonstrate an appreciation for the diverse roles and contributions of individuals in their community through a visually expressive collage?",
+            "Observation: Can students identify the pictures which depict goods and services and give reasons why they are considered goods or services?",
+            "Product: Can students conclude that goods are physical items we get and services are things that are done to and for us?",
+            "Conversation: Can students differentiate between workers who provide a good or a service?",
+            "Inclusive Assessment Strategies: Are the students able to appreciate that need are more essential than wants?",
+            "Product: Can students conclude that their needs are greater than their wants and their needs are essential to their survival.",
+            "Conversation: Are students able to name the types of jobs done in their community?",
+            "Speaking: Can children list tasks/chores that are considered male tasks and female tasks/chores which are done at home. Speaking: Can students distinguish between jobs which are traditionally done by women and by men in the workplace?",
+            "Product: Are students able to share the reasons why all jobs can be done by both men and women? Are students able to appreciate that as long as one has the skill, talent, education and aptitude they can do any job?",
+            "Products: Are students able to choose appropriate rules for job sites that help create safe and productive working environments?",
+            "Conversation: Are students able to contribute to a discussion on the measures family members take when doing tasks at home?",
+            "Are students able to contribute to a discussion on some of the safety equipment used by selected workers?",
+            "Product: Are students able to represent effectiveness of rules for workplace safety and productivity?",
+            "Conversation: Are students able to determine how classroom and workplace rules contribute to a safe and productive working environment?"
+          ],
+          "inclusive_learning_strategies": [
+            "Concept formation: Provide students with culturally relevant pictures or videos of people performing various jobs to generate a discussion. This activity can be done as a small group work or buddy share.",
+            "Sample Video: https://www.youtube.com/watch?v=ckKQclquAXU",
+            "Sample Questions: 1. Who is depicted in the picture? 2. What job does the person shown do?",
+            "3. What do you think would happen if no one did this job?",
+            "4. What skill(s) would be needed to perform this job/activity?",
+            "See Figure 2 Definitions and main content",
+            "Students are given an assessment menu to choose which group/individual work they will complete.",
+            "Students share their work with the class. Peer review should be encouraged.",
+            "Resource Person/Panel: Encourage discussion of video and invite resource persons to speak to students on how resources are used to complete daily tasks.",
+            "Small Group Learning: Students are provided with a list of natural resources and work in pairs or small groups to highlight resources based on their importance to meeting our basic needs. Students write sentences to explain the importance of protecting these resources.",
+            "Create a conservation song, poem, skit, drawing or picture folder about a resource and ways to protect it.",
+            "Using the Minecraft game, students are expected to create a farm which should include a house and animal enclosure. They will be expected to present their final product using Flipgrid.",
+            "Students create a poster to highlight the value of both natural and human resources.",
+            "Interview and Field Trips: Students engage with resource persons based on the natural resources available in their country. Students ask questions and visit sites to get a better understanding of the use of these resources. Ex: Dominica Geothermal plant, LuceLEC power grid, local farms etc",
+            "Sample Picture inferencing: The teacher shares a variety of pictures which depicts aspects of the local community and environment such as,, homes, farms, hotels, rivers, coastline, wharves, banks, quarries, industrial factories, Bridges, Roads and hospitals. Sample Questions: What are the various ways the land is used in each picture? Which pictures have natural resources and which have man made resources?",
+            "Through discussion, the teacher helps students to understand that all these features are used by people.",
+            "Picture match: Students will be given a list of land uses and pictures of land used for commercial, agricultural, health and residential recreational activities. They will match the pictures to their use. Example: These can be personalized to the resources found in their country. The beach - fishing, recreation (Fun) The parks or reserves- animal habitat Quarry- Quarrying sand and stone The bank- saving money The medical facility eg. a clinic- caring for the sick Plant nursery- growing plants Farm -",
+            "Subject Integration Read-A-Loud The teacher gathers the students around a book pertaining to land and its uses and engages in a read aloud to reinforce the understanding that the land has many different purposes. The teacher then engages the students in choral reading of the book. The book is made available in the classroom library for independent reading.",
+            "Sample Activity Students discuss the changes they notice in photos/pictures of an area before and after land use. Example: [Image of before/after land use]",
+            "Game: Students can play these virtual reality games to show different land uses and discuss how the land use has changed the landscape. minecraft, roblox, Simcity 2000, puzzles involving matching different land uses to their environmental impacts",
+            "Critical Thinking: The teacher can draw upon several of the pictures in the class book that reflect different ways the land can be conserved.",
+            "After viewing photos, engage the class in brief discussion on different preservation strategies.",
+            "View the YouTube video “What is Land pollution - Video for kids” to reinforce how land pollution might affect the land. https://www.youtube.com/watch?v=c0Ygm51cSjI",
+            "What Are Natural Resources? | Types Of Natural Resources | The Dr Binocs Show | Peekaboo Kidz",
+            "Engage the students in a discussion of ways we destroy the land and what we can do to preserve/protect the land. What are some ways we can destroy the land and what can we do to preserve/protect the land?",
+            "Differentiated Instruction: Include a stimulus/introductory activity to help students review concepts of workers in their community.",
+            "Sample Activities: Students are asked to draw a picture of someone who works in their community such as a police officer, shopkeeper, hotel worker, farmer, teacher, bus driver, cook, street vendor. Or Students can be given a set of pictures which depicts community workers.. They will to choose one picture, colour it and write one sentence about the role of the worker. Students will display these pictures on a bulletin board titled, “People Who Work in My Community”",
+            "Students gather around the bulletin board and discuss the role each person in the picture and how they provide community members’ with needs and wants.",
+            "Research and Identify Roles: Have students research and identify various roles within their community. This could include occupations, cultural groups, service providers, etc. Encourage them to think broadly and inclusively.",
+            "Collage Creation: Instruct students to create a collage that represents the diversity within their community. Traditional: Students would have been previously instructed to bring at least two pictures from their research. These will be cut and pasted to create the class collage.",
+            "Digital Collage Creation: Instead of traditional cut-and-paste collages, students use digital tools like Canva, Adobe Spark, or Google Slides to create a visually appealing digital collage. They can insert images, text, and shapes to represent the diversity in their community. Emphasize the importance of inclusive representation. Encourage students to include individuals from different genders, ethnicities, ages, abilities, and backgrounds in their college.",
+            "Online Peer Feedback: Use collaborative platforms like Google Classroom or Padlet for peer feedback. Students can provide comments, ask questions, and offer positive reflections on their classmates' digital collages.",
+            "Create Thank You Cards: Students create a thank you card to give to different workers in the community who meet their needs and wants.",
+            "Career Day: After viewing and discussing the people on their bulletin board, students are invited to write a days of the week story, using the following story starter, that explains the diversity of their community workers. I knew my community was special because on Monday I saw (Name community worker).... I knew my community was special because on Tuesday I saw... I knew my community was special because on Wednesday I saw...etc",
+            "Sample activities Presentation and Discussion: Students view slides (Canva,Prezi,Adobe Spark) of different types of goods and services which are provided in the community. Examples of goods: Farm produce, sand and stones, water, furniture, books. Examples of service: dental check-up, hair grooming, manicure, vehicle repairs, swiping/ landscaping. Sample prompts to guide discussion: After each slide teacher can ask: 1. Where will you get this product? 2. If you were to buy this product what will you get? 3. Will you leave with an item or will something be done for you or to you? Role Play: Teacher guides the children to role play a scenario involving the provision of a good and a service For Ex: A nurse attending to a patient using a thermometer,an IV, or a blood pressure monitor.",
+            "Suggested Culminating Activities. Students view the following video to highlight and reinforce the differences between goods and services https://www.youtube.com/watch?v=Yxibq_vskRA Worksheet correlates to the video. https://www.liveworksheets.com/w/en/social-studies/132428",
+            "Categorizing Concepts: Show and Tell Use of flashcards/ objects of different workers: Students are placed in two lines and each is given a group of flashcards with pictures/ objects that represent goods and services. Children will use the strategy Show and Tell to talk about the worker in their picture. Group Activity- Career Simulation Teacher assigns students careers. Those that provide goods and those that provide a service. Some students are assigned to be the buyers. Possible careers: Baker, furniture maker: Goods Nurse, bus driver: Service The consumers will choose to purchase the one good and one service. At the end the consumer ( buyer) will present what he she got from the transaction.",
+            "Concepts Review: Review the terms needs and wants. Ensure that students can recall that needs are things that we must have to survive, whereas wants are things that we desire that are not necessary for survival. Subject Link: Link this a lesson to Composition using a prompt. Prompt: “If I were stranded on an island, what would I want to have with me? Why? Write six (6) sentences about the prompt above to explain which good or service they would want.",
+            "Sample Activitites: Drawing upon the bulletin board activity, “People who work in my community” list all the jobs people are doing. Name the job depicted in the picture on each slide: https://www.liveworksheets.com/td1733755fb Match the name of the job to its picture https://www.liveworksheets.com/qx3195957tp",
+            "Compare and contrast traditional and modern gender job assignments Show pictures of different men and women doing non-traditional jobs. For example: nurse and hair dresser (male); bus driver and engineer (women) Discussion: Students discuss the change in job assignments by comparing and contrasting the past with the present. Sample discussion questions a. What is the difference between the first set of photos shown and the last set? b. What job is this person doing? b. Do you know anyone who does this job?",
+            "Sample Activities: Role Play: I Want To Be A Construction Worker - Kids Dream Job - Can You Imagine That? Imagine That: Children watch the video above then draw what they want to be when they grow up. Write a sentence about the drawing and why they want to be what they choose. Role play to illustrate that all jobs can be done by both men and women. Discussion: Engage students in a discussion to explain why both sexes can partake in all jobs. Show and Tell: Children come dressed in their career choice and tell who they are and explain what this job does. Sing And Dance: When I Grow Up. When I Grow Up | Kids Songs | Super Simple Songs Teacher plays the video “When I Grow Up” for the class. Students are encouraged to sing along and take turns adding what they want to be when they grow up.",
+            "Rules: Class reiterates rules created at the beginning of the school year and says why they are needed or were created.",
+            "Read Aloud: Read a story book about why rules are important. Sample books: DW’s guide to perfect manners by Marc Brown, DW’s guide to Preschool by Marc Brown",
+            "School rules by Robert Munsch",
+            "Have a discussion on what they observe from the book: What was the environment like before the rules? Why was it necessary in the story to create rules? What was the environment like after the rules were implemented or put in place? Why do you think rules are important or necessary?",
+            "Technology-Enhanced Learning: Use an interactive whiteboard or projector to display pictures depicting safety hazards and safe work practices. Teachers and students walk around the school grounds and identify hazards which can be used to create a short video or presentation highlighting the importance of workplace safety rules.",
+            "Arts Integration: Share several examples of work environments where the children’s parents might work, such as hotels, stores, government offices, construction job sites, farms. Have students draw pictures and design some rules for selected work environments that would assist in keeping workers and clients safe and that would lead to productive work environments. Students provide feedback on the safety measures highlighted by their classmates.",
+            "Discovery and discussion: Through probing teacher discovers some tasks that parents or elder siblings do at home that require a level of safety measures. Through guided questioning teacher draws out the safety measures employed to protect the family members when carrying out that task. If none is given teacher supplies the measure. For example: Possible task: sewing, gardening, dusting. Possible safety measure: use of a thimble, use of gloves, gloves and masks.",
+            "Sample Activities: Students can be given a worksheet with pictures of different jobs, the tools and words to fill in the blank. Fill in the Blanks: Fill in the blanks with the most appropriate answer from the wordbank given. If I were a doctor, I'd wear gloves to dress your wound. If I Were a builder, I'd wear a hardhat on my head. If I Were a painter I'd wear a mask to keep the fumes away. If I Were a chef I'd wear an apron to keep my clothes clean. If I were a fireman, I'd wear my fireproof gear to put out a burning building. If I were a fisherman, I'd wear my life vest to sail the sea. If I were a roofer, I'd wear my harness to secure me to the roof. If I were a footballer/ cricketer, I'd wear my shin guard / pads to protect my feet.",
+            "If I were a welder, I'd wear my welding mask to protect my eyes from the sparks.",
+            "If I were an astronaut, I'd wear my spacesuit so I could breathe in space.",
+            "Online Options: Google forms https://docs.google.com/forms/d/1M6iQm4c6UWqlDAj-fK9U3B98f57HsLoLeVphubuM07k/edit",
+            "After you have accessed the Google Forms quiz, make a copy of the quiz. If you want, make the necessary changes in your copy to share with your class. Do NOT edit the ORIGINAL. This quiz can also be printed.",
+            "Complete a quiz in Quiziz https://quizizz.com/admin/quiz/6553b61d3501b1b71c4a2ea8?at=6553b61db1dc247b7487cfad",
+            "Conversations: Students discuss among themselves the positive outcomes of the creation of these rules for worker safety and for creating a good workplace environment.",
+            "Students view the following videos to help them appreciate the importance of rules. https://www.youtube.com/watch?v=WB3zolACjuI- why are rules important",
+            "https://www.youtube.com/watch?v=CqH2QYt6oOc discuss safety rules"
+          ],
+          "elo_code": "SS-G2-ED-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Additional Resources and Materials",
+          "links": [
+            {
+              "text": "What Are Natural Resources?",
+              "url": "https://www.youtube.com/watch?v=tCqj9jKQaSs"
+            },
+            {
+              "text": "Types Of Natural Resources",
+              "url": "https://wordwall.net/resource/27974143/natural-resources"
+            },
+            {
+              "text": "The Dr Binocs Show",
+              "url": "https://www.youtube.com/watch?v=tCqj9jKQaSs"
+            },
+            {
+              "text": "Peekaboo Kidz",
+              "url": "https://www.youtube.com/watch?v=tCqj9jKQaSs"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Cartoon for Kids!! Natural resources Science for Children",
+          "links": [],
+          "category": "Videos"
+        },
+        {
+          "description": "Figure 1: Assessment Menu",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Figure 2: Definitions",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Sample Video",
+          "links": [
+            {
+              "text": "https://www.youtube.com/shorts/15NfUs59zqA",
+              "url": "https://www.youtube.com/shorts/15NfUs59zqA"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: Land: It is the solid part of earth's surface (the soil and its mineral resources) where production like farming and livestock management takes place. Uses: farming, animal rearing, construction, mining. Tools for mining: Excavator, haul truck, bulldozer. Tools for Agriculture: shovel, rack, cultivator, wheelbarrow, tractor",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Community Guest Speakers: Invite community members representing various professions to share their experiences with the students. This can provide real-world insights and perspectives.",
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Virtual Field Trips: Explore virtual field trips or documentaries that showcase different professions and work environments. Platforms like Google Arts & Culture or virtual tours of workplaces can be engaging.",
+          "category": "Websites"
+        },
+        {
+          "description": "Children's Books: Incorporate diverse children's books that highlight different careers and emphasize the importance of community. Examples include \"The Berenstain Bears: Jobs Around Town\" or \"Whose Hands Are These? A Community Helper Guessing Book.\"",
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Interactive Websites: Use interactive websites and online platforms that allow students to explore different careers. Websites like Kids.gov or My Next Move offer interactive tools and resources.",
+          "category": "Websites"
+        },
+        {
+          "description": "Multicultural and Inclusive Media: Integrate movies, TV shows, or online videos that portray diverse communities and the various roles within them. Discussing media content can be a powerful way to address stereotypes and promote inclusivity.",
+          "links": [],
+          "category": "Videos"
+        },
+        {
+          "description": "Interactive Maps: Explore interactive maps that showcase different cultures and professions around the world. Websites like National Geographic or UNESCO provide interactive maps that can spark discussions on global diversity.",
+          "links": [],
+          "category": "Websites"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: Workers in our community: Police Officers: Ensuring public safety and maintaining law and order. Firefighters: Responding to fires and emergencies to protect lives and property. Nurses and Healthcare Professionals: Providing essential healthcare services in hospitals, clinics, and other healthcare settings. Electricians: Installing and maintaining electrical systems. Construction Workers: Building and maintaining infrastructure such as roads, bridges, and buildings. Retail Workers: Working in shops and stores, assisting customers and managing inventory. Chefs and Culinary Workers: Preparing and serving food in restaurants, hotels, and other food establishments. Postal Workers: Handling and delivering mail and packages. Librarians: Managing and organizing library resources, assisting patrons. Social Workers: Providing support and services to individuals and families in need. Artists and Performers: Contributing to the cultural and creative landscape of the community. Garbage Collectors/Sanitation Workers: Keeping the community clean by collecting and disposing of waste. Public Transportation Workers: Bus drivers, train conductors, and others who facilitate public transportation. Technology Professionals: IT specialists, programmers, and technicians contributing to the technological infrastructure. Environmentalists: Working to protect and preserve the environment. Journalists: Reporting news and information to keep the community informed. Military Personnel: Serving in the armed forces to protect national security. Psychologists/Counselors: Providing mental health support and counseling services. Entrepreneurs/Small Business Owners: Contributing to the local economy through small businesses. Nonprofit Workers/Volunteers: Engaging in charitable and community service activities.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: Workers and their skills: Tailor- sewing Hair stylist- designs hair styles Mechanic- fixes vehicles Masseuse- provides massages Baker- makes breads and pastries Fisherman- fish Butcher- meat Goods are objects that satisfy people's needs and wants. Services are things people do for us that satisfy our needs and wants.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher: A job is a person's role in society. It is an activity, often regular and o performed for payment. Types of jobs: Nurses, doctors, carpenters, mechanic, shopkeeper, lawyer, police,",
+          "links": [],
+          "category": "Teacher Materials"
+        }
+      ]
+    }
+  ]
+}

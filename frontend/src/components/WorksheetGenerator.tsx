@@ -49,7 +49,7 @@ const PaintBrush: React.FC<{ className?: string; style?: React.CSSProperties }> 
 const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
 const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
 const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ImageNotFound01IconData} {...p} />;
-import { useCurriculumIndex } from '../data/curriculumLoader';
+import { getCurriculumSync } from '../data/curriculumLoader';
 import {
   MultipleChoiceTemplate,
   ComprehensionTemplate,
@@ -82,16 +82,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 
 
-interface CurriculumPage {
-  subject: string;
-  grade: string;
-  strand: string;
-  [key: string]: unknown;
-}
-
-interface CurriculumIndex {
-  indexedPages: CurriculumPage[];
-}
+// Curriculum types removed — now using curriculumLoader directly
 
 interface WorksheetGeneratorProps {
   tabId?: string;
@@ -211,7 +202,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const { hasDiffusion } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
-  const { curriculumIndex } = useCurriculumIndex();
+  // Curriculum data is loaded per grade+subject via CurriculumAlignmentFields
   const { settings } = useSettings();
   const LOCAL_STORAGE_KEY = `worksheet_state_${tabId}`;
 
@@ -572,32 +563,22 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   }, []);
 
 
-  // Get available topics (keywords) based on subject, grade, and strand
+  // Get available topics based on subject, grade, and strand (from SCO descriptions)
   const getTopics = (subject: string, grade: string, strand: string): string[] => {
     if (!subject || !grade || !strand) return [];
-    const curriculumData = curriculumIndex as CurriculumIndex;
-    const pages = curriculumData.indexedPages || [];
+    const data = getCurriculumSync(grade, subject);
+    if (!data) return [];
+    const strandData = data.strands.find(s => s.strand_name.toLowerCase() === strand.toLowerCase());
+    if (!strandData) return [];
     const topicsSet = new Set<string>();
-    
-    pages.forEach((page: CurriculumPage) => {
-      if (
-        page.subject &&
-        page.grade &&
-        page.strand &&
-        page.subject.toLowerCase() === subject.toLowerCase() &&
-        page.grade.toString() === grade.toString() &&
-        page.strand.toLowerCase() === strand.toLowerCase()
-      ) {
-        // Add keywords as available topics
-        if (page.keywords && Array.isArray(page.keywords)) {
-          page.keywords.forEach((keyword: string) => {
-            topicsSet.add(keyword);
-          });
-        }
+    for (const elo of strandData.essential_learning_outcomes) {
+      for (const sco of elo.specific_curriculum_outcomes) {
+        // Extract key words from SCO descriptions as topics
+        const words = sco.description.replace(/^\d+\.\d+\s*/, '').split(/\s+/);
+        words.filter(w => w.length > 4).forEach(w => topicsSet.add(w.toLowerCase()));
       }
-    });
-    
-    return Array.from(topicsSet).sort();
+    }
+    return Array.from(topicsSet).sort().slice(0, 30);
   };
  
   const getAvailableQuestionTypes = (): string[] => {
@@ -878,18 +859,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
       setLoadingCurriculum(true);
       try {
-        // Use the curriculum index to find matches
-        const curriculumData = curriculumIndex as CurriculumIndex;
-        const pages = curriculumData.indexedPages || [];
-        const matches = pages.filter((page: CurriculumPage) => {
-          return (
-            page.subject?.toLowerCase() === formData.subject.toLowerCase() &&
-            page.grade === formData.gradeLevel &&
-            page.strand?.toLowerCase().includes(formData.strand.toLowerCase())
-          );
-        });
-
-        setCurriculumMatches(matches.slice(0, 10)); // Limit to 10 results
+        const { getCurriculumMatches } = await import('../utils/curriculumHelpers');
+        const matches = getCurriculumMatches(formData.subject, formData.gradeLevel, formData.strand);
+        setCurriculumMatches(matches.slice(0, 10));
       } catch (error) {
         console.error('Error fetching curriculum matches:', error);
         setCurriculumMatches([]);

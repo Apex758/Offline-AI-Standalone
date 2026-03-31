@@ -1,63 +1,9 @@
-import { getCurriculumPages } from '../data/curriculumLoader';
-
-/**
- * Get unique strands matching a subject and grade from the curriculum index.
- */
-export function getStrands(subject: string, grade: string): string[] {
-  if (!subject || !grade) return [];
-  const strandsSet = new Set<string>();
-  getCurriculumPages().forEach((page: any) => {
-    if (
-      page.subject &&
-      page.grade &&
-      page.strand &&
-      page.subject.toLowerCase() === subject.toLowerCase() &&
-      page.grade.toString() === grade.toString()
-    ) {
-      strandsSet.add(page.strand);
-    }
-  });
-  return Array.from(strandsSet);
-}
-
-/**
- * Get Essential Learning Outcomes matching subject, grade, and strand.
- */
-export function getELOs(subject: string, grade: string, strand: string): string[] {
-  if (!subject || !grade || !strand) return [];
-  const elosSet = new Set<string>();
-  getCurriculumPages().forEach((page: any) => {
-    if (
-      page.subject?.toLowerCase() === subject.toLowerCase() &&
-      page.grade?.toString() === grade.toString() &&
-      page.strand?.toLowerCase() === strand.toLowerCase() &&
-      page.essentialOutcomes
-    ) {
-      page.essentialOutcomes.forEach((elo: any) => elosSet.add(typeof elo === 'string' ? elo : elo.text));
-    }
-  });
-  return Array.from(elosSet);
-}
-
-/**
- * Get Specific Curriculum Outcomes matching subject, grade, strand, and a selected ELO.
- */
-export function getSCOs(subject: string, grade: string, strand: string, elo: string): string[] {
-  if (!subject || !grade || !strand || !elo) return [];
-  const scosSet = new Set<string>();
-  getCurriculumPages().forEach((page: any) => {
-    if (
-      page.subject?.toLowerCase() === subject.toLowerCase() &&
-      page.grade?.toString() === grade.toString() &&
-      page.strand?.toLowerCase() === strand.toLowerCase() &&
-      page.essentialOutcomes?.some((e: any) => (typeof e === 'string' ? e : e.text) === elo) &&
-      page.specificOutcomes
-    ) {
-      page.specificOutcomes.forEach((sco: any) => scosSet.add(typeof sco === 'string' ? sco : sco.text));
-    }
-  });
-  return Array.from(scosSet);
-}
+import {
+  getCurriculumSync,
+  getStrandData,
+  type CurriculumELO,
+  type CurriculumSCO,
+} from '../data/curriculumLoader';
 
 export interface OutcomeEntry {
   id: string;
@@ -66,93 +12,114 @@ export interface OutcomeEntry {
 }
 
 /**
+ * Get unique strand names for a subject and grade from cached curriculum data.
+ */
+export function getStrands(subject: string, grade: string): string[] {
+  if (!subject || !grade) return [];
+  const data = getCurriculumSync(grade, subject);
+  if (!data) return [];
+  return data.strands.map(s => s.strand_name);
+}
+
+/**
+ * Get Essential Learning Outcomes as strings for a subject, grade, and strand.
+ */
+export function getELOs(subject: string, grade: string, strand: string): string[] {
+  if (!subject || !grade || !strand) return [];
+  const strandData = getStrandData(grade, subject, strand);
+  if (!strandData) return [];
+  return strandData.essential_learning_outcomes.map(elo => elo.elo_description);
+}
+
+/**
+ * Get Specific Curriculum Outcomes as strings for a subject, grade, strand, and selected ELO.
+ */
+export function getSCOs(subject: string, grade: string, strand: string, elo: string): string[] {
+  if (!subject || !grade || !strand || !elo) return [];
+  const strandData = getStrandData(grade, subject, strand);
+  if (!strandData) return [];
+  const eloData = strandData.essential_learning_outcomes.find(e => e.elo_description === elo);
+  if (!eloData) return [];
+  return eloData.specific_curriculum_outcomes.map(sco => sco.description);
+}
+
+/**
  * Get ELOs with structured IDs.
  */
 export function getELOsStructured(subject: string, grade: string, strand: string): OutcomeEntry[] {
   if (!subject || !grade || !strand) return [];
-  const seen = new Set<string>();
-  const results: OutcomeEntry[] = [];
-  getCurriculumPages().forEach((page: any) => {
-    if (
-      page.subject?.toLowerCase() === subject.toLowerCase() &&
-      page.grade?.toString() === grade.toString() &&
-      page.strand?.toLowerCase() === strand.toLowerCase() &&
-      page.essentialOutcomes
-    ) {
-      page.essentialOutcomes.forEach((elo: any) => {
-        const entry: OutcomeEntry = typeof elo === 'string'
-          ? { id: '', text: elo }
-          : { id: elo.id || '', text: elo.text };
-        if (!seen.has(entry.text)) {
-          seen.add(entry.text);
-          results.push(entry);
-        }
-      });
-    }
-  });
-  return results;
+  const strandData = getStrandData(grade, subject, strand);
+  if (!strandData) return [];
+  return strandData.essential_learning_outcomes.map(elo => ({
+    id: elo.elo_code || '',
+    text: elo.elo_description,
+  }));
 }
 
 /**
- * Get SCOs with structured IDs.
+ * Get SCOs with structured IDs for a specific ELO.
  */
 export function getSCOsStructured(subject: string, grade: string, strand: string, elo: string): OutcomeEntry[] {
   if (!subject || !grade || !strand || !elo) return [];
-  const seen = new Set<string>();
-  const results: OutcomeEntry[] = [];
-  getCurriculumPages().forEach((page: any) => {
-    if (
-      page.subject?.toLowerCase() === subject.toLowerCase() &&
-      page.grade?.toString() === grade.toString() &&
-      page.strand?.toLowerCase() === strand.toLowerCase() &&
-      page.essentialOutcomes?.some((e: any) => (typeof e === 'string' ? e : e.text) === elo) &&
-      page.specificOutcomes
-    ) {
-      page.specificOutcomes.forEach((sco: any) => {
-        const entry: OutcomeEntry = typeof sco === 'string'
-          ? { id: '', text: sco }
-          : { id: sco.id || '', text: sco.text, eloRef: sco.eloRef };
-        if (!seen.has(entry.text)) {
-          seen.add(entry.text);
-          results.push(entry);
-        }
-      });
-    }
-  });
-  return results;
+  const strandData = getStrandData(grade, subject, strand);
+  if (!strandData) return [];
+  const eloData = strandData.essential_learning_outcomes.find(e => e.elo_description === elo);
+  if (!eloData) return [];
+  return eloData.specific_curriculum_outcomes.map(sco => ({
+    id: sco.sco_code,
+    text: sco.description,
+    eloRef: eloData.elo_code || '',
+  }));
 }
 
 /**
- * Build a lookup from outcome text -> ID for all pages matching subject/grade/strand.
+ * Build a lookup from outcome text -> ID for all outcomes in a strand.
  */
 export function getOutcomeIdLookup(subject: string, grade: string, strand: string): Map<string, string> {
   const lookup = new Map<string, string>();
   if (!subject || !grade || !strand) return lookup;
-  getCurriculumPages().forEach((page: any) => {
-    if (
-      page.subject?.toLowerCase() === subject.toLowerCase() &&
-      page.grade?.toString() === grade.toString() &&
-      page.strand?.toLowerCase() === strand.toLowerCase()
-    ) {
-      (page.essentialOutcomes || []).forEach((o: any) => {
-        if (typeof o === 'object' && o.id) lookup.set(o.text, o.id);
-      });
-      (page.specificOutcomes || []).forEach((o: any) => {
-        if (typeof o === 'object' && o.id) lookup.set(o.text, o.id);
-      });
+  const strandData = getStrandData(grade, subject, strand);
+  if (!strandData) return lookup;
+  for (const elo of strandData.essential_learning_outcomes) {
+    if (elo.elo_code) lookup.set(elo.elo_description, elo.elo_code);
+    for (const sco of elo.specific_curriculum_outcomes) {
+      lookup.set(sco.description, sco.sco_code);
     }
-  });
+  }
   return lookup;
 }
 
 /**
- * Get matching curriculum pages for a given subject, grade, and strand.
+ * Get matching curriculum strands for a given subject, grade, and strand.
+ * Returns the strand data wrapped in an array for backward compat.
  */
 export function getCurriculumMatches(subject: string, grade: string, strand: string) {
   if (!subject || !grade || !strand) return [];
-  return getCurriculumPages().filter((page: any) =>
-    page.subject?.toLowerCase() === subject.toLowerCase() &&
-    page.grade === grade &&
-    page.strand?.toLowerCase().includes(strand.toLowerCase())
-  );
+  const strandData = getStrandData(grade, subject, strand);
+  if (!strandData) return [];
+  const data = getCurriculumSync(grade, subject);
+  const g = data?.metadata.grade || grade;
+  const s = data?.metadata.subject || subject;
+  const strandSlug = strandData.strand_name.toLowerCase().replace(/\s+/g, '-');
+  const gradePrefix = g === 'K' ? 'kindergarten' : `grade${g}`;
+  const id = `${gradePrefix}-${s.toLowerCase().replace(/\s+/g, '-')}-${strandSlug}`;
+  return [{
+    id,
+    route: `/curriculum/${gradePrefix}-subjects/${s.toLowerCase().replace(/\s+/g, '-')}/${strandSlug}`,
+    grade: g,
+    subject: s,
+    strand: strandData.strand_name,
+    displayName: strandData.strand_name,
+    essentialOutcomes: strandData.essential_learning_outcomes.map(e => ({
+      id: e.elo_code || '',
+      text: e.elo_description,
+    })),
+    specificOutcomes: strandData.essential_learning_outcomes.flatMap(e =>
+      e.specific_curriculum_outcomes.map(sco => ({
+        id: sco.sco_code,
+        text: sco.description,
+        eloRef: e.elo_code || '',
+      }))
+    ),
+  }];
 }

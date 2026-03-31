@@ -1,0 +1,1284 @@
+{
+  "metadata": {
+    "filename": "grade3-social-studies-curriculum.pdf",
+    "curriculum": "OECS Harmonised",
+    "grade": "3",
+    "subject": "Social Studies"
+  },
+  "strands": [
+    {
+      "strand_name": "Historical and Cultural Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand the ways in which our island’s peoples’ nurtures respect for diversity.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-HC-SCO1.1",
+              "description": "3-HCT K-1 Identify the earliest inhabitants of our island."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.2",
+              "description": "3-HCT-S-1 - Use digital tools to investigate the evidence of early settlements of Indigenous peoples."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.3",
+              "description": "3-HCT-V-1 Appreciate Indigenous cultures and respect their views of the environment and society."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.4",
+              "description": "3-HCT-K-2 - State the origins of the various peoples of our island/territory and discuss the reasons why they came."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.5",
+              "description": "3-HCT-S-2 Locate the geographic origins of our various peoples."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.6",
+              "description": "3-HCT-V-2 - Recognise that migrations to our region had both positive and negative consequences."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.7",
+              "description": "3-HCT-K-3 - Discuss key features and aspects of our island’s culture and heritage that shaped our identity."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.8",
+              "description": "3-HCT-S-3 - Present information on special cultural events, activities or practices you participate in."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.9",
+              "description": "3-HCT-V-3 Develop interest in practicing aspects of our culture."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.10",
+              "description": "3-HCT-K-4 - State the origins of our local island dialect(s)."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.11",
+              "description": "3-HCT-S-4- Communicate with confidence and competence for different purposes with different dialects."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.12",
+              "description": "3-HCT-V-4 - Respect the value of local island dialects in shaping and defining our cultural identity as a people."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.13",
+              "description": "3-HCT-K-5-Describe the cultural contributions of various peoples to our food, religion, dress, arts, language, and economy."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.14",
+              "description": "3-HCT-S-5 - Gather information from various sources and represent it to show evidence of the origins of ethnic contributions to our cultural heritage and national identity."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.15",
+              "description": "3-HCT-V-5 - Show recognition of the contributions made by various peoples to our cultural heritage and national identity."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.16",
+              "description": "3-HCT-K-6- Identify ways our island traditional cultural music and dance have evolved over time."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.17",
+              "description": "3-HCT-S-6 - Explore how traditional cultural music and dance have changed over time."
+            },
+            {
+              "sco_code": "SS-G3-HC-SCO1.18",
+              "description": "3-HCT-V-6 - Appreciate the contribution of specific individuals to shaping our cultural development over time."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation (Pre-assessment): Are students able to identify the earliest inhabitants from pictures and give reasons for their responses?",
+            "Observation (KWL strategy Pre-assessment): Can students state what they know and what they want to know about the earliest inhabitants on a Mentimeter app? (See link: Interactive presentation software - Mentimeter)",
+            "Product - Project-based: Can students make digital replicas of artifacts to show evidence of early inhabitants?",
+            "Product - Presentation: Can students share at least two pieces of evidence that show the early inhabitants’ settlement? (Prezi, Screenr, Exit slip, journal entry, video/audio recording, powerpoint)",
+            "Conversation: Are students able to list places where evidence of early settlers can be found?",
+            "Product - Poster: Can students create a poster depicting ways people can protect the environment/artifacts/ historical sites?",
+            "Conversation: Are students able to recall one to three facts about the earliest inhabitants who came to their island?",
+            "Product-Word Art: Do students’ word art accurately depict origins of the earliest inhabitants?",
+            "Observation - Role play: Using an observation checklist, are students able to identify the location of the places the early inhabitants are thought to have come from through role play?",
+            "Product-Avatar Activity: Are students able to accurately convey the reasons why the early settlers came to our island?",
+            "Product - Map Work: Can students locate the geographic origins of the early inhabitants on a globe or an interactive map?",
+            "Product- Infographic Poster: Do the info-graphic posters show the negative and positive effects of migration?",
+            "Observation - Picture Inferencing: Can students identify aspects of culture and heritage that shape their country’s identity?",
+            "Product - Jigsaw Activity: Are students able to accurately present information on aspects of their island’s culture and heritage using different modalities? Teacher uses a checklist or rubric where necessary. (E.g. role-play)",
+            "Product-Crossword Puzzle: Can students complete a crossword puzzle on their island’s culture and heritage? See example below:",
+            "Product - Charts: Do the bar graphs or pictographs created by the students accurately depict the various cultural activities/events they participate in using the responses from the survey?",
+            "Product - Poster Presentation: Can students present at least three aspects of their island’s culture and heritage depicted on their poster?",
+            "Conversation-Introduction: Are students able to use, appropriately, terms or phrases from the local island dialect to communicate?",
+            "Conversation - Can students state the origins of our local island dialects?",
+            "Observation - Interpretation Game: Can students interpret their local island dialect expressions?",
+            "Product - Dialogue/Role Play: Can students work in small groups to create a dialogue using words, phrases and expressions from their local island dialect?",
+            "Conversation & Observation Pre-assessment: Are students able to correctly match the early settlers to their cultural contributions? (This can be an oral or written activity)",
+            "Product: Are students able to correctly match the early settlers to their cultural contribution? See example below: Place the following pictures under the correct ethnic group who brought them to the Caribbean.",
+            "Product/Conversation: Can students present findings on the cultural contributions of the various ethnic groups based on research?",
+            "Observation - Heritage Day: Can students describe their cultural wear, state other cultural contributions (food, musical instruments, replicas and/or pictures) and which ethnic group brought them?",
+            "Observation: Can students identify instruments used to create music?",
+            "Product - Creative Expression: Are students able to remix a simple traditional song using traditional/contemporary instruments of their choice?",
+            "Product- Research/Scrapbook: Can students present on the evolution of traditional island music and dance. Assessment is done based on their research, organization, and communication skills.",
+            "Oral Presentation- Research/Scrapbook: Can students present orally on the evolution of traditional island music and dance.",
+            "Product-Dance-off: Can students in small groups create a dance that will match with a particular musical genre?",
+            "Product-Thank You Note: Are students able to express their appreciation to individuals who have contributed to shaping our cultural development?"
+          ],
+          "inclusive_learning_strategies": [
+            "Pre-Assessment: Students view pictures of different inhabitants and identify the earliest ones (Tainos and Kalinagos). Students give reasons for their responses.",
+            "Students state what they know and what they want to know about the earliest inhabitants on the Mentimeter App or other digital tools.",
+            "Interactive presentation software - Mentimeter (Individual/group activity)",
+            "Retrieved from kwl chart template - Bing images",
+            "Investigation: Students visit historical sites to investigate the evidence of early settlers (museums, libraries, petroglyphs, reserves etc.). Students can also engage in a virtual field trip. Students use digital tools (cellphones, tablets) to record information and take photographs.",
+            "Journaling: Students create a journal using notebook or digital application (e.g Book Creator app) that presents information (images, text and audio) on the earliest inhabitants of their island. Students should state: One thing that they like about the early settlers and why. ii.One thing the early settlers used that can be found in their households/community. Share journals via the school’s website/social media page or school library.",
+            "Project (Create replicas of artifacts): Students use materials from their environment or create 3D images of artifacts using Prezi (Presentations and videos with engaging visuals for hybrid teams | Prezi Present) or Screenr(Login - Screener). Examples of replicas: canoe, paintings/petroglyphs, tools, jewelry, hammocks, huts, etc.",
+            "Peer Interviews: Students guided by the teacher will interview each other to report their findings from the field trip. Generalization: The early inhabitants loved nature and worshipped the environment.",
+            "Journal Writing: In their journals, students write one or two sentences in response to the following questions: i.How did the early inhabitants make use of the natural environment? ii.How did the early inhabitants show respect for the environment?",
+            "Poster: (Protecting Our Historical Sites) Create posters (digital or handmade) highlighting ways people can protect the environment/artifacts/historical sites. Display these inside/outside the classroom and share with parents during the report card period.",
+            "Introduction : Think/Share: Students write (using Padlet) and/or state orally or draw one [1] to three[3] facts they know about the various groups of people who came to their island. Students share their responses with the class.",
+            "Mini-Research/Video Analysis: Students view a video of the origin of the various immigrants to the Caribbean. Students create a word art (see Word Cloud Generator - WordArt.com) depicting the origins of the various early inhabitants. Students then share work for discussion.",
+            "Role Play: Students and teachers work together to draw and label an outline of a world map on the floor of the classroom. Students are randomly placed in small groups representing the various ethnic groups. Students representing each ethnic group then make their way from the designated areas (e.g. South America, Europe, West Africa, Asia) to the Caribbean portraying the different forms of transportation used (e.g. replicas of canoe, sailing ship). Students then state which group took the longest and the shortest time to get to their destination, and why.",
+            "Guided Discussion: Students view a video that focuses on reasons why the early inhabitants came to the Caribbean. The Early Settlers of the Caribbean. Students state reasons why the early inhabitants came to their island. Students can create an interactive avatar that voices the reasons why the early inhabitants came to their island. (using the ChatterPix app or other digital tools.) (See links) Android: http://tinyurl.com/yc25hj7u iPhone/iPad: http://tinyurl.com/yc7nyjpu The avatars should represent the different early inhabitants.",
+            "Drill and Practice: Students guided by teachers will identify the continents on a world map. (Interactive map or physical map ) Students will then label a blank map of the world highlighting the continents from which the people originated or identify the geographic origins on a globe.",
+            "Map Work: Students label a map of the world showing the origin of the different groups of people who migrated to our island/territory.",
+            "Guided Discussion: Students read an excerpt or view a video clip on the positive and negative consequences of migration. Students discuss the positive and negative impacts of migration on the region. Guiding questions can include: i.What are the benefits of the early inhabitants migrating to our region? What are the negative consequences of migration on our region?",
+            "Concept Map/Web: (Culture) Students complete a simple concept map highlighting unique aspects of their families (see example below).",
+            "Students share similarities and differences about their families.",
+            "Teacher explains to students that every group of persons is different and that our differences make us unique and special. Teacher then tells students that today they will be looking at all the things that make our island special and unique. Picture Inferencing/song/poem: Students view pictures of aspects of culture. (Electronic or hard copy) E.g. food, festivals and celebrations. Students then select those that are common to their country. Students are then encouraged to give the name to describe what was discussed. The teacher then simply defines the concept ‘culture’. Jigsaw Group Activity: Students are placed in groups. Each group is assigned an expository piece on one aspect of the island’s culture and heritage. Student groups will then share their findings on the topic they were assigned using a mode of their choice (e.g. role-play, song, poem, models and drawings). Class Survey: Students question classmates about the cultural activities they participate in and record their responses using a tally table.",
+            "Based on the answers to the survey, students complete a bar graph or pictograph, to show the number of children who participate in the different cultural practices/activities. Infographics/Posters: Students create a poster or collage (digital or traditional) with at least three[3] aspects of their national heritage/culture that they are proud to celebrate. Students present their findings orally. Interactive game (Hangman): Students play a game about different aspects of culture on their island. (See https://wordwall.net/resource/62667424) Potluck/Show & Tell: Students research the ingredients and steps involved in making one of their favourite dishes/drinks, as well as its connection to their heritage. (E.g. fried plantains, pelau, sorrel, ginger beer, mauby) Students share findings on their chosen dish with the class. Students may also be encouraged to bring the dish/drink as part of their presentation.",
+            "Introduction: Students are greeted in the local island dialect. Students are encouraged to respond in local island dialect. Students are then greeted by the teacher in Standard English. He/She will ask the following: 1. What do you notice about the different greetings? 2. Do you know why we speak the way we do? Students are introduced to the topic and objectives of the lesson.",
+            "Mini-Lecture/Talk: Students listen to a brief talk which explains the: 1. Origins of local island dialect. (See “Useful Content knowledge”) 2. Value of the local island dialect. (Teachers should emphasize here that nothing is wrong with our local dialect and it has its place in our Caribbean identity and heritage.)",
+            "Guided Research/Video Analysis: Students listen to a short story in their local island dialect. (E.g.)See video: (23) Wa Mek Daag No Laik Pus | Why Dog Don’t Like Puss | Jamaican Kids Stories - YouTube) Students then identify at least 3 dialect phrases/words in the video. Students interpret the selected local island dialect words/phrases. E.g 1. Nyam- eat 2. cyan - can 3. wab mek- why 4. dem bin - they were 5. we ab go see- we will see Students should then be encouraged to give their own examples of our local island dialect words/phrases and interpretation.",
+            "Interpretation Game: Students interpret (give meaning of) given expressions. Example: 1. Forward and out tab place - disrespectful 2. Sense mek before book - don’t depend on book knowledge solely 3. How yuh mek yuh bed, ab so yuh ab lie down - bear the consequences of your action 4. Who nub hear, go feel - bear the consequences of your action 5. Marning! Howdy! - greetings 6. Pickney naygab - children",
+            "Dialogue/Presentation: Students create a brief oral dialogue based on scenarios given. Students present dialogue using roleplay, puppet show, video etc. This can be promoted to the students as a celebration of their culture and heritage and bolstered by the sharing of special local traditional snacks/drinks. Ideally done at the end of a weeklong preparation.",
+            "Pre-assessment: (The pre-assessment activity can also be used as the post assessment activity to gauge learning and progress.)",
+            "Students complete a simple pre-assessment on the early settlers and their cultural contributions using an interactive board.",
+            "Students categorize pictures of the various cultural contributions for each ethnic group in the table given.",
+            "Teacher assists students to place the pictures under the correct ethnic group who brought them to the Caribbean.",
+            "Guided Research/Oral Presentation: Students state the names of the early settlers to the Caribbean. Students (Groups) conduct research using various sources on the cultural contributions of the various ethnic groups (online, magazines, books, interviews etc.) Groups present findings to class (multimedia presentation) Students engage in discussion about the cultural contributions by different ethnic groups",
+            "Heritage Day: Students wear cultural outfits on a designated day dubbed ‘Heritage Day’. Students bring examples of cultural contributions of different ethnic groups. Students should be encouraged to describe their cultural wear and other cultural contributions (food, musical instruments, replicas and/or pictures) and which ethnic group brought them.",
+            "Introduction: Analysis of music/songs Students will listen to two songs from two different eras. Example: Mighty Sparrow-Education and Skinny Fabulous, Machel Montano, Bunji Garlin - Famalay Students respond to the following: Do you know what type of music/song it is? Have you ever thought about where this kind of music or song came from? Do you and your parents/grandparents listen to the same music? Teacher will then explain that music just like people has evolved over time. For example: Kaiso →Calypso→Soca. Reggae → Dancehall Video/Picture Analysis: Students view pictures or video clips of traditional and contemporary instruments. For example:",
+            "Traditional: bongo drums, tambourine, shak shak, bamboo flute, harp, trumpet, banjo. Contemporary: steel drums, steel pan, e-pan, keyboard, recorder, electronic music apps. Students then sort pictures into traditional and modern instruments. Creative Expression: (Song): In small groups, students remix a traditional song from a genre, or a traditional dance assigned to their groups. Students should be encouraged to bring musical instruments. Students then present their items to the rest of the class. Students may also construct simple musical instruments such as bongo drums or shak shaks.",
+            "Dialogue: The teacher will compose a dialogue between two musicians, and two renown dancers, about the changes which they have seen in traditional music and dance over the last twenty years. For example: Rhianna: “Mr. Marley, you are a Caribbean superstar. What was the music back in your days as a young musician?” Bob Marley: “Child, you are young, and you may not know alot but I will tell you briefly.” “During my time, reggae music and dancehall were popular in Jamaica.” “Calypso and Soca were popular in Trinidad, Grenada, St. Vincent, Dominica, and Antigua just to name a few.” Rhianna: “What is different about those types of music and the ones we are bearing today?” Bob Marley: “the difference has to do with the pace of the rhythm, it is now faster than before, some new instruments have been included in creating music, and there are other differences which are there”. Students will answer questions based on the dialogue. Students will compare and contrast the components of musical genre, and dance in the Caribbean traditionally and currently. Research/Scrapbook: Students will design a scrapbook (digital or physical) to show how music has evolved over time. Scrapbook can include: 1. Song(s) my grandparents listened to. 2. Song(s) I listen to. 3. The date and genre of each song. 4. The instruments used in each song/genre. 5. The updated version of each genre (if applicable). Students present findings to class.",
+            "Discussion/Video Analysis: Students view clips of traditional dances. Students discuss their observations and impressions of the different dance styles. Dance-off: Students, in groups, demonstrate their own dance moves, incorporating elements they observed from the clips. Field Trip/Peer Reflection: Students participate in a physical/virtual Field trip to a cultural museum/site to view and experience some of the ways in which traditional cultural music and dance have changed. Peer reflection: students share what they have learnt.",
+            "Mini-Lecture: Cultural Figures: Students listen to short presentations by the teacher or guest speakers on specific individuals who have been instrumental in shaping their island’s cultural development. (Guest speakers may be the figures themselves or experts in their respective fields)",
+            "During presentations, students will then have the opportunity to engage in a discussion and ask questions about the cultural figures.",
+            "Students will be given a writing assignment where they will choose one of the cultural figures discussed and write a short paragraph about their contributions to society.",
+            "RolePlay: Cultural Figures: Students will be assigned to groups named after influential figures discussed in class.",
+            "Each group will use class notes or prepared resources (e.g. textbooks, newspaper articles) to research and gather information about their assigned influential figure.",
+            "After, students create a brief presentation in which they will assume the role of the allocated figure and talk about their contributions and influence. (Students should be encouraged to bring clothing any other props that can enhance their presentation and make it more engaging for their classmates)",
+            "Thank You Note: (Culminating Activity) Students will create a note (letter, card, voicenote, email) addressed to a cultural ambassador/contributor thanking them for their contribution to the development of culture in their country."
+          ],
+          "elo_code": "SS-G3-HC-ELO1"
+        },
+        {
+          "elo_description": "To understand the ways in which our island’s peoples’ nurtures respect for diversity.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-HT-SCO1.1",
+              "description": "3-HCT-S-2 Locate the geographic origins of our various peoples."
+            },
+            {
+              "sco_code": "SS-G3-HT-SCO1.2",
+              "description": "3-HCT-V-2 Recognise that migrations to our region had both positive and negative consequences."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Product - Map Work: Can students locate the geographical origins of the early inhabitants on a globe or an interactive map?",
+            "Product- Infographic Poster: Do the info-graphic posters show the negative and positive effects of migration?"
+          ],
+          "inclusive_learning_strategies": [
+            "Drill and Practice: Students guided by teachers will identify the continents on a world map. (Interactive map or physical map) Students will then label a blank map of the world highlighting the continents from which the people originated or identify the geographic origins on a globe.",
+            "Map Work: Students label a map of the world showing the origin of the different groups of people who migrated to our island/territory.",
+            "Guided Discussion: Students read an excerpt or view a video clip on the positive and negative consequences of migration. Students discuss the positive and negative impacts of migration on the region. Guiding questions can include: i.What are the benefits of the early inhabitants migrating to our region? What are the negative consequences of migration on our region?",
+            "Role Play: Students and teachers work together to draw and label an outline of a world map on the floor of the classroom. Students are randomly placed in small groups representing the various ethnic groups. Students representing each ethnic group then make their way from the designated areas (e.g. South America, Europe, West Africa, Asia) to the Caribbean portraying the different forms of transportation used (e.g. replicas of canoe, sailing ship). Students then state which group took the longest and the shortest time to get to their destination, and why.",
+            "Guided Discussion: Students view a video that focuses on reasons why the early inhabitants came to the Caribbean. The Early Settlers of the Caribbean. Students state reasons why the early inhabitants came to their island. Students can create an interactive avatar that voices the reasons why the early inhabitants came to their island. (using the ChatterPix app or other digital tools.) (See links) Android: http://tinyurl.com/yc25hj7u iPhone/iPad: http://tinyurl.com/yc7nyjpu. The avatars should represent the different early inhabitants."
+          ],
+          "elo_code": "SS-G3-HT-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Interactive presentation software - Mentimeter",
+          "links": [
+            {
+              "text": "Interactive presentation software - Mentimeter",
+              "url": "https://www.mentimeter.com/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "KWL chart template",
+          "links": [
+            {
+              "text": "kwl chart template - Bing images",
+              "url": "https://www.bing.com/images/search?q=kwl+chart+template"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Videos",
+          "links": [
+            {
+              "text": "https://virtualcarib.com/artefacts?page=1",
+              "url": "https://virtualcarib.com/artefacts?page=1"
+            },
+            {
+              "text": "Science Journal for Kids and Teens",
+              "url": "https://www.khanacademy.org/humanities/whp-origins/era-5-the-first-global-age/52-old-world-webs-betaa/v/pre-colonial-caribbean"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Additional Useful Content Knowledge for the Teacher",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Opportunities for Subject Integration",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Videos",
+          "links": [
+            {
+              "text": "What is an Infographic + Downloadable Templates",
+              "url": "https://www.youtube.com/watch?v=example1"
+            },
+            {
+              "text": "The Early Settlers of the Caribbean",
+              "url": "https://www.youtube.com/watch?v=example2"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Texts",
+          "links": [],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Videos: (Display excerpts or snippets of videos, rather than the whole films where possible, to save time and engage students visually.)",
+          "links": [
+            {
+              "text": "Understanding Traditions and Cultures for Kids",
+              "url": "https://www.youtube.com/watch?v=example1"
+            },
+            {
+              "text": "Our Caribbean Culture (Primary Social Studies)",
+              "url": "https://www.youtube.com/watch?v=example2"
+            },
+            {
+              "text": "Sorrel Drink, refreshing & delicious!",
+              "url": "https://www.youtube.com/watch?v=example3"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: Culture: is the way we live. We express our culture through: Festivals, Religions, Music, Foods, Dress, Language, Sports/Games, Customs",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Opportunities for Subject Integration: Language Arts: Oral expression, Expository writing; Arts and Crafts: Models and drawing; Maths: Statistics, tally, bar chart",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Wa Mek Daag No Laik Pus | Why Dog Don’t Like Puss | Jamaican Kids Stories",
+          "links": [
+            {
+              "text": "Wa Mek Daag No Laik Pus | Why Dog Don’t Like Puss | Jamaican Kids Stories",
+              "url": "https://www.youtube.com/watch?v=23WaMekDaagNoLaikPus"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Texts",
+          "links": [
+            {
+              "text": "Caribbean Educational Publishers (2011). New Primary Level Social Studies Lower Primary Book 2 Caribbean Educational Publishers, pp. 61 - 70",
+              "url": ""
+            },
+            {
+              "text": "Carman. L., (2018). Primary Social Studies for the Caribbean Level 3 Macmillan Education, pp. 12 - 26",
+              "url": ""
+            },
+            {
+              "text": "Albertin. M & Brathwaite. M., (2020). Caribbean Primary Social Studies: Our Country Community (3rd ed.) Hodder Education, London. pp. 16 - 43",
+              "url": ""
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Videos",
+          "links": [
+            {
+              "text": "Caribbean Culture & Heritage",
+              "url": ""
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: As time and circumstances change, so do aspects of our culture (i.e. music genres, dance styles, and instruments). Over the last two decades, traditional cultural music and dance have undergone significant changes in pace. Example: i.Kaiso → calypso → soca, zouk, ragga/groovy soca, jab jab. The introduction of new instruments and technologies has further shaped the evolution of our cultural music and dance forms. Example: E-pan, Steel drums, Electronic keyboards. Digital music apps such as Garage Band, Audacity, Cakewalk by BandLab are used for creating and editing music. Additionally, globalization has played a role in the spread and adoption of new cultural expressions. Example: country music, hip-hop, reggae beats.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Opportunities for Subject Integration: Language Arts, Science, Arts and Crafts, Maths",
+          "links": [],
+          "category": "Teacher Materials"
+        }
+      ]
+    },
+    {
+      "strand_name": "Spatial Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To appreciate how our people are shaped by geographic factors such as our tropical climate, island environment and natural hazards",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-ST-SCO1.1",
+              "description": "3-ST-K-1 State the relative location of our island/country/or territory within the Caribbean region"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.2",
+              "description": "3-ST-S-1 Locate and label your island on a map of the Caribbean"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.3",
+              "description": "3-ST-V-1 Recognize that our island/territory is connected geographically to the Caribbean region"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.4",
+              "description": "3-ST-V-1-Recognize that our island/territory is connected geographically to the surrounding Caribbean region"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.5",
+              "description": "3-ST-K-2-Name the major water bodies that surround their island and the rest of Caribbean region"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.6",
+              "description": "3-ST-S-2-Locate and label the major water bodies on a map of the Caribbean"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.7",
+              "description": "3-ST-K-2"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.8",
+              "description": "3-ST-V-2- Recognize that our surrounding seas and ocean have connected us as diverse Caribbean peoples"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.9",
+              "description": "3-ST-K-3-Explain the importance of our water bodies (seas, oceans, lagoons, and rivers) to our people"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.10",
+              "description": "3-ST-S-3-Investigate how our human activities affect these water bodies"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.11",
+              "description": "3-ST-V-3-Appreciate the need for responsible actions to protect our water bodies"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.12",
+              "description": "3-ST-K-4-Describe the seasons on your islands and describe how they affect our daily lives"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.13",
+              "description": "3-ST-S-4- Make appropriate decisions for various weather conditions"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.14",
+              "description": "3-ST-V-4 Appreciate the benefits and drawbacks of each season for our environment"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.15",
+              "description": "3-ST-K-5- Recognize that the location of islands makes them prone to natural hazards"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.16",
+              "description": "3-ST-S-5- Examine some examples of extreme natural hazards that affect our islands"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.17",
+              "description": "3-ST-V-5- Appreciate that we need to be aware of ways to keep safe during natural hazards"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.18",
+              "description": "3-ST-K-6-Describe appropriate preparations that need to be made for various natural hazards"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.19",
+              "description": "3-ST-S-6- Create a simple family preparation plan for a selected natural hazard:(Necessities, safe places, contacts)"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.20",
+              "description": "3-ST-V-6- Appreciate the need to minimize risk in times natural hazards"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.21",
+              "description": "3-ST-K-2: Name the major water bodies that surround their island and the rest of Caribbean region"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.22",
+              "description": "3-ST-S-2: Locate and label the major water bodies on a map of the Caribbean"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.23",
+              "description": "3-ST-V-4-Appreciate the benefits and drawbacks of each season for our environment"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.24",
+              "description": "3-ST-K-6- Describe appropriate preparations that need to be made for various natural hazards"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.25",
+              "description": "3-ST-V-6-Appreciate the need to minimize risk in times natural hazards"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.26",
+              "description": "3-ST-K-1: State the location of our island/country/or territory in relation to their nearest neighbours in the Caribbean region"
+            },
+            {
+              "sco_code": "SS-G3-ST-SCO1.27",
+              "description": "3-ST-S-1: Locate and label your island on a map of the Caribbean"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Observation: Are students able to locate their island on a map, globe or using google maps?",
+            "Conversation: Can students describe the location of their island/territory in relation to their nearest neighbours in the Caribbean?",
+            "Product: Are students able to create a representation of the location of the islands in the Caribbean?",
+            "Observation: Are students positioning the silhouettes correctly?",
+            "Observation: Are students following the directions given and jumping on the correct islands?",
+            "Observation: Can students identify the errors in labelling? Can students correctly place labels on the map?",
+            "Product: Can students locate and label their island/territory on a blank map? Can students correctly label the islands to the north and south of their territory on a blank map of the Caribbean region?",
+            "Observation: Do students recognize that their island has connections with other islands that are their closest neighbours?",
+            "Conversation: Are students able to identify connections to other islands? Do students show positive attitudes or feelings towards being part of the Caribbean region?",
+            "View a Video",
+            "Conversation: Are students able to identify water bodies that are in or near their island or the Caribbean Region. Are students able to describe their experiences with water bodies? What words do students associate with these water bodies?",
+            "Map Exploration",
+            "Conversation: Are students able to locate and name the water bodies that surround their island and the rest of the Caribbean region?",
+            "Simulation",
+            "Observation: Do students position themselves correctly to locate their island in relation to the water bodies that surround it?",
+            "Map work",
+            "Product: Can students correctly sketch their island and label the water bodies that surround it?",
+            "Can students correctly label the water bodies that surround the Caribbean Region?",
+            "Model",
+            "Discussion: Do students recognize that they can visit nearby islands by water? Are students appreciative of the fact that they’re situated in the Caribbean region? Do students acknowledge the diverse cultures that make up the Caribbean?",
+            "Data Collection",
+            "Product: Are students able to collect and chart data?",
+            "Conversation: Can students analyse and make conclusions based on the chart?",
+            "Summary Statement",
+            "Product: Do the sentences logically express how the water bodies connect us?",
+            "3-ST-K-3 Observation: Can students state from observations, how resourceful water bodies are to our/ their people? Conversation: Can students explain how the observations noted in their extracted information shows the influences of water bodies on our people? Product: Are students able to creatively produce anecdotal records of their findings, that captures the importance of these water bodies to its people?",
+            "3-ST-S-3 Observation: Are students able to draw from their experiences and or observations, situations that highlight human activity that affect our water bodies? Conversation: Can Students explain why certain human activities affect our water bodies? Product: Are students able to create stories, notes, or visuals that highlight human activities that t affect our local water bodies?",
+            "3-ST-V-3 Observation: Are students participating in discussion with resource persons? Are students working collaboratively to collect pertinent information on organisations relevant to the maintenance of our water bodies? Are students able to collectively draft questions suitable for generating information from resource persons?",
+            "3-ST-V-3 Conversation: Are students able to identify organizations that have upheld public responsibility to protect our water bodies?",
+            "Product: Can students develop questions and engage relevant organization representatives in meaningful dialogue surrounding awareness for and the protection of our water bodies?",
+            "Map Exploration Observation: Are students able to correctly identify that the Caribbean Region is located near the equator? Are students able to explain the seasons we experience as a result of the Caribbean’s geographical location to the equator?",
+            "Sorting Data Conversation: Are students able to confidently describe the characteristics of the seasons in the Caribbean?",
+            "Charting Data",
+            "Product: Are students able to make a chart with the rainfall and temperature data?",
+            "Conversation: Are students able to analyze the data and make accurate comparisons?",
+            "Art work",
+            "Product: Do the students’ artwork accurately depict the two seasons?",
+            "Group Work",
+            "Product: Are students able to discuss and explain how seasons affect our daily lives in the Caribbean?",
+            "3-ST-S-4 Classifying Information Observation: Are students able to correctly identify activities that are appropriate for the different seasons?",
+            "Discussion\nConversation: Are students able to state advantages and disadvantages of the seasons?",
+            "Sorting Information\nObservation: Can students correctly sort pictures to demonstrate the disadvantage of the different seasons for our environment?",
+            "Concept Map\nProduct: Can students correctly identify advantages and disadvantages of each season for our environment?",
+            "Name the Hazard Game\nConversation: Are students able to identify the natural hazards depicted? Do students ask questions that show they understand the importance of natural hazards?",
+            "Class Discussion\nConversation: Are students able to identify the natural hazards that affect the Caribbean?",
+            "Role Play\nObservation: Are students able to depict the sounds, actions or movements of the hazards accurately using their bodies? Are students able to depict the impact of natural hazards on the environment?",
+            "Artistic Expression\nProduct",
+            "Do students' artwork clearly display their interpretation of the hazard?",
+            "Conversation: Can students clearly express how their artwork depicts the hazard?",
+            "Group Work Observation: Are students working collaboratively? Are students applying their knowledge of natural hazard preparedness and its importance? As students are working, walk around to observe and conference with the groups. Take records of how students are working, if they are discussing the content, if they are using the content correctly. Take note of group dynamics: who is leading, who is being silent etc. Are students able to assess each other’s contribution using the group participation rubric?",
+            "Oral Presentation Observation: Are students demonstrating confidence during the presentation? Are students speaking clearly? Are students using appropriate body language?",
+            "Product: Are students presenting accurate and relevant content in their presentations? Are students able to explain why we need to keep safe and ready before, during and after natural hazards and who is there to help them.",
+            "Conversation: Are students able to respond appropriately to questions? Are students demonstrating sound knowledge of the content based on the responses?",
+            "Model Product: Is the model accurately representing the hazard?",
+            "3-ST-K-6 Conversation: Are students able to identify the natural hazard?",
+            "Class Discussion Conversation: Are students able to identify the possible impact of various natural hazards on the island? Are students able to state what they need to do to prepare for the approaching storm and how other community members help to keep them safe?",
+            "Group Work Observation: Are students working collaboratively? Are students applying their knowledge of natural hazard preparedness and its importance? As students are working, walk around to observe and conference with the groups. Take records of how students are working, if they are discussing the content, if they are using the content correctly. Take note of group dynamics: who is leading, who is being silent etc. Are students able to assess each other’s contribution using the group participation rubric?",
+            "Product: Utilizing a grading rubric, are students able to create a presentation which informs persons on how to prepare for the natural hazard, who helps keep them safe, and present their work orally? Is the information accurate and relevant to the hazard?",
+            "Conversation: Are students able to answer questions on their presentation?",
+            "3-ST-S-6 Read aloud and Class Discussion Conversation: Can each student identify at least one measure that could be employed to mitigate the impact of hurricanes.",
+            "Conversation: Are students able to articulate why hurricane preparedness is important? Are students able to state why they believe their household is prepared/ not prepared for an emergency like a hurricane?",
+            "Brainstorming Board Observation: Are all students able to identify at least two actions that can be taken by households to prepare for the passage of a hurricane? Were students able to identify any omissions in their comparison?",
+            "Conversation: Are students able to identify what should be included in a hurricane emergency plan?",
+            "Emergency Preparedness Plan Product: Are students able to design an emergency preparedness checklist for a hurricane?",
+            "3-ST-V-6 Viewing Video and whole class discussion Observation/ Conversation: Are students able to correctly answer questions about the story? Are students voicing their beliefs about the importance of natural hazard preparedness? Are students able to identify the impact of improper or non preparation for natural hazards on households and communities.",
+            "Journaling -My Natural Hazard Experience Product: Using a checklist, note whether each student has noted a natural hazard/ disaster that they experienced, at least three actions that were taken to prepare for the hazard, and one action that was taken during and after the hazard. Did this preparation minimize the risks of the natural hazard/ disaster?",
+            "Interview a Family Member Conversation: Are students presenting relevant information? Are students’ findings depicting actions that were taken before during and after the hazard?",
+            "Mood Board Oral Presentation",
+            "Product: Are students able to explain to their peers the depiction of their feelings about the natural hazard and the experience of living through it.",
+            "Group Work Observation: Are students working collaboratively? Are students applying their knowledge of natural hazard preparedness and its importance? As students are working, walk around to observe and conference with the groups. Take records of how students are working, if they are discussing the content, if they are using the content correctly. Take note of group dynamics: who is leading, who is being silent etc.",
+            "Product: Are students able to produce a video that highlights the importance of preparing for their assigned natural hazard. Using the rubric provided, conduct both teacher and peer assessment of the video presented in the class presentation.",
+            "View a Video: Are students able to identify water bodies that are in or near their island or the Caribbean Region.",
+            "Conversation: Are students able to describe their experiences with water bodies? What words do students associate with these water bodies?",
+            "Are students able to collect and chart data?",
+            "Summary Statement: Do the sentences logically express how the water bodies connect us?",
+            "Discussion Conversation: Are students able to state advantages and disadvantages of the seasons?",
+            "Sorting Information Observation: Can students correctly sort pictures to demonstrate the disadvantage of the different seasons for our environment?",
+            "Concept Map Product: Can students correctly identify advantages and disadvantages of each season for our environment?",
+            "Name the Hazard Game: Conversation: Are students able to identify the natural hazards depicted? Do students ask questions that show they understand the importance of natural hazards?",
+            "Class Discussion: Conversation: Are students able to identify the natural hazards that affect the Caribbean?",
+            "Conversation: Are students able to identify the natural hazard?",
+            "Viewing Video and whole class discussion",
+            "Observation/ Conversation: Are students able to correctly answer questions about the story? Are students voicing their beliefs about the importance of natural hazard preparedness? Are students able to identify the impact of improper or non preparation for natural hazards on households and communities.",
+            "Observation: Are students able to identify water bodies that are in or near their island or the Caribbean Region?",
+            "Name the Hazard Game Conversation: Are students able to identify the natural hazards depicted? Do students ask questions that show they understand the importance of natural hazards?"
+          ],
+          "inclusive_learning_strategies": [
+            "Map Skill: 3-ST-K-1 Students will explore a map of the Caribbean Region using an atlas, globe or google maps. https://www.google.com/maps/place/Caribbean/@18.3484323,-82.9718448,5z/data=!3m1!4b1!4m6!3m5!1s0x8eb9e309d5a038b7:0xc67ecf32cac5dbdc!8m2!3d21.4691137!4d-78.6568942!16zL20vMDA0YzQ?hl=en",
+            "Have students discuss what they observe. Establish that the Caribbean includes a chain of islands bordering the Caribbean Sea. Have students zoom in to identify their island/territory on the map. Students will describe the location of their territory/island, using words such as above, below, left, right, north, south, west and east in relation to other islands.",
+            "Put students in groups. Provide silhouettes of the islands. On the playground, students will position the islands correctly to create a floor puzzle map. Use the link below for instructions to create a puzzle map https://www.weirdunsocializedhomeschoolers.com/make-puzzle-map/",
+            "Have students put together their puzzle and take turns giving relative directions for other students to jump to their closest neighbours. For example, jump on the island that is to the near, east of, far from, over, under their country.",
+            "Teacher projects a map of the Caribbean on the board and uses flashcards to poorly label the neighbouring islands. Students will identify errors and go to the board to correctly label the map.",
+            "On a blank map of the Caribbean Region students will locate and label their island and their closest neighbouring islands/territories.",
+            "Students will have a discussion about what it means to be part of the Caribbean region. What islands have they been to and why did they go there? How was it similar to and different from their island? Where do they have relatives? What do they like about being part of the Caribbean? Students will understand that we do not exist alone-that the Caribbean Region is made up of many islands.",
+            "View a Video and Discussion: Have students view a video on types of water bodies. https://www.youtube.com/watch?v=U-rUl_OFBq0 Probe students to identify the water bodies that they know and those that are in or near their island or the Caribbean Region. Tell students that they will be focusing on the main water bodies that are located in the Caribbean Region. Have students talk about their experience with the water bodies that surround their island. Have they ever gone to the beach? have they bathed in the sea or ocean? What is different about the beaches on the sea and ocean sides of their island? How do they feel about the sea or ocean? Have them use descriptive words that they associate with the water bodies.",
+            "Map Exploration: Have students explore a map of the Caribbean using their atlas, globe or google map. Have them talk about and identify the water bodies that",
+            "surround the region. Have them name the water bodies that surround their island.",
+            "https://www.google.com/maps/place/Caribbean/@13.4612207,-77.9191578,4.09z/data=!4m6!3m5!1s0x8eb9e309d5a038b7:0xc67ecf32cac5dbdc!8m2!3d21.4691137!4d-78.6568942!16zL20vMDI2MW0?entry=ttu",
+            "Simulation",
+            "Give students one label each with either the name of their island or one of the water bodies that surround the island. Have students come up in groups to discuss and position themselves based on the location of their island in relation to the water bodies.",
+            "Map work",
+            "Have students sketch their island and label the water bodies that surround it.",
+            "Provide students with a blank map of the Caribbean region. Have students colour their island and colour and label the main water bodies that surround the Caribbean. Have students Create a word collage on the maps with the words that they associate with the water bodies.",
+            "Model",
+            "Make a model of your islands in playdough. Use different colours for the Caribbean Sea, Atlantic Ocean and 1 main river or stream in your country.",
+            "Field Trip",
+            "Take students on a tour around the island. Show them the various water bodies that surround their island. If possible, help them see one of more of the Caribbean Sea, Atlantic Ocean and a main river or stream. If it is not possible to visit, the teacher can show film clips of these water bodies.",
+            "Discussion",
+            "Engage students in a discussion of how water bodies help people to connect. Ask students if they have relatives in other islands? Have they or any of their relatives travelled by boat to other islands or other parts of their country? What are the reasons for them travelling by boat? How Often do they visit and what may prevent them from doing so? Do they prefer travelling by boat or plane and why? How does the Caribbean Sea/ Atlantic Ocean connect persons from different countries? How do these water bodies affect the economy of the country?",
+            "Data Collection",
+            "Conduct a survey to find out how many people in the class have travelled to neighbouring islands by boat or plane? Record and chart the results and create a pictograph or a bar graph to show the results. Have students compare and analyze the data. Have more people travelled by boat or plane? How many more people have travelled by boat or plane? Which is the most popular form of travel within the region?",
+            "Summary Statement",
+            "Based on the data, write one sentence about how the water bodies connect people in the region.",
+            "3-ST-K-3 Virtual Field Trip: Water bodies and Their Importance Have students engage in a virtual field trip/view a video of water bodies that are significant contributors to their country’s economy. https://www.google.com/maps/place/Caribbean/@13.4612207,-77.9191578,4.09z/data=!4m6!3m5!1s0x8eb9e309d5a038b7:0xc67ecf32cac5dbdc!8m2!3d21.4691137!4d-78.6568942!16zL20vMDI2MW0?entry=ttu Students can be placed in pairs or groups of 4 -6 to extract information from the video as per a focused question. Guided Discussion Students can then engage in a guided discussion: Why are water bodies important to us? What cultural activities are linked to our water bodies? How do we use water bodies in our daily lives? How do people earn a living from our water bodies?",
+            "3-ST-S-3 Field Trip: Human effects on Water Bodies Students are provided with an opportunity to visit the nearest water bodies to their school to observe how human activity affects these water bodies. Students should take anecdotal records or drawings of their observation of the negative effects of human activity. These anecdotal records can be digital in the form of a blog, video or document with pictures. If available, students can take digital photos of the water bodies. This can be supported by the teacher. They may also take handwritten notes in the form of a travel journal or a complete structured template provided by the teacher. Think -Pair-Share Students will engage in a 2 - 3-minute Think -Pair-Share Activity, where based on their observations from the tour/ their personal experience, students will list at least 2 negative effects of human activity. Is there a need to protect these water bodies?",
+            "Students may also view the video, “Human Activities That Causes Destruction of Water Bodies II Sugar TV’ and then discuss their observations. VIDEO LINK: https://www.youtube.com/watch?v=5HfaaUTC1rM",
+            "Students can work in pairs or individually, to create a poster/ brochure / Tik Tok video/ Instagram reel focused on highlighting and discouraging human activity that affects our water bodies.",
+            "Students will work in groups to research via the internet, groups or organizations in their area/ country that focus on management/ preservation/ protection of water bodies in their area.",
+            "3-ST-V-3 Resource Person: Taking Care of Our Water bodies Resource persons from relevant organizations can be invited to speak to the students on the role of their organization in protecting our water bodies.",
+            "Alternatively, Students may engage in independent research where students can be placed in groups. Each group would be assigned an institution where they would conduct a 3-minute interview. This can be done face to face, virtually via zoom or google meet or students can develop a questionnaire via google form or hardcopy. In their groups, students will develop at least 5 interview questions surrounding protection of our water bodies.",
+            "Following previous decisions and activities, students will create a concept map or web that shows at least 2 important uses of water bodies and actions that we can take to preserve / extend that use for future generations and for the purpose of economic growth. Students can incorporate pictures or create digital concept maps/ webs.",
+            "3-ST-K-4 Map Exploration: Present students with a map of the world. Have students circle the Caribbean region and colour the country to which they belong. Engage students in discussion to have them gain an understanding that because of the location of their island in the Caribbean, the island experiences two main seasons. Link this with weather. Share the simple fact that countries closer to the middle of the earth (which is called the equator) are hotter because the sun is more intense there.",
+            "Sorting Data: Provide students with pictures which depict the different seasons on their island. Have students sort out the pictures to identify the main seasons and describe characteristics of each season.",
+            "Charting Data: Provide students with rainfall and temperature data for the country during both seasons for given years. Students will chart and compare the data.",
+            "Art work: Have students create artwork (paintings, collages to illustrate the two seasons.",
+            "Group Work: Assign students into groups. Probe students and have them research the seasons in relation to cultural celebrations/festivals, agricultural crops produced, natural hazards, tourist arrivals to the country and how these seasons affect the culture and daily life (food, clothing, recreation etc.) of the people living in the country. Students can also be given a calendar of events of this country to identify the festivals celebrated during the different seasons. Provide and show images and videos of different festivals and activities associated with each season. Discuss the significance of these events and how they relate to the seasons.",
+            "3-ST-S-4 Classifying Information: Have students complete a table whereby they correctly place statements highlighting the season during which certain activities will most likely be done. Table will have two headings; “Wet Season and Dry Season”. Examples of statements: Planning a wedding. Having a beach party etc. This activity can also be done by creating an interactive game using the digital tool ‘Word Wall’",
+            "Discussion\nEngage students in a class discussion on advantages and disadvantages of each season. Probe students with questions to stimulate their thinking. Example:\n1. Which season is best for planting crops?\n2. Which season encourages tourist to visit the Caribbean for vacation?\n3. In what ways can each season affect our natural environment? (dry season causes drought and wet season can cause floods and landslides)",
+            "Sorting Information\nShow and present students with pictures of different natural disasters or effects. Have students sort out the pictures based on which season is related to each natural disaster or effect (bush fire, droughts, landslides, floods, fallen crops etc.)",
+            "Concept Map\nHave students create a concept map highlighting the advantages and disadvantages of each season for our environment?",
+            "Introduction- Name the Hazard Game\nHave students watch a series of flashcards/pictures/videos depicting various natural hazards. Make sure the pictures chosen are not too graphic and frightening to children. Have students identify the natural hazards depicted.",
+            "Guided Discussion\nHave students discuss which natural hazards usually affect the Caribbean because of its location. Have students discuss how the natural hazards they identified may impact their island. Have students relate any experiences and ask any questions that they may have had with natural hazards. It is helpful to remind them that in times of natural hazards, there are many people that are there to help them be safe, including their families, neighbors, police, electric power workers, fire fighters, and other community workers.",
+            "Role Play\nHave students role play the sounds, actions or movements of various natural hazards using their bodies. Give them prompts such as “You are a hurricane, volcano or an earthquake what do you sound or look like?” Have students also play the role of parts of the environment such as buildings, trees, and animals and role play the impact of the various natural disasters?",
+            "Artistic Expression\nHave students select one of the natural hazards that affect the region. Students will draw or paint what the hazard represents or means to them. Have students state what their artwork is depicting.",
+            "Group Work: Research and Oral Presentation: Place students in small groups and assign each group a natural disaster. Have students conduct online research about the natural disaster. Students are to name the disaster, give an example of the disaster that has affected their island or any other island in the region. They are to give examples of the impact of the disaster on the physical environment and people. Remind them again that there are many people that are always there to help them be safe. Students are to give reasons why we need to keep safe and ready before, during and after natural hazards. As part of the presentation, students create a model of their hazard for demonstration including those that can help them and how to stay safe.",
+            "Have other students prepare questions to ask presenters. Use a rubric to assess the oral presentation and model.",
+            "3-ST-K-6 Video Have students view or listen to a weather report about an approaching storm. Have students identify the natural hazard that is posing a threat.",
+            "Class Discussion Have students discuss how the natural hazards identified in the weather report may impact their island. Have students discuss what they would need to do to prepare for the storm. what their household did to prepare for the hazard and the other people in their community that help keep them safe and ready",
+            "Group Work Have students select a natural hazard, in groups of 3-4, students will conduct research, create a script and prepare a presentation in any form that they wish (role play, brochure, poster, video etc. to educate community members on how to prepare for the selected hazard. Have students present their work to their classmates then answer questions on their presentation from their classmates. Have students assess each other's contribution as a group member.",
+            "3-ST-S-6- Family Emergency Plan Read aloud and Class Discussion Have students listen to an article about a hurricane https://www.theguardian.com/world/2017/oct/03/hurricane-maria-dominica-recovery Have students discuss • What they believed could have been done to prepare for this natural hazard which in this case became a natural disaster. • The importance of being prepared for a hurricane. • Whether they believe their household is prepared for a hurricane and why they believe they are or aren’t.",
+            "Brainstorming Board Have students write on post notes three of the actions that can be taken by their household to prepare for a hurricane and stick on the brainstorming board (could be bristol board). Have students research what should be included in the emergency preparedness plan for hurricanes and compare it with their post it notes. This can remain on display in the classroom for ongoing reinforcement and can be shared with parents report card time.",
+            "Emergency Preparedness Plan Have students create a simple emergency preparedness checklist in the event that there will be a hurricane.",
+            "3-ST-V-6- Title- Minimizing Risks to Natural Hazards Viewing Video and whole class discussion Have the students listen to a story about a hurricane. https://www.youtube.com/watch?v=K_dhoKrxTJE After viewing the video have a class discussion. Ask students questions such as: • What was the natural hazard spoken about in the video? • What were some of the activities that the characters in the story engaged in before, during and after the natural hazard? • Why do you believe these actions were taken? • Can you identify community members that help in situations like this? • What do you believe could have happened had these actions not been taken?",
+            "Journaling -My Natural Hazard Experience Have students write in their journal (a notebook) about one natural hazard that they experienced. They are to note the natural hazard, what actions the household took before, during and after the hazard. How did this preparation help?",
+            "Interview a Family Member Have students interview their family members about a natural hazard that they experienced. They are to find out what actions they took before, during and after the hazard, and how these preparations helped. Students are to present their findings to the class.",
+            "Mood Board Have students create a mood board illustrating how the whole experience of living through the natural hazard/ natural disaster spoken about in their journal made them feel? If students wish have them present their mood board to the class explaining what it depicts. Have students indicate if they believe their household could have done something differently to reduce the impact of the hazard. Be mindful that some students will feel afraid, anxious and/or sad. When they share their feelings provide empathy and acknowledge and validate their feelings while ensuring them that in times of natural disaster the whole community works together to help keep everyone safe.",
+            "Group Work In groups of 3-4, have students prepare a video/poster/role play, song, poetry etc. for a class presentation on an assigned natural hazard. The video must indicate why it is important to prepare to mitigate against the impact of the various natural hazards.",
+            "Give the students a grading rubric to guide their creation and explain to students how to utilise the rubric.",
+            "travelled by boat or plane? How many more people have travelled by boat or plane? Which is the most popular form of travel within the region?",
+            "Summary Statement: Based on the data, write one sentence about how the water bodies connect people in the region.",
+            "Map Exploration: Present students with a map of the world. Have students circle the Caribbean region and colour the country to which they belong. Engage students in discussion to have them gain an understanding that because of the location of their island in the Caribbean, the island experiences two main seasons. Link this with weather. Share the simple fact that countries closer to the middle of the earth (which is called the equator) are hotter because the sun is more intense there.",
+            "Discussion: Engage students in a class discussion on advantages and disadvantages of each season. Probe students with questions to stimulate their thinking. Example: 1. Which season is best for planting crops? 2. Which season encourages tourist to visit the Caribbean for vacation? 3. In what ways can each season affect our natural environment? (dry season causes drought and wet season can cause floods and landslides)",
+            "Sorting Information: Show and present students with pictures of different natural disasters or effects. Have students sort out the pictures based on which season is related to each natural disaster or effect (bush fire, droughts, landslides, floods, fallen crops etc.)",
+            "Concept Map: Have students create a concept map highlighting the advantages and disadvantages of each season for our environment?",
+            "Introduction- Name the Hazard Game: Have students watch a series of flashcards/pictures/videos depicting various natural hazards. Make sure the pictures chosen are not too graphic and frightening to children. Have students identify the natural hazards depicted.",
+            "Guided Discussion: Have students discuss which natural hazards usually affect the Caribbean because of its location. Have students discuss how the natural hazards they identified may impact their island. Have students relate any experiences and ask any questions that they may have had",
+            "Video: Have students view or listen to a weather report about an approaching storm. Have students identify the natural hazard that is posing a threat.",
+            "Class Discussion: Have students discuss how the natural hazards identified in the weather report may impact their island. Have students discuss what they would need to do to prepare for the storm. what their household did to prepare for the hazard and the other people in their community that help keep them safe and ready",
+            "Group Work: Have students select a natural hazard, in groups of 3-4, students will conduct research, create a script and prepare a presentation in any form that they wish (role play, brochure, poster, video etc. to educate community members on how to prepare for the selected hazard. Have",
+            "Emergency Preparedness Plan: Have students create a simple emergency preparedness checklist in the event that there will be a hurricane.",
+            "Title- Minimizing Risks to Natural Hazards: Viewing Video and whole class discussion. Have the students listen to a story about a hurricane. https://www.youtube.com/watch?v=K_dhoKrxTJE. After viewing the video have a class discussion. Ask students questions such as: What was the natural hazard spoken about in the video? What were some of the activities that the characters in the story engaged in before, during and after the natural hazard? Why do you believe these actions were taken? Can you identify community members that help in situations like this? What do you believe could have happened had these actions not been taken?",
+            "Journaling -My Natural Hazard Experience"
+          ],
+          "elo_code": "SS-G3-ST-ELO1"
+        },
+        {
+          "elo_description": "To appreciate how our people are shaped by geographic factors such as our tropical climate, island",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-(S-SCO1.1",
+              "description": "3-ST-K-2"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Are students able to collect and chart data?",
+            "Conversation: Can students analyse and make conclusions based on the chart?",
+            "Summary Statement: Product: Do the sentences logically express how the water bodies connect us?",
+            "Summary Statement: Do the sentences logically express how the water bodies connect us?"
+          ],
+          "inclusive_learning_strategies": [
+            "travelled by boat or plane? How many more people have travelled by boat or plane? Which is the most popular form of travel within the region?",
+            "Summary Statement: Based on the data, write one sentence about how the water bodies connect people in the region."
+          ],
+          "elo_code": "SS-G3-(S-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Additional material and resources that are not included in the Inclusive Learning and/or Inclusive Assessment Strategies that may be useful for lesson planning",
+          "links": [
+            {
+              "text": "https://mapmaker.nationalgeographic.org/",
+              "url": "https://mapmaker.nationalgeographic.org/"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Caribbean Maps, Maps of your island, Readings, Videos/clips and Worksheets Oceanographers, map makers, etc such as resource persons",
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "There are many types of water bodies. The water bodies most prevalent in the Caribbean are seas, oceans, rivers, waterfalls and streams. The two major water bodies that surround the Caribbean region are the Caribbean Sea, located to the west of the chain of islands and the Atlantic Ocean, located to the east of the region.",
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "3-ST-K-2: (Math -Number Concepts) – Gather information in regards to the number of main water bodies. (Science-Climate) – provide opportunity to experience how cold, hot or warm (temperature) of at least two (2) water bodies. 3-ST-S-2- Science connection in terms of sink and float. Objects float in salt water and sink in fresh water. Writing a friendly letter about the location of water bodies and their importance",
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Examples of ‘Land Based’ Water Bodies",
+          "category": "Teacher Materials",
+          "links": []
+        },
+        {
+          "description": "Additional Resources and Materials",
+          "links": [
+            {
+              "text": "https://wordwall.net/",
+              "url": "https://wordwall.net/"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Opportunities for Subject Integration",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Additional material and resources that are not included in the Inclusive Learning and/or Inclusive Assessment Strategies that may be useful for lesson planning",
+          "links": [
+            {
+              "text": "https://www.yumpu.com/en/document/read/38678429/writing-a-family-emergency-plan",
+              "url": "https://www.yumpu.com/en/document/read/38678429/writing-a-family-emergency-plan"
+            },
+            {
+              "text": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies.html",
+              "url": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies.html"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher: (any additional knowledge that the writers believe would be helpful for the teacher such as reading material at a lower or higher grade level, links to curriculum documents for other grades)",
+          "links": [],
+          "category": "Reading/Texts"
+        },
+        "Caribbean Maps, Maps of your island, Readings, Videos/clips and Worksheets",
+        "Oceanographers, map makers, etc such as resource persons"
+      ]
+    },
+    {
+      "strand_name": "Civic Participation",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To appreciate that we shape and are influenced by national pride",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-CP-SCO1.1",
+              "description": "3-CP-K-1 - Identify the people who contributed to the creation of some of our national symbols"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.2",
+              "description": "Are students able to list examples of the national symbols and share other information about the symbols?"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.3",
+              "description": "Are students able to research and present information on persons who created/designed a particular national symbol?"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.4",
+              "description": "Are students able to creatively illustrate and describe the meaning of the national symbols of the country through roleplay and artwork?"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.5",
+              "description": "Are students able to admire the beauty and uniqueness of the national symbols and emblems"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.6",
+              "description": "Are students able to express how their artwork of national symbols shows aspects of their people and culture?"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.7",
+              "description": "Are students able to show the importance of these national symbols for their country?"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.8",
+              "description": "3-CP-K-2 Explain why we play, sing, recite our national anthem and pledge"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.9",
+              "description": "3 CP-K-3 Recognize that our national bird and tree help us identify important features of our natural environment"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.10",
+              "description": "3 CP S-3 - Demonstrate the ways that we show respect for"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO1.11",
+              "description": "3-CP-K-4 Name the national heroes in our country"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Observe Are students able to look at a video to identify the national symbol showcased in a victory achieved by a local?",
+            "Conversation: Are students able to list examples of the national symbols and share other information about the symbols?",
+            "Product: Are students able to research and present information on persons who created/designed a particular national symbol?",
+            "Product: Are students able to creatively illustrate and describe the meaning of the national symbols of the country through roleplay and artwork?",
+            "Product: Are students able to admire the beauty and uniqueness of the national symbols and emblems",
+            "Product: Are students able to express how their artwork of national symbols shows aspects of their people and culture?",
+            "Product: Are students able to show the importance of these national symbols for their country?",
+            "Observe: Are students able to look at a video to identify the national symbol showcased in a victory achieved by a local?",
+            "Observation: Are students attentively viewing the video of the athlete, and of the crowd?",
+            "Conversation: Are students able to identify the song played after the athlete received his/her medal, and what was recited by the crowd? Were students able to make connections between the singing of the national anthem and national pride?",
+            "Conversation: Are students able to identify the national bird, tree and flower from the video or PowerPoint presentation, and explain why they are protected?",
+            "Observation: Are students able to represent the national bird, tree and flower of their country?",
+            "Conversation: Are students able to identify outstanding personalities in their country/region?",
+            "Observation: Were students able to group outstanding personalities under categories of their national contribution?",
+            "Observation: Were students able to conduct research on who a national hero is, and state some of the common characteristics of national heroes?"
+          ],
+          "inclusive_learning_strategies": [
+            "Introduction - Class Discussion: Have students look at a video showcasing local (s) for example athletes representing the country on the regional or international stage. Question students on the national symbol that was used by the local representative to represent the country Suggested questions Which country was (name of person) representing? How do you know?",
+            "Why didn't he/she use a picture of (use items not a part of the national symbols) instead?",
+            "How did you feel when you saw (name of person) and the reaction of the crowd?",
+            "Brainstorming/KWL: Question students on the national symbols. As they list, display the symbol and record their responses using the KWL chart on newsprint:",
+            "Research: Arrange students in small groups to research information on the persons who created/designed/composed the national symbols (flag, Coats of Arms, anthem etc) of their country and the meaning of these symbols.",
+            "Research: Allow the groups to dip for a particular symbol and direct the groups to 1) the class library (prior to the lesson, select relevant books from the school library to be placed in the class library. 2) the Computer lab or students’ tablets to access links and websites that you have shared 3) The principal or selected teachers for an interview.",
+            "Oral Presentation: Back as a unit, allow a representative from each group to share their findings.",
+            "Role Play: Based on the findings, guide students to use their imagination to roleplay the creation and the meaning of the symbols.",
+            "Suggested prompt to activate students’ imagination: What do you think the team of creatives under the leadership of (the person who designed the flag) argued, disagreed, or agreed on?",
+            "Suggested prompt to activate students’ imagination: What may be some of the challenges they encountered?",
+            "Possible responses: choice of colours and their meanings and including symbols or not",
+            "Artwork: Provide a variety of art products such as markers, crayons, construction paper, playdough, water paint, scissors, glue, etc",
+            "Artwork: Have students select a national symbol and present that symbol in an artwork of their choice (collage, painting, drawing, modeling)",
+            "Gallery Walk: Display student’s artwork",
+            "Gallery Walk: Arrange students in small groups to view the artwork of their peers.",
+            "Gallery Walk: Encourage students to make positive comments about the pieces",
+            "Gallery Walk: Display these in the classroom to enable ongoing reflection and share with parents during report card time.",
+            "Poetry/Music: Have students recite a local poem that encapsulates the love of country and its national symbols",
+            "Poetry/Music: Sing along and dance to a favourite patriotic song",
+            "Journal/Reflection: Assign a simple reflection where students draw or write something interesting or important about the national symbols.",
+            "Suggested questions: Which country was (name of person) representing? How do you know?",
+            "Have students look at a video showing a local athlete receiving a gold medal for a sporting event (for e.g. at the Olympics, Carifta Games, world championship) and subsequently listening to the national anthem as it is played. Then, show another video of a crowd of people reciting the national pledge.",
+            "After students observe the videos, ask the following questions, and record students’ responses on the board or on chart paper.",
+            "What was played after the athlete received his/her medal?",
+            "Why did they choose to play it and not a different song (name a song here)?",
+            "How do you think the athlete felt while that song was played?",
+            "What was the crowd reciting?",
+            "Introduction: Class discussion. Students view a video or PowerPoint presentation on the national bird, tree and flower. Students are asked the following questions:",
+            "What is the name of our national bird, tree and flower",
+            "Where can they be found?",
+            "Do you think they should be protected? If so, why? If not, why not?",
+            "Discovery learning/Map work: Group students then use a map (Tourism map) of the country for students to identify the national environment of the national bird, tree and flower. Students will shade the area and represent it using a key.",
+            "Nature walk and photo shoot: If possible, take students take a nature walk in the community/or an area where one or more of the national bird, tree and flower is",
+            "Introduction: Brainstorming. Students are invited to share who they see as popular or outstanding personalities in the country. The teacher writes names of the board.",
+            "Teacher guides students to group these names in a table under sports, culture, politics, history, other? If students are reluctant or unable to name many individuals, the teacher can prompt them and share a few.",
+            "Introduce the concept of national heroes. Students use devices to research national heroes. For guidance the teacher can assist students to see that many countries in the Caribbean are now celebrating National Heroes Day and/or Emancipation/Independence Day in which heroes are recognized. From the research identify common"
+          ],
+          "elo_code": "SS-G3-CP-ELO1"
+        },
+        {
+          "elo_description": "To appreciate that we shape and are influenced by national pride.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-CP-SCO2.1",
+              "description": "3-CP-K-2 Explain why we play, sing, recite our national anthem and pledge"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO2.2",
+              "description": "3-CP-S-2 Sing and recite our national anthem and pledge"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO2.3",
+              "description": "3-CP-V-2 Demonstrate appropriate behaviour when singing/playing the National Anthem"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO2.4",
+              "description": "3-CP-K-4 Name the national heroes in our country"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO2.5",
+              "description": "3-CP-S 4-Create profiles about these national heroes."
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO2.6",
+              "description": "3-CP-V 4-Show respect for the contribution made by national heroes that help to improve the lives of our people."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Observation: Are students attentively viewing the video of the athlete, and of the crowd?",
+            "Conversation: Are students able to identify the song played after the athlete received his/her medal, and what was recited by the crowd? Were students able to make connections between the singing of the national anthem and national pride?",
+            "Observation: Are students able to listen attentively as the visitor reads the short story?",
+            "Product: Are students able to create a collage of words that explain why we sing, play and recite the anthem and pledge?",
+            "Conversation: Are students able to correctly recite the pledge and sing the anthem after discussions and teacher feedback?",
+            "Product: Are students able to correctly identify missing words from the pledge and/or anthem on sheets provided by the teacher?",
+            "Observation: Are students able to correctly explain why we recite the pledge and sing the national anthem?",
+            "Conversation: Are students able to listen to the police officer and participate in the discussions?",
+            "Observation: Are students practicing the correct behaviour demonstrated by the police officer to be used when the pledge is recited, or anthem is being sung?",
+            "Product: Are students able to correctly use a role play to demonstrate the appropriate behaviour for the pledge and anthem to their peers",
+            "Conversation: Are students able to identify outstanding personalities in their country/region?",
+            "Observation: Were students able to group outstanding personalities under categories of their national contribution?",
+            "Observation: Were students able to conduct research on who a national hero is, and state some of the common characteristics of national heroes?",
+            "Conversation: Are students able to show similarities and differences of various national heros?",
+            "Product: Are students able to pinpoint each national hero to their specific heroic act?",
+            "Conversation: After or viewing one of the YouTube videos are students able to name and identify how anyone has the potential attributes to be an everyday national hero?",
+            "Product: Collage: Are students able to create a collage of the national heroes of the country?",
+            "Conversation: Are students able to recognize how the national heroes shaped and impacted the country?",
+            "Product: Are students able to use information gathered to create a profile on the impact and how national heroes helped to shape the country?",
+            "Product: Are students able to express appreciation for the contributions made by the national heroes to the country?"
+          ],
+          "inclusive_learning_strategies": [
+            "Have students look at a video showing a local athlete receiving a gold medal for a sporting event (for e.g. at the Olympics, Carifta Games, world championship) and subsequently listening to the national anthem as it is played. Then, show another video of a crowd of people reciting the national pledge. After students observe the videos, ask the following questions, and record students’ responses on the board or on chart paper. • What was played after the athlete received his/her medal? • Why did they choose to play it and not a different song (name a song here)? • How do you think the athlete felt while that song was played? • What was the crowd reciting?",
+            "What did you notice about them while they were reciting it?",
+            "How are these two things related?",
+            "When do you normally hear them played or recited?",
+            "From our previous lesson, can you recall who created them?",
+            "Explain to students that the pledge, anthem, and some countries a motto as well, are special things citizens use to show love and respect for their country.",
+            "Story Time: (Teacher decides on a special Visitor. The visitor can be the principal, another teacher, student from another class, or any other individual)",
+            "After students have finished their discussion, and have settled down, someone knocks the door and a enters the class. The visitor explain that he/she heard the students’ interesting discussion and wanted to give his/her views. The visitor will read the following while students listen.",
+            "I want to tell you why it is important for us to play, sing, recite our national anthem, and say the pledge.",
+            "I play, sing, and recite our national anthem to show respect and honour for our country. It is a way to show that I love where I live and that I am proud to be a part of it. When we play, sing, or recite our national anthem, it is a way for us to come together as a people and show that we are united.",
+            "I say the pledge to show my loyalty to our country. It is a way for me to promise to be a good citizen and to help make our country the best it can be. When I say the pledge, I am showing that I care about my country and the people who live here.",
+            "When I play, sing, recite our national anthem, and say the pledge, it helps me feel connected to the other people around me. It is nice to know that we are all working together to make our country a great place to live.",
+            "So, when I play, sing, recite our national anthem, and say the pledge, I am showing respect, loyalty, and love for my country. It is great that we have these ways to come together and be proud of where we live. Do you agree?",
+            "Word Art: Have students create a word cloud about the national anthem and the pledge. Encourage them to use words that explain why we sing, play and recite the anthem and pledge as discussed by our visitor. Students may either use paper and markers or may visit the site https://wordart.com/create on their devices to complete this activity.",
+            "Group Work: Divide the class into small groups of 4-5 students. Provide each group with a copy of the national anthem and the pledge. Instruct the groups to practice singing the national anthem and reciting the pledge together feel free to allow the groups to go to classroom corners or outside (this must be manageable). Teacher should circulate among the groups to provide support and guidance as needed. After enough practice time, gather the class together. Each group will take turns singing the anthem and reciting the pledge in front of the class. Encourage the students to sing and recite with enthusiasm and respect. Provide constructive feedback and praise for their efforts.",
+            "As follow up, invite students to ask their parents about the importance of the national pledge and anthem to them and begin the next lesson with this.",
+            "Fill in the Blanks: Give students a printed copy of the national anthem and pledge with some words missing. Have students fill in the missing words as best they can.",
+            "Revision: Ask students to reiterate why we play, sing or recite the national anthem and pledge.",
+            "Resource Person: Police Officer: Introduce the resource person and their position. Question students on how they think citizens should behave when the pledge or anthem being sung or recited. Invite the Officer to lead the discussion on the way",
+            "people must behave when the anthem or pledge is being played, sung, or recited. Have students demonstrate the correct way to stand when singing, playing or reciting the anthem and pledge.",
+            "Role Play: Divide students into groups of 4 or 5 and allow them to prepare a skit on the appropriate behaviour when singing, playing, or reciting the anthem and pledge. Encourage them to highlight the wrong behaviours in the skit and then the correct behaviours.",
+            "Introduction: Brainstorming Students are invited to share who they see as popular or outstanding personalities in the country. The teacher writes names of the board.",
+            "Teacher guides students to group these names in a table under sports, culture, politics, history, other? If students are reluctant or unable to name many individuals, the teacher can prompt them and share a few.",
+            "Introduce the concept of national heroes. Students use devices to research national heroes. For guidance the teacher can assist students to see that many countries in the Caribbean are now celebrating National Heroes Day and/or Emancipation/Independence Day in which heroes are recognized. From the research identify common characteristics of national Caribbean heroes. Summarise characteristics on the board.",
+            "Think Pair Share In pairs students examine the list of personalities on the board select those who could be national heroes, and explain why. Are there other characteristics of heroes that are important but missing?",
+            "Group work Students use video, internet research, and class text to list the names of the national heroes of their country. Students write the names in their exercise book.",
+            "In groups, students create a collage of national heroes with their names and photographs presented by the teacher.",
+            "Questioning Through guided questions students express what heroic acts the national heroes are recognized for in their country. What are some current challenges of the country that future heroes might take on? (Egs. Might be climate change, gun violence, women’s rights, disabilities rights, hunger)",
+            "View YouTube Video/Read Extract Using a YouTube video students will watch and take notes, discuss in small groups and then share what the national heroes are acknowledged for in their country. https://www.youtube.com/watch?v=U0mpJ3rv64U",
+            "Group discussion and presentation: Using a Venn diagram students will compare two national heroes and share the differences and similarities of the heroes chosen.",
+            "In small groups, students can use pictures of national heroes and create a poster displaying information related to the chosen national hero.",
+            "Group Work Students are divided into groups. Each Group selects one or two national heroes. Through the (controlled) inquiry-based approach students will explore online and written resources and or resource persons to answer questions 1. What challenges did the country face? 2. How did the heroic act of a national hero help to assist with the challenge? 3. In what way did this national hero shape our country? Using a graphic organiser students summarize their findings:",
+            "Discussion: What issues will future heroes face? Use the above group work to lead into a discussion of the sorts of issues that they as grade three children would like to see addressed. Share “A Hero Like You” to help the children realize they can all be heroes by caring for people https://www.youtube.com/watch?v=FgdKD9owv7E",
+            "https://abstvradio.com/nellie-robinson",
+            "Create Profile: Students will design a profile on a national hero using information gathered from the inquiry based approach, which will be shared to the class (using reporting, drama, storytelling etc).",
+            "Presentation: Students can explain in what way the national hero impacted the country.",
+            "Students can describe how the national hero shaped the country.",
+            "Letter writing: Students write a letter to the living national heroes or families of dead national heroes thanking them for their contribution to the country.",
+            "Students post letters to heroes/deliver if possible/invite heroes or family members to receive them at school.",
+            "Write in their journal how they feel about the responses made by the national heroes."
+          ],
+          "elo_code": "SS-G3-CP-ELO2"
+        },
+        {
+          "elo_description": "To appreciate that we shape and are shaped by National pride",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-CP-SCO3.1",
+              "description": "3 CP-K-3 Recognize that our national bird and tree help us identify important features of our natural environment"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO3.2",
+              "description": "3 CP S-3 - Demonstrate the ways that we show respect for"
+            },
+            {
+              "sco_code": "SS-G3-CP-SCO3.3",
+              "description": "3 CP- V-3 - Appreciate that our national bird, tree and flower are a precious part of our environment that needs to be protected."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation: Are students able to identify the national bird, tree and flower from the video or PowerPoint presentation, and explain why they are protected?",
+            "Observation: Are students able to represent the national bird, tree and flower of their country?",
+            "Conversation: Are students able to identify the national symbols and discuss the beauty that these features add to the environment?",
+            "Observation: Are students able to capture the beauty of the symbols through their photographs?",
+            "Product: Are students able to capture their appreciation for the national bird, tree and flower via the WhatsApp profile/status and video?",
+            "Product: Are students able to successfully plant trees and flowering plants at their school?",
+            "Observation: Are students able to develop questions to inquire about protection laws and other special features of the national bird, tree and flower?",
+            "Product: Are students able to make an oral presentation based on the information found about the national bird, tree and flower?",
+            "Observation: Are students excited about creating their pieces?",
+            "Product: Are students able to use their understanding and appreciation of the national symbols to create exciting and meaningful creative pieces for display and sharing?"
+          ],
+          "inclusive_learning_strategies": [
+            "Introduction: Class discussion. Students view a video or PowerPoint presentation on the national bird, tree and flower. Students are asked the following questions: What is the name of our national bird, tree and flower; Where can they be found?; Do you think they should be protected? If so, why? If not, why not?",
+            "Discovery learning/Map work: Group students then use a map (Tourism map) of the country for students to identify the national environment of the national bird, tree and flower. Students will shade the area and represent it using a key.",
+            "Nature walk and photo shoot: If possible, take students take a nature walk in the community/or an area where one or more of the national bird, tree and flower is",
+            "located. The teacher encourages students to appreciate the beauty they add to the environment. the teacher and students draw or take photos videos of the national symbols and bring them back to into the classroom for discussion and display.",
+            "Create a WhatsApp profile or video for Facebook: students use photographs to create a WhatsApp profile and explain to readers/viewers how to respect the symbols: Learn about the symbols, Keep the environment clean, Follow the protection laws",
+            "Tree Planting: students plant the national trees and flowers in the neighbourhood of the school. Partner with National Natural Resources/Environment Ministry to identify sources of trees for planting. Examine sources such as OneTreePlanted for background on tree planting and follow up care https://onetreeplanted.org/pages/school",
+            "Group Communication with Ministry: Students can contact their Ministry of Natural Resources and Environment to find out about laws and other special features that protect their national bird, tree, flower. Have students work in groups to develop question to be inserted into the query. Invitee Ministry personnel to respond and/orcome and explain their responses to the students.",
+            "Creative Writing: Students create a poem or a song showcasing how their government protects their national bird, tree and flower as a precious part of the environment. Students use poems, and artwork to create flyers to print and distribute in the community and upload to the school's FaceBook page. Facebook posts of creative writing. Students post their pieces on their school’s Facebook page"
+          ],
+          "elo_code": "SS-G3-CP-ELO3"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Inclusive Resources and Materials from Regional Specialists",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Additional Resources and Materials",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Opportunities for Subject Integration",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Elements from Local Culture",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Resources for a learner who is struggling",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Resources for a learner who needs challenge",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Strategies that Support the Curriculum and Assessment Framework",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: (Links to professional sources that connect back to the Curriculum and Assessment Principles of Learning and Principles of Assessment)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Inclusive Resources and Materials from Regional Specialists (texts, family & community knowledge and resources, contextually relevant professional web resources)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Lab top, construction paper, markers, hard copy/electronic pictures of national bird, tree and flower, real national symbols. Powerpoint tutorial for children: https://youtu.be/cfhnW3bd064?si=gmcqk993Yge3k01Q Poster of national symbols",
+          "links": [
+            {
+              "text": "Powerpoint tutorial for children",
+              "url": "https://youtu.be/cfhnW3bd064?si=gmcqk993Yge3k01Q"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: (Links to professional sources that connect back to the Curriculum and Assessment Principles of Learning and Principles of Assessment)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Inclusive Resources and Materials from Regional Specialists (texts, family & community knowledge and resources, contextually relevant professional web resources)",
+          "links": [],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Additional Resources and Materials: Pictures of national heroes, manilla, crayons, laptops, paint, markers, folders, paper, newspaper articles, summarized biographies, speakers, past or recent radio interviews.",
+          "links": [],
+          "category": "Activities/Tools"
+        }
+      ]
+    },
+    {
+      "strand_name": "Economic Decision Making",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand how our natural and human resources shape our island identity",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-ED-SCO1.1",
+              "description": "3-EDM-K-1 Identify the major economic activities on"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.2",
+              "description": "our island and their link to natural resources"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.3",
+              "description": "3-EDM-S1: Assess the direct and in-direct impact of these economic activities on your family’s well being."
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.4",
+              "description": "3-EDM-V1-Appreciate that major economic activities of agriculture and tourism are linked to the natural resources of our island"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.5",
+              "description": "3-EDM- K-2- Explain the relationship between the environment and our culture"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.6",
+              "description": "3-EDM- S-2- Explore the ways in which our people can earn a living through culture"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.7",
+              "description": "3-EDM-V-2- Appreciate how culture shapes our identity and economy"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.8",
+              "description": "3-EDM-K-3 Define the term population and understand its significance in the context of our region"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.9",
+              "description": "3-EDM-S-3 - Explain how changes in population can affect our region's resources and services."
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.10",
+              "description": "3-EDM-V-3 - Evaluate the potential consequences of a growing or declining population on our region's economy, infrastructure, and community."
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.11",
+              "description": "3-EDM-K-4 Distinguish between immigration and emigration"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.12",
+              "description": "3-EDM-S-4 - Analyze the effects of migration on the region, (Positive and Negative)"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.13",
+              "description": "3-EDM-V-4 Recognizing the importance of"
+            },
+            {
+              "sco_code": "SS-G3-ED-SCO1.14",
+              "description": "respecting and accepting individuals from diverse backgrounds, understanding their contributions to the community."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Conversation: Are students able to identify what is common about the activities displayed in the pictures?",
+            "Conversation: Are students able to generate a working definition of ‘economy’ that is that It's the way people spend money and the way people make money?",
+            "Observation: Are the students able to differentiate between products that a family might buy or sells/produce?",
+            "Observation: Can students distinguish between imports and exports to their island?",
+            "Product: Are students able to accurately name and identify where the natural resources of their island are located?",
+            "Conversation: Are students ble to share how they and their families participate in their home economy?",
+            "Product: Are Students able to appreciate that they form part of the home economic unit and they have an impact on the health of the home economy?",
+            "Product: Are students able to identify key features of the goods in their immediate surroundings?",
+            "Checklist sample: (students are given the checklist to help them prepare for the presentation)\n- I gave the name of the product.\n- I said if my sample product is locally produced.\n- I said if my product is a service or a good.\n- I named the producer of the product.\n- I explain that this product is a need or a want\n- I gave the ways we use this product at home?\n- I said how the product benefits my family.\n- I said who benefits from the use of this product at home?\n- I explained how my family’s use of this product helps the economy.",
+            "Conversation: Do students' contributions show that they understand the linkage between the land resources and agriculture and Tourism?",
+            "Conversation: Are students able to explain what culture is?",
+            "Are students able to list different aspects of their country’s culture?",
+            "Product: Can students depict the various aspects of the island's culture effectively?",
+            "Are students able to list the theme of their country’s independence celebrations?",
+            "Conversation: Are students able to explain how culture contributes to the development of a country’s economy?",
+            "Are students able to make the connection between cultural activities and economic development?",
+            "Conversation: Can students identify various economic activities related to culture?",
+            "Product: Are students able to identify cultural activities to be included on a programme?",
+            "Are students able to research and create a recipe brochure that reflects local cultural dishes?",
+            "Are students able to speak the local dialect proudly at a given time?",
+            "PRODUCT Do students show a preference or respect for the local cuisine which uses crops produced by the island's farmers?",
+            "Product: Can students show how cultural activities support the economy?",
+            "Conversation: Can students explain the term population in their own words?",
+            "Product: Can students explain why it is important to know about the population?",
+            "Observation: Can students, through observation and reflection, articulate why population information is crucial for planning and decision-making?",
+            "Product: Are students able to demonstrate the effect of population growth on resources and services?",
+            "Observation: Are students able to recognise the challenges of large numbers of people in a small area?",
+            "Conversation: Do students recognize that there is a need for communities to have sufficient diversity of people to offer services needed?",
+            "Product: Can students represent their understanding of the concept of immigration and emigration?",
+            "Observation: Are students active participants in sharing their understanding of the movement of peoples?",
+            "Conversation: Can students describe how migration can impact the cultural diversity of the region?",
+            "Observation: Do students actively contribute to the class discussion about the social and environmental consequences of migration in the region?",
+            "Product: Can students create a piece of art, such as a painting, drawing, or sculpture, or a song, that represents the effects of migration on the region?",
+            "Product: Can students explain the importance of respecting and accepting individuals from diverse backgrounds?",
+            "Conversation: Are students able to list different aspects of their country’s culture?"
+          ],
+          "inclusive_learning_strategies": [
+            "Concept Attainment through picture inferencing: What do the terms economy and economic activity mean?",
+            "Picture walk: Introduce the words economy and economic activity to the class by providing students with a variety of",
+            "pictures that depict economic activities. Help them infer or conclude the meaning of economy and economic activities by guiding them to identify what all the pictures have in common, such as they all generate money, they are jobs we do, they help us get things e need and want. Have them use their answers to identify attributes that show the meaning of economy and economic activity. One simple definition of the economy: It's the way people spend money and the way people make money.",
+            "Building Blocks: self to the world: Through targeted questioning and discussion students are led to identify the types of economic activity around their immediate surroundings. Child: buys snacks from the canteen Family: Dad sells fish he has caught Village: Most people in the village are farmers or fishermen",
+            "They are then led to discuss the sorts of goods that come into our leave their Island: Egs. electronics, cars, bananas, sugar, milk, meat, Once they have established this, introduce the concepts of imports that come “into” and Exports that “exit” the country. Remind them that an easy way to remember is recall the letter I is in into-import and Ex is in Exit or Export",
+            "Map symbols (Resources and Regions) Students will use an atlas such as Collins Student Atlas for the Caribbean to create a map of the islands of their country and plot the major resources of various communities and parishes on it. Use the examples of symbols used in the legend in the atlas to design this resource map to represent the various resources",
+            "Students could also complete a chart with the main resources produced/harvested by certain regions in their island and the jobs that are generated as a result of the use of these resources.",
+            "Sample: Resources | Jobs Sand and Stones | quarryman Sea | fisherman, fishmonger, fish cleaner Farmland | Farmer, fieldhand, truck driver",
+            "Targeted Questioning/ Critical thinking. Teachers ask questions to enable students to realise that their household is also a miniature version of the economy because they use and conserve resources, which makes important contributions in their home",
+            "Sample questions: a. What ways do you help out at home? b. What chores do you do? c. Who pays the bills at home? What are some of the bills they pay for? d. What does your mammy/daddy do to help meet your needs and wants at home? e. Identify for the students that all these activities are examples of your home economy meeting everyones needs and wants.",
+            "Students will complete a graphic organizer (traditional or online) to show comprehension of their impact in their home economic environment. Sample online activity: Jamboard: https://jamboard.google.com/d/1z3gKVUj5fSvQ5D6YnLicIEbkhZaG3BOxLs4SoilMIkY/edit?usp=sharing",
+            "How our Market is important to our Local Economy",
+            "Inferencing from Scenario cards: Create scenario cards with a theme of Market Day",
+            "Include examples of the activities that take place on market day and have students identify which concept is being portrayed. Concept examples: consumers, producers, goods, services, imported goods, hand crafts, manufactured goods, agricultural produce",
+            "Import and Local Products: Show and Tell\nThe teacher provides labels and/or, empty packaging or samples of both local and imported products.\nHave the students categorize these and display on a bulletin board, leaving room for subsequent additions from students later in the week.\n\nFor follow up, invite students to bring in additional labels or packages from home during the week. Each student gets to share and then place their product on the bulletin board.",
+            "Picture Inferencing: Compare and Contrast",
+            "Teacher presents students with two pictures to trigger the discussion.\nOne of a barren land and one of a forested green land?\n\nTeacher will ask questions to elicit discussion in the direction of the objective.\nWhich place would you like to visit? why?\nWhich place would a farmer have better results growing crops? Why?\nImagine you lived in the barren place what would life be like?\n\nUse this to lead into potential field trips to nearby landscapes to help students see the qualities of well-kept places. Prepare the students for these visits by asking them to take note of and draw, take photos of the attractive features of each place.\n\nField trip examples:\n\nFarm visit:\nStudent visit a nearby farmer’s garden\n\nNatural Site:\nStudents are taken to a famous natural site where they become tourists for the day.\nIf it is not possible to take field trips to these places, invite parents who are farmers or tourist workers to share images of their places with students.\nFollow up discussion. What made these places attractive and how do they help us meet our economic needs?",
+            "Teacher explains to the class how our natural resources are inextricably linked to our economic potential in both agriculture and tourism.",
+            "Class Discussion: Introduce the term Culture and Traditions. Create a Tree Chart, to show the different aspects of their culture. (students will choose from the list of examples and non-examples and write them in the correct area of the Tree Chart). students select the ones appropriate for their country. Aspects of culture for the Tree Chart: Dress, Music, Food, Language, Family life",
+            "Discuss some traditional activities that are done in the community, which are also done on an economic level. (farming, fishing, traditional dancing, foods, festivals, etc)",
+            "Class discusses the activities that take place during the independence celebrations in their country.",
+            "Listing- Grouping- Labeling- Students gather data; photos, videos, music, foods of different traditional and contemporary activities in their community.",
+            "Culture Corner: Classes create posters to complete the Cultural activity corner. Bring physical items which show aspects of culture to add to the corner.",
+            "Crossword puzzle: https://www.education.com/worksheet-generator/reading/crossword-puzzle/?gad_source=1&gclid=Cj0KCQiA7OqrBhD9ARIsAK3UXh1RDaCjJBH9aRvb9t-ESsVpV6TsL8fsO5Bcj2n6Bm-xEDIB6zZIdHIaAp_5EALw_wcB. Students will complete a crossword puzzle on cultural activities held in their country. (or Caribbean countries)",
+            "Recall from historical and culture thinking unit in grade two and then list and discuss the major feasts and festivals which take place on their island and the time they occur.",
+            "using this information, get the students in groups to develop a News Reporting Role play. Have students present and discuss the feasts and festivals as if they are news reporters.",
+            "Village Feasts",
+            "Independence Celebrations: Examples: WCMF (Dominica), Ti Village Creole (Dominica), Military Parade (All), Traditional Wear Pageant (All), Miss Independence Day Pageant- (St Lucia), Expo and Food Fair (Antigua), Street Fair & Fashion Extravaganza (St Kitts), IndependenceCalypso Monarch (Grenada)",
+            "Other festivals in the Caribbean: Village Feasts, Carnival (crop-over, vincy mas, ole mas), Jazz festival (Dominica, St Kitts, St Lucia), Barbados Food and Rum, Sailing Week Antigua, Holetown festival Barbados",
+            "Journaling or Scrapbooking:",
+            "Select an event held during Independence Season.",
+            "Create a photo collage to show what happens during this event.",
+            "Explain one (1) way the event benefits the island.",
+            "Write two (2) ways the event creates economic activity.",
+            "Dramatize various Independence activities to display students’ skills in: Dance (Display a traditional dance of choice), Dress (Model the national wear), Food: I) Prep in school; have other classes sample, II) Child prepares at home and shares via flipgrid",
+            "Language: (creole)",
+            "Music (Perform a tradition/contemporary song)",
+            "Complete an activity sheet (Match these or T-chart) to show the economic activity which is related to each of cultural activities done above",
+            "For Example: Job - Aspect: Seamstress/ tailor - Making a Wob Dwiyet, Chef - Preparing sancouch, Musician - Compose a song For Cadence-lypso competition",
+            "Design: Design a programme of activities to share with visitors to your island.",
+            "Design a recipe brochure of their favorite local dishes.",
+            "Complete this activity sheet: HowCulture Helps Our Economy - Aspect of Culture: Food, Economic example of its use: [blank]",
+            "Music: [blank]",
+            "Dance: [blank]",
+            "Previous Knowledge: Draw on students' knowledge of how a family grows. Create a concept map using cut out people to represent families and how they grow by adding new members.",
+            "Demonstration: (Use the students or use legos or action figures.) Create “CITIES” In the classroom and have the students grow the population of the ‘City’. explicitly use the term population. Example: City one stated with a population of 2, soon it grow by 5. City 2 has a population of 12, however, it lost 2 of its inhabitants.",
+            "Guide students to formulate a working definition of population through this activity.",
+            "Ask children to create a visual representation of the term \"population\" and its significance in the context of their region. This could be a simple drawing, a collage, or a diorama.",
+            "Encourage them to include people, animals, and plants to represent different aspects of the population.",
+            "Technology Inclusion: Exploring Population with \"Stack the Countries\". Students will define the term \"population\" and understand its significance in the context of their region using the educational app \"Stack the Countries.\"",
+            "Activity Steps: 1. Introduction (Class Discussion): Begin with a brief discussion about what students understand by the term \"population.\" Encourage them to share their ideas and thoughts about how the number of people in a place might affect the community.",
+            "2. App Introduction (Stack the Countries): Introduce the \"Stack the Countries\" app to the class. Explain that the app will help them explore different countries, their populations, and how these factors can impact the game.",
+            "3. Guided Exploration (Teacher-led): Use a projector or interactive whiteboard to guide the students through the app. Play a few rounds together, pointing out information about countries, their populations, and any landmarks or features mentioned in the game.",
+            "4. Hands-On Play (Individual or Small Groups): Allow students to play the game individually or in small groups on their tablets or computers. Encourage them to explore the countries, answer questions, and observe how the game incorporates population information.",
+            "5. Discussion and Reflection: After the gameplay session, gather the students for a discussion. Ask questions such as: - What did you learn about different countries? - How does population information impact the game? - Can you think of ways population might affect a country in real life?",
+            "6. Create Population Profiles: In pairs or individually, have students create simple \"population profiles\" for a country of their choice. Include information like the country's name, capital, population size, and one interesting fact they discovered while playing the game.",
+            "7. Sharing and Presentation: Give students the opportunity to share their population profiles with the class. This can be done through short presentations or by displaying their work on a bulletin board.",
+            "This activity not only introduces the concept of population using technology but also allows students to apply their knowledge in a virtual context through gameplay. It combines interactive learning with creative expression and encourages critical thinking about the impact of population on different regions.",
+            "Human Interaction: Organize interactive games or activities that involve counting and categorizing objects to represent population elements (e.g., counting toy animals or people in a designated area).",
+            "Read \"If the World Were a Village: A Book About the World’s People\" by David J. Smith. Ask questions to generate discussion on the diversity of our global population.",
+            "Link with Spatial thinking: Begin by showing students a map of the Caribbean region and briefly explain that different places around the region have different populations. Give each student a small cut out person and ask them to decorate each person to represent various characteristics such as hairstyle and clothing. Then guide students to place their cutouts on the Caribbean map placed on the board. Ask them to choose different locations for the population. Discuss why some places may be more populated than others. Help students to understand that a population comprises people with various characteristics as seen by the variations in the pictures on the map.",
+            "Observation Activity: \"Exploring Our Population\" 1) Take the students on a short observation walk either around the school premises (if possible) or through virtual means",
+            "(using pictures or videos). Ask them to observe different spaces and places, such as classrooms, playgrounds, or nearby streets. 2) Distribute the observation worksheets to each student. The worksheet should contain guided questions such as: - How many people do you see in this area? - Are there a lot of buildings? - What does that tell you about the population? - How might the number of people impact the need for schools, parks, or other facilities? SAMPLE: TELL ME 3) Allow students to either work individually or in small groups. Encourage them to answer the questions on their observation worksheets based on what they see during the walk. 4) Discussion and Reflection:** Bring the students back to the classroom and facilitate a discussion. Ask them to share their observations and discuss the importance of population in planning and organizing communities. 5) - As a class activity, create a visual representation of the observations. This could be a collage with pictures or drawings showing different aspects of the community and how population influences them. 6) Conclude the activity by asking students to reflect on why it is important to know about the population. Encourage them to express their thoughts on how this information can help make their community a better place.",
+            "Watch this video and discuss: Brainpop Population Growth Organize a collaborative diorama or play activity where children work in small groups to depict scenarios of population changes affecting resources and services. This can involve arranging miniatures, drawing, and discussing the changes within their created environment. (e.g. showing forests being cleared for homes, overfishing for consumption, etc.) Provide students with large sheets of paper and instruct them to draw to draw their community including houses, schools, parks Divide students into equal numbers of small groups. Assign each group a few items like sweets and instruct them to share the items among themselves. Ensure that each child will receive an equal number of items once items are distributed. Then ask students to explain whether they experienced any problems in sharing the items. Students must justify their answer. Then the teacher rearranges the groups so that some groups have more members than others. Repeat the activity again by distributing different sets of items in the same quantity to each group. Have students share the items among themselves. Ask students the same questions whether they experienced problems in sharing the items and why. Help students to understand that the problems they experienced the second time is because the number of people in the group outnumbered the available items and that the same situation exist in the real world in that there are times when the resources of a country cannot sustain the people who live there because the country is overpopulated.",
+            "Ask children to work in small groups to draw their ideal community on a large sheet of paper and instruct them to draw the people on the paper that will be in their community. Then provide each group with varying numbers of people to be added to their community to represent the consequences of population changes. Engage students by asking a few questions: 1. Have you ever noticed that sometimes there are more people in a place than before? How do you think people feel when it is crowded? 2. Can you think of some things people need everyday like food, water and energy? 3. Do you think it would be easier to provide these things if there were more people in a country? Introduce the concept of population growth and explain to students that when a country's population grow it means there are more people living there which puts more pressure on the available resources like food, water, energy. Also remind them that it necessary to have sufficient numbers of people with all sorts of skills to help make a community thrive",
+            "Cartoon and Animation: Create an instructional video or Create a story or use a children's book that illustrates characters moving to a new neighborhood (immigration) or leaving their current neighborhood (emigration). Teacher can use: 1. Powtoon 2. Animaker 3. Loom 4. Renderforest. Use an assessment menu: written assignments, oral presentations, or visual projects for presentation. Assesment Menu. Play a game : Airport. Students take off and land at the airport. They are given immigration forms to fill out upon entry and exit of the county. (country immigration forms can be used)",
+            "Complete live worksheet for above game: https://www.liveworksheets.com/w/en/english-second-language-esl/992829. Storytelling and Mapping. Story Creation: Begin by telling a short and relatable story that involves characters moving from one place to another. For example, create a narrative about a family moving to a new town (immigration) or a friend leaving for a different city (emigration). Use age-appropriate language and include elements that resonate with the students. Caribbean example: https://diversebookfinder.org/book/coqui-in-the-city/ (See other Story Examples: https://docs.google.com/document/d/1FPNWC47ZKA0G9cA-eCVWCxt2rFn1-FAsAm4BDKXjmZc/edit?usp=sharing. Visual Representation: Introduce visuals such as pictures or drawings to accompany the story. Display images of houses, neighborhoods, and different locations on a board or screen. These visuals help reinforce the understanding of the movement between places. Mapping Exercise: Provide each student with a simple map or encourage them to draw one. Have them mark the starting point (current residence) and the destination (new residence) for the characters in the story. This mapping exercise helps children visualize the spatial aspects of immigration and emigration.",
+            "Discussion: Facilitate a class discussion after the storytelling and mapping activity. Encourage students to share their maps, discuss the reasons for the characters' moves, and express their thoughts on the concepts of immigration and emigration. Venn Diagram Cluster/BrainStorm: Teacher plays introductory videos. Explain the concept of migration to kids | Migration lesson for kids | What is migration? Effects of Migration in Migrant Countries of Origin. Effects of Migration in Countries of Destination. After viewing video: Use a Venn diagram to compare and contrast the positive and negative effects of migration on a region. Students can work in groups to brainstorm ideas for each category, and then use a Venn diagram to visually represent their findings. Group Work: Have students work in groups to represent different perspectives on migration. about the effects of migration. Leave the visual representations on display in the classroom and share with parents at report card time. Sing along - Activity: \"The Wheels on the Bus\" (Migration Remix)",
+            "(Verse 1) The wheels on the bus go round and round, Round and round, round and round. The wheels on the bus go round and round, All across the land. (Chorus) Migrating birds fly high, high, high, High, high, high, high, high. Migrating birds fly high, high, high, All across the sky. (Verse 2) The wheels on the bus go up and down, Up and down, up and down. The wheels on the bus go up and down, Over the mountains. (Chorus) Migrating whales swim deep, deep, deep, Deep, deep, deep, deep, deep. Migrating whales swim deep, deep, deep, All across the sea. (Verse 3) The wheels on the bus go open and shut, Open and shut, open and shut. The wheels on the bus go open and shut, All around the town. (Chorus) Migrating families pack and pack, Pack and pack, pack and pack. Migrating families pack and pack, All across the land. Once students learn the song, allow them to create their own verse 4 and 5. Verse 4 How can we make sure that migrating families feel welcome in our communities? Prompt: Write a verse about ways to make migrating families feel welcome. Verse 5 How can we recognize the contributions that new immigrant families make to our community? Prompt: Write a verse about ways to that migrating families can help enrich our communities.",
+            "Create a Tree Chart, to show the different aspects of their culture. (students will choose from the list of examples and non-examples and write them in the correct area of the Tree Chart). students select the ones appropriate for their country.",
+            "Aspects of culture for the Tree Chart: Dress, Music, Food, Language, Family life",
+            "Teacher can use: Powtoon, Animaker, Loom, Renderforest",
+            "Use an assessment menu: written assignments, oral presentations, or visual projects for presentation",
+            "Assesment Menu",
+            "Play a game : Airport: Students take off and land at the airport. They are given immigration forms to fill out upon entry and exit of the county. (country immigration forms can be used)"
+          ],
+          "elo_code": "SS-G3-ED-ELO1"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Primary Economics resource pack for teachers",
+          "links": [
+            {
+              "text": "Teachers Pay Teachers Product Link",
+              "url": "https://www.teacherspayteachers.com/Product/Primary-Economics-Wants-Needs-Goods-Services-Producers-Consumers-More-580996?utm_source=Strategic%20Educational%20Services&utm_campaign=Primary%20Economics%20Remote%20Learning"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Children's Books: Title:\"The Magic Garden: Exploring Culture and Nature\" - A beautifully illustrated storybook that follows a group of friends as they discover the wonders of their cultural traditions and the natural world around them.",
+          "links": [],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Interactive Games: Game: \"Cultural Puzzles\" - Teacher to create - An online puzzle game where students can drag and drop puzzle pieces to reveal images representing various cultural practices and their ties to nature.",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Nature Walk or Outdoor Exploration: Activity:\"Nature Scavenger Hunt\" - Take students on a nature walk around the school or nearby park. Provide them with a checklist of items to find, such as different types of leaves, rocks, or animal tracks. Discuss how these elements might be connected to their culture.",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Popular online puzzle creators: Discovery Education Puzzlemaker, Puzzlemaker, Crossword Labs, TheJigsawPuzzles, SuperTeacher Worksheets",
+          "links": [],
+          "category": "Websites"
+        },
+        {
+          "description": "Interactive Maps or Globes: Use a large world map or globe for a class activity. Ask students to identify different countries and discuss how populations might vary across continents. This tactile experience enhances spatial awareness.",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Google Earth: A free online program that allows users to explore the world in 3D.",
+          "links": [],
+          "category": "Websites"
+        },
+        {
+          "description": "National Geographic Kids Maps: A website with interactive maps and games.",
+          "links": [],
+          "category": "Websites"
+        },
+        {
+          "description": "Worldmapper: A website that uses maps to show how different things are distributed around the world.",
+          "links": [],
+          "category": "Websites"
+        },
+        {
+          "description": "3D Interactive Globe: A website with a 3D globe that users can rotate and zoom in on.",
+          "links": [],
+          "category": "Websites"
+        },
+        {
+          "description": "Powtoon is a cloud-based animation creation platform that can be used to create animated videos. Powtoon has a free plan that includes a limited number of features, but it is still enough to create a basic instructional video.",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Animaker is another cloud-based animation creation platform that offers a free plan with limited features. Animaker has a wider variety of templates and animation styles than Powtoon, so it may be a better choice if you want to create a more visually engaging video.",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Loom is a free screen recording tool that can be used to record your screen and webcam simultaneously. This can be useful if you want to create a video that shows you talking about immigration and emigration while also showing animations or graphics on the screen.",
+          "links": [],
+          "category": "Activities/Tools"
+        }
+      ]
+    }
+  ]
+}

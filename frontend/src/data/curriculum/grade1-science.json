@@ -1,0 +1,1694 @@
+{
+  "metadata": {
+    "filename": "grade1-science-curriculum.pdf",
+    "curriculum": "OECS Harmonised",
+    "grade": "1",
+    "subject": "Science"
+  },
+  "strands": [
+    {
+      "strand_name": "Waves",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Learners will be able to plan and conduct investigations to provide evidence that vibrating materials can make sound and that sound can make materials vibrate. [Clarification Statement: Examples of vibrating materials that make sound could include tuning forks and plucking a stretched string. Examples of how sound can make matter vibrate could include holding a piece of paper near a speaker making sound and holding an object near a vibrating tuning fork.]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-WV-SCO1.1",
+              "description": "Learners are expected to: Knowledge - Define the terms: Sounds, vibrate, waves, loud, Soft, Sign language"
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.2",
+              "description": "Demonstrate an understanding of how to produce sounds."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.3",
+              "description": "Compare and describe sounds produced as (loud, soft, pleasant, unpleasant."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.4",
+              "description": "Discuss and identify the effects and uses of sounds in our daily lives."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.5",
+              "description": "Show that sound is a wave - like water is a wave."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.6",
+              "description": "Skills - Classify - sounds according to loudness."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.7",
+              "description": "Investigate - how sounds are produced and its effects on objects."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.8",
+              "description": "Observe - the effects of sounds on objects."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO1.9",
+              "description": "Develop an awareness that loud sounds (noise pollution) affect people and animals e.g., loud music, machinery, firecrackers, and airplanes."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Introductory Questions: What does the word vibrate mean? Students – “Tell me one way that you can make a sound with a vibration”. (a stick on a table, plucking a rubber band, blowing on a piece of grass, tapping a drum, singing a song etc.) Why do we hear sounds? (The wave from the sound goes in our ear)",
+            "Why are sound soft and loud? (the bigger vibration makes the sound seem louder). Show me how you can make a soft and loud sound by clapping your hands (Gentle versus aggressive clap).",
+            "How to Make Sounds: Provide students with materials (e.g. covered and empty cans, rubber bands, bottles with varying water levels to describe the sounds they make. Include a worksheet to record observations (drawings, new words, classify sounds by picture) on what they see, hear, or feel and answer questions based on the activity (orally, in groups or individually).",
+            "For group work, allow students to indicate “How can sounds be made?” Provide the items. Have them complete a table illustrating how sounds are made by checking the relevant column."
+          ],
+          "inclusive_learning_strategies": [
+            "Students, have you ever heard the word sound? What types of sounds do we hear around us? (birds, cars, children, etc.) A teacher can bring a drum into class. They tap the skin of the drum with their finger and ask the children what happened? (they heard a sound). They ask the children what will happen if they strike the drum harder? (louder sound).",
+            "Now the teacher places some sand on the skin of the drum and asks the children what will happen if they tap the skin of the drum (the sand will bounce). The teacher then demonstrates this. So children, we can see that tapping the drum skin causes it to make a sound and make the sand move. We call that movement a vibration. The vibration causes a sound and it moves to our ears where we hear it. Think of it like a wave of water coming in on the shore. The waves are the vibration, and they move. Our ears can collect those vibrations!",
+            "The teacher can also show that sound causes vibration using the demonstration video at: https://www.youtube.com/watch?v=BoeDI-YkzI0 (1.57 mins)",
+            "“Students, please pick up your ruler or a stick.” “Let us tap it gently on our desk. It makes a sound doesn’t it? What do you feel in your hand when you tap the stick on the desk?” (it moves in my hand). We say that when we tap the stick it vibrates. So from our drum experiment we saw that a bigger vibration causes a bigger sound because the sound was louder and the sand jumped higher! This is why we have",
+            "Sound is a wave: We Can See it! Hold strips of paper, or plastic in front of a speaker or a radio with the volume turned up, or rest a container of water, or hands close to or on a radio or speaker. “Students as you watch this video, what evidence do you see that sound is a wave?” https://www.youtube.com/watch?v=AGjxfx8sy6s (7.39mins)",
+            "Musical Instruments Based on Different Vibrations Make a model of a musical instrument and demonstrate its use. https://www.youtube.com/watch?v=3yqB2KFwjCo (4.37mins)",
+            "Identifying the Origin of Sounds: “Can you guess what is vibrating?” Play a game to identify, name and classify materials as metals, wood, plastic, etc. based on the sound produced.",
+            "Students, let us look at a picture of a musical instrument called an oboe. It has a thin piece like grass (called a reed) that you blow on at the end of the instrument to make a vibration. The holes in the instrument are covered by your fingers and help change the vibrating sound. Retrieved from: https://www.8notes.com/oboe/",
+            "But you may have friends that can’t hear or make sounds. They either can’t make the vibration or hear the vibration They must use their hands to send messages to us. We call that sign language. It takes a lot of practise, but they have agreed to certain hand signals that everyone can understand. They even have their own alphabet. (see: https://deafchildren.org/2019/06/free-asl-alphabet-chart/)"
+          ],
+          "elo_code": "SC-G1-WV-ELO1"
+        },
+        {
+          "elo_description": "Make observations to construct an evidence-based account, that objects can be seen only when illuminated. [Clarification Statement: Examples of observations could include those made in a completely dark room, a pinhole box, and a video of a cave explorer with a flashlight. Illumination could be from an external light source or by an object giving off its own light.]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-WV-SCO2.1",
+              "description": "Define the terms: light/darkness, Artificial, Natural, Reflect."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.2",
+              "description": "Give examples of the sources of light."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.3",
+              "description": "Identify different light sources in and out of the classroom."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.4",
+              "description": "Describe why objects can be seen when illuminated. (Based on reflection of light to eyes.)"
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.5",
+              "description": "Understand that the sun is a natural source of light that is a burning sphere."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.6",
+              "description": "Understand that the spherical moon reflects the sun’s light."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.7",
+              "description": "Classify light according to their source (natural, artificial)."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.8",
+              "description": "Investigate - how objects can be seen."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.9",
+              "description": "Observe - the effects of light on objects."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.10",
+              "description": "Predict the effects of turning on and off the lights in a room, closing and opening eyes, etc."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.11",
+              "description": "Communicate ideas about light using new words."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.12",
+              "description": "Safe use of candles as a source of light."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.13",
+              "description": "Willingly participate in, and contribute to classroom discussions."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.14",
+              "description": "Develop an awareness that light must be present for objects to be seen."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.15",
+              "description": "Appreciate the importance of light e.g. for warning (sirens), safety (lighthouse, traffic lights)."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO2.16",
+              "description": "Show appreciation for and assist persons with visual impairment."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Introductory Questions: 'Students, use the word light in a verbal sentence.' Teacher goes through the class getting a range of sentences that children offer. (Teacher can check for correct context and meaning)",
+            "Introductory Questions: 'Students, what are some sources of light?' (sun, torch, headlamps, stars etc.)",
+            "Place two hoops on the floor; one represents artificial light and the other natural light. The teacher supplies pictures on cards that children can place in the correct hoop. (pictures could include glow sticks, ambulance lights, lightning, fireworks, campfires, TV screens etc.)",
+            "True or false Game: (read statements to class and ask for responses) A candle is a form of natural light. (F), The moon has its own light. (F), The sun is a form of natural light. (T), Artificial light is a light that is made by humans. (T)",
+            "The light that comes from fireflies is natural light. (T)",
+            "How do we see Objects? Use a picture in a box to make a peep box. Have students describe how they are able to see the picture using a flashlight. (We see an object because light rays travel from a light source, bounce off the object and travel to our eyes.) We can make a special experiment box using the directions and the picture here: https://www.kindergarten-lessons.com/science-for-kids/",
+            "Were you able to see the picture in the box without the flashlight? Why or why not? (No, because we need light to see objects.)",
+            "Appreciation for persons with visual impairment: Pupils are asked to put on a blindfold and walk in the direction towards the teacher's voice while she holds an object in her hand. 'What am I holding?' (I don't know. I can't see teacher)",
+            "Giving specific instructions: the teacher asks one student to walk to another while wearing a blindfold. (student will respond they can't see)",
+            "Teacher explains to students that there are people who also move around everywhere and aren't able to see - just like this.",
+            "Differentiation: Can You Guess?",
+            ">What might this artificial light be used for?",
+            "Retrieved from: https://www.outdoorhub.com/best-headlamps-2/ (outdoor sports climbing, camping, caves, mining, jewelry inspection etc.) >What are the dots on this book or under these elevator buttons? (Braille dots for the blind to read the information by touch.)",
+            "Retrieved from: https://www.colleyelevator.com/state-of-illinois-ada-braille-mandate/ >What are these special lights for? Traffic control light",
+            "Retrieved from: https://www.freepik.com/search?format=search&query=traffic%20light Emergency: Protecting the Public Retrieved from: https://www.freepik.com/search?format=search&query=police%20car%20light Lighthouse to Guide Ships"
+          ],
+          "inclusive_learning_strategies": [
+            "What Does Light Mean to You? 'Students, when you hear the world “light” what comes to your mind?' (seeing, eyes, objects etc.)",
+            "Types of Light: 'Students, where can we find light in nature?' (Sun, moon, stars). What you have just listed is said to be natural light because it is light that is part of nature around us.",
+            "Do you know that people can create (make) light? Think of other things you get light from that are not the sun, moon or stars.' (Candle, flashlights, glow sticks, light bulbs, etc.) . These are called artificial light. The word artificial means humans made it.",
+            "Let me check to see if you understand the difference, with a couple of quick questions. Is the headlight on a car natural or artificial? (artificial), Is the light from a firefly or an eel artificial or natural? (natural because it comes from nature)",
+            "Watch these videos to learn more about sources of light. https://www.youtube.com/watch?v=4Ni6TuB-21o (1.51 Minutes)",
+            "https://www.youtube.com/watch?v=d65mdTJaJTI&list=PLiMIqKsOLxPwNa9ITqboVGwxtcgofpNoL (3.17 minutes)",
+            "Building on Children’s Intuition About Light: 'Students, let's pretend we have finished school for the day and go home. We have an evening meal and we get ready for bed. It is now getting dark outside. We go into our bedroom and turn off the lights because it is easier to sleep in the dark. We close our eyes and drift off to sleep. In the middle of the night, we hear a loud sound of something hitting against our house. We want to know what this sound is because it is disturbing our rest. It is still very dark. What do we do first to investigate this sound?' (turn on a light)",
+            "'Why do we turn on a light?' (because we can’t see in the dark)",
+            "'So you are telling me we need light to see things around us?' (yes teacher)",
+            "'When we look in a mirror, what do we see students?' (we see ourselves). We say that the mirror reflects our image back at us.",
+            "In a similar way, everything we see in the world is because light reflects off the object and enters our eyes.",
+            "Look at this picture. What type of light is sunlight, artificial or natural? (natural)",
+            "Retrieved from: https://www.learnpick.in/prime/documents/ppts/details/301/reflection-of-light",
+            "\"When the sun goes down at night, we can't see the tree. Did it disappear?\" (no teacher it is still there but there is no light to shine on it so we can't see it)",
+            "\"If I turn on my torch (flashlight), will I see the tree then?\": (yes teacher)",
+            "\"What type of light is the torch (flashlight) artificial or natural?\" (artificial)",
+            "\"So, the light from the torch (flashlight) reflects off the tree and goes in my eye!\"",
+            "\"What other natural light do we see in the sky at nighttime?\" (the moon and stars)",
+            "The moon is different from the sun. The sun is a burning sphere of fire. The moon doesn't have its own light, it is not burning, it is a cold sphere of rock! We see our moon because it reflects the sun's light.",
+            "Retrieved from: https://www.playosmo.com/kids-learning/how-does-the-moon-shine/",
+            "Teacher Note: we introduce the word sphere (and show a model of a ball if we have one) because we don't want students to think the moon is a flat reflective mirror- this is a common misconception). I want to check and see if you understand.",
+            "\"Let's pretend there are two brooms in the closet, a red one and a blue one. You walked into the closet, and it is dark. I ask you to pass me the red broom. You can feel the two brooms but you can't tell the color. Why can't you choose the correct broom?\" (without light reflecting off the broom and into my eyes, I can't tell the color. I need to turn on the light in order to see the colors of the brooms)",
+            "When we close our eyes, our eye lids cover our eyes so no light can get in. That is why we can't see anything!",
+            "But some children have eyes that somehow don't work right. Even with their eyelids wide open they are unable to see.",
+            "They use their sense of touch and sound to detect objects.",
+            "Watch this story carefully children and think about what objects Helen Keller could detect without light and her sight- Useful Read-Aloud About Helen Keller: https://www.youtube.com/watch?v=-4-STugHphY (6.54 mins)",
+            "\"Did you know that a man named Louis Braille invented a touch alphabet so that Blind Children could read?\"",
+            "A book called Six Dots (by Len Bryant) tells the story Read Aloud here: https://www.youtube.com/watch?v=0S6dj3DlEWc (17:44mins)"
+          ],
+          "elo_code": "SC-G1-WV-ELO2"
+        },
+        {
+          "elo_description": "Plan and conduct an investigation to determine the effect of placing objects made with different materials in the path of a beam of light. [Clarification Statement: Examples of materials could include those that are transparent (such as clear plastic), translucent (such as wax paper), opaque (such as cardboard), and reflective (such as a mirror).] [Assessment Boundary: Assessment does not include the speed of light.]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-WV-SCO3.1",
+              "description": "Define the terms: Glass, Transparent, Translucent, Reflective, Reflect, Opaque"
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.2",
+              "description": "Demonstrate they understand that objects can block varying amounts of light from passing."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.3",
+              "description": "Account for the use of different types of glass for different applications in our homes."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.4",
+              "description": "Explain that only clear and smooth glass can allow most light to pass through."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.5",
+              "description": "Understand that rough glass is more likely to allow less light to pass through."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.6",
+              "description": "Observe the amount of light that is blocked by different objects."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.7",
+              "description": "Classify objects placed in the beam of light as transparent, translucent, reflective or opaque."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.8",
+              "description": "Predict which types of glass or objects may be best suited for different applications in the home."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.9",
+              "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges"
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO3.10",
+              "description": "Participate actively in classroom discussions."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Have the students complete the following sentence in words with the proper term.",
+            "Students: tell me a sentence that uses the word “reflect”",
+            "Practicing the Terminology: Two activities to practice the terminology and evaluate understanding: 1) The teacher could bring in pictures and ask students to match the object with the new word that describes its properties i.e., transparent, translucent, reflective, opaque. 2) The students could do a walk with the teacher around the school and school yard to identify objects that fit each of the aforementioned categories.",
+            "Differentiation: When we look at the surface of water on a sunny day, it sometimes is very bright. Why do you think that happens? (the surface of the water is not perfectly flat so the sunlight doesn’t all pass through the water; some of it reflects back in our eyes)"
+          ],
+          "inclusive_learning_strategies": [
+            "Glass is Useful: “Students, have you ever heard the word glass?” What things around us are made of glass? (drinking cups, windows, car windshields). Did you know that glass is made of sand that is heated to a very high temperature? Because we can find lots of sand, glass can be a very useful material for making things.",
+            "Different Properties of Glass: “Students did you ever notice that glass windows in a house can look very different?” “Sometimes we want to look through glass like a window to the outdoors so we can see outside when the weather looks stormy.” Demonstration: If I take this small piece of glass (plate glass or clear drinking glass-whatever is available) and shine a torch (flashlight) through one side we can easily see the light passing through to the other side. We say that this type of glass is transparent. Sometimes the glass window in a bathroom or a shower is not clear. Have you ever noticed it can have a rough or bumpy surface? Here is a picture of that type of glass window to remind you.",
+            "Translucent Window: Demonstration: This piece of wax paper is not made of glass but it is very similar to the glass in a bathroom window. If I shine my torch (flashlight) through one side, what do you notice on the other side? (some light passes through but it is not so clear). If we look through a window like this we can see an outline of a person but it isn’t clear. Not all of the light can get through like a normal glass window. Because the surface of that glass is rough some of the light gets reflected in many directions and doesn’t go through the glass. We say that rough glass is translucent.",
+            "Clear Smooth Glass and Rough Glass Surface: There is another type of glass in our bathroom. Can you guess what it is? Maybe if I show you this picture you will remember. What is this a picture of? (a mirror) You can see that the vase is showing up in the mirror! This is a special type of glass!"
+          ],
+          "elo_code": "SC-G1-WV-ELO3"
+        },
+        {
+          "elo_description": "Use tools and materials to design and build a device that uses light or sound to solve the problem of communicating over a distance. [Clarification Statement: Examples of devices could include a light source to send signals, paper cup and string “telephones,” and a pattern of drum beats.] [Assessment Boundary: Assessment does not include technological details for how communication devices work.]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-WV-SCO4.1",
+              "description": "Define the terms: warning, communicating, siren, emergency vehicle, traffic lights"
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.2",
+              "description": "Demonstrate they understand the concept of warning sounds."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.3",
+              "description": "Give examples of communicating with sound."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.4",
+              "description": "Give examples of communicating with light."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.5",
+              "description": "Recognize that communication in cities and rural areas maybe be different."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.6",
+              "description": "Recognize that communication technologies have varied over the last century (light and sound inventions)."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.7",
+              "description": "Observe and identify light and sound communication in video accounts."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.8",
+              "description": "Infer certain messages from the type of sound heard."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.9",
+              "description": "Infer certain messages from the light patterns detected."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.10",
+              "description": "Construct a simple sound communication device (cup phones)."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.11",
+              "description": "Formulate models of communication devices that use sound or light or both."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.12",
+              "description": "Practice new vocabulary in discussions."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.13",
+              "description": "Appreciate that different sounds and light have different meanings/significance."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.14",
+              "description": "Show inventiveness in designing a communication device that accesses sound or light"
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.15",
+              "description": "Collaborate to make models of communication devices that use light or sound or both to communicate messages."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.16",
+              "description": "Recognize that light and sound are used as safety and warning signals to protect people."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.17",
+              "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.18",
+              "description": "Participate actively in classroom discussions."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.19",
+              "description": "Demonstrate interest and curiosity regarding the ways in which communication devices have evolved over history."
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.20",
+              "description": "Create a picture poster of the communication devices that have been developed over the last 100 years (e.g. telegraph, lighthouses, Braille, traffic lights, clocks, dial telephones, hearing aids, alarms, computers, iPad, cellphones etc.)"
+            },
+            {
+              "sco_code": "SC-G1-WV-SCO4.21",
+              "description": "Light Communication Challenge: You want to use a torch (flashlight) to send four different messages to your friend across the street at night time. You can use quick and slow on/off light flashes. How will you communicate the following? o Come over to play. o I am going to bed o Our favorite TV show is on now o Did you have dinner yet?"
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Introductory Questions: What does it mean to communicate? (send messages between two animals using light and/or sound)",
+            "Give me some examples of warning sounds in your community. (Car door alarms, phones, sirens, church bells, doorbells, animal barking etc)",
+            "Where do you see lights in your community that communicate messages? (car signal’s lights, flashing lights on emergency vehicles, traffic lights, oven lights etc.)",
+            "Communicating Over a Distance: “Students even though we have telephones to talk today, many years ago there were other ways to",
+            "communicate using simple sound makers.",
+            "A system of beeps and pauses was developed just like our alphabet to make whole words. This was called the Morse Code. Listen to what it sounded like here: https://www.youtube.com/watch?v=4NdETLNgIhc (0:22 mins)",
+            "Simple Sound Signals Communicate Something Maybe we could communicate that way too!",
+            "Let say that striking a bell three times means “school is starting.” Maybe striking a bell once means “it is lunch time.” And finally striking the bell twice means “school is over, time to go home.”",
+            "What could we do with the bell to signal “it is recess time”? You decide what would work the best!",
+            "What could we do with the bell to signal “there is an emergency in the school, listen carefully”? What are your ideas about that?",
+            "Making a Simple Telephone This activity is meant to be done with the teacher’s assistance. Students can try different size cups and lengths of string to see what works the best.",
+            "Watch video on sound, vibrations and cup phone here: Retrieved from https://www.youtube.com/watch?v=3yqB2KFwJCo (4:37 mins)",
+            "Class Debate How do the light and sound warnings assist the blind and deaf in our community? How can we improve these systems?",
+            "Differentiation Animal Sounds: think of the sounds that 5 different animals make to communicate a message (e.g. fear, hunger, happiness) to other animals including humans. Can you make those sounds?"
+          ],
+          "inclusive_learning_strategies": [
+            "“Students, have you ever walked by a house with a fence, and a dog inside begins barking? Why do the bark when they hear you go by?” (they are warning me, they are afraid or threatened by me being there)",
+            "“Some animals make sounds to warning us to stay away.” Teacher may want students to watch these videos of animals communicating with their young. Think about why and how they are using these sounds:",
+            "Animals issue warning sounds >Turkey https://www.youtube.com/watch?v=u3a19ujBq-Q (3.4 min) >Squirrel https://www.youtube.com/watch?v=8b-2TFrx3fg (1 min)",
+            "Other Types of Sound Warnings. The alarm clock rings to tell us to get up and get ready for school! “Students, what do we hear when smoke enters a house, or a home catches on fire?” (a smoke detector may sound and a fire truck might come to the house)",
+            "“When we see a police car or ambulance going down the street, there is often a siren sound. Can you make a siren sound children?” Listen here: https://www.youtube.com/watch?v=M7IdXA23JVI (1:11 mins)",
+            "“What does the siren sound mean?” (the police, fire truck or ambulance are dealing with a dangerous situation; we should get off the road so they can help the people in danger)",
+            "Maybe someone in your family has a cell phone. These phones can make funny sounds that tell us that someone is calling or someone is sending a text message. We say that the person is communicating with us. In other words, they are sending us a message.",
+            "In the more rural areas of the world - many years ago, things like loud drums or clouds of smoke were used for communicating messages like danger or special meetings or events.",
+            "Using Lights to Send Messages “What else do we see on the fire truck, police car and ambulance?” (flashing lights)",
+            "See Here: https://www.youtube.com/watch?v=jHTX_XVWhyo (3:09 mins)",
+            "These special cars and trucks are called emergency vehicles.",
+            "What do the flashing lights mean? (Stay out of the way! an emergency vehicle is coming towards you.)",
+            "In towns and cities we often see lights where roads cross over. These are called traffic lights and they help us to make sure that drivers cross in an organized fashion, avoiding accidents.",
+            "Retrieved from: https://www.freepik.com/search?format=search&query=traffic%20light",
+            "The red light means stop!",
+            "The green light means go.",
+            "The yellow light means proceed carefully as the red light is about to shine.",
+            "Ships can also use flashing lights to send messages across the water.",
+            "See video of ship communication here: https://www.youtube.com/watch?v=WOt83AouoGU (1.44 min)"
+          ],
+          "elo_code": "SC-G1-WV-ELO4"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Demonstration video on sound causing vibration",
+          "links": [
+            {
+              "text": "YouTube video",
+              "url": "https://www.youtube.com/watch?v=BoeDI-YkzI0"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: (Links to professional sources that connect back to the Curriculum and Assessment Principles of Learning and Principles of Assessment)",
+          "links": [
+            {
+              "text": "PhET Simulation: Sound",
+              "url": "https://phet.colorado.edu/en/simulation/legacy/sound"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Areas for Subject Integration",
+          "links": [
+            {
+              "text": "Science Around Us Book 5, p. 55",
+              "url": "https://i.pinimg.com/originals/7a/d7/45/7ad7458bdf160676ea70358a3c7e30cb.jpg"
+            },
+            {
+              "text": "Science Poems: Sound",
+              "url": "https://sciencepoems.net/sciencepoems/sound.aspx"
+            },
+            {
+              "text": "Common Core Sound Song PDF",
+              "url": "http://commoncore2012.homestead.com/Grade_Level_Files/First/Science/Q4/Resources/Sound_Song.pdf"
+            },
+            {
+              "text": "Science Around Us Book 5 pp 95-97",
+              "url": "http://www.youtube.com/watch?v=3-xKZKxXuu0"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Inclusive Resources and Materials From Regional Specialists Use of multisensory activities and materials to assist all learners. (texts, family & community knowledge and resources, contextually relevant professional web resources)",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Video on sources of light",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=4Ni6TuB-21o"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Video on light and vision",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=d65mdTJaJTI&list=PLiMIqKsOLxPwNa9ITqboVGwxtcgofpNoL"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Peep box experiment instructions",
+          "links": [
+            {
+              "text": "Kindergarten Lessons - Science for Kids",
+              "url": "https://www.kindergarten-lessons.com/science-for-kids/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome",
+          "links": [
+            {
+              "text": "https://www.freepik.com/search?format=search&query=lighthouse",
+              "url": "https://www.freepik.com/search?format=search&query=lighthouse"
+            },
+            {
+              "text": "https://th.bing.com/th/id/R.af65f7437cf37a3cb32cc3fbc113ce31?rik=VdQsVS%2fdDA0pOw&riu=http%3a%2f%2fknightowl.education%2fwp-content%2fuploads%2f2020%2f10%2fSlide6.jpg&ehk=IX27LGYW7FctENStBi4PHulDvonkHILxF41rkM95WeQ%3d&risl=&pid=ImgRaw&r=0",
+              "url": "https://th.bing.com/th/id/R.af65f7437cf37a3cb32cc3fbc113ce31?rik=VdQsVS%2fdDA0pOw&riu=http%3a%2f%2fknightowl.education%2fwp-content%2fuploads%2f2020%2f10%2fSlide6.jpg&ehk=IX27LGYW7FctENStBi4PHulDvonkHILxF41rkM95WeQ%3d&risl=&pid=ImgRaw&r=0"
+            },
+            {
+              "text": "https://th.bing.com/th/id/OIP.GeZ4mWmRYcvAtkRR6XE_7QAAAA?pid=ImgDet&rs=1",
+              "url": "https://th.bing.com/th/id/OIP.GeZ4mWmRYcvAtkRR6XE_7QAAAA?pid=ImgDet&rs=1"
+            }
+          ],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Inclusive Resources and Materials From Regional Specialists",
+          "links": [
+            {
+              "text": "https://youtu.be/CokH5VXxnT4",
+              "url": "https://youtu.be/CokH5VXxnT4"
+            },
+            {
+              "text": "https://www.kindergarten-lessons.com/wp-content/uploads/light_tracers.pdf",
+              "url": "https://www.kindergarten-lessons.com/wp-content/uploads/light_tracers.pdf"
+            },
+            {
+              "text": "https://www.kindergarten-lessons.com/science-for-kids/",
+              "url": "https://www.kindergarten-lessons.com/science-for-kids/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Additional Resources",
+          "links": [
+            {
+              "text": "Practice How We See Objects Worksheet: Test Results, Check Answer & Solution (kidsacademy.mobi)",
+              "url": "https://www.kidsacademy.mobi"
+            },
+            {
+              "text": "Practice Light and Sound: Assessment 1 Worksheet: Test Results, Check Answer & Solution (kidsacademy.mobi)",
+              "url": "https://www.kidsacademy.mobi"
+            },
+            {
+              "text": "How do We See Things? - Science Class 5 - YouTube",
+              "url": "https://www.youtube.com"
+            },
+            {
+              "text": "Practice Is It a Light Source? Worksheet: Test Results, Check Answer & Solution (kidsacademy.mobi)",
+              "url": "https://www.kidsacademy.mobi"
+            },
+            {
+              "text": "How We See - Light & Mirror Game - Science Activities for Kids (sciencekids.co.nz)",
+              "url": "https://www.sciencekids.co.nz"
+            },
+            {
+              "text": "https://image.slidesharecdn.com/c103gsb-naturalandartificiallight-161101141349/95/natural-and-artificial-light-5-638.jpg?cb=1478009652",
+              "url": "https://image.slidesharecdn.com/c103gsb-naturalandartificiallight-161101141349/95/natural-and-artificial-light-5-638.jpg?cb=1478009652"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Identifying sources of light",
+          "links": [
+            {
+              "text": "Practice Sources of Light Worksheet: Test Results, Check Answer & Solution (kidsacademy.mobi)",
+              "url": "https://www.kidsacademy.mobi"
+            },
+            {
+              "text": "How we see objects worksheets: Layout 1 (bbc.co.uk)",
+              "url": "https://www.bbc.co.uk"
+            },
+            {
+              "text": "What is light? light waves and sources of light: https://www.youtube.com/watch?v=LCEqlvHFIhM&list=PL5sCDSI4o5Zbd0ZWahYy84QijOMLnuKv8 3.40 min",
+              "url": "https://www.youtube.com/watch?v=LCEqlvHFIhM&list=PL5sCDSI4o5Zbd0ZWahYy84QijOMLnuKv8"
+            },
+            {
+              "text": "Sources of light: https://www.youtube.com/watch?v=d65mdTJaJTI&list=PL5sCDSI4o5Zbd0ZWahYy84QijOMLnuKv8&index=2 3.17",
+              "url": "https://www.youtube.com/watch?v=d65mdTJaJTI&list=PL5sCDSI4o5Zbd0ZWahYy84QijOMLnuKv8&index=2"
+            },
+            {
+              "text": "Who turned out the lights? Discusses natural and manmade light sources https://www.youtube.com/watch?v=6ARPnrSEt3E 6.20 mins",
+              "url": "https://www.youtube.com/watch?v=6ARPnrSEt3E"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Opportunities for Subject Integration",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Resources for a learner who is struggling",
+          "links": [
+            {
+              "text": "https://youtu.be/VBsiQP_Y92w (2.27mins)",
+              "url": "https://youtu.be/VBsiQP_Y92w"
+            },
+            {
+              "text": "https://youtube.com/watch?v=K-13my2hMOU&feature=share (3.59)",
+              "url": "https://youtube.com/watch?v=K-13my2hMOU&feature=share"
+            },
+            {
+              "text": "https://youtu.be/CokH5VXxnT4 (4.14)",
+              "url": "https://youtu.be/CokH5VXxnT4"
+            },
+            {
+              "text": "https://youtu.be/4Ni6TuB-2lo (1.52mins)",
+              "url": "https://youtu.be/4Ni6TuB-2lo"
+            },
+            {
+              "text": "https://youtube.com/watch?v=3E10KEDouVA&feature=share (2.06mins)",
+              "url": "https://youtube.com/watch?v=3E10KEDouVA&feature=share"
+            },
+            {
+              "text": "https://youtu.be/nzkcwjONNao (09.26mins)",
+              "url": "https://youtu.be/nzkcwjONNao"
+            },
+            {
+              "text": "https://www.liveworksheets.com/gy2374514gq",
+              "url": "https://www.liveworksheets.com/gy2374514gq"
+            },
+            {
+              "text": "https://www.liveworksheets.com/im1632621bn",
+              "url": "https://www.liveworksheets.com/im1632621bn"
+            },
+            {
+              "text": "https://www.liveworksheets.com/bk2857081av",
+              "url": "https://www.liveworksheets.com/bk2857081av"
+            },
+            {
+              "text": "https://youtube.com/watch?v=UV4C9PH8qws&feature=share (6.03mins)",
+              "url": "https://youtube.com/watch?v=UV4C9PH8qws&feature=share"
+            },
+            {
+              "text": "https://www.liveworksheets.com/ka85588hm",
+              "url": "https://www.liveworksheets.com/ka85588hm"
+            },
+            {
+              "text": "https://liveworksheets.com/cc2786563mq",
+              "url": "https://liveworksheets.com/cc2786563mq"
+            },
+            {
+              "text": "https://www.kidsacademy.mobi/printables/sources-of-light/",
+              "url": "https://www.kidsacademy.mobi/printables/sources-of-light/"
+            },
+            {
+              "text": "https://www.k5learning.com/worksheets/science/grade-1-light-rays-a.pdf",
+              "url": "https://www.k5learning.com/worksheets/science/grade-1-light-rays-a.pdf"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Resources for a learner who needs challenge",
+          "links": [
+            {
+              "text": "https://youtube.com/watch?v=Eii5UBK0rJE&feature=share (2.25mins)",
+              "url": "https://youtube.com/watch?v=Eii5UBK0rJE&feature=share"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Image of a frosted glass window",
+          "links": [
+            {
+              "text": "Frosted glass window image",
+              "url": "https://upload.wikimedia.org/wikipedia/commons/8/81/KMM_PFL_3r_d_St_bathroom_frosted_glass_window_August_2021_SS2.jpg"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: (Links to professional sources that connect back to the Curriculum and Assessment Principles of Learning and Principles of Assessment)",
+          "links": [
+            {
+              "text": "Communication Using Light and Sound",
+              "url": "https://www.youtube.com/watch?v=Er0lHIXVCIE"
+            },
+            {
+              "text": "Worksheet Resources",
+              "url": "https://www.primarythemepark.com/2019/07/communicating-with-light-and-sound/"
+            },
+            {
+              "text": "Demonstrations and Experiments",
+              "url": "https://www.generationgenius.com/videolessons/communication-over-distances-video-for-kids/"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Inclusive Resources and Materials From Regional Specialists Use of multisensory activities and materials to assist all learners. (texts, family &community knowledge and resources, contextually relevant professional web resources)",
+          "links": [
+            {
+              "text": "Guess the sounds that communicate",
+              "url": "https://www.youtube.com/watch?v=8jXfNvISZEQ"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Additional Resources",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Opportunities for Subject Integration: (How the inclusive learning strategies might be adapted and/or applied to include other subjects in the curriculum)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Resources for a learner who is struggling: (Links to earlier learning activities for similar knowledge, links to resources for special education needs)",
+          "links": [
+            {
+              "text": "NGSS-Interactive-Read-Alouds.pdf",
+              "url": "NGSS-Interactive-Read-Alouds.pdf"
+            }
+          ],
+          "category": "Teacher Materials"
+        }
+      ]
+    },
+    {
+      "strand_name": "Structure, Function, and Information Processing",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Use materials to design a solution to a human problem by mimicking how plants and/or animals use their external parts to help them survive, grow and meet their needs. [Clarification Statement: Examples of human problems that can be solved by mimicking plant and animal solutions could include designing clothing or equipment to protect bicyclists by mimicking turtle shells, acorn shells, and animal’s scales; stabilising structures by mimicking animal tails and roots on plants; keeping out intruders by mimicking thorns on branches and animals quills; and, detecting intruders by mimicking eyes and ears.]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-SF-SCO1.1",
+              "description": "Define the terms Mimic/mimicking, Protection, Living things, Non-living things, Defence, Camouflage, Grow, Nutrients, Predators."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.2",
+              "description": "Name and describe some living and non-living things in the environment."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.3",
+              "description": "Identify and name some characteristics of living things (e.g. they grow, need nutrients and reproduce)."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.4",
+              "description": "Name and describe the external parts of local animals and plants and discuss their functions."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.5",
+              "description": "Identify and describe natural defences that local animals use to help them survive (spines, camouflage etc.)."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.6",
+              "description": "Describe mimicking in their own words (possibly copy)."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.7",
+              "description": "Give examples of how humans mimic plants and/or animals to solve problems."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.8",
+              "description": "Identify some human problems that have been solved by mimicking how plants and /or animals use their external parts."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.9",
+              "description": "Classify some common things as either: living or non-living."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.10",
+              "description": "Observe examples of how plants and/or animals use their external parts for survival, growth and to meet their needs."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.11",
+              "description": "Communicate properties of mimicked plants and animals by observing and describing."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.12",
+              "description": "Use simple materials to design a solution to a human problem using examples from the external parts of plants and or animals."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.13",
+              "description": "Construct a simple model of a gadget designed to solve the problem and test its effectiveness."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.14",
+              "description": "Appreciate that the external parts of plants and animals have inspired technological designs."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.15",
+              "description": "Demonstrate a continuing interest and more informed curiosity in the link between nature and technological design."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.16",
+              "description": "Willingly participate in classroom discussions and group activities with peers."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.17",
+              "description": "Show a respect for living things while making observations of any live animal or plant specimen."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.18",
+              "description": "Observe all applicable safety measures when interacting with plant/animal specimens or using tools."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO1.19",
+              "description": "Display sensitivity and offer assistance to peers who may have physical or learning challenges when conducting practical and group work."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Mimicking Activity: Students: Please tell me a sentence that includes the word mimic.",
+            "Engage the class in a design challenge where we are demonstrating how humans mimic plants and animals to solve problems based on the following scenario: John is standing under the mango tree and wants to reach a ripe mango high in the tree. He knows he cannot climb or fly into the tree to reach the mango. What else can he do to reach the mango?",
+            "Focus questions: How can John reach the mango, without climbing the tree?",
+            "Sometimes we can look for examples from plants and animals to help us solve problems. Can you think of any animal that may be able to reach high into a tree without climbing or flying? (A giraffe)",
+            "body part of the giraffe helps it to reach things that are very high? (Its long neck and legs). John does not have a neck as long as a giraffes, but he has a broomstick, a roll of tape or screws and screwdriver and a plastic cup/bottle, tool for cutting. Can you help him by designing and building a tool to reach something high that mimics the giraffe’s neck?",
+            "Using cut outs of the pictures below, carry out a matching activity. Instructions: Match each picture of an animal or plant to the technology which it mimics best.",
+            "Discuss your choice of pairs. Which of the above pairs show an example of protection?",
+            "Extension Activities: Identify and name the living and non-living things from the pictures above. Sort the pictures above into the categories of living and non-living things. Identify a human problem you wish to solve and an animal/plant that can be mimicked to solve the problem. Based on the shameplant activity, students can record their observations by making a",
+            "simple drawing to represent the plant’s leaves before and after being touched.",
+            "Students mimic the movement of the shameplant through the open/close motion of their hands. Activity can be done in pairs where a partner taps the student, and the student responds to the stimuli by opening and closing their hands.",
+            "Have a class discussion on how humans mimic the flamingo (shown below).",
+            "https://www.youtube.com/watch?v=gk-iIIbaCMQ (7:18 mins)",
+            "3) What animal(s) is he mimicking by wearing stilts? (Any animal with long legs, e.g. flamingo, crane, stork, egret, giraffe, etc.)",
+            "Defence and Camouflage Ask students to discuss how some animals mimic other animals as a means of defence. Make certain to include in the discussion, how humans use camouflage to hide themselves (e.g. when fighting war, hunting, etc).",
+            "Children may find it interesting to learn about the Lionfish and its use of spines for defence. (see: https://oceanservice.noaa.gov/facts/lionfish-facts.html) How have humans used pointed armour for protection? Ask them to compare the pictures below and tell you what they notice. How did humans mimic the lionfish?"
+          ],
+          "inclusive_learning_strategies": [
+            "Introduction: Animals and plants can be found all around us. 'Students can you name a few?' (dog, cat, cow, papaya, breadfruit, coconut etc.)",
+            "In order to grow, they need special parts. A plant has roots to hold it firmly in the ground when the wind blows. The roots also bring water and nutrients up the stem to feed the plant. That is what the leaves are for; they gather the sunlight. In order to grow again next season, most plants have flowers that make seeds that can grow a brand new plant.",
+            "Animals like you and I also have special parts. Let’s play a game: I will say a part of your body and you tell me what it helps us do. Ears? (help us hear) Eyes? (help us see) Nose? (help us smell)",
+            "Mouth? (helps us eat and breath) Hands? (help us pick up and hold things) Feet? (help us stand and walk) Legs? (help us run fast and stand) Arms? (let us hold up things or reach high above our heads)",
+            "Humans are Good at Solving Problems Although humans have these external features, they sometimes need help doing certain things such as reaching things from a tall shelf, protecting themselves from harm, staying warm, etc. They also have problems with keeping their home clean, well-lit, and preparing their foods. To solve some of these problems humans have come up with several ideas. Do humans need help from devices? Give some names of devices that were designed to help us meet our needs (helmets, cars, planes, cell phones, computers, etc.) Have you ever thought about where humans got the ideas for some of these devices? A lot of the devices or tools we use are copied from the plants and animals in nature. After studying how plants and animals use their external parts we then copy or mimic the external parts of plants and animals to help us solve problems.",
+            "Students, when we want to reach something that is really high and our legs and arms just aren’t tall enough, we use a ladder. A ladder is an invention that mimics an animal with long legs. Do you know an animal with long legs? (a giraffe) Ask students to look at the images of the cyclist with the helmet and the turtle (teacher may use live examples as well).",
+            "Ask students to identify anything that is the same in the photo. Cyclist Helmet covers the head Turtle Shell covers the turtle Why is the cyclist wearing a helmet? (to protect the head) Why does the turtle have a shell? (to protect the turtle) Both are for protection (to keep them safe). We say that the helmet is copying the turtle's shell by keeping our head protected. Another word for copying is mimicking. Let us use that in a sentence. “The helmet is mimicking the turtle’s shell.” (repeat with me) Look at the image of the bird and the aeroplane. Do they have anything that is the same? (They both have wings) What are the wings used for in each case? (to fly in the sky) How are they different? (The bird is a living thing - eats, grows & breathes, and the aeroplane is non-living - it doesn’t do any of these things.",
+            "Plane: Retrieved from: https://rb.gy/dmxulu",
+            "Bird: Retrieved from: https://rb.gy/5rbjuz",
+            "We would say the aeroplane is mimicking the bird because humans built the aeroplane to copy the bird's wings.",
+            "“Children, look at the following pictures. What do you see that makes these pictures look the same?” (Long neck of the giraffe and the tall crane.)",
+            "Crane: Retrieved from: https://upload.wikimedia.org/wikipedia/commons/9/99/Old_crane_truck.jpg",
+            "Giraffe: Retrieved from: https://rb.gy/2lpgby",
+            "Which one of these is a living thing? (Giraffe)",
+            "Why is it important for the giraffe to have a long neck? (to reach leaves or food in tall trees)",
+            "Why is it important for the crane to reach high? (it can help with constructing high buildings or moving things that need to be lifted high)",
+            "Students, if you looked at the base of a coconut tree you might see that the roots spread out to help keep it standing firmly upright.",
+            "Look at this picture of a camera tripod. We call it a tripod because it has three legs (tri means three) How is the tripod mimicking the mangrove tree? (it has legs that spread out that give it a stable base to hold the camera up)",
+            "Root system of a mangrove tree: Retrieved from: https://pixabay.com/photos/mangrove-trees-aquatic-plants-4901145/",
+            "Tripod: Retrieved from: https://rb.gy/rabrui",
+            "You can see that humans are very good at mimicking or copying the features of living things in order to solve real human problems.",
+            "Activity: Take a nature walk to observe the shameplant (mimosa pudica). Touch it and see what happens (the plant leaves close). This plant responds to touch. Can you think of any device(s) that mimic this plant? (cell phones, keypad, and other touch screen devices)",
+            "See a video of the plant response here: https://commons.wikimedia.org/wiki/File:Mimosa_pudica (1:00 mins)",
+            "Sometimes Animals Mimic Each Other",
+            "Roleplay: Have pairs of students face each other and match each other's facial expressions and gestures.",
+            "Example: An animal mimics another animal to protect itself",
+            "The Atlas moth scares away predators (animals that want to eat it) by mimicking a snake.",
+            "See Video of lifecycle here: https://www.youtube.com/watch?v=4tlvYJNZKVE (3:02 mins)"
+          ],
+          "elo_code": "SC-G1-SF-ELO1"
+        },
+        {
+          "elo_description": "Read texts and use media to determine patterns in behaviour of parent and offspring that help offspring survive. [Clarification statement: examples of patterns of behaviours could include the signals that offspring make (such as crying, cheeping, and other vocalisations) and the responses of the parents (such as feeding, comforting, and protecting the offspring).]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-SF-SCO2.1",
+              "description": "Define the terms: Protect, Signal, Offspring, Survive, Behaviour, Parents, Respond"
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.2",
+              "description": "Name and identify the offspring of some common animals."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.3",
+              "description": "Identify signals offspring make (crying, chirping, whining, and other vocalisations)."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.4",
+              "description": "Describe how different patterns in behaviour teach survival skills."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.5",
+              "description": "Observe (either first-hand or through media) how parents and offspring behave to help them to survive."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.6",
+              "description": "Demonstrate through role play the patterns of behaviour that offspring make and the parent’s responses."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.7",
+              "description": "Infer from the offspring’s signal, the parent’s response (e.g. feeding, comforting and protecting the offspring)"
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.8",
+              "description": "Interpret sounds and pictures to make judgements about parent/offspring behaviours."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.9",
+              "description": "Communicate their observations of parent-offspring behaviours."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.10",
+              "description": "Appreciate that parents and offspring work together to survive."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.11",
+              "description": "Show respect for the parents & offspring, observed by treating them with care."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.12",
+              "description": "While making observations students will show concern for safety."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.13",
+              "description": "Appreciate what human parents do for their children to make sure they thrive."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.14",
+              "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO2.15",
+              "description": "Participate actively in classroom discussions."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Which is the Parent? Using a matched set of cards, get your students to pair the animal parent with its baby (offspring).",
+            "Categorizing Behaviours: Students are placed into small groups. A bag is provided to each group containing photos of animals caring for their babies in different ways; some protecting, some feeding, some carrying. (See table) The students’ job is to make observations about each picture and decide how to categorise the pictures by placing them into groups based on how the parents are helping their babies. No group titles are provided at the beginning of the activity to see if the students can come up with the groups on their own. After students have had some time to organise their photos into categories, the teacher calls on different groups to have them share how they decided to categorise, and which photos they put in each category.",
+            "Teacher passes out paper to each group and has them fold the paper into thirds. At the top of each column, is written ‘Feeding’ ‘Carrying’ and ‘Protecting’. Advanced students can write the words for themselves. Students will now sort using these categories and then glue the pictures in the column it belongs to.",
+            "How do parents and offspring behave to survive? Listen to the following sounds and identify the baby animal making the sound. '30 Chicks and 1 Hen Feeding.mp3' by stujun is marked with CC0 1.0. (6:10)",
+            "'Puppy Scream and Whine so Loud' by Alexadiaz12 is marked with CC0 1.0. (1:36)",
+            "'Porsas röhkii ja kiljuu / A piglet oinking and squealling in the pen' by YleArkisto is licensed under CC BY 4.0. (1:33)",
+            "\"Bird-Like-Chair-Squeak-4.flac\" by dland is marked with CC0 1.0. (0:03)",
+            "\"20081230.bleating.01.flac\" by dobroide is licensed under CC BY 4.0. (3:00)",
+            "\"Hevonen hirnuu / Horse neighing on the pasture\" by YleArkisto is licensed under CC BY 4.0. (1:06)",
+            "For each sound, show/tell us how you think the parent would respond. (parents respond by feeding, cleaning, cuddling, comforting, protecting.)",
+            "Students will role play to show how parents and offspring behave in each scenario provided.",
+            "Photo of \"Hen and Chick\" by cheetah100 is licensed under CC BY 2.0.",
+            "Look at each picture and say what behaviour the mother hen is using to keep her baby safe.",
+            "Literacy Connections- Recognizing New Words: In your book, complete the following words/verbs to show some common animal behaviours. E_t (eat), C_y (cry), R_n (run), Hu__ (hug)",
+            "B__r__ (bark), G__ow__ (growl), F____d (feed), T__ee__ (tweet), ____irp (chirp)",
+            "Cat Mother Caring for Young",
+            "Screen capture from: https://www.youtube.com/watch?v=oaYXHAmVJio (3:05 mins)",
+            "Why would this cat show its babies how to climb a tree?",
+            "Retrieved from: https://upload.wikimedia.org/wikipedia/commons/1/1f/Cat_climbing_tree%2C_Uchimaki_Park.jpg\nExplanation: This behaviour that the cat shows is a way to stay safe and to find food. The babies (kittens) have to learn how to do this in order to survive or stay safe. Mother cat will show the kittens how to climb the tree, the different kinds of foods in the tree to eat, and also, whenever they are in danger, they can escape by climbing the tree to safety.\nHow are These Parents Responding to their Offspring?",
+            "Retrieved from: https://image.shutterstock.com/image-photo/african-toddler-baby-girl-crying-260nw-2166765075.jpg (feeding a hungry offspring in response to crying)\nPhoto retrieved from: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQs9zCIgYBF8p7pWRgmx-4VTzIKwZBpRYWXbyzEdRmW8A&s (Comforting a nervous offspring by holding close)",
+            "Photo retrieved from: https://i.pinimg.com/originals/4c/0b/08/4c0b08031b429595842024587a82d570.jpg (covering offspring to protect from other animals)\nhttps://youtu.be/b9nZOIUAYcY (2:35 mins) (centipede feeding its offspring)",
+            "Photo retrieved from: https://external-preview.redd.it/6c5TY4UvHG4xIdKpYKH HqMcBUq9rPiqxqCxMqIcWtvw.jpg?auto=webp&s=66bf32d52c686c5303da094e818dc1c98149a668 (parent cleaning the offspring)",
+            "Story Time Scenario for Children to Respond To: Mama Hen lives on a farm with her three (3) chicks. The chicks follow their mommy everywhere she goes. While out getting food with their mum, a sly mongoose was watching them from the bush nearby. Whoosh! The mongoose darted out of the bush to grab one of the chicks. Cheep! Cheep! Cluck! Cluck! All the chicks and Mama Hen started running wild and kicking up dust. Mama Hen fluffed up her feathers angrily. 1) What do you think would happen next? What else might Mama Hen do? 2) What did the chicks do that made Mama Hen respond by fluffing up her feathers? 3) Why did the mongoose dart out after the chicks? 4) Do you think the mongoose was able to catch a chick? Why/why not?",
+            "Finding Sounds Outside the Classroom: With a parents’ assistance, find or make a sound recording of an animal and its offspring. Bring the recording to school and play it for your friends. Can they guess the animal? Ask your classmates what this animal is likely to do to protect its young?"
+          ],
+          "inclusive_learning_strategies": [
+            "Whole Class Discussion: How Parents Support Children. Give students a picture/model of a new-born baby/baby doll. Retrieved from: https://commons.wikimedia.org/wiki/File:Baby_%282914649696%29.jpg",
+            "Working in pairs, ask students to discuss some of the things that the parents of a new born baby will have to do to care for and protect the baby. What does it mean to protect? (keep from danger, nourish, promote growth, be present for needs)",
+            "After some time, ask each pair of students to share with the class some of the things they came up with. The ideas they share should include: Feeding the baby, Changing the baby’s clothes/diapers, Carrying the baby from place to place, Rocking the baby to sleep, Bath the baby",
+            "‘Why is it important for the parents of the baby to do these things to the baby?’ (the baby can’t take care of themselves)",
+            "‘What will happen if the parents of the baby do not do these things?’ (The baby will cry)",
+            "Segue to the lesson by telling students that today they will be observing ways that animals take care of their babies.",
+            "Ask them if the parents will have to do this for a short time or for a long time. Also ask them to state ways in which their parents are still caring for them.",
+            "What are some of the things that a baby will do to let its parents know that it is in pain, full, is wet, is hungry, etc.",
+            "What are some of the things that you do to let your parents know some of the same things you are feeling? We say that you are trying to signal your parents that you are somehow unhappy. Signal is a word that means ‘let them know somehow’",
+            "Name one way that you can let your parents know how you are feeling, if you are in danger, etc. that the baby cannot? (cry out or tell parents the problem)",
+            "Without interruption, move to the next section of the lesson by telling the students that like humans, other animals also take care of their young.",
+            "Whole Class Discussion on human signals and responses (actions taken after receiving a message): Students, how do you signal to (tell/show) your parents that you are______? Hungry, Hurt, Sick, Happy, Angry. How do they respond to you? What do your parents do to help you in each case? (feed, soothe, comfort, laugh, stop feeding, etc)",
+            "Introduction: Field Trip. Take class on a field trip to a farm or zoo or on a nature walk to observe the behaviours (responses to signals) of animal parents (the mother or father) and their offspring (animal's young/baby/child). Students should make at least three observations on the signals that offspring make and three responses of the parents. Students should be able to identify the animals by names, sound and identify the name of their young. Students can also identify animal features.",
+            "Questions: 1. From your observations, how does the parent know the offspring (baby) is hungry, sleepy, needs comfort, scared, etc.? (Possible answers: Offspring cries, whines, chirps, fusses, etc.) 2. How does the parent respond to each signal? (Answer: By feeding, comforting, training young to hunt/find food/fly/flee/fight), AND/OR",
+            "In-Class Observation Option. Divide class into groups. Provide each group with a picture or video showing parents and offspring behaviours in different situations to survive. See suggestions below: Scenario 1: What sound does a baby bird make to let its parents know it is hungry and needs food? (crying with a chirping sound) Role play a scenario of a baby bird chirping hungrily to be fed and a parent offering the baby bird food.",
+            "Video: https://www.youtube.com/watch?v=oW3stAEpfzA (0:47) Video of bird feeding and cleaning chicks Retrieved from: https://www.youtube.com/shorts/WnCLf3kf8B",
+            "Scenario 2: Baby wants to sleep. He’s fussing. Role play some ways mommy/daddy can comfort the baby. (hug the child, pat the back for burping, feed the baby, sing to the child, change the diaper etc.)",
+            "Retrieved from: https://www.gettyimages.se/fotografier/mother-comforting-baby\nStudents take a look at this video and tell us what signal the offspring is making and how is the parent responding?\nVideo option 1: cat feeding the young. https://www.youtube.com/watch?v=oaYXHAmVJio (3:05 mins)\nVideo option 2: The Angry Kitten https://www.youtube.com/watch?v=kFuPrIjztPg (1:11)\n“How does the cat help its kittens to survive?” (continue to live or exist)?\nAnswer: It feeds them, protects them, teaches them survival skills, like how to hunt, climb a tree, bite, etc.\nSome animal parents help their offspring grow up. They protect them, feed them and teach them survival skills. For example, when the kittens are old enough, the mother cat will teach them how to hunt for food, climb trees, and flee (quickly to get away) from danger. Many animal parents pass on patterns",
+            "of behaviour to their offspring so they can survive and grow into adults.\nRead the following text and discuss with the students.\nMommy dog gave birth to five puppies. She loves her pups so much. She licks them, cleans them, feeds them and cuddles with them. Now, mommy dog is hungry and has to leave her pups to find food. She will be back soon. While she is away a stranger comes too close. The pups start to whine (cry)/growl/bark. Let me hear you whine/growl/bark like a frightened puppy. Mommy comes running.\n“Students?”,\n• “Why did the puppies whine/growl/bark?” (to call their mommy, to warn the stranger not to come closer, to show they were afraid or felt threatened)\n• “Why did mommy dog run to her pups?” (she heard the noises they were making and knew they needed her help)\n• “What do you think mommy dog will do next?” (Respond to the puppies sounds by sending a warning to the stranger by growling, barking, snarling (show her teeth to the stranger), she may even bite the stranger.)\nCreating Shelter: A Parents’ Response\nHave students watch this video and draw a picture of one type of shelter built by parents to protect their offspring. https://www.youtube.com/watch?v=7Sc2sOIXhOc (10:46 mins)",
+            "Alternatively, teachers can bring in pictures of different shelters and have students make observations in a discussion-based format.\nExtension: Students could build a simple shelter for a caterpillar using coffee sticks, toothpicks, paper and glue. They should be asked to explain how the shelter protects, and what it protects the caterpillar from.\n(i.e. predators, rain, sunshine, etc.)"
+          ],
+          "elo_code": "SC-G1-SF-ELO2"
+        },
+        {
+          "elo_description": "Make observations to construct an evidence-based account that young plants and animals are like, but not exactly like their parents. [Clarification statement: Examples of patterns could include features plants or animals share. Examples of observations could include leaves from the same kind of plant are the same shape but can differ in size: and, a particular breed of dog looks like its parents but is not exactly the same. [Assessment Boundary: Assessment does not include inheritance or animals that undergo metamorphosis or hybrids.]]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-SF-SCO3.1",
+              "description": "Define the terms: parent, roots, Leaves, Stems, Fruits, flowers"
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.2",
+              "description": "Identify the properties of plants that allow you to distinguish between parents and offspring."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.3",
+              "description": "Identify the properties of animals that allow you to distinguish between parents and offspring."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.4",
+              "description": "Observe and compare (either first-hand or media) how young animals and plants are like, but not exactly like their parents."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.5",
+              "description": "Collect and record evidence that young plants and animals are like, but not exactly like, their parents."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.6",
+              "description": "Compare and contrast parents and offspring who don’t have the same features."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.7",
+              "description": "Work collaboratively with peers as you observe physical features of living things."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.8",
+              "description": "Communicate ideas with new vocabulary."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.9",
+              "description": "Look at the picture of the adult animal and draw what you think the baby (or vice versa) would look like."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.10",
+              "description": "Students actively watch the following video two times and choose one animal to report on."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.11",
+              "description": "The first time they watch the video, they look for ways that the parent and offspring are the same."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.12",
+              "description": "The second time they watch the video, they look for ways that the parent and offspring are different."
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.13",
+              "description": "Complete the following checklist about the animal you chose: What was the same about the young and adult animals? (Same type of body covering, Same size, Same body structures, Same number of eyes, ears, limbs, Same colours)"
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.14",
+              "description": "What was different about the young and adult animals? (The type of body covering, The size, The body structures, The number of eyes, ears, limbs, The colours)"
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.15",
+              "description": "Based on your findings, would you agree that young animals are like, but not exactly like, their parents?"
+            },
+            {
+              "sco_code": "SC-G1-SF-SCO3.16",
+              "description": "Students could be invited to bring in pictures of themselves and their parents. They could then explain what characteristics they felt best matched each parent."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Ask students to draw or use playdough to make a model of their favourite plant/animal, as a parent and as a baby (young offspring). What animal/plant did you draw/make? What are some of the differences and similarities between the parent and the baby? Focus questions: 1. Are baby animals/plants the same as their parents? 2. How are the young offspring (babies) of plants",
+            "Matching exercise: Match the parts of young animals/plants to the adult plants/animals.",
+            "Match the Animal Activity: Look at the pictures of the adult plant/animal and circle two things that are different from the young plant.",
+            "Use the KWL chart to find out what students already know about young animals and their parents. The chart will be revisited at the end of the lesson to see if their questions have been answered.",
+            "Have students discuss whether human babies look and act like adults. What are some features that are the same? What are some features that are different?",
+            "Activity: Comparing Young and Adult Plants. Students observe the young and adult forms of at least three plants (e.g. the young mango plant vs. mango tree; young and adult tomato plant, hibiscus) by visiting a farm/viewing live specimens/watching videos or viewing pictures. Students will then use a T-chart to identify the similarities and differences between the young and adult plants. Make certain to compare the main external parts (e.g. leaves, stem, roots, fruits/flowers/pods/nuts (if any)).",
+            "See video of young and adult plant comparison activity here: https://www.youtube.com/watch?v=z-PVxDd3cD0 (4:03 mins)",
+            "Complete the following checklist: a. What was the same about the young and adult plants? b. What was different about the young and adult plants? c. Based on your findings, would you agree that young plants are like, but not exactly like, their parents?",
+            "Draw what you think the baby (or vice versa) would look like based on the adult animal picture.",
+            "Watch the video twice and report on one animal, noting similarities and differences between parent and offspring.",
+            "Complete a checklist comparing young and adult animals on body covering, size, structures, number of features, and colours.",
+            "Answer whether young animals are like, but not exactly like, their parents based on findings.",
+            "Bring in personal photos and explain which characteristics match each parent."
+          ],
+          "inclusive_learning_strategies": [
+            "My Favourite Animal: Ask students to draw their favourite animal as a parent and a baby. Students present drawings to class, and classmates share their knowledge about the animal and how they think the baby and parent are alike or different.",
+            "Use a KWL Chart to activate prior knowledge and track learning.",
+            "Conduct a matching exercise to reinforce understanding of similarities and differences.",
+            "Use visual aids such as photos of young and adult plants (e.g., young mango tree, adult mango tree) to support observation.",
+            "Engage students in collaborative group work to observe and discuss physical features.",
+            "Incorporate videos to provide real-world examples of young and adult plant comparisons.",
+            "Use a T-chart to organize observations of similarities and differences.",
+            "Facilitate classroom discussions on human babies vs. adults to draw parallels with plant and animal offspring.",
+            "Use visual aids such as pictures of adult and baby animals (e.g., Baby Parrot, Adult Amazona Guildingii Parrot).",
+            "Engage in guided video watching with specific focus questions for each viewing.",
+            "Apply learning to personal context by comparing self and parents' characteristics."
+          ],
+          "elo_code": "SC-G1-SF-ELO3"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Helmet image source",
+          "links": [
+            {
+              "text": "Helmet image",
+              "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLVamSmBu-P-DfnJoi-y1zS8ncDNc7OrKjBw&usqp=CAU"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Tortoise image source",
+          "links": [
+            {
+              "text": "Tortoise image",
+              "url": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Red_Footed_Tortoise_%2888681088466%29.jpg"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Mangrove image source",
+          "links": [
+            {
+              "text": "Mangrove image",
+              "url": "https://pixabay.com/photos/mangrove-trees-aquatic-plants-4901145/"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Image of a person on stilts.",
+          "links": [
+            {
+              "text": "Retrieved from: Netta Thomas",
+              "url": "https://rb.gy/dmxulu"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Image of a plane and a bird.",
+          "links": [
+            {
+              "text": "Plane: Retrieved from: https://rb.gy/dmxulu",
+              "url": "https://rb.gy/dmxulu"
+            },
+            {
+              "text": "Bird: Retrieved from: https://rb.gy/5rbjuz",
+              "url": "https://rb.gy/5rbjuz"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Image of a crane and a giraffe.",
+          "links": [
+            {
+              "text": "Crane: Retrieved from: https://upload.wikimedia.org/wikipedia/commons/9/99/Old_crane_truck.jpg",
+              "url": "https://upload.wikimedia.org/wikipedia/commons/9/99/Old_crane_truck.jpg"
+            },
+            {
+              "text": "Giraffe: Retrieved from: https://rb.gy/2lpgby",
+              "url": "https://rb.gy/2lpgby"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Image of a person in camouflage.",
+          "links": [
+            {
+              "text": "Retrieved from: https://www.heraldledger.com/uncategorized/camouflage-the-art-of-being-there-but-looking-like-you-aren-t/article_1a9c76ec-e3e2-57dd-a082-69f5e05f9fe6.html",
+              "url": "https://www.heraldledger.com/uncategorized/camouflage-the-art-of-being-there-but-looking-like-you-aren-t/article_1a9c76ec-e3e2-57dd-a082-69f5e05f9fe6.html"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Image of a mangrove tree root system and a tripod.",
+          "links": [
+            {
+              "text": "Root system of a mangrove tree: Retrieved from: https://pixabay.com/photos/mangrove-trees-aquatic-plants-4901145/",
+              "url": "https://pixabay.com/photos/mangrove-trees-aquatic-plants-4901145/"
+            },
+            {
+              "text": "Tripod: Retrieved from: https://rb.gy/rabrui",
+              "url": "https://rb.gy/rabrui"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Image of a lionfish.",
+          "links": [
+            {
+              "text": "Retrieved from: https://t3.gstatic.com/licensed-image?q=tbn:ANd9GcTUUaTBR6Jg3FvbP7XvC6kJl_CLNb4ZemS1jADlc4TOkYDGIGY5-BOrucCC14BuyTb4lmDCPHRYK1GkvjE",
+              "url": "https://t3.gstatic.com/licensed-image?q=tbn:ANd9GcTUUaTBR6Jg3FvbP7XvC6kJl_CLNb4ZemS1jADlc4TOkYDGIGY5-BOrucCC14BuyTb4lmDCPHRYK1GkvjE"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Video of the Atlas moth mimicking a snake.",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=4tlvYJNZKVE (3:02 mins)",
+              "url": "https://www.youtube.com/watch?v=4tlvYJNZKVE"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Video of the shameplant (Mimosa pudica) response.",
+          "links": [
+            {
+              "text": "https://commons.wikimedia.org/wiki/File:Mimosa_pudica (1:00 mins)",
+              "url": "https://commons.wikimedia.org/wiki/File:Mimosa_pudica"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Video about animals mimicking each other.",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=gk-iIIbaCMQ (7:18 mins)",
+              "url": "https://www.youtube.com/watch?v=gk-iIIbaCMQ"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Information about the Lionfish.",
+          "links": [
+            {
+              "text": "https://oceanservice.noaa.gov/facts/lionfish-facts.html",
+              "url": "https://oceanservice.noaa.gov/facts/lionfish-facts.html"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Useful Content Knowledge for the Teacher about the Outcome: (Links to professional sources that connect back to the Curriculum and Assessment Principles of Learning and Principles of Assessment)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Inclusive Resources and Materials From Regional Specialists: Use of multisensory activities and materials to assist all learners. (texts, family & community knowledge and resources and/or contextually relevant professional web resources)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "KWL Chart for assessing prior knowledge and learning progress.",
+          "links": [
+            {
+              "text": "KWL Chart",
+              "url": "https://commons.wikimedia.org/wiki/File:KWL_Chart.jpg"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Photo of Young Mango Tree.",
+          "links": [
+            {
+              "text": "Photo Young Mango Tree",
+              "url": "https://pixabay.com/photos/mango-plant-tree-seedling-5425476/"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Photo of Adult Mango Tree.",
+          "links": [
+            {
+              "text": "Adult Mango Tree",
+              "url": "https://wikifarmer.com/mango-tree-fertilization/"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Video comparing young and adult plants.",
+          "links": [
+            {
+              "text": "Video: Young and Adult Plant Comparison",
+              "url": "https://www.youtube.com/watch?v=z-PVxDd3cD0"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Article on similarities between young and adult plants.",
+          "links": [
+            {
+              "text": "Science: What similarities are there between the young plant and the adult plant?",
+              "url": "https://www.turito.com/ask-a-doubt/science-what-similarities-are-there-between-the-young-plant-and-the-adult-plant-both-a-and-b-they-have-the-same-f-qc4ff8e33"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Photo of a Baby Parrot",
+          "links": [
+            {
+              "text": "Photo of a Baby Parrot",
+              "url": "https://media.tradeholding.com/attach/hash250/181498/mmmmmmmmm.jpg"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Adult Amazona Guildingii Parrot",
+          "links": [
+            {
+              "text": "Adult Amazona Guildingii Parrot",
+              "url": "https://upload.wikimedia.org/wikipedia/commons/4/42/Amazona_guildingii_-Botanical_Gardens_-Kingstown_-Saint_Vincent-8a.jpg"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Video: Baby Animals That Grow Up to Look Totally Different",
+          "links": [
+            {
+              "text": "Baby Animals That Grow Up to Look Totally Different",
+              "url": "https://www.youtube.com/watch?v=-0TkOoakcP0"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Matching Activity: Mothers and Their Young",
+          "links": [
+            {
+              "text": "Mothers and Their Young Matching Activity",
+              "url": "https://www.twinkl.co.uk/resource/t-t-5679-mothers-and-their-young-farm-animals-matching-activity"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Inclusive Resources and Materials From Regional Specialists Use of multisensory activities and materials to assist all learners. (texts, family & community knowledge and resources, contextually relevant professional web resources)",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Hands-on pictures",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Video",
+          "links": [],
+          "category": "Videos"
+        },
+        {
+          "description": "Pictures from home",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Photograph of adult dog taken by Clyornique Durrant",
+          "links": [],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Photograph of pup taken by Clyornique Durrant",
+          "links": [],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Photo of young Indian-almond/tropical almond plant taken by Clyornique Durrant",
+          "links": [],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Photo of mature Indian-almond/tropical almond plant taken by Clyornique Durrant",
+          "links": [],
+          "category": "Documents/PDFs"
+        }
+      ]
+    },
+    {
+      "strand_name": "Space Systems: Patterns and Cycles",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Use observations of the sun, moon, and stars to describe patterns that can be predicted. [Clarification Statement: Examples of patterns could include that the sun and moon appear to rise in one part of the sky, move across the sky, and set; and stars other than our sun are visible at night, but not during the day.] [Assessment Boundary: Assessment of star patterns is limited to stars being seen at night and not during the day.]",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-SP-SCO1.1",
+              "description": "Define the terms: day, night, pattern, path, full moon, crescent moon, half moon, constellation, astronomer"
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO1.2",
+              "description": "Demonstrate an understanding that the clock is a measure that allows us to keep track of day and night patterns."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO1.3",
+              "description": "Identify objects found in the day sky and the night sky."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO1.4",
+              "description": "Compare the position of the sun at different times of the day."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO1.5",
+              "description": "Describe the different shapes of the moon at different times within a month."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Pre assessment activity: Students are presented with two pictures and they will: State what time of day they think it is based on the clues presented.",
+            "Guessing Games: For the following pictures, have students guess whether it is normally a night or day activity."
+          ],
+          "inclusive_learning_strategies": [
+            "Recognizing a Pattern - How the Clock Helps Us: Students, did you ever notice that the clock has numbers one (1) to twelve (12)? If we were to watch that clock, when we wake up in the morning the little hand is probably pointing to the 7. Do you know what the little hand points to at lunch time? (12) What time do we leave to go home from school? (after lunch – when the little hand points at 3) Can anyone tell me what the clock shows when they go to bed? (7) So you are telling me the clock shows 7 again?"
+          ],
+          "elo_code": "SC-G1-SP-ELO1"
+        },
+        {
+          "elo_description": "Make observations at different times of the year to relate the amount of daylight to the time of year. [Clarification Statement: Emphasis is on relative comparisons of the amount of daylight in the winter to the amount in the spring or fall.] [Assessment Boundary: Assessment is limited to relative amounts of daylight, not quantifying the hours or time of daylight.] NOTE: This ELO is covered only briefly in extension activities to make students aware that outside the Caribbean region, the seasonal temperature variations are much larger because of the tilt of the earth as it rotates around the sun.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G1-SP-SCO2.1",
+              "description": "Observe the day and night sky."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.2",
+              "description": "Interpret pictures."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.3",
+              "description": "Build communication skills by contributing to classroom discussions using new words."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.4",
+              "description": "Actively engage in discussion of teacher-led classroom demonstrations."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.5",
+              "description": "Draw the patterns of the moon over a period of time."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.6",
+              "description": "Actively retrieve ideas from educational videos."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.7",
+              "description": "Infer the time of day using the position of the sun."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.8",
+              "description": "Collaborate with peers in projects."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.9",
+              "description": "Keep track of the position and shape of celestial bodies in a simple journal."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.10",
+              "description": "Develop number and hands-on dexterity by completing pictures of constellations."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.11",
+              "description": "Appreciate how day and night can influence the activities we engage in and the clothes we wear."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.12",
+              "description": "Display interest/curiosity in studying objects found in the sky."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.13",
+              "description": "Maintain safety when observing the sun and being exposed to the sunlight. (Avoid gazing at the sun directly with the naked eye, use sunscreen when spending time outdoors.)"
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.14",
+              "description": "Work collaboratively in groups."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.15",
+              "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
+            },
+            {
+              "sco_code": "SC-G1-SP-SCO2.16",
+              "description": "Participate willingly in classroom discussions."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Retrieved from: https://www.freepik.com/premium-photo/black-african-american-baby-sleeping-white-mattress_17742049.htm#query=black%20child%20sleeping%20bed&position=17&from_view=search&track=ais",
+            "Retrieved from: https://www.freepik.com/premium-photo/man-with-astronomy-telescope-looking-stars-man-telescope-starry-sky-night-sky-milky-way-galaxy_20684491.htm#query=looking%20through%20telescope%20night&position=28&from_view=search&track=ais",
+            "Drawing the Patterns in the Sky (Day and Night) In the formative assessment in the lesson, they have drawn pictures of the objects in the sky. As a review, they can create models of the sky using available materials and share with their peers. Possible materials (cotton, styrofoam, construction paper, crayons, markers, star, moon and sun cut outs).",
+            "Orientation of the Earth and Sun Ask children which of the following is true: A) It is daytime in the Caribbean when the earth rotates to face away from the sun. B) It is daytime in the Caribbean when the earth rotates to face towards the sun. (True)",
+            "Patterns of the Moon Children should have a simple home journal/scrapbook where you ask them to draw the shape of the moon in the night sky at regular intervals (4-6 times over a month)",
+            "They can label their pictures as full, crescent and half moon.",
+            "Integration With Mathematics In the following pictures join the dots in order of the numbers to create a common constellation. Retrieved from: https://www.supercoloring.com/dot-to-dots/constellation-map",
+            "The Sun’s Regular Path: In order to track the Sun’s path in the sky, have students go outside at regular intervals and draw (and/or measure) the shadow the sun makes as it shines on a tree or building.",
+            "Extension Activities: What is the job of an astronomer? Students will pretend to be an astronomer for the day. With books made available in the classroom, a guest speaker or video https://www.youtube.com/watch?v=mtkEFY_ki2A (4:59 mins) have the children collectively create a poster where they add a picture to suggest what astronomers do as a job or hobby. Children can also choose to describe in spoken words what an astronomer does.",
+            "Daylight Hours: Students, did you ever notice that at certain times of the year that the sun seems to shine longer and it is later, before the sun goes down and it becomes dark?",
+            "This is caused because the earth not only rotates, it rotates on an angle (best to show a model or picture below).",
+            "The Caribbean countries are close to the center (called the equator) so the difference in daylight hours throughout the year is small, but in countries in the north (Canada/USA) and the south (Australia) the difference in daylight can be several hours.",
+            "Teacher Note: If you have a globe and a torch (flashlight), place a piece of plasticine on the globe in different places and demonstrate how living in that location could make a small or large difference in daylight as the earth rotates around the sun.",
+            "Because of the tilt of the earth as it rotates, we see big differences in seasons (cold and hot) when you go far north or south on the earth. Students we will talk more about this in later grades."
+          ],
+          "inclusive_learning_strategies": [
+            "How is that 7 different from when you got up in the morning? (In the morning the sun is shining at 7 and at night at 7 it is dark) So you are telling me there is two times that the clock can show the same number. We have day when there is sunshine and we have night when it is dark. Does it always happen that way? (yes teacher) When things happen over and over again, we say that is a pattern. Maybe that is why the clock is so useful. It shows us a pattern of day and night. Did you know we get day and night because our earth rotates while the sun shines on it? Video: Earth Spins on Axis as the sun shines on it.",
+            "See video at 1:01 min point https://www.youtube.com/watch?v=Wr-CRKsTYGs (2:46 mins) (or show model if available) The Sun Repeats the Same Path Across the Sky Each Day Ask students to draw a picture of the school on a piece of paper. In the morning, ask them to go out and notice where the sun is located. Have them draw the morning sun on their page in relation to the school. In the afternoon before they are dismissed, have students go outside again and draw the new position of the sun on that same page. Emphasize that the sun always tracks a similar path (define this by drawing an arc on the board) across the sky each day. Ask them to check their work the next day by doing another observation. Created courtesy of: C. Regis",
+            "What Do We See in the Sky? “Students, I want you to draw me two pictures.” Picture 1: “Draw me what you see in the sky in the daytime.” (sun, clouds, rainbow, birds, raindrops airplanes, etc.) Picture 2: “Draw me what you see in the sky in the nighttime.” (moon, stars, night birds, bats, airplanes etc.) I see in your pictures that you have drawn the moon in the night sky. I also noticed that some of you drew the moon differently. That is interesting. Is the moon always the same shape? (no teacher) Draw me a picture of the different shapes we see of the moon. (teach children the names of the simplest shapes: full, crescent, half moon) Full Moon Crescent Half Moon",
+            "Did you ever notice in the night sky that every month we get all the different shapes of the moon? We say that the shapes of the moon follow a pattern too!",
+            "For a review the teacher may choose to watch the following read aloud book: https://www.youtube.com/watch?v=8RHl9KoVeW8 (7:15 mins)",
+            "Students should be encouraged to actively watch for patterns of things in the day sky and the night sky.",
+            "Note: The teacher may decide to supply the children with the following journal template to draw the moon throughout the period of a month.",
+            "Interesting Things in the Night Sky: “Students if you look in the night sky you can see many stars. In different parts of the world, people join these stars to make a sky picture we call a constellation.”",
+            "This is a picture of the constellation called the big dipper. See how they join the stars to make the picture? At different times of the year, in different parts of the world, there is a pattern of constellations."
+          ],
+          "elo_code": "SC-G1-SP-ELO2"
+        }
+      ],
+      "resources": [
+        {
+          "description": "My Moon Calendar journal template",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Video: What is the job of an astronomer?",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=mtkEFY_ki2A"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Read aloud book about patterns in the sky",
+          "links": [
+            {
+              "text": "YouTube Video",
+              "url": "https://www.youtube.com/watch?v=8RHl9KoVeW8"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Diagram of Earth's rotation and daylight cycle",
+          "links": [
+            {
+              "text": "Dreamstime Image",
+              "url": "https://www.dreamstime.com/hours-day-night-cycle-diagram-vector-illustration-sun-planet-earth-rotating-its-axis-educational-poster-scientific-image122027452"
+            }
+          ],
+          "category": "Images"
+        },
+        {
+          "description": "Information about the Big Dipper constellation",
+          "links": [
+            {
+              "text": "HowStuffWorks Article",
+              "url": "https://science.howstuffworks.com/big-dipper.htm"
+            }
+          ],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Inclusive Resources and Materials From Regional Specialists: Use of multisensory activities and materials to assist all learners. (texts, family & community knowledge and resources, contextually relevant professional web resources)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Models of the earth and sun",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Torch (flashlight)",
+          "links": [],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Books related to day/night/moon/stars",
+          "links": [],
+          "category": "Reading/Texts"
+        },
+        {
+          "description": "Wonderwall: link to games that assesses the students’ understanding of the day and night sky as well as activities done in the day and the night",
+          "links": [
+            {
+              "text": "Wonderwall",
+              "url": "https://wordwall.net/en-us/community/day-and-night-sky"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Sky Patterns: Sun Moon and Stars",
+          "links": [
+            {
+              "text": "Sky Patterns: Sun Moon and Stars",
+              "url": "https://www.pbslearningmedia.org/resource/buac18-k2-sci-ess-skypatterns/sky-patterns-sun-moon-and-stars/?student=true"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Changing Position of the Sun in the Sky",
+          "links": [
+            {
+              "text": "Changing Position of the Sun in the Sky",
+              "url": "https://www.pbslearningmedia.org/resource/buac18-k2-sci-ess-sunposition/changing-position-of-the-sun-in-the-sky/?student=true"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Moon Phases Worksheet",
+          "links": [
+            {
+              "text": "Moon Phases Worksheet",
+              "url": "https://www.kidsacademy.mobi/printables/moon-phases/#google_vignette"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Oreo Cookies (Phases of the Moon)",
+          "links": [
+            {
+              "text": "Oreo Cookies (Phases of the Moon)",
+              "url": "https://sciencebob.com/oreo-cookie-moon-phases/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "How to make a simple sundial",
+          "links": [
+            {
+              "text": "How to make a simple sundial",
+              "url": "https://littlebinsforlittlehands.com/how-to-make-a-sundial/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "How to make a pinhole camera",
+          "links": [
+            {
+              "text": "How to make a pinhole camera",
+              "url": "https://www.jpl.nasa.gov/edu/learn/project/how-to-make-a-pinhole-camera/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Opportunities for Subject Integration: (How the inclusive learning strategies might be adapted and/or applied to include other subjects in the curriculum)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Mathematics: 1: Name the days of the week in order, and recognize the names (The students will use the days of the week to record patterns). 2: Represent numbers up to twenty in a variety of ways (in words, in numbers, using counting blocks/rods; drawings/pictures, etc.) - use numbers to interpret charts with recorded information. 3: Use time vocabulary appropriately (e.g., now, later, soon, earlier) relative to year, month, week, day and hour. (Students will use the vocabulary to discuss the variation in the position of the sun).",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Social Studies: 1. Share ideas with other pupils in group/class. 2. Participate in group activity willingly.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Language Arts: 1. Use strategies when listening to make and simplify meaning, including asking questions, recalling ideas, focusing on the speaker, preparing for listening. 2. Listen to identify the order of events in a selection. 3. Describe people, places and things and events with relevant details, expressing ideas and feelings clearly. 4. Engage in oral activities organized for the class. 5. Use newly acquired words in meaningful contexts during discussion.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Elements from Local Culture: river lime on a sunny day/weekend/holiday. washing clothes by the river. drying clothes on the stone/line. drying fish and meats for preservation. drying of cashew nuts on a sunny day.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "telling old folk tales at night. planting according to the phases of the moon (old farmers almanac). using the phases of the moon to select dates to get hair cuts or ear piercings. bathing outside in the rain. talks from fisherfolk and farmers on their use of the sun to tell time. use of the phases of the moon to plant.",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Resources for a learner who is struggling: (Links to earlier learning activities for similar knowledge, links to resources for special education needs)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Oreo Cookies (Phases of the Moon)",
+          "links": [
+            {
+              "text": "Oreo Cookies (Phases of the Moon)",
+              "url": "https://sciencebob.com/oreo-cookie-moon-phases/"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Day and Night",
+          "links": [
+            {
+              "text": "Day and Night",
+              "url": "https://www.k5learning.com/worksheets/science/grade-1-day-night-sun-a.gif"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Moon phases",
+          "links": [
+            {
+              "text": "Moon phases",
+              "url": "https://www.k5learning.com/worksheets/science/grade-1-moon-phases.gif"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Phases of the Moon",
+          "links": [
+            {
+              "text": "Phases of the Moon",
+              "url": "https://www.k5learning.com/worksheets/science/grade-1-moon-phases.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Resources for a learner who needs challenge: (Links to learning activities and resources in later grades)",
+          "links": [],
+          "category": "Teacher Materials"
+        },
+        {
+          "description": "Sky Patterns: Sun Moon and Stars",
+          "links": [
+            {
+              "text": "Sky Patterns: Sun Moon and Stars",
+              "url": "https://www.generationgenius.com/videolessons/patterns-in-the-sky-video-for-kids/"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Day and Night: Live worksheet",
+          "links": [
+            {
+              "text": "Day and Night: Live worksheet",
+              "url": "https://www.liveworksheets.com/worksheets/en/Science/Day_and_Night/Day_and_Night_Worksheet_for_Grade_1_ke1609621cd"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Phases of the Moon",
+          "links": [
+            {
+              "text": "Phases of the Moon",
+              "url": "https://www.k5learning.com/worksheets/science/grade-2-phases-moon-a.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        }
+      ]
+    }
+  ]
+}

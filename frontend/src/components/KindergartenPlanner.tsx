@@ -46,7 +46,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
-import { useCurriculumIndex } from '../data/curriculumLoader';
+// Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface KindergartenPlannerProps {
   tabId: string;
@@ -401,7 +401,6 @@ const kindergartenPlanToDisplayText = (plan: ParsedKindergartenPlan): string => 
 };
 
 const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedData, onDataChange }) => {
-  useCurriculumIndex();
   const triggerCheck = useAchievementTrigger();
   // ✅ Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;

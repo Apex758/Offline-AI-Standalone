@@ -25,7 +25,7 @@ import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson } fr
 import type { PresentationFormData, ParsedLessonInput } from '../utils/presentationPromptBuilder';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import axios from 'axios';
-import { useCurriculumIndex } from '../data/curriculumLoader';
+// Curriculum data is loaded on demand by CurriculumAlignmentFields
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 // pptxgenjs is dynamically imported in exportPPTX() to avoid bundling upfront
 
@@ -1481,7 +1481,6 @@ function tryParsePartialSlides(raw: string): Slide[] {
 ═══════════════════════════════════════ */
 
 export default function PresentationBuilder({ tabId, savedData, onDataChange }: PresentationBuilderProps) {
-  useCurriculumIndex();
   const triggerCheck = useAchievementTrigger();
   const { hasDiffusion } = useCapabilities();
   // Input mode

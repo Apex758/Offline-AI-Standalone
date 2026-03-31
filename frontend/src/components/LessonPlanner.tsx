@@ -38,7 +38,7 @@ const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const VolumeX: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeOffIcon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
-import { useCurriculumIndex } from '../data/curriculumLoader';
+// Curriculum data is loaded on demand by CurriculumAlignmentFields
 import CurriculumReferences from './CurriculumReferences';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
@@ -251,7 +251,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
   const triggerCheck = useAchievementTrigger();
 
-  const { pages: curriculumPages } = useCurriculumIndex();
+  // Curriculum data is loaded per grade+subject via CurriculumAlignmentFields
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['lesson-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
@@ -458,7 +458,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   // Auto-fetch curriculum matches when subject, grade, or strand changes
   useEffect(() => {
     const fetchMatchingCurriculum = async () => {
-      // Only search if we have subject, grade, and strand
       if (!formData.subject || !formData.gradeLevel || !formData.strand) {
         setCurriculumMatches([]);
         return;
@@ -466,16 +465,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
       setLoadingCurriculum(true);
       try {
-        // Use the curriculum index to find matches
-        const matches = curriculumPages.filter((page: any) => {
-          return (
-            page.subject?.toLowerCase() === formData.subject.toLowerCase() &&
-            page.grade === formData.gradeLevel &&
-            page.strand?.toLowerCase().includes(formData.strand.toLowerCase())
-          );
-        });
-
-        setCurriculumMatches(matches.slice(0, 10)); // Limit to 10 results
+        const { getCurriculumMatches } = await import('../utils/curriculumHelpers');
+        const matches = getCurriculumMatches(formData.subject, formData.gradeLevel, formData.strand);
+        setCurriculumMatches(matches.slice(0, 10));
       } catch (error) {
         console.error('Error fetching curriculum matches:', error);
         setCurriculumMatches([]);

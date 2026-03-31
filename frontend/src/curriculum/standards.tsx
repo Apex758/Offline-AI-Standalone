@@ -21,7 +21,7 @@ const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const XCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
 const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
-import { getCurriculumPages, useCurriculumIndex } from '../data/curriculumLoader'
+import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader'
 
 interface CurriculumStandard {
   subject: string
@@ -32,19 +32,22 @@ interface CurriculumStandard {
 }
 
 function getAllCurriculumStandards(): CurriculumStandard[] {
-  const pages = getCurriculumPages()
+  const files = getAllCurriculumFiles()
   const standards: CurriculumStandard[] = []
-  for (const page of pages) {
-    if (page.specificOutcomes) {
-      for (const rawSco of page.specificOutcomes) {
-        const scoText = typeof rawSco === 'string' ? rawSco : rawSco.text;
-        standards.push({
-          subject: (page.subject || '').toLowerCase().replace(/\s+/g, '-'),
-          grade_level: page.grade || '',
-          strand: page.strand || '',
-          code: typeof rawSco === 'string' ? (scoText.match(/^(\d+\.\d+)/)?.[1] || '') : (rawSco.id || scoText.match(/^(\d+\.\d+)/)?.[1] || ''),
-          description: scoText,
-        })
+  for (const file of files) {
+    const grade = file.metadata.grade || ''
+    const subject = (file.metadata.subject || '').toLowerCase().replace(/\s+/g, '-')
+    for (const strand of file.strands) {
+      for (const elo of strand.essential_learning_outcomes) {
+        for (const sco of elo.specific_curriculum_outcomes) {
+          standards.push({
+            subject,
+            grade_level: grade,
+            strand: strand.strand_name,
+            code: sco.sco_code || sco.description.match(/^(\d+\.\d+)/)?.[1] || '',
+            description: sco.description,
+          })
+        }
       }
     }
   }
@@ -106,7 +109,6 @@ function AccordionItem({ children, isOpen, onToggle, title, level = 1 }: {
 }
 
 export default function AllCurriculumStandardsPage() {
-  const { loading: curriculumLoading } = useCurriculumIndex();
   const [search, setSearch] = useState("")
   const [subject, setSubject] = useState("")
   const [grade, setGrade] = useState("")
@@ -119,18 +121,19 @@ export default function AllCurriculumStandardsPage() {
   const [openGrades, setOpenGrades] = useState<Set<string>>(new Set())
   const [openStrands, setOpenStrands] = useState<Set<string>>(new Set())
 
-  // Load standards from local curriculum index (re-run when curriculum finishes loading)
+  // Load all curriculum files then extract standards
   useEffect(() => {
-    if (curriculumLoading) return;
-    try {
-      const allStandards = getAllCurriculumStandards()
-      setStandards(allStandards)
-    } catch (error) {
-      console.error('Error loading standards:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [curriculumLoading])
+    preloadAllCurriculum().then(() => {
+      try {
+        const allStandards = getAllCurriculumStandards()
+        setStandards(allStandards)
+      } catch (error) {
+        console.error('Error loading standards:', error)
+      } finally {
+        setLoading(false)
+      }
+    });
+  }, [])
 
   const subjects = useMemo(() => getUnique(standards.map(s => s.subject)), [standards])
   const grades = useMemo(() => getUnique(standards.map(s => s.grade_level)), [standards])

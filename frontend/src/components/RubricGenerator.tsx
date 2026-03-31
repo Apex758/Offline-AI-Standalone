@@ -47,7 +47,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
-import { useCurriculumIndex } from '../data/curriculumLoader';
+// Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 const ENDPOINT = '/ws/rubric';
 
@@ -473,7 +473,6 @@ const rubricToDisplayText = (rubric: ParsedRubric): string => {
 };
 
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
-  useCurriculumIndex();
   const triggerCheck = useAchievementTrigger();
   const LOCAL_STORAGE_KEY = `rubric_state_${tabId}`;
   

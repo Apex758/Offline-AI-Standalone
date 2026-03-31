@@ -51,7 +51,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
-import { useCurriculumIndex } from '../data/curriculumLoader';
+// Curriculum data is loaded on demand by MultigradeAlignmentFields
 
 interface MultigradePlannerProps {
   tabId: string;
@@ -280,7 +280,6 @@ function parseGradeLevels(gradeRange: string): string[] {
 }
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
-  useCurriculumIndex();
   const triggerCheck = useAchievementTrigger();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `multigrade_state_${tabId}`;
