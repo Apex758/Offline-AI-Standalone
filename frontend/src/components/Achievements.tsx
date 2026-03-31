@@ -579,11 +579,11 @@ const RARITY_GLASS_THEME: Record<AchievementRarity, {
   bgFrom: string; bgMid: string; bgTo: string;
   bgLightFrom: string; bgLightMid: string; bgLightTo: string;
 }> = {
-  common:    { primary: '#9ca3af', accent: '#d1d5db', glow: 'rgba(156,163,175,0.10)', badgeBg: 'rgba(156,163,175,0.18)', badgeBorder: 'rgba(156,163,175,0.32)', badgeText: '#d1d5db', bgFrom: '#1e1e22', bgMid: '#16161a', bgTo: '#101014', bgLightFrom: '#6b7a8c', bgLightMid: '#576678', bgLightTo: '#485568' },
-  uncommon:  { primary: '#22c55e', accent: '#86efac', glow: 'rgba(34,197,94,0.10)',   badgeBg: 'rgba(34,197,94,0.18)',   badgeBorder: 'rgba(34,197,94,0.32)',   badgeText: '#86efac', bgFrom: '#0a1f14', bgMid: '#081a10', bgTo: '#05120b', bgLightFrom: '#1a8a4a', bgLightMid: '#157a3e', bgLightTo: '#0f6832' },
-  rare:      { primary: '#3b82f6', accent: '#93c5fd', glow: 'rgba(59,130,246,0.10)',  badgeBg: 'rgba(59,130,246,0.18)',  badgeBorder: 'rgba(59,130,246,0.32)',  badgeText: '#93c5fd', bgFrom: '#0a1428', bgMid: '#08101e', bgTo: '#050b16', bgLightFrom: '#2554b8', bgLightMid: '#1e48a8', bgLightTo: '#183c96' },
-  epic:      { primary: '#a855f7', accent: '#c4b5fd', glow: 'rgba(139,92,246,0.10)',  badgeBg: 'rgba(139,92,246,0.18)',  badgeBorder: 'rgba(139,92,246,0.32)',  badgeText: '#c4b5fd', bgFrom: '#1a0a2e', bgMid: '#12081e', bgTo: '#0c0516', bgLightFrom: '#6d28d9', bgLightMid: '#5b20c0', bgLightTo: '#4a18a8' },
-  legendary: { primary: '#eca830', accent: '#f5d485', glow: 'rgba(236,168,48,0.10)',  badgeBg: 'rgba(236,168,48,0.18)',  badgeBorder: 'rgba(236,168,48,0.32)',  badgeText: '#f5d485', bgFrom: '#1e1508', bgMid: '#181006', bgTo: '#120c04', bgLightFrom: '#a86415', bgLightMid: '#945812', bgLightTo: '#804c10' },
+  common:    { primary: '#9ca3af', accent: '#d1d5db', glow: 'rgba(156,163,175,0.10)', badgeBg: 'rgba(156,163,175,0.18)', badgeBorder: 'rgba(156,163,175,0.32)', badgeText: '#d1d5db', bgFrom: '#1e1e22', bgMid: '#16161a', bgTo: '#101014', bgLightFrom: '#6b7280', bgLightMid: '#555d6a', bgLightTo: '#414852' },
+  uncommon:  { primary: '#22c55e', accent: '#86efac', glow: 'rgba(34,197,94,0.10)',   badgeBg: 'rgba(34,197,94,0.18)',   badgeBorder: 'rgba(34,197,94,0.32)',   badgeText: '#86efac', bgFrom: '#0a1f14', bgMid: '#081a10', bgTo: '#05120b', bgLightFrom: '#22c55e', bgLightMid: '#189a48', bgLightTo: '#15803d' },
+  rare:      { primary: '#3b82f6', accent: '#93c5fd', glow: 'rgba(59,130,246,0.10)',  badgeBg: 'rgba(59,130,246,0.18)',  badgeBorder: 'rgba(59,130,246,0.32)',  badgeText: '#93c5fd', bgFrom: '#0a1428', bgMid: '#08101e', bgTo: '#050b16', bgLightFrom: '#3b82f6', bgLightMid: '#2563eb', bgLightTo: '#1d4ed8' },
+  epic:      { primary: '#a855f7', accent: '#c4b5fd', glow: 'rgba(139,92,246,0.10)',  badgeBg: 'rgba(139,92,246,0.18)',  badgeBorder: 'rgba(139,92,246,0.32)',  badgeText: '#c4b5fd', bgFrom: '#1a0a2e', bgMid: '#12081e', bgTo: '#0c0516', bgLightFrom: '#a855f7', bgLightMid: '#8b5cf6', bgLightTo: '#7c3aed' },
+  legendary: { primary: '#eca830', accent: '#f5d485', glow: 'rgba(236,168,48,0.10)',  badgeBg: 'rgba(236,168,48,0.18)',  badgeBorder: 'rgba(236,168,48,0.32)',  badgeText: '#f5d485', bgFrom: '#1e1508', bgMid: '#181006', bgTo: '#120c04', bgLightFrom: '#d97706', bgLightMid: '#b45309', bgLightTo: '#92400e' },
 };
 
 const CATEGORY_ICONS: Record<AchievementCategory, object> = {
@@ -668,36 +668,43 @@ function AchievementCard({
         background: dark
           ? `linear-gradient(145deg, ${theme.bgFrom} 0%, ${theme.bgMid} 40%, ${theme.bgTo} 100%)`
           : `linear-gradient(145deg, ${theme.bgLightFrom} 0%, ${theme.bgLightMid} 40%, ${theme.bgLightTo} 100%)`,
-        border: `1px solid ${isEarned ? `${theme.primary}25` : 'rgba(255,255,255,0.07)'}`,
+        border: dark
+          ? `1px solid ${isEarned ? `${theme.primary}25` : 'rgba(255,255,255,0.07)'}`
+          : `1px solid ${isEarned ? `${theme.primary}30` : 'rgba(0,0,0,0.06)'}`,
         boxShadow: hovered
-          ? `0 0 0 1px rgba(255,255,255,0.07) inset, 0 40px 80px rgba(0,0,0,0.65), 0 0 80px ${theme.glow.replace('0.10', '0.20')}`
-          : `0 0 0 1px rgba(255,255,255,0.04) inset, 0 20px 50px rgba(0,0,0,0.45), 0 0 40px ${theme.glow}`,
+          ? dark
+            ? `0 0 0 1px rgba(255,255,255,0.07) inset, 0 40px 80px rgba(0,0,0,0.65), 0 0 80px ${theme.glow.replace('0.10', '0.20')}`
+            : `0 40px 80px rgba(0,0,0,0.15), 0 0 60px ${theme.glow.replace('0.10', '0.15')}`
+          : dark
+            ? `0 0 0 1px rgba(255,255,255,0.04) inset, 0 20px 50px rgba(0,0,0,0.45), 0 0 40px ${theme.glow}`
+            : `0 20px 50px rgba(0,0,0,0.08), 0 0 30px ${theme.glow}`,
         transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
         transition: 'transform 0.4s ease, box-shadow 0.4s ease',
-        filter: isEarned ? 'none' : 'grayscale(0.6) brightness(0.55)',
+        filter: isEarned ? 'none' : (dark ? 'grayscale(0.6) brightness(0.55)' : 'grayscale(0.5) brightness(0.7)'),
         zIndex: hovered ? 2 : undefined,
         cursor: isEarned ? 'pointer' : 'default',
       }}
     >
       {(() => {
         // Theme-aware color helpers
-        // Both modes use light text on dark card backgrounds
+        // Both modes: white text — light mode uses text-shadow for contrast against lighter areas
+        const txtShadow = dark ? 'none' : '0 1px 4px rgba(0,0,0,0.5)';
         const textPrimary = '#fff';
-        const textMuted = 'rgba(255,255,255,0.25)';
-        const textSub = 'rgba(255,255,255,0.38)';
-        const textLabel = 'rgba(255,255,255,0.28)';
-        const textFooter = 'rgba(255,255,255,0.22)';
-        const lineDivider = 'rgba(255,255,255,0.07)';
-        const iconBoxBg = 'rgba(255,255,255,0.06)';
-        const iconBoxBorder = 'rgba(255,255,255,0.09)';
-        const iconColor = 'rgba(255,255,255,0.65)';
-        const iconLockedColor = 'rgba(255,255,255,0.3)';
-        const secretBg = 'rgba(255,255,255,0.12)';
-        const secretColor = 'rgba(255,255,255,0.6)';
+        const textMuted = 'rgba(255,255,255,0.8)';
+        const textSub = 'rgba(255,255,255,0.75)';
+        const textLabel = 'rgba(255,255,255,0.8)';
+        const textFooter = 'rgba(255,255,255,0.8)';
+        const lineDivider = 'rgba(255,255,255,0.12)';
+        const iconBoxBg = 'rgba(255,255,255,0.1)';
+        const iconBoxBorder = 'rgba(255,255,255,0.15)';
+        const iconColor = 'rgba(255,255,255,0.75)';
+        const iconLockedColor = 'rgba(255,255,255,0.35)';
+        const secretBg = 'rgba(255,255,255,0.15)';
+        const secretColor = 'rgba(255,255,255,0.7)';
         const watermarkColor = '#ffffff';
         const shineBg = dark
           ? 'linear-gradient(180deg, rgba(255,255,255,0.055) 0%, transparent 100%)'
-          : 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%)';
+          : 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%)';
 
         return <>
           {/* Shine overlay */}
@@ -719,8 +726,8 @@ function AchievementCard({
               title={isPinned ? 'Unpin from showcase' : canPin ? 'Pin to showcase' : 'Showcase full (5 max)'}
               style={{
                 width: 26, height: 26,
-                backgroundColor: isPinned ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
-                border: `1px solid ${isPinned ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.12)'}`,
+                backgroundColor: isPinned ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                border: `1px solid ${isPinned ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)'}`,
                 opacity: canPin || isPinned ? 1 : 0.4,
                 cursor: canPin || isPinned ? 'pointer' : 'not-allowed',
               }}
@@ -730,7 +737,7 @@ function AchievementCard({
           )}
 
           {/* Body */}
-          <div style={{ position: 'relative', zIndex: 2, padding: '22px 22px 0' }}>
+          <div style={{ position: 'relative', zIndex: 2, padding: '22px 22px 0', textShadow: txtShadow }}>
             {/* Top row: number + badges */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -748,9 +755,9 @@ function AchievementCard({
                   </span>
                 )}
               </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: theme.badgeBg, border: `1px solid ${theme.badgeBorder}`, borderRadius: 100, padding: '4px 11px' }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: theme.badgeText }} />
-                <span style={{ fontSize: 10, fontWeight: 500, color: theme.badgeText, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 100, padding: '4px 11px', backdropFilter: 'blur(8px)' }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: '#fff', letterSpacing: '0.1em', textTransform: 'uppercase' as const, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
                   {RARITY_LABELS[definition.rarity]}
                 </span>
               </div>
@@ -766,7 +773,7 @@ function AchievementCard({
 
             {/* Title */}
             <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 800, color: textPrimary, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: 6 }}>
-              {nameLine1}{nameLine2 && <>{' '}<span style={{ background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 50%, ${theme.primary} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{nameLine2}</span></>}
+              {nameLine1}{nameLine2 && <>{' '}<span style={{ color: theme.accent, textShadow: dark ? 'none' : `0 1px 4px rgba(0,0,0,0.5)` }}>{nameLine2}</span></>}
             </div>
 
             {/* Description */}
@@ -780,7 +787,7 @@ function AchievementCard({
             {/* Stats row */}
             <div style={{ display: 'flex', alignItems: 'flex-start', paddingBottom: 20 }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3 }}>
-                <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent }}>
                   +{definition.points} pts
                 </span>
                 <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Earned</span>
@@ -789,7 +796,7 @@ function AchievementCard({
               {isEarned && impactLabel ? (
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3, paddingLeft: 12, borderLeft: `1px solid ${lineDivider}` }}>
                   <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: textPrimary, whiteSpace: 'nowrap' as const }}>{impactCount}</span>
-                  <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}>{definition.check_key.replace(/_/g, ' ')}</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const, lineHeight: 1.3, whiteSpace: 'pre-line' as const }}>{definition.check_key.replace(/_/g, '\n')}</span>
                 </div>
               ) : !isEarned && progress ? (
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3, paddingLeft: 12, borderLeft: `1px solid ${lineDivider}` }}>
@@ -809,7 +816,7 @@ function AchievementCard({
             {/* Progress bar (locked only) */}
             {!isEarned && progress && (
               <div style={{ paddingBottom: 16 }}>
-                <div style={{ height: 3, borderRadius: 100, background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                <div style={{ height: 3, borderRadius: 100, background: 'rgba(255,255,255,0.15)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', borderRadius: 100, width: `${progressPercent}%`, background: `linear-gradient(90deg, ${theme.primary}, ${theme.accent})`, transition: 'width 0.5s ease' }} />
                 </div>
               </div>
@@ -817,13 +824,13 @@ function AchievementCard({
           </div>
 
           {/* Footer */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '12px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textShadow: txtShadow }}>
             <span style={{ fontSize: 10.5, fontWeight: 400, color: textFooter, letterSpacing: '0.03em' }}>
               {isEarned && dateStr ? dateStr : !isEarned ? `${progressPercent}% complete` : ''}
             </span>
             {isPinned && isEarned && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, fontWeight: 500, color: `${theme.primary}73`, letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
-                <div style={{ width: 4, height: 4, borderRadius: '50%', background: `${theme.primary}8c` }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, fontWeight: 500, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.8)' }} />
                 Showcased
               </div>
             )}

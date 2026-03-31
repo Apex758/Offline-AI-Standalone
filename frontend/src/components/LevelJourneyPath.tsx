@@ -282,20 +282,20 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
         }}
       >
         <div className="flex items-center justify-center gap-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: tabColor }}>
+          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: dark ? tabColor : 'var(--dash-text, #1a1a2e)', textShadow: dark ? 'none' : `0 0 12px ${tabColor}60` }}>
             Level {currentLevel} Journey
           </span>
           <HugeiconsIcon
             icon={ArrowDownIconData}
             size={12}
             style={{
-              color: tabColor,
+              color: dark ? tabColor : 'var(--dash-text, #1a1a2e)',
               transform: levelsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
             }}
           />
         </div>
-        <div className="text-[10px] mt-0.5" style={{ color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)' }}>
+        <div className="text-[10px] mt-0.5 font-medium" style={{ color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)' }}>
           {completedSteps}/{totalSteps} steps to <span className="font-semibold">{nextTitle}</span>
         </div>
       </div>
