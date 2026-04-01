@@ -611,25 +611,28 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               style={{ backgroundColor: 'var(--dash-border)' }}
             />
             <div
-              className="text-center cursor-pointer group relative"
-              onClick={() => showcase.length > 0 ? setShowShowcase(s => !s) : onCreateTab?.('achievements')}
-              title={showcase.length > 0 ? (showShowcase ? 'Show stats' : 'Show showcase') : 'View Achievements'}
-              style={{ minWidth: showShowcase && showcase.length > 0 ? Math.min(showcase.length, 5) * 152 : undefined, transition: 'min-width 0.3s ease', overflow: 'visible' }}
+              className="text-center group relative"
+              style={{ minWidth: showShowcase && showcase.length > 0 ? Math.min(showcase.length, 5) * 142 : undefined, transition: 'min-width 0.3s ease', overflow: 'visible' }}
             >
               {/* Stats view */}
-              <div style={{
-                opacity: showShowcase ? 0 : 1,
-                transform: showShowcase ? 'rotateX(90deg)' : 'rotateX(0deg)',
-                transition: 'opacity 0.25s ease, transform 0.25s ease',
-                position: showShowcase ? 'absolute' : 'relative',
-                inset: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: showShowcase ? 'none' : 'auto',
-              }}>
-                <div className="text-2xl font-bold flex items-center justify-center gap-1.5 group-hover:opacity-80 transition-opacity" style={{ color: '#f59e0b' }}>
+              <div
+                className="cursor-pointer"
+                onClick={() => showcase.length > 0 ? setShowShowcase(true) : onCreateTab?.('achievements')}
+                title={showcase.length > 0 ? 'Show showcase' : 'View Achievements'}
+                style={{
+                  opacity: showShowcase ? 0 : 1,
+                  transform: showShowcase ? 'rotateX(90deg)' : 'rotateX(0deg)',
+                  transition: 'opacity 0.25s ease, transform 0.25s ease',
+                  position: showShowcase ? 'absolute' : 'relative',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  pointerEvents: showShowcase ? 'none' : 'auto',
+                }}
+              >
+                <div className="text-2xl font-bold flex items-center justify-center gap-1.5 hover:opacity-80 transition-opacity" style={{ color: '#f59e0b' }}>
                   <HugeiconsIcon icon={Trophy01IconData} size={18} style={{ color: '#f59e0b' }} />
                   {earned.length}/{totalAvailable}
                 </div>
@@ -646,7 +649,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   position: showShowcase ? 'relative' : 'absolute',
                   inset: 0,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
                   pointerEvents: showShowcase ? 'auto' : 'none',
@@ -681,6 +683,36 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                         />
                       );
                     })}
+                  </div>
+                  {/* Collapse arrow — overlaid on right edge */}
+                  <div
+                    onClick={(e) => { e.stopPropagation(); setShowShowcase(false); }}
+                    title="Show stats"
+                    style={{
+                      position: 'absolute',
+                      right: -4,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      opacity: 0,
+                      transition: 'opacity 0.2s ease, background 0.2s ease',
+                      zIndex: 10,
+                    }}
+                    className="group-hover:!opacity-100"
+                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M4.5 2.5L8 6l-3.5 3.5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </div>
                 </div>
               )}
