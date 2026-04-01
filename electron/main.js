@@ -502,12 +502,43 @@ function createWindow() {
     log.info(`Window console [${level}]: ${message}`);
   });
   
-  // Intercept close to minimize to tray instead of quitting
-  mainWindow.on('close', (event) => {
+  // Intercept close to minimize to tray instead of quitting,
+  // and warn about active generations before actually closing
+  mainWindow.on('close', async (event) => {
     if (minimizeToTray && !isQuitting) {
       event.preventDefault();
       mainWindow.hide();
       log.info('Window hidden to tray');
+      return;
+    }
+
+    // Ask the renderer if any generations are active
+    if (!mainWindow._generationCloseConfirmed) {
+      event.preventDefault();
+      try {
+        const hasActive = await mainWindow.webContents.executeJavaScript(
+          `(function() { try { return document.querySelectorAll('[data-generation-active="true"]').length > 0; } catch(e) { return false; } })()`
+        );
+        if (hasActive) {
+          const { response } = await dialog.showMessageBox(mainWindow, {
+            type: 'warning',
+            buttons: ['Keep Generating', 'Stop & Close'],
+            defaultId: 0,
+            cancelId: 0,
+            title: 'Generation in Progress',
+            message: 'You have AI generations still running.',
+            detail: 'Closing the application will stop all active generations and any incomplete output will be lost.',
+          });
+          if (response === 0) {
+            log.info('User cancelled close — generations still active');
+            return;
+          }
+        }
+      } catch (e) {
+        log.warn('Could not check generation state:', e.message);
+      }
+      mainWindow._generationCloseConfirmed = true;
+      mainWindow.close();
     }
   });
 

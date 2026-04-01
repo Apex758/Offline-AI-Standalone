@@ -171,7 +171,10 @@ TIER1_PROMPTS = {
         "Return ONLY valid JSON. No explanation, no markdown, no text before or after the JSON.\n"
         "Keep each action minimal: short title (under 50 chars), 1-sentence description, "
         "and only essential fields in details (subject, grade, topic, date).\n"
-        "Start your response with { and end with }. Ensure the JSON is complete and valid."
+        "Start your response with { and end with }. Ensure the JSON is complete and valid.\n"
+        "Always try to match text to actions — make your best guess. "
+        "If a sentence adds context to another task, include it in that action's description.\n"
+        "If you truly cannot match something, put it in the \"unmatched\" array — never drop text silently."
     ),
 
     "title-generation": (

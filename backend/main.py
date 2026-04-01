@@ -2677,7 +2677,11 @@ Return ONLY a valid JSON object with two keys:
 - "unmatched": an array of text snippets from the user's input that you could NOT confidently map to any of the available action types. If everything was matched, use an empty array.
 
 If the text mentions dates, include them in details.date. If it mentions a subject/grade, include those.
-If you cannot identify any actions, return: {{"actions": [], "unmatched": []}}
+
+IMPORTANT: Always try your best to match text to actions, even if you are not fully confident. Make your best guess — the teacher will confirm or reject it.
+Only put text in "unmatched" if it truly does not relate to any available action type (e.g., greetings, off-topic remarks).
+Some sentences may be context or elaboration for other sentences — include that context in the relevant action's description or details, do NOT put it in unmatched.
+NEVER return both empty actions AND empty unmatched. If you genuinely cannot match anything, put ALL the text in "unmatched" so the teacher can clarify.
 Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
 
 

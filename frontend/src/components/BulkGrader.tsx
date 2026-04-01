@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
@@ -35,6 +35,7 @@ const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 import axios from 'axios';
 import { ParsedQuiz } from '../types/quiz';
 import { useSettings } from '../contexts/SettingsContext';
+import { useTabProcessing } from '../contexts/TabBusyContext';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -100,6 +101,8 @@ const BulkGrader: React.FC<BulkGraderProps> = ({ quiz, onClose, embedded = false
   const [studentFiles, setStudentFiles] = useState<File[]>([]);
   const [draggingStudents, setDraggingStudents] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const setTabProcessing = useTabProcessing('bulk-grade');
+  useEffect(() => { setTabProcessing(processing); }, [processing, setTabProcessing]);
   const [results, setResults] = useState<FileGradeResult[] | null>(null);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 

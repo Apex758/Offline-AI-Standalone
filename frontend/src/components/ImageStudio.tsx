@@ -58,6 +58,7 @@ import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
 import { useNotification } from '../contexts/NotificationContext';
+import { useTabProcessing } from '../contexts/TabBusyContext';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 
@@ -128,6 +129,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [referenceImage, setReferenceImage] = useState<string | null>(null); // img2img reference
   const [img2imgStrength, setImg2imgStrength] = useState(0.5); // 0 = keep original, 1 = fully new
   const [generationState, setGenerationState] = useState<'input' | 'generating' | 'results'>('input');
+  const setTabProcessingImg = useTabProcessing('image-generation');
+  useEffect(() => { setTabProcessingImg(generationState === 'generating'); }, [generationState, setTabProcessingImg]);
   const [imageSlots, setImageSlots] = useState<Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}>>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -220,6 +223,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [comicDescription, setComicDescription] = useState('');
   const [comicPanels, setComicPanels] = useState<ComicPanelSlot[]>([]);
   const [comicState, setComicState] = useState<'input' | 'generating-prompts' | 'generating-images' | 'done'>('input');
+  const setTabProcessingComic = useTabProcessing('comic-generation');
+  useEffect(() => { setTabProcessingComic(comicState === 'generating-prompts' || comicState === 'generating-images'); }, [comicState, setTabProcessingComic]);
   const [comicError, setComicError] = useState<string | null>(null);
   const [comicFinalImage, setComicFinalImage] = useState<string | null>(null);
 

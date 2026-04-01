@@ -16,6 +16,7 @@ import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import axios from 'axios';
+import { useTabProcessing } from '../contexts/TabBusyContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -88,6 +89,8 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
 
   // Grading state
   const [grading, setGrading] = useState(false);
+  const setTabProcessing = useTabProcessing('worksheet-scan-grade');
+  useEffect(() => { setTabProcessing(grading); }, [grading, setTabProcessing]);
   const [gradingProgress, setGradingProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<ScanGradeResult[]>([]);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);

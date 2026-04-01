@@ -60,6 +60,7 @@ import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useQueue } from '../contexts/QueueContext';
+import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType, BrainDumpSuggestion } from '../types/brainDump';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -187,6 +188,39 @@ function loadEntries(): BrainDumpEntry[] {
 
 function saveEntries(entries: BrainDumpEntry[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+// ─── Task Sets: Auto-splitting for Tier 1 ──────────────────────
+const TASK_SET_CHAR_LIMIT = 6000; // ~1,500 tokens at ~4 chars/token
+
+/** Split text into sentences at . ! ? boundaries followed by whitespace or end-of-string. */
+function splitIntoSentences(text: string): string[] {
+  const sentences = text.match(/[^.!?\n]*[.!?]+[\s]*/g) || [];
+  const joined = sentences.join('');
+  const remainder = text.slice(joined.length).trim();
+  if (remainder) sentences.push(remainder);
+  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+}
+
+/** Group sentences into sets that stay under the character limit. */
+function groupSentencesIntoSets(sentences: string[], limit: number = TASK_SET_CHAR_LIMIT): string[][] {
+  const sets: string[][] = [];
+  let currentSet: string[] = [];
+  let currentLength = 0;
+
+  for (const sentence of sentences) {
+    const sentenceLen = sentence.length;
+    if (currentLength + sentenceLen > limit && currentSet.length > 0) {
+      sets.push(currentSet);
+      currentSet = [sentence];
+      currentLength = sentenceLen;
+    } else {
+      currentSet.push(sentence);
+      currentLength += sentenceLen;
+    }
+  }
+  if (currentSet.length > 0) sets.push(currentSet);
+  return sets;
 }
 
 // ─── Utility: Modern Calculator ─────────────────────────────────
@@ -545,6 +579,143 @@ const MiniTimer: React.FC = () => {
   );
 };
 
+// ─── Review Sets Panel (Tier 1 splitting) ───────────────────────
+const ReviewSetsPanel: React.FC<{
+  taskSets: string[][];
+  onUpdateSets: (sets: string[][]) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+  accentColor: string;
+}> = ({ taskSets, onUpdateSets, onConfirm, onCancel, accentColor }) => {
+
+  const moveSentence = (fromSet: number, sentenceIdx: number, toSet: number) => {
+    const newSets = taskSets.map(s => [...s]);
+    const [sentence] = newSets[fromSet].splice(sentenceIdx, 1);
+    if (toSet >= newSets.length) {
+      // Create new set
+      newSets.push([sentence]);
+    } else {
+      // Add to start if moving down, end if moving up
+      if (toSet > fromSet) {
+        newSets[toSet].unshift(sentence);
+      } else {
+        newSets[toSet].push(sentence);
+      }
+    }
+    // Remove empty sets
+    onUpdateSets(newSets.filter(s => s.length > 0));
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onCancel}
+            className="p-1.5 rounded-xl bg-theme-tertiary text-theme-muted hover:text-theme-label transition-all active:scale-90"
+          >
+            <Icon icon={ArrowLeft01IconData} className="w-4 h-4" />
+          </button>
+          <h3 className="text-sm font-bold text-theme-heading flex items-center gap-2">
+            <Layers className="w-4 h-4" style={{ color: accentColor }} />
+            Review Task Sets
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${accentColor}20`, color: accentColor }}>
+              {taskSets.length} sets
+            </span>
+          </h3>
+        </div>
+      </div>
+
+      <p className="text-xs text-theme-muted leading-relaxed">
+        Your input has been split into manageable sets for better accuracy. Review the sets below and move sentences between them if needed.
+      </p>
+
+      {/* Sets */}
+      <div className="space-y-3">
+        {taskSets.map((sentences, setIdx) => {
+          const setCharCount = sentences.join(' ').length;
+          const isOverLimit = setCharCount > TASK_SET_CHAR_LIMIT;
+
+          return (
+            <div
+              key={setIdx}
+              className={`rounded-2xl ring-1 overflow-hidden transition-all ${
+                isOverLimit
+                  ? 'ring-amber-500/30 bg-amber-500/5'
+                  : 'ring-theme bg-theme-surface'
+              }`}
+              style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+            >
+              {/* Set header */}
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-theme"
+                style={{ background: `${accentColor}08` }}>
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: accentColor }}>
+                  Set {setIdx + 1}
+                </span>
+                <span className={`text-[10px] font-mono ${isOverLimit ? 'text-amber-500 font-semibold' : 'text-theme-muted'}`}>
+                  {setCharCount.toLocaleString()} chars
+                  {isOverLimit && ' ⚠'}
+                </span>
+              </div>
+
+              {/* Sentences */}
+              <div className="divide-y divide-theme">
+                {sentences.map((sentence, sIdx) => (
+                  <div key={sIdx} className="flex items-start gap-2 px-4 py-2.5 group hover:bg-theme-tertiary/50 transition-colors">
+                    <p className="flex-1 text-sm text-theme-label leading-relaxed min-w-0">
+                      {sentence}
+                    </p>
+                    <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Move up (to previous set) */}
+                      {setIdx > 0 && (
+                        <button
+                          onClick={() => moveSentence(setIdx, sIdx, setIdx - 1)}
+                          className="p-1 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition-all active:scale-90"
+                          title={`Move to Set ${setIdx}`}
+                        >
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {/* Move down (to next set) */}
+                      {setIdx < taskSets.length - 1 && (
+                        <button
+                          onClick={() => moveSentence(setIdx, sIdx, setIdx + 1)}
+                          className="p-1 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition-all active:scale-90"
+                          title={`Move to Set ${setIdx + 2}`}
+                        >
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        <button
+          onClick={onConfirm}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20"
+        >
+          <Zap className="w-4 h-4" />
+          Generate All {taskSets.length} Sets
+        </button>
+        <button
+          onClick={onCancel}
+          className="px-4 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] bg-theme-tertiary text-theme-muted hover:text-theme-label ring-1 ring-theme"
+        >
+          Back
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ─── Main Component ─────────────────────────────────────────────
 const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, onCreateTab }) => {
   const [flipped, setFlipped] = useState(false);
@@ -567,6 +738,13 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const [suggestions, setSuggestions] = useState<BrainDumpSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSuggestLoading, setIsSuggestLoading] = useState(false);
+  // ── Task Sets state (Tier 1 auto-splitting) ──
+  const [taskSets, setTaskSets] = useState<string[][]>([]);
+  const [showReviewSets, setShowReviewSets] = useState(false);
+  const [setResults, setSetResults] = useState<Map<number, BrainDumpAction[]>>(new Map());
+  const [currentSetProcessing, setCurrentSetProcessing] = useState(-1);
+  const [totalSetsToGenerate, setTotalSetsToGenerate] = useState(0);
+
   const editorRef = useRef<HTMLDivElement>(null);
   const editEditorRef = useRef<HTMLDivElement>(null);
   const accumulatedRef = useRef('');
@@ -576,6 +754,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const { settings } = useSettings();
   const accentColor = settings.tabColors['brain-dump'] ?? '#a855f7';
 
+  const { tier } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
@@ -705,6 +884,42 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
       if (jsonStart === -1) return null;
       let jsonStr = text.slice(jsonStart);
 
+      // Smart bracket-counting repair: figure out what's unclosed
+      const buildCloser = (s: string): string => {
+        const stack: string[] = [];
+        let inString = false;
+        let escape = false;
+        for (const ch of s) {
+          if (escape) { escape = false; continue; }
+          if (ch === '\\') { escape = true; continue; }
+          if (ch === '"') { inString = !inString; continue; }
+          if (inString) continue;
+          if (ch === '{') stack.push('}');
+          else if (ch === '[') stack.push(']');
+          else if (ch === '}' || ch === ']') stack.pop();
+        }
+        // If we're inside a string, close it first
+        if (inString) return '"' + stack.reverse().join('');
+        return stack.reverse().join('');
+      };
+
+      // Try smart closer first
+      const smartCloser = buildCloser(jsonStr);
+      if (smartCloser) {
+        try {
+          return JSON.parse(jsonStr + smartCloser);
+        } catch { /* fall through */ }
+        // Try trimming back to last complete value before closing
+        const lastComma = jsonStr.lastIndexOf(',');
+        if (lastComma > jsonStr.length * 0.3) {
+          const trimmed = jsonStr.slice(0, lastComma);
+          const trimmedCloser = buildCloser(trimmed);
+          try {
+            return JSON.parse(trimmed + trimmedCloser);
+          } catch { /* fall through */ }
+        }
+      }
+
       // Try progressively aggressive repairs
       const closers = [']}', '"}]}', '""}}]}', '""}]}'];
       for (const closer of closers) {
@@ -770,15 +985,49 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const isStreaming = getIsStreaming(tabId, WS_ENDPOINT);
   const loading = !!localLoadingMap[tabId] || isStreaming || isAnalyzing;
 
+  // Track completed sets in queue mode
+  const queueSetsCompletedRef = useRef(0);
+
   useEffect(() => {
     if (localLoadingMap[tabId] && streamingContent && !isStreaming) {
       // Queue-based generation finished — parse the result
-      const { actions: parsed, unmatched } = parseActions(streamingContent);
+      const { actions: parsed, unmatched: unmatchedRaw } = parseActions(streamingContent);
+      let unmatched = unmatchedRaw;
+      clearStreaming(tabId, WS_ENDPOINT);
+
+      // Multi-set queue mode: accumulate results across set completions
+      if (totalSetsToGenerate > 1) {
+        const completedIdx = queueSetsCompletedRef.current;
+        setSetResults(prev => {
+          const updated = new Map(prev);
+          updated.set(completedIdx, parsed);
+          return updated;
+        });
+        setActions(prev => [...prev, ...parsed]);
+        setCurrentSetProcessing(completedIdx + 1);
+        queueSetsCompletedRef.current = completedIdx + 1;
+
+        // Check if all sets are done
+        if (completedIdx + 1 >= totalSetsToGenerate) {
+          setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+          setCurrentSetProcessing(-1);
+          queueSetsCompletedRef.current = 0;
+        }
+        // Otherwise keep localLoadingMap true — more queue items incoming
+        return;
+      }
+
+      // Single-set (normal) mode
+      // If AI returned nothing at all, treat entire input as unmatched for follow-up
       if (parsed.length === 0 && unmatched.length === 0) {
-        setAnalysisError('Could not extract actions. Try being more specific about what you need (e.g., "make a quiz on fractions for grade 3").');
+        const inputText = getPlainText();
+        if (inputText) {
+          unmatched = [inputText];
+        } else {
+          setAnalysisError('Could not extract actions. Try being more specific about what you need (e.g., "make a quiz on fractions for grade 3").');
+        }
       }
       setActions(parsed);
-      clearStreaming(tabId, WS_ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
       // Trigger suggestion flow for unmatched text
       if (unmatched.length > 0) {
@@ -798,7 +1047,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         }, delay);
       }
     }
-  }, [streamingContent, isStreaming, localLoadingMap, tabId, parseActions, clearStreaming, getConnection, settings.generationMode]);
+  }, [streamingContent, isStreaming, localLoadingMap, tabId, parseActions, clearStreaming, getConnection, settings.generationMode, totalSetsToGenerate, getPlainText]);
 
   // Skeleton loading lifecycle
   const prevLoadingRef = useRef(false);
@@ -848,12 +1097,26 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     const text = getPlainText();
     if (!text || loading) return;
 
+    // Tier 1: check if text needs splitting into sets
+    if (tier === 1 && text.length > TASK_SET_CHAR_LIMIT) {
+      const sentences = splitIntoSentences(text);
+      const sets = groupSentencesIntoSets(sentences);
+      if (sets.length > 1) {
+        setTaskSets(sets);
+        setShowReviewSets(true);
+        return; // Show review UI instead of generating immediately
+      }
+    }
+
     setActions([]);
     setSuggestions([]);
     setShowSuggestions(false);
     setRevealActions(false);
     setVisibleActionCount(0);
     setAnalysisError(null);
+    setSetResults(new Map());
+    setCurrentSetProcessing(-1);
+    setTotalSetsToGenerate(0);
     accumulatedRef.current = '';
     suggestAccumulatedRef.current = '';
 
@@ -885,9 +1148,16 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         if (data.type === 'token') {
           accumulatedRef.current += data.content;
         } else if (data.type === 'done') {
-          const { actions: parsed, unmatched } = parseActions(accumulatedRef.current);
+          const { actions: parsed, unmatched: unmatchedRaw } = parseActions(accumulatedRef.current);
+          // If AI returned nothing at all, treat entire input as unmatched for follow-up
+          let unmatched = unmatchedRaw;
           if (parsed.length === 0 && unmatched.length === 0) {
-            setAnalysisError('Could not extract actions. Try being more specific about what you need (e.g., "make a quiz on fractions for grade 3").');
+            const inputText = getPlainText();
+            if (inputText) {
+              unmatched = [inputText];
+            } else {
+              setAnalysisError('Could not extract actions. Try being more specific about what you need (e.g., "make a quiz on fractions for grade 3").');
+            }
           }
           setActions(parsed);
           setIsAnalyzing(false);
@@ -990,7 +1260,114 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     } else {
       ws.addEventListener('open', sendPayload, { once: true });
     }
-  }, [getPlainText, loading, tabId, getConnection, parseActions, queueEnabled, enqueue, settings.generationMode]);
+  }, [getPlainText, loading, tabId, getConnection, parseActions, queueEnabled, enqueue, settings.generationMode, tier]);
+
+  // ── Generate all task sets sequentially (Tier 1) ──
+  const handleGenerateAllSets = useCallback(() => {
+    setShowReviewSets(false);
+    setActions([]);
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setRevealActions(false);
+    setVisibleActionCount(0);
+    setAnalysisError(null);
+    setSetResults(new Map());
+    setTotalSetsToGenerate(taskSets.length);
+    setCurrentSetProcessing(0);
+    accumulatedRef.current = '';
+    suggestAccumulatedRef.current = '';
+
+    if (queueEnabled) {
+      // Queue each set as a separate queue item
+      taskSets.forEach((set, index) => {
+        enqueue({
+          label: `Brain Dump — Set ${index + 1}/${taskSets.length}`,
+          toolType: 'Brain Dump',
+          tabId,
+          endpoint: WS_ENDPOINT,
+          prompt: '',
+          generationMode: settings.generationMode,
+          extraMessageData: {
+            text: set.join(' '),
+            jobId: `brain-dump-set-${index}-${Date.now()}`,
+            setIndex: index,
+            totalSets: taskSets.length,
+          },
+        });
+      });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
+      return;
+    }
+
+    // Direct WebSocket path: send sets sequentially
+    setIsAnalyzing(true);
+    const ws = getConnection(tabId, WS_ENDPOINT);
+
+    const sendSet = (setIndex: number) => {
+      if (setIndex >= taskSets.length) {
+        // All sets done — merge results into actions
+        setIsAnalyzing(false);
+        setCurrentSetProcessing(-1);
+        const allActions: BrainDumpAction[] = [];
+        const sortedResults = new Map([...setResults.entries()].sort((a, b) => a[0] - b[0]));
+        sortedResults.forEach(acts => allActions.push(...acts));
+        setActions(allActions);
+        return;
+      }
+
+      setCurrentSetProcessing(setIndex);
+      accumulatedRef.current = '';
+      const text = taskSets[setIndex].join(' ');
+
+      const handleSetMessage = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === 'token') {
+            accumulatedRef.current += data.content;
+          } else if (data.type === 'done') {
+            const { actions: parsed } = parseActions(accumulatedRef.current);
+            setSetResults(prev => {
+              const updated = new Map(prev);
+              updated.set(setIndex, parsed);
+              return updated;
+            });
+            // Also add to actions incrementally so skeleton can transition
+            setActions(prev => [...prev, ...parsed]);
+
+            ws.removeEventListener('message', handleSetMessage);
+            // Send next set after a short delay
+            setTimeout(() => sendSet(setIndex + 1), 300);
+          } else if (data.type === 'error') {
+            setAnalysisError(data.message || `Set ${setIndex + 1} failed.`);
+            ws.removeEventListener('message', handleSetMessage);
+            setIsAnalyzing(false);
+            setCurrentSetProcessing(-1);
+          }
+        } catch { /* ignore */ }
+      };
+
+      ws.addEventListener('message', handleSetMessage);
+
+      const payload = JSON.stringify({
+        text,
+        jobId: `brain-dump-set-${setIndex}-${Date.now()}`,
+        generationMode: settings.generationMode,
+      });
+
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(payload);
+      } else {
+        ws.addEventListener('open', () => ws.send(payload), { once: true });
+      }
+    };
+
+    if (ws.readyState === WebSocket.OPEN) {
+      sendSet(0);
+    } else {
+      ws.addEventListener('open', () => sendSet(0), { once: true });
+    }
+  }, [taskSets, queueEnabled, enqueue, tabId, settings.generationMode, getConnection, parseActions, setResults]);
 
   // Accept an action
   const handleAccept = useCallback((actionId: string) => {
@@ -1128,6 +1505,9 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   }, []);
 
   const hasContent = getPlainText().length > 0;
+  const charCount = getPlainText().length;
+  const needsSplitting = tier === 1 && charCount > TASK_SET_CHAR_LIMIT;
+  const estimatedSets = needsSplitting ? groupSentencesIntoSets(splitIntoSentences(getPlainText())).length : 1;
 
   // Strip HTML for preview text
   const stripHtml = useCallback((html: string) => {
@@ -1347,6 +1727,14 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         </div>
                       </div>
                     </div>
+                  ) : showReviewSets && tier === 1 ? (
+                    <ReviewSetsPanel
+                      taskSets={taskSets}
+                      onUpdateSets={setTaskSets}
+                      onConfirm={handleGenerateAllSets}
+                      onCancel={() => setShowReviewSets(false)}
+                      accentColor={accentColor}
+                    />
                   ) : (
                     <>
                       {/* Text Input Area with Rich Text Toolbar */}
@@ -1394,6 +1782,23 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                               {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                             </button>
                           </div>
+                          {/* Tier 1: Character count badge */}
+                          {tier === 1 && charCount > 0 && (
+                            <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-mono font-medium transition-all ${
+                              needsSplitting
+                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20'
+                                : charCount > TASK_SET_CHAR_LIMIT * 0.8
+                                ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'
+                                : 'bg-theme-tertiary text-theme-muted'
+                            }`}>
+                              {charCount.toLocaleString()} / {TASK_SET_CHAR_LIMIT.toLocaleString()}
+                              {needsSplitting && (
+                                <span className="ml-1.5 text-amber-500">
+                                  · {estimatedSets} sets
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                         {/* Rich Text Toolbar — expandable right panel */}
                         {!activeTool && (
@@ -1474,8 +1879,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           disabled={!hasContent || loading}
                           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
                         >
-                          <Zap className="w-4 h-4" />
-                          Analyze & Organize
+                          {needsSplitting ? <Layers className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                          {needsSplitting ? `Review ${estimatedSets} Sets` : 'Analyze & Organize'}
                         </button>
                         <button
                           onClick={handleSaveTextAsNote}
@@ -1552,7 +1957,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         </button>
                       )}
                       <button
-                        onClick={() => { setActions([]); setSuggestions([]); setShowSuggestions(false); setRevealActions(false); setVisibleActionCount(0); }}
+                        onClick={() => { setActions([]); setSuggestions([]); setShowSuggestions(false); setRevealActions(false); setVisibleActionCount(0); setSetResults(new Map()); setTaskSets([]); setTotalSetsToGenerate(0); setCurrentSetProcessing(-1); }}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 ring-1 ring-purple-500/15 transition-all active:scale-95"
                       >
                         <Brain className="w-3 h-3" />
@@ -1562,129 +1967,195 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                   </div>
 
                   <div className="space-y-2">
-                    {actions.map((action, actionIndex) => {
-                      const meta = ACTION_META[action.type] || ACTION_META['calendar-task'];
-                      const Icon = meta.icon;
-                      const isAccepted = action.status === 'accepted';
-                      const isDenied = action.status === 'denied';
-                      const isVisible = !revealActions || actionIndex < visibleActionCount;
-
-                      return (
-                        <div
-                          key={action.id}
-                          className={`flex items-start gap-3 p-3.5 rounded-2xl ${
-                            isAccepted ? 'bg-green-500/8 ring-1 ring-green-500/20' :
-                            isDenied ? 'bg-theme-tertiary opacity-50 ring-1 ring-transparent' :
-                            'bg-theme-surface ring-1 ring-theme hover:ring-purple-400/30'
-                          }`}
-                          style={{
-                            ...(!isAccepted && !isDenied ? { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } : {}),
-                            opacity: isVisible ? 1 : 0,
-                            transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
-                            transition: 'opacity 300ms ease, transform 300ms ease, background-color 200ms ease, box-shadow 200ms ease',
-                          }}
-                        >
-                          <div className={`p-2 rounded-xl shrink-0 bg-${meta.color}-500/12`}>
-                            <Icon className={`w-4 h-4 text-${meta.color}-500`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">
-                                {meta.label}
+                    {/* Multi-set mode: render with set dividers */}
+                    {setResults.size > 1 ? (
+                      <>
+                        {Array.from(setResults.entries())
+                          .sort(([a], [b]) => a - b)
+                          .map(([setIdx, setActions]) => (
+                          <React.Fragment key={`set-${setIdx}`}>
+                            {/* Set divider header */}
+                            <div className="flex items-center gap-2 pt-2 pb-1">
+                              <div className="flex-1 h-px" style={{ background: `${accentColor}25` }} />
+                              <span className="text-[10px] font-bold uppercase tracking-widest px-2" style={{ color: accentColor }}>
+                                Set {setIdx + 1}
                               </span>
-                              {isAccepted && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">
-                                  <Check className="w-2.5 h-2.5" /> Done
-                                </span>
-                              )}
-                              {isDenied && <span className="text-[10px] text-theme-hint line-through">Declined</span>}
+                              <div className="flex-1 h-px" style={{ background: `${accentColor}25` }} />
                             </div>
-                            <p className="text-sm font-semibold text-theme-heading mt-1">{action.title}</p>
-                            {action.description && (
-                              <p className="text-xs text-theme-muted mt-0.5 leading-relaxed">{action.description}</p>
-                            )}
-                            {action.details && Object.keys(action.details).length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                {Object.entries(action.details).map(([key, val]) => (
-                                  <span key={key} className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-medium bg-theme-tertiary text-theme-muted">
-                                    {key}: {String(val)}
-                                  </span>
-                                ))}
+                            {/* Actions for this set */}
+                            {setActions.map((action) => {
+                              const meta = ACTION_META[action.type] || ACTION_META['calendar-task'];
+                              const ActionIcon = meta.icon;
+                              const isAccepted = action.status === 'accepted';
+                              const isDenied = action.status === 'denied';
+                              return (
+                                <div
+                                  key={action.id}
+                                  className={`flex items-start gap-3 p-3.5 rounded-2xl ${
+                                    isAccepted ? 'bg-green-500/8 ring-1 ring-green-500/20' :
+                                    isDenied ? 'bg-theme-tertiary opacity-50 ring-1 ring-transparent' :
+                                    'bg-theme-surface ring-1 ring-theme hover:ring-purple-400/30'
+                                  }`}
+                                  style={!isAccepted && !isDenied ? { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } : {}}
+                                >
+                                  <div className={`p-2 rounded-xl shrink-0 bg-${meta.color}-500/12`}>
+                                    <ActionIcon className={`w-4 h-4 text-${meta.color}-500`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">{meta.label}</span>
+                                      {isAccepted && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full"><Check className="w-2.5 h-2.5" /> Done</span>}
+                                      {isDenied && <span className="text-[10px] text-theme-hint line-through">Declined</span>}
+                                    </div>
+                                    <p className="text-sm font-semibold text-theme-heading mt-1">{action.title}</p>
+                                    {action.description && <p className="text-xs text-theme-muted mt-0.5 leading-relaxed">{action.description}</p>}
+                                    {action.details && Object.keys(action.details).length > 0 && (
+                                      <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {Object.entries(action.details).map(([key, val]) => (
+                                          <span key={key} className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-medium bg-theme-tertiary text-theme-muted">{key}: {String(val)}</span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {action.status === 'pending' && (
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <button onClick={() => handleAccept(action.id)} className="p-2 rounded-xl bg-green-500/12 text-green-500 hover:bg-green-500/25 transition-all active:scale-90" title="Accept"><Check className="w-4 h-4" /></button>
+                                      <button onClick={() => handleDeny(action.id)} className="p-2 rounded-xl bg-red-500/12 text-red-500 hover:bg-red-500/25 transition-all active:scale-90" title="Decline"><XIcon className="w-4 h-4" /></button>
+                                    </div>
+                                  )}
+                                  {isAccepted && action.type !== 'calendar-task' && (
+                                    <button onClick={() => { const tabType = ACTION_TO_TAB[action.type]; if (tabType && onCreateTab) onCreateTab(tabType, action.details); }} className="p-2 rounded-xl bg-blue-500/12 text-blue-500 hover:bg-blue-500/25 transition-all active:scale-90 shrink-0" title="Open tool"><ExternalLink className="w-4 h-4" /></button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </React.Fragment>
+                        ))}
+                        {/* Show progress indicator if still generating sets */}
+                        {currentSetProcessing >= 0 && currentSetProcessing < totalSetsToGenerate && (
+                          <div className="flex items-center gap-2 py-2 text-xs" style={{ color: accentColor }}>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Processing Set {currentSetProcessing + 1} of {totalSetsToGenerate}...
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      /* Single-set (normal) mode */
+                      actions.map((action, actionIndex) => {
+                        const meta = ACTION_META[action.type] || ACTION_META['calendar-task'];
+                        const ActionIcon = meta.icon;
+                        const isAccepted = action.status === 'accepted';
+                        const isDenied = action.status === 'denied';
+                        const isVisible = !revealActions || actionIndex < visibleActionCount;
+
+                        return (
+                          <div
+                            key={action.id}
+                            className={`flex items-start gap-3 p-3.5 rounded-2xl ${
+                              isAccepted ? 'bg-green-500/8 ring-1 ring-green-500/20' :
+                              isDenied ? 'bg-theme-tertiary opacity-50 ring-1 ring-transparent' :
+                              'bg-theme-surface ring-1 ring-theme hover:ring-purple-400/30'
+                            }`}
+                            style={{
+                              ...(!isAccepted && !isDenied ? { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } : {}),
+                              opacity: isVisible ? 1 : 0,
+                              transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
+                              transition: 'opacity 300ms ease, transform 300ms ease, background-color 200ms ease, box-shadow 200ms ease',
+                            }}
+                          >
+                            <div className={`p-2 rounded-xl shrink-0 bg-${meta.color}-500/12`}>
+                              <ActionIcon className={`w-4 h-4 text-${meta.color}-500`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">{meta.label}</span>
+                                {isAccepted && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full"><Check className="w-2.5 h-2.5" /> Done</span>}
+                                {isDenied && <span className="text-[10px] text-theme-hint line-through">Declined</span>}
+                              </div>
+                              <p className="text-sm font-semibold text-theme-heading mt-1">{action.title}</p>
+                              {action.description && <p className="text-xs text-theme-muted mt-0.5 leading-relaxed">{action.description}</p>}
+                              {action.details && Object.keys(action.details).length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                  {Object.entries(action.details).map(([key, val]) => (
+                                    <span key={key} className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-medium bg-theme-tertiary text-theme-muted">{key}: {String(val)}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            {action.status === 'pending' && (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button onClick={() => handleAccept(action.id)} className="p-2 rounded-xl bg-green-500/12 text-green-500 hover:bg-green-500/25 transition-all active:scale-90" title="Accept"><Check className="w-4 h-4" /></button>
+                                <button onClick={() => handleDeny(action.id)} className="p-2 rounded-xl bg-red-500/12 text-red-500 hover:bg-red-500/25 transition-all active:scale-90" title="Decline"><XIcon className="w-4 h-4" /></button>
                               </div>
                             )}
+                            {isAccepted && action.type !== 'calendar-task' && (
+                              <button onClick={() => { const tabType = ACTION_TO_TAB[action.type]; if (tabType && onCreateTab) onCreateTab(tabType, action.details); }} className="p-2 rounded-xl bg-blue-500/12 text-blue-500 hover:bg-blue-500/25 transition-all active:scale-90 shrink-0" title="Open tool"><ExternalLink className="w-4 h-4" /></button>
+                            )}
                           </div>
-                          {action.status === 'pending' && (
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <button
-                                onClick={() => handleAccept(action.id)}
-                                className="p-2 rounded-xl bg-green-500/12 text-green-500 hover:bg-green-500/25 transition-all active:scale-90"
-                                title="Accept"
-                              >
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeny(action.id)}
-                                className="p-2 rounded-xl bg-red-500/12 text-red-500 hover:bg-red-500/25 transition-all active:scale-90"
-                                title="Decline"
-                              >
-                                <XIcon className="w-4 h-4" />
-                              </button>
-                            </div>
-                          )}
-                          {isAccepted && action.type !== 'calendar-task' && (
-                            <button
-                              onClick={() => {
-                                const tabType = ACTION_TO_TAB[action.type];
-                                if (tabType && onCreateTab) onCreateTab(tabType, action.details);
-                              }}
-                              className="p-2 rounded-xl bg-blue-500/12 text-blue-500 hover:bg-blue-500/25 transition-all active:scale-90 shrink-0"
-                              title="Open tool"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
 
-                  {/* ─── Suggestion Cards: unmatched text ─── */}
+                  {/* ─── Follow-Up: conversational clarification for unmatched text ─── */}
                   {showSuggestions && suggestions.filter(s => s.status !== 'dismissed').length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      <div className="flex items-center gap-2 mb-2">
-                        <HelpCircle className="w-3.5 h-3.5 text-amber-500" />
-                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                          We couldn't match some of your notes — did you mean one of these?
-                        </span>
+                    <div className="mt-4 space-y-3">
+                      {/* Conversational header — adapts based on whether any actions were found */}
+                      <div className="p-3 rounded-2xl bg-amber-500/8 ring-1 ring-amber-500/15">
+                        <div className="flex items-start gap-2.5">
+                          <div className="p-1.5 rounded-xl bg-amber-500/15 shrink-0 mt-0.5">
+                            <HelpCircle className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                              {actions.length === 0
+                                ? "I had trouble understanding your notes. Can you help me figure these out?"
+                                : "I wasn't sure about a few things — did you mean one of these?"}
+                            </p>
+                            <p className="text-[10px] text-theme-muted mt-0.5">
+                              Pick the action that best matches what you meant, or skip if it's not a task.
+                            </p>
+                          </div>
+                        </div>
                       </div>
+
                       {suggestions.filter(s => s.status !== 'dismissed').map((suggestion) => (
                         <div
                           key={suggestion.id}
-                          className={`p-3.5 rounded-2xl ring-1 transition-all ${
+                          className={`rounded-2xl ring-1 overflow-hidden transition-all ${
                             suggestion.status === 'generated'
                               ? 'bg-green-500/8 ring-green-500/20'
                               : suggestion.status === 'generating'
                               ? 'bg-amber-500/8 ring-amber-500/20'
-                              : 'bg-theme-surface ring-amber-400/25 hover:ring-amber-400/40'
+                              : 'bg-theme-surface ring-theme hover:ring-amber-400/30'
                           }`}
                           style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}
                         >
-                          <p className="text-xs text-theme-muted mb-2 italic">"{suggestion.text}"</p>
+                          {/* The unmatched text quote */}
+                          <div className="px-4 pt-3 pb-2">
+                            <p className="text-xs text-theme-muted italic leading-relaxed">"{suggestion.text}"</p>
+                          </div>
+
                           {suggestion.status === 'generating' && (
-                            <div className="flex items-center gap-2 text-xs text-amber-500">
+                            <div className="flex items-center gap-2 px-4 pb-3 text-xs text-amber-500">
                               <Loader2 className="w-3 h-3 animate-spin" />
-                              Generating action...
+                              Creating action...
                             </div>
                           )}
+
                           {suggestion.status === 'generated' && (
-                            <div className="flex items-center gap-2 text-xs text-green-500">
+                            <div className="flex items-center gap-2 px-4 pb-3 text-xs text-green-500">
                               <Check className="w-3 h-3" />
                               Action added above
                             </div>
                           )}
+
                           {suggestion.status === 'pending' && (
-                            <div className="space-y-2">
-                              <div className="flex flex-wrap gap-1.5">
+                            <div className="border-t border-theme">
+                              <p className="px-4 pt-2.5 pb-1.5 text-[10px] font-semibold text-theme-hint uppercase tracking-widest">
+                                Did you mean...
+                              </p>
+                              <div className="px-2 pb-2 space-y-1">
                                 {suggestion.suggestedTypes.map((actionType) => {
                                   const meta = ACTION_META[actionType] || ACTION_META['calendar-task'];
                                   const TypeIcon = meta.icon;
@@ -1692,37 +2163,52 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                     <button
                                       key={actionType}
                                       onClick={() => handleSuggestionSelect(suggestion.id, actionType)}
-                                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all active:scale-95 bg-${meta.color}-500/10 text-${meta.color}-600 dark:text-${meta.color}-400 hover:bg-${meta.color}-500/20 ring-1 ring-${meta.color}-500/20 hover:ring-${meta.color}-500/35`}
+                                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all active:scale-[0.98] hover:bg-${meta.color}-500/8 group`}
                                     >
-                                      <TypeIcon className="w-3 h-3" />
-                                      {meta.label}
+                                      <div className={`p-1.5 rounded-lg bg-${meta.color}-500/12 shrink-0`}>
+                                        <TypeIcon className={`w-3.5 h-3.5 text-${meta.color}-500`} />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <span className={`text-xs font-semibold text-${meta.color}-600 dark:text-${meta.color}-400`}>
+                                          {meta.label}
+                                        </span>
+                                      </div>
+                                      <span className="text-[10px] text-theme-hint group-hover:text-theme-muted transition-colors">
+                                        Yes, this one
+                                      </span>
                                     </button>
                                   );
                                 })}
+                                {/* Skip option */}
+                                <button
+                                  onClick={() => handleSuggestionDismiss(suggestion.id)}
+                                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all active:scale-[0.98] hover:bg-theme-tertiary group"
+                                >
+                                  <div className="p-1.5 rounded-lg bg-theme-tertiary shrink-0">
+                                    <XIcon className="w-3.5 h-3.5 text-theme-hint" />
+                                  </div>
+                                  <span className="text-xs text-theme-hint group-hover:text-theme-muted">
+                                    Skip — not a task
+                                  </span>
+                                </button>
                               </div>
-                              <button
-                                onClick={() => handleSuggestionDismiss(suggestion.id)}
-                                className="text-[10px] text-theme-hint hover:text-theme-muted transition-colors"
-                              >
-                                Dismiss
-                              </button>
                             </div>
                           )}
                         </div>
                       ))}
                       {isSuggestLoading && (
                         <div className="flex items-center gap-2 p-3 text-xs text-theme-muted">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          Finding suggestions...
+                          <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
+                          Figuring out what you meant...
                         </div>
                       )}
                     </div>
                   )}
 
                   {isSuggestLoading && !showSuggestions && (
-                    <div className="mt-4 flex items-center gap-2 p-3 rounded-2xl bg-theme-surface ring-1 ring-amber-400/20 text-xs text-theme-muted">
-                      <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
-                      Checking for unmatched notes...
+                    <div className="mt-4 flex items-center gap-2 p-3.5 rounded-2xl bg-amber-500/8 ring-1 ring-amber-500/15 text-xs text-amber-600 dark:text-amber-400">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      {actions.length === 0 ? 'Trying to understand your notes...' : 'Checking for anything I missed...'}
                     </div>
                   )}
                 </div>

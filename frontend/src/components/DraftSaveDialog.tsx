@@ -23,7 +23,7 @@ const DraftSaveDialog: React.FC<DraftSaveDialogProps> = ({ onSaveDraft, onDiscar
       <div className="relative bg-theme-secondary border border-theme rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
         <h3 className="text-lg font-semibold text-theme-heading mb-2">Save Draft?</h3>
         <p className="text-sm text-theme-body mb-6">
-          You have unsaved changes in your lesson plan. Would you like to save them as a draft?
+          You have unsaved form data in this tab. Would you like to save it as a draft so you can continue later?
         </p>
         <div className="flex items-center gap-3 justify-end">
           <button

@@ -130,6 +130,10 @@ import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layo
 import Grainient from './Grainient';
 import LightRays from './LightRays';
 import DraftSaveDialog from './DraftSaveDialog';
+import ActiveGenerationDialog from './ActiveGenerationDialog';
+import CloseAllDialog, { CloseAllSummary } from './CloseAllDialog';
+import { useTabBusy } from '../contexts/TabBusyContext';
+import { TabIdProvider } from '../contexts/TabIdContext';
 import { NudgeProvider, useNudge } from './Nudge/NudgeProvider';
 
 
@@ -481,6 +485,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { closeConnection, getIsTabBusy, getActiveStreams } = useWebSocket();
   const { unreadCount } = useNotification();
   const { queue } = useQueue();
+  const { isTabHttpBusy } = useTabBusy();
   const activeStreams = getActiveStreams();
   const queuedTabEndpoints = new Set(
     queue.filter(item => item.status === 'generating').map(item => `${item.tabId}::${item.endpoint}`)
@@ -492,7 +497,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const queuedTabIds = new Set(
     queue.filter(item => item.status === 'waiting' || item.status === 'generating').map(item => item.tabId)
   );
-  const isTabWorking = (tabId: string) => getIsTabBusy(tabId) || queuedTabIds.has(tabId);
+  const isTabWorking = (tabId: string) => getIsTabBusy(tabId) || queuedTabIds.has(tabId) || isTabHttpBusy(tabId);
 
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [completedTabIds, setCompletedTabIds] = useState<Set<string>>(new Set());
@@ -569,12 +574,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           setNotifPanelOpen(prev => !prev);
           return;
         case 'closeAllTabs':
-          setSplitView({ isActive: false, leftTabId: null, rightTabId: null, activePaneId: 'left' });
-          setTabs([]);
-          setActiveTabId(null);
-          localStorage.removeItem('dashboard-tabs');
-          localStorage.removeItem('dashboard-active-tab');
-          localStorage.removeItem('dashboard-split-view');
+          initiateCloseAll([...tabs], 'all tabs');
           return;
       }
     }
@@ -675,8 +675,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Draft system state
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [pendingCloseTabId, setPendingCloseTabId] = useState<string | null>(null);
-  const [pendingCloseAllDirtyTabs, setPendingCloseAllDirtyTabs] = useState<string[]>([]);
   const [pendingDraftData, setPendingDraftData] = useState<any>(null);
+
+  // Active generation alert state
+  const [showGenerationAlert, setShowGenerationAlert] = useState(false);
+  const [generationAlertTarget, setGenerationAlertTarget] = useState<'tab' | 'tabs' | 'window'>('tab');
+  const [generationAlertCount, setGenerationAlertCount] = useState(0);
+  const [generationAlertAction, setGenerationAlertAction] = useState<(() => void) | null>(null);
+
+  // Close-all dialog state
+  const [showCloseAllDialog, setShowCloseAllDialog] = useState(false);
+  const [closeAllSummary, setCloseAllSummary] = useState<CloseAllSummary>({ draftTabs: [], generatingTabs: [], totalTabs: 0 });
+  const [closeAllTargetLabel, setCloseAllTargetLabel] = useState('all tabs');
+  const [closeAllTabSet, setCloseAllTabSet] = useState<Tab[]>([]);
+
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [bouncingTabId, setBouncingTabId] = useState<string | null>(null);
   const [hoveringTabId, setHoveringTabId] = useState<string | null>(null);
@@ -792,7 +804,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     'support': ['support'],
   };
 
-  // Close tabs when any sidebar item is disabled
+  // Close tabs when any sidebar item is disabled (with close-all dialog)
   useEffect(() => {
     const disabledTabTypes = new Set<string>();
     for (const item of settings.sidebarOrder) {
@@ -807,19 +819,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const tabsToClose = tabs.filter(tab => disabledTabTypes.has(tab.type));
     if (tabsToClose.length === 0) return;
 
-    const updatedTabs = tabs.filter(tab => !disabledTabTypes.has(tab.type));
-    setTabs(updatedTabs);
-
-    const activeTab = tabs.find(t => t.id === activeTabId);
-    if (activeTab && disabledTabTypes.has(activeTab.type)) {
-      setActiveTabId(updatedTabs.length > 0 ? updatedTabs[updatedTabs.length - 1].id : null);
-    }
-
-    // Close WebSocket connections
-    tabsToClose.forEach(tab => {
-      const endpoints = ['/ws/chat', '/ws/lesson-plan', '/ws/quiz', '/ws/rubric', '/ws/kindergarten', '/ws/multigrade', '/ws/cross-curricular'];
-      endpoints.forEach(endpoint => { closeConnection(tab.id, endpoint); });
-    });
+    initiateCloseAll(tabsToClose, 'disabled module tabs');
   }, [settings.sidebarOrder]);
 
   const migrateLegacySplitTabs = (savedTabs: Tab[]): Tab[] => {
@@ -1008,8 +1008,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       }
       const fd = parsed.formData;
       if (!fd) return null;
-      // Has generated content already = not a draft
-      if (parsed[config.generatedKey]) return null;
       // Check if any meaningful fields are filled
       const hasContent = fd.subject || fd.topic || fd.gradeLevel || fd.strand ||
         fd.essentialOutcomes || fd.specificOutcomes || fd.theme || fd.title ||
@@ -1113,10 +1111,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     });
   }, [closeConnection]);
 
-  // Close tab with draft check
+  // Close tab with generation + draft checks
   const closeTab = useCallback((tabId: string) => {
     const tab = tabs.find(t => t.id === tabId);
     if (!tab) { executeTabClose(tabId); return; }
+
+    // Check if tab has an active generation (streaming or queued)
+    if (isTabWorking(tabId)) {
+      setGenerationAlertTarget('tab');
+      setGenerationAlertCount(1);
+      setGenerationAlertAction(() => () => {
+        // After confirming, proceed with draft check or close
+        const config = DRAFT_CONFIG[tab.type];
+        if (config) {
+          const dirtyData = getDirtyPlannerData(tabId, tab.type);
+          if (dirtyData) {
+            setPendingCloseTabId(tabId);
+            setPendingDraftData({ tabId, tabType: tab.type, ...dirtyData });
+            setShowDraftDialog(true);
+            return;
+          }
+        }
+        executeTabClose(tabId);
+      });
+      setShowGenerationAlert(true);
+      return;
+    }
 
     const config = DRAFT_CONFIG[tab.type];
     if (config) {
@@ -1129,9 +1149,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       }
     }
     executeTabClose(tabId);
-  }, [tabs, executeTabClose, getDirtyPlannerData]);
+  }, [tabs, executeTabClose, getDirtyPlannerData, isTabWorking]);
 
-  // Draft dialog handlers
+  // Draft dialog handlers (single-tab close)
   const handleSaveDraft = useCallback(async () => {
     if (pendingDraftData && pendingCloseTabId) {
       await saveDraftForTab(pendingCloseTabId, pendingDraftData.tabType, pendingDraftData);
@@ -1140,16 +1160,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     setShowDraftDialog(false);
     setPendingCloseTabId(null);
     setPendingDraftData(null);
-    // If closing all tabs, continue with next dirty tab
-    setPendingCloseAllDirtyTabs(prev => {
-      if (prev.length > 0) {
-        const [next, ...rest] = prev;
-        setTimeout(() => closeTab(next), 0);
-        return rest;
-      }
-      return prev;
-    });
-  }, [pendingDraftData, pendingCloseTabId, saveDraftForTab, executeTabClose, closeTab]);
+  }, [pendingDraftData, pendingCloseTabId, saveDraftForTab, executeTabClose]);
 
   const handleDiscardDraft = useCallback(() => {
     if (pendingCloseTabId) {
@@ -1158,22 +1169,116 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     setShowDraftDialog(false);
     setPendingCloseTabId(null);
     setPendingDraftData(null);
-    // If closing all tabs, continue with next dirty tab
-    setPendingCloseAllDirtyTabs(prev => {
-      if (prev.length > 0) {
-        const [next, ...rest] = prev;
-        setTimeout(() => closeTab(next), 0);
-        return rest;
-      }
-      return prev;
-    });
-  }, [pendingCloseTabId, executeTabClose, closeTab]);
+  }, [pendingCloseTabId, executeTabClose]);
 
   const handleCancelDraft = useCallback(() => {
     setShowDraftDialog(false);
     setPendingCloseTabId(null);
     setPendingDraftData(null);
-    setPendingCloseAllDirtyTabs([]);
+  }, []);
+
+  // Active generation alert handlers
+  const handleGenerationAlertConfirm = useCallback(() => {
+    setShowGenerationAlert(false);
+    if (generationAlertAction) generationAlertAction();
+    setGenerationAlertAction(null);
+  }, [generationAlertAction]);
+
+  const handleGenerationAlertCancel = useCallback(() => {
+    setShowGenerationAlert(false);
+    setGenerationAlertAction(null);
+  }, []);
+
+  // Close-all dialog helpers
+  const getToolName = useCallback((tabType: string) => {
+    return tools.find(t => t.type === tabType)?.name || tabType;
+  }, []);
+
+  /** Show the close-all dialog for a set of tabs, or close immediately if nothing needs attention */
+  const initiateCloseAll = useCallback((tabsToClose: Tab[], targetLabel: string) => {
+    if (tabsToClose.length === 0) return;
+
+    const draftTabs: string[] = [];
+    const generatingTabs: string[] = [];
+
+    tabsToClose.forEach(tab => {
+      const hasDraft = DRAFT_CONFIG[tab.type] && getDirtyPlannerData(tab.id, tab.type);
+      const isBusy = isTabWorking(tab.id);
+      if (hasDraft) draftTabs.push(tab.title || getToolName(tab.type));
+      if (isBusy) generatingTabs.push(tab.title || getToolName(tab.type));
+    });
+
+    if (draftTabs.length === 0 && generatingTabs.length === 0) {
+      // Nothing needs attention — close everything immediately
+      tabsToClose.forEach(t => executeTabClose(t.id));
+      if (targetLabel === 'all tabs') {
+        setSplitView({ isActive: false, leftTabId: null, rightTabId: null, activePaneId: 'left' });
+        setTabs([]);
+        setActiveTabId(null);
+        localStorage.removeItem('dashboard-tabs');
+        localStorage.removeItem('dashboard-active-tab');
+        localStorage.removeItem('dashboard-split-view');
+      }
+      return;
+    }
+
+    setCloseAllSummary({ draftTabs, generatingTabs, totalTabs: tabsToClose.length });
+    setCloseAllTargetLabel(targetLabel);
+    setCloseAllTabSet(tabsToClose);
+    setShowCloseAllDialog(true);
+  }, [getDirtyPlannerData, isTabWorking, getToolName, executeTabClose]);
+
+  const handleCloseAllSaveAndClose = useCallback(async () => {
+    // Save all dirty drafts, then close everything
+    for (const tab of closeAllTabSet) {
+      const config = DRAFT_CONFIG[tab.type];
+      if (config) {
+        const dirtyData = getDirtyPlannerData(tab.id, tab.type);
+        if (dirtyData) {
+          await saveDraftForTab(tab.id, tab.type, dirtyData);
+        }
+      }
+    }
+    closeAllTabSet.forEach(t => executeTabClose(t.id));
+    if (closeAllTargetLabel === 'all tabs') {
+      setSplitView({ isActive: false, leftTabId: null, rightTabId: null, activePaneId: 'left' });
+      setTabs([]);
+      setActiveTabId(null);
+      localStorage.removeItem('dashboard-tabs');
+      localStorage.removeItem('dashboard-active-tab');
+      localStorage.removeItem('dashboard-split-view');
+    }
+    setShowCloseAllDialog(false);
+  }, [closeAllTabSet, closeAllTargetLabel, getDirtyPlannerData, saveDraftForTab, executeTabClose]);
+
+  const handleCloseAllDiscardAll = useCallback(() => {
+    // Close everything without saving
+    closeAllTabSet.forEach(t => executeTabClose(t.id));
+    if (closeAllTargetLabel === 'all tabs') {
+      setSplitView({ isActive: false, leftTabId: null, rightTabId: null, activePaneId: 'left' });
+      setTabs([]);
+      setActiveTabId(null);
+      localStorage.removeItem('dashboard-tabs');
+      localStorage.removeItem('dashboard-active-tab');
+      localStorage.removeItem('dashboard-split-view');
+    }
+    setShowCloseAllDialog(false);
+  }, [closeAllTabSet, closeAllTargetLabel, executeTabClose]);
+
+  const handleCloseAllOnlySafe = useCallback(() => {
+    // Close only tabs that don't have drafts or active generations
+    closeAllTabSet.forEach(tab => {
+      const hasDraft = DRAFT_CONFIG[tab.type] && getDirtyPlannerData(tab.id, tab.type);
+      const isBusy = isTabWorking(tab.id);
+      if (!hasDraft && !isBusy) {
+        executeTabClose(tab.id);
+      }
+    });
+    setShowCloseAllDialog(false);
+  }, [closeAllTabSet, getDirtyPlannerData, isTabWorking, executeTabClose]);
+
+  const handleCloseAllCancel = useCallback(() => {
+    setShowCloseAllDialog(false);
   }, []);
 
   useEffect(() => {
@@ -1226,9 +1331,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, [tabs, activeTabId]);
 
-  // Handle Auto-Close Tabs on App Exit + auto-save dirty drafts
+  // Handle Auto-Close Tabs on App Exit + auto-save dirty drafts + active generation warning
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Warn if any generations are still running
+      const busyTabs = tabs.filter(t => isTabWorking(t.id));
+      if (busyTabs.length > 0) {
+        e.preventDefault();
+        // Modern browsers show a generic message, but setting returnValue is required
+        e.returnValue = 'You have active generations in progress. Are you sure you want to leave?';
+      }
+
       // Auto-save any dirty planner/generator tabs as drafts
       tabs.forEach(tab => {
         const config = DRAFT_CONFIG[tab.type];
@@ -1263,7 +1376,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [settings.autoCloseTabsOnExit, tabs, getDirtyPlannerData]);
+  }, [settings.autoCloseTabsOnExit, tabs, getDirtyPlannerData, isTabWorking]);
 
   // Load user profile image from localStorage
   useEffect(() => {
@@ -1367,15 +1480,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const closeGroupTabs = (type: string) => {
-    const updatedTabs = tabs.filter(tab => tab.type !== type);
-    setTabs(updatedTabs);
+    const groupTabs = tabs.filter(tab => tab.type === type);
+    const toolName = getToolName(type);
     setContextMenu(null);
-    
-    if (updatedTabs.length > 0) {
-      setActiveTabId(updatedTabs[updatedTabs.length - 1].id);
-    } else {
-      setActiveTabId(null);
-    }
+    initiateCloseAll(groupTabs, `${toolName} tabs`);
   };
 
 
@@ -1450,7 +1558,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const renderSingleTabContent = (tab: Tab) => {
     const { onDataChange, onTitleChange } = getTabCallbacks(tab.id);
-    switch (tab.type) {
+    const content = (() => { switch (tab.type) {
       case 'analytics':
         return (
           <>
@@ -1820,6 +1928,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       default:
         return null;
     }
+    })();
+    return content ? <TabIdProvider tabId={tab.id}>{content}</TabIdProvider> : null;
   };
 
   const renderTabContent = () => {
@@ -1950,6 +2060,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     <div
       className="flex h-screen bg-[#f5f5f0] dark:bg-[#2b2b2b]"
       onClick={() => setContextMenu(null)}
+      data-generation-active={activeStreams.length > 0 || queueActiveCount > 0 ? 'true' : 'false'}
     >
       {/* Context Menu */}
       {contextMenu && contextMenu.groupType && (
@@ -2242,7 +2353,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }}
         >
           <button
-            onClick={onLogout}
+            onClick={() => {
+              const busyTabs = tabs.filter(t => isTabWorking(t.id));
+              if (busyTabs.length > 0) {
+                setGenerationAlertTarget('window');
+                setGenerationAlertCount(busyTabs.length);
+                setGenerationAlertAction(() => () => onLogout());
+                setShowGenerationAlert(true);
+                return;
+              }
+              onLogout();
+            }}
             className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition text-red-400 hover:text-red-300`}
             title={!sidebarOpen ? 'Logout' : ''}
             style={{
@@ -2532,32 +2653,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  // Check for dirty planner/generator tabs before closing all
-                  const dirtyTabIds = tabs
-                    .filter(t => DRAFT_CONFIG[t.type] && getDirtyPlannerData(t.id, t.type))
-                    .map(t => t.id);
-
-                  if (dirtyTabIds.length > 0) {
-                    // Close non-dirty tabs immediately
-                    const nonDirtyTabs = tabs.filter(t => !dirtyTabIds.includes(t.id));
-                    nonDirtyTabs.forEach(t => executeTabClose(t.id));
-                    // Queue dirty tabs for one-at-a-time dialog
-                    const [first, ...rest] = dirtyTabIds;
-                    setPendingCloseAllDirtyTabs(rest);
-                    closeTab(first);
-                  } else {
-                    setSplitView({
-                      isActive: false,
-                      leftTabId: null,
-                      rightTabId: null,
-                      activePaneId: 'left'
-                    });
-                    setTabs([]);
-                    setActiveTabId(null);
-                    localStorage.removeItem('dashboard-tabs');
-                    localStorage.removeItem('dashboard-active-tab');
-                    localStorage.removeItem('dashboard-split-view');
-                  }
+                  initiateCloseAll([...tabs], 'all tabs');
                 }}
                 data-tutorial="close-all-tabs"
                 className="p-2 rounded-lg hover:bg-red-500/20 transition group flex-shrink-0 border border-red-400/30"
@@ -2796,6 +2892,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     );
   })()}
 
+      {showCloseAllDialog && (
+        <CloseAllDialog
+          summary={closeAllSummary}
+          targetLabel={closeAllTargetLabel}
+          onSaveAndClose={handleCloseAllSaveAndClose}
+          onDiscardAll={handleCloseAllDiscardAll}
+          onCloseOnlySafe={handleCloseAllOnlySafe}
+          onCancel={handleCloseAllCancel}
+        />
+      )}
+      {showGenerationAlert && (
+        <ActiveGenerationDialog
+          target={generationAlertTarget}
+          activeCount={generationAlertCount}
+          onConfirm={handleGenerationAlertConfirm}
+          onCancel={handleGenerationAlertCancel}
+        />
+      )}
       {showDraftDialog && (
         <DraftSaveDialog
           onSaveDraft={handleSaveDraft}

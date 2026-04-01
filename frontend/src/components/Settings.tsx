@@ -50,6 +50,8 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { CSS } from '@dnd-kit/utilities';
 import { SidebarItemConfig, DEFAULT_SIDEBAR_ORDER } from '../contexts/SettingsContext';
 import { useCapabilities, DualModelConfig } from '../contexts/CapabilitiesContext';
+import { useWebSocket } from '../contexts/WebSocketContext';
+import { useQueue } from '../contexts/QueueContext';
 import { FEATURE_MODULES } from '../lib/featureModules';
 import { FeatureModuleId } from '../types/feature-disclosure';
 
@@ -232,6 +234,8 @@ interface ModelInfo {
 const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
   const { tier, hasVision, hasOcr, hasDiffusion, supportsThinking, dualModel, refreshCapabilities } = useCapabilities();
+  const { getActiveStreams } = useWebSocket();
+  const { queue } = useQueue();
   const FEATURE_MODULE_LIST = FEATURE_MODULES;
   const handleToggleFeatureModule = (moduleId: FeatureModuleId) => toggleModule(moduleId);
   // dnd-kit sensors for sidebar reordering (must be at top level)
@@ -463,10 +467,22 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   // Handle model selection
   const handleModelSelect = async (modelName: string) => {
     if (modelName === selectedModel) return;
-    
+
+    // Check if any generations are active
+    const activeStreams = getActiveStreams();
+    const activeQueue = queue.filter(item => item.status === 'waiting' || item.status === 'generating');
+    const totalActive = activeStreams.length + activeQueue.length;
+
+    if (totalActive > 0) {
+      const confirmed = window.confirm(
+        `You have ${totalActive} generation${totalActive > 1 ? 's' : ''} in progress. Switching models now may cause unexpected results. Continue?`
+      );
+      if (!confirmed) return;
+    }
+
     setIsSelectingModel(true);
     setModelChangeMessage('');
-    
+
     try {
       const response = await fetch('http://localhost:8000/api/models/select', {
         method: 'POST',
@@ -475,7 +491,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
         },
         body: JSON.stringify({ modelName }),
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setSelectedModel(modelName);
