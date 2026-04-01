@@ -358,7 +358,7 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-nano-30b-a3b:free")
 
 # ============================================================================
-# OCR CONFIGURATION (HunyuanOCR)
+# OCR CONFIGURATION (PaddleOCR-VL)
 # ============================================================================
 
 OCR_ENABLED = os.environ.get("OCR_ENABLED", "true").lower() == "true"
@@ -397,7 +397,7 @@ TIER_CONFIG_FILE = MODELS_DIR / ".tier-config.json"
 DEFAULT_TIER_CONFIG = {
     "tier1_models": ["PEARL_AI.gguf"],
     "tier2_models": [],
-    "ocr_models": ["tencent/HunyuanOCR"],
+    "ocr_models": ["PaddleOCR-VL-1.5-Q4_K_M"],
     "tier3_diffusion_models": ["sdxl-turbo-openvino", "flux-schnell"],
     "dual_model": {
         "enabled": False,
@@ -484,12 +484,10 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     # Vision check (from model's vision projector availability)
     has_vision = resolve_vision_projector_path(selected_llm) is not None
 
-    # OCR check — requires HunyuanOCR model files to be present
-    ocr_model_path = MODELS_DIR / "hunyuan-ocr-4bit"
+    # OCR check — requires PaddleOCR-VL GGUF files to be present
     has_ocr_model = (
-        ocr_model_path.exists()
-        and (ocr_model_path / "config.json").exists()
-        and (ocr_model_path / "tokenizer_config.json").exists()
+        (MODELS_DIR / "PaddleOCR-VL-1.5-Q4_K_M.gguf").exists()
+        and (MODELS_DIR / "mmproj-PaddleOCR-VL-1.5-Q8_0.gguf").exists()
     )
     has_ocr = has_ocr_model and get_ocr_enabled()
 

@@ -26,6 +26,8 @@ interface CurriculumAlignmentFieldsProps {
   onToggleCurriculum: () => void;
   accentColor?: string;
   validationErrors?: Record<string, boolean>;
+  /** Hide the built-in toggle (when the parent manages it externally) */
+  hideToggle?: boolean;
 }
 
 export default function CurriculumAlignmentFields({
@@ -41,6 +43,7 @@ export default function CurriculumAlignmentFields({
   onToggleCurriculum,
   accentColor,
   validationErrors = {},
+  hideToggle = false,
 }: CurriculumAlignmentFieldsProps) {
   // Load curriculum data for the selected grade + subject
   useCurriculumLoader(gradeLevel, subject);
@@ -95,19 +98,21 @@ export default function CurriculumAlignmentFields({
           <label className="text-sm font-medium text-theme-label">
             Strand <span className="text-red-500">*</span>
           </label>
-          <button
-            type="button"
-            onClick={onToggleCurriculum}
-            className="flex items-center gap-1.5 group"
-            title={useCurriculum ? 'Curriculum alignment enabled — click to disable' : 'Curriculum alignment disabled — click to enable'}
-          >
-            <span className="text-[11px] text-theme-hint group-hover:text-theme-muted transition-colors">
-              Align to curriculum
-            </span>
-            <div className={`relative w-7 h-4 rounded-full transition-colors ${useCurriculum ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
-              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${useCurriculum ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-            </div>
-          </button>
+          {!hideToggle && (
+            <button
+              type="button"
+              onClick={onToggleCurriculum}
+              className="flex items-center gap-1.5 group"
+              title={useCurriculum ? 'Curriculum alignment enabled — click to disable' : 'Curriculum alignment disabled — click to enable'}
+            >
+              <span className="text-[11px] text-theme-hint group-hover:text-theme-muted transition-colors">
+                Align to curriculum
+              </span>
+              <div className={`relative w-7 h-4 rounded-full transition-colors ${useCurriculum ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${useCurriculum ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+              </div>
+            </button>
+          )}
         </div>
         <select
           value={strand}

@@ -105,6 +105,298 @@ interface StyleProfile {
   };
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// COLORING PAGE — IMAGE PROCESSING ENGINE v2
+// ═══════════════════════════════════════════════════════════════════
+
+interface ColoringSettings {
+  edgeSensitivity: number;
+  lineThickness: number;
+  smoothing: number;
+  detail: number;
+  method: 'threshold' | 'canny' | 'combined';
+  gapClose: number;
+  cleanup: number;
+}
+
+interface ColoringAutoStats {
+  contrast: number;
+  brightness: number;
+  edgeDensity: number;
+  cartoon: boolean;
+}
+
+function cpToGray(data: Uint8ClampedArray, len: number) {
+  const g = new Float32Array(len);
+  for (let i = 0; i < len; i++) {
+    const j = i * 4;
+    g[i] = 0.299 * data[j] + 0.587 * data[j+1] + 0.114 * data[j+2];
+  }
+  return g;
+}
+
+function cpNormalizeContrast(gray: Float32Array, len: number) {
+  const hist = new Uint32Array(256);
+  for (let i = 0; i < len; i++) hist[Math.round(gray[i])]++;
+  const cut = Math.floor(len * 0.01);
+  let lo = 0, hi = 255, acc = 0;
+  for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= cut) { lo = i; break; } }
+  acc = 0;
+  for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= cut) { hi = i; break; } }
+  if (hi <= lo) { hi = 255; lo = 0; }
+  const range = hi - lo || 1;
+  const out = new Float32Array(len);
+  for (let i = 0; i < len; i++) out[i] = Math.max(0, Math.min(255, ((gray[i] - lo) / range) * 255));
+  return out;
+}
+
+function cpBlur(src: Float32Array, w: number, h: number, radius: number) {
+  if (radius < 0.5) return new Float32Array(src);
+  const sigma = Math.max(radius / 2, 0.5);
+  const ks = Math.ceil(radius) * 2 + 1;
+  const k = new Float32Array(ks);
+  let sum = 0;
+  const half = (ks - 1) / 2 | 0;
+  for (let i = 0; i < ks; i++) { const x = i - half; k[i] = Math.exp(-(x*x)/(2*sigma*sigma)); sum += k[i]; }
+  for (let i = 0; i < ks; i++) k[i] /= sum;
+  const tmp = new Float32Array(w * h), dst = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) { const r = y * w; for (let x = 0; x < w; x++) { let v = 0; for (let i = 0; i < ks; i++) v += src[r + Math.min(Math.max(x+i-half,0),w-1)] * k[i]; tmp[r+x] = v; } }
+  for (let x = 0; x < w; x++) for (let y = 0; y < h; y++) { let v = 0; for (let i = 0; i < ks; i++) v += tmp[Math.min(Math.max(y+i-half,0),h-1)*w+x] * k[i]; dst[y*w+x] = v; }
+  return dst;
+}
+
+function cpSobel(gray: Float32Array, w: number, h: number) {
+  const mag = new Float32Array(w*h), dir = new Float32Array(w*h);
+  for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+    const i = y*w+x;
+    const gx = -gray[(y-1)*w+x-1]+gray[(y-1)*w+x+1]-2*gray[y*w+x-1]+2*gray[y*w+x+1]-gray[(y+1)*w+x-1]+gray[(y+1)*w+x+1];
+    const gy = -gray[(y-1)*w+x-1]-2*gray[(y-1)*w+x]-gray[(y-1)*w+x+1]+gray[(y+1)*w+x-1]+2*gray[(y+1)*w+x]+gray[(y+1)*w+x+1];
+    mag[i] = Math.sqrt(gx*gx+gy*gy); dir[i] = Math.atan2(gy,gx);
+  }
+  return { mag, dir };
+}
+
+function cpNms(mag: Float32Array, dir: Float32Array, w: number, h: number) {
+  const out = new Float32Array(w*h);
+  for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+    const i = y*w+x, a = ((dir[i]*180/Math.PI)+180)%180;
+    let n1,n2;
+    if (a<22.5||a>=157.5){n1=mag[i-1];n2=mag[i+1]}
+    else if(a<67.5){n1=mag[(y-1)*w+x+1];n2=mag[(y+1)*w+x-1]}
+    else if(a<112.5){n1=mag[(y-1)*w+x];n2=mag[(y+1)*w+x]}
+    else{n1=mag[(y-1)*w+x-1];n2=mag[(y+1)*w+x+1]}
+    out[i] = (mag[i]>=n1&&mag[i]>=n2) ? mag[i] : 0;
+  }
+  return out;
+}
+
+function cpHysteresis(thin: Float32Array, w: number, h: number, lo: number, hi: number) {
+  const out = new Uint8Array(w*h), q: number[] = [];
+  for (let i = 0; i < w*h; i++) if (thin[i]>=hi) { out[i]=255; q.push(i); }
+  const offs = [-w-1,-w,-w+1,-1,1,w-1,w,w+1];
+  while (q.length) { const idx=q.pop()!; for (const o of offs) { const ni=idx+o; if(ni>=0&&ni<w*h&&out[ni]===0&&thin[ni]>=lo){out[ni]=255;q.push(ni)} } }
+  return out;
+}
+
+function cpDilate(data: Uint8Array, w: number, h: number, r: number) {
+  if (r<1) return new Uint8Array(data);
+  const out = new Uint8Array(w*h);
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++) {
+    let mx=0;
+    for (let dy=-r;dy<=r;dy++){const yy=y+dy;if(yy<0||yy>=h)continue;for(let dx=-r;dx<=r;dx++){const xx=x+dx;if(xx<0||xx>=w)continue;if(data[yy*w+xx]>mx)mx=data[yy*w+xx]}}
+    out[y*w+x]=mx;
+  }
+  return out;
+}
+
+function cpErode(data: Uint8Array, w: number, h: number, r: number) {
+  if (r<1) return new Uint8Array(data);
+  const out = new Uint8Array(w*h); out.fill(255);
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++) {
+    let mn=255;
+    for (let dy=-r;dy<=r;dy++){const yy=y+dy;if(yy<0||yy>=h)continue;for(let dx=-r;dx<=r;dx++){const xx=x+dx;if(xx<0||xx>=w)continue;if(data[yy*w+xx]<mn)mn=data[yy*w+xx]}}
+    out[y*w+x]=mn;
+  }
+  return out;
+}
+
+function cpMorphClose(data: Uint8Array, w: number, h: number, r: number) { return cpErode(cpDilate(data,w,h,r),w,h,r); }
+
+function cpRemoveSmallComponents(edges: Uint8Array, w: number, h: number, minSize: number) {
+  if (minSize < 2) return edges;
+  const out = new Uint8Array(edges);
+  const visited = new Uint8Array(w*h);
+  const offs = [-w-1,-w,-w+1,-1,1,w-1,w,w+1];
+  for (let i = 0; i < w*h; i++) {
+    if (!out[i] || visited[i]) continue;
+    const comp: number[] = []; const q = [i]; visited[i] = 1;
+    while (q.length) {
+      const idx = q.pop()!; comp.push(idx);
+      for (const o of offs) { const ni=idx+o; if(ni>=0&&ni<w*h&&!visited[ni]&&out[ni]>0){visited[ni]=1;q.push(ni)} }
+    }
+    if (comp.length < minSize) for (const idx of comp) out[idx] = 0;
+  }
+  return out;
+}
+
+function cpBridgeGaps(data: Uint8Array, w: number, h: number, maxGap: number) {
+  if (maxGap < 2) return data;
+  const out = new Uint8Array(data);
+  const ep: {x:number,y:number}[] = [];
+  for (let y=2;y<h-2;y++) for (let x=2;x<w-2;x++) {
+    if (!data[y*w+x]) continue;
+    let nb=0;
+    for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if((dy||dx)&&data[(y+dy)*w+x+dx]>0)nb++;
+    if (nb===1) ep.push({x,y});
+  }
+  const g2 = maxGap*maxGap;
+  for (let i=0;i<ep.length;i++) {
+    let best=g2+1,bj=-1;
+    for (let j=i+1;j<ep.length;j++) { const dx=ep[j].x-ep[i].x,dy=ep[j].y-ep[i].y,d2=dx*dx+dy*dy; if(d2<best){best=d2;bj=j} }
+    if (bj<0) continue;
+    let cx=ep[i].x,cy=ep[i].y;const bx=ep[bj].x,by=ep[bj].y;
+    const sdx=Math.abs(bx-cx),sdy=Math.abs(by-cy),sx=cx<bx?1:-1,sy=cy<by?1:-1;
+    let err=sdx-sdy;
+    while(true){if(cy>=0&&cy<h&&cx>=0&&cx<w)out[cy*w+cx]=255;if(cx===bx&&cy===by)break;const e2=2*err;if(e2>-sdy){err-=sdy;cx+=sx}if(e2<sdx){err+=sdx;cy+=sy}}
+  }
+  return out;
+}
+
+function cpProcessImage(canvas: HTMLCanvasElement, settings: ColoringSettings) {
+  const { edgeSensitivity, lineThickness, smoothing, detail, method, gapClose, cleanup } = settings;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const dw = canvas.width, dh = canvas.height;
+  const imgData = ctx.getImageData(0, 0, dw, dh);
+  const n = dw * dh;
+
+  const rawGray = cpToGray(imgData.data, n);
+  const gray = cpNormalizeContrast(rawGray, n);
+  const smoothed = cpBlur(gray, dw, dh, smoothing * 4 + 1);
+
+  let edges: Uint8Array;
+
+  if (method === "canny") {
+    const { mag, dir } = cpSobel(smoothed, dw, dh);
+    let mx = 0; for (let i=0;i<n;i++) if(mag[i]>mx) mx=mag[i];
+    const norm = new Float32Array(n);
+    if (mx>0) for (let i=0;i<n;i++) norm[i]=(mag[i]/mx)*255;
+    const thin = cpNms(norm, dir, dw, dh);
+    const hi = 255*(1-edgeSensitivity*0.85), lo = hi*0.35;
+    edges = cpHysteresis(thin, dw, dh, lo, hi);
+
+  } else if (method === "threshold") {
+    const localBlur = cpBlur(smoothed, dw, dh, detail*20+8);
+    const wideBlur = cpBlur(smoothed, dw, dh, detail*40+20);
+    edges = new Uint8Array(n);
+    const thresh = (1-edgeSensitivity)*25+3;
+    for (let i=0;i<n;i++) {
+      const dL = localBlur[i]-smoothed[i], dW = wideBlur[i]-smoothed[i];
+      if (dL > thresh || dW > thresh*1.3) edges[i] = 255;
+    }
+
+  } else {
+    const { mag, dir } = cpSobel(smoothed, dw, dh);
+    let mx=0; for(let i=0;i<n;i++) if(mag[i]>mx)mx=mag[i];
+    const norm = new Float32Array(n);
+    if(mx>0) for(let i=0;i<n;i++) norm[i]=(mag[i]/mx)*255;
+    const thin = cpNms(norm, dir, dw, dh);
+    const hi = 255*(1-edgeSensitivity*0.8), lo = hi*0.35;
+    const cannyE = cpHysteresis(thin, dw, dh, lo, hi);
+    const localBlur = cpBlur(smoothed, dw, dh, detail*20+8);
+    edges = new Uint8Array(n);
+    const thresh = (1-edgeSensitivity)*22+5;
+    for (let i=0;i<n;i++) {
+      const diff = localBlur[i]-smoothed[i];
+      edges[i] = (cannyE[i]>0 || diff>thresh) ? 255 : 0;
+    }
+  }
+
+  if (lineThickness > 1) edges = cpDilate(edges, dw, dh, Math.round(lineThickness-1));
+
+  const minComp = Math.round(cleanup * 200 + 5);
+  edges = cpRemoveSmallComponents(edges, dw, dh, minComp);
+
+  const gcR = Math.round((gapClose||0)*3);
+  if (gcR > 0) {
+    edges = cpMorphClose(edges, dw, dh, gcR);
+    edges = cpBridgeGaps(edges, dw, dh, gcR*5);
+    if (cleanup > 0.1) edges = cpRemoveSmallComponents(edges, dw, dh, Math.round(minComp*0.4));
+  }
+
+  const out = new ImageData(dw, dh);
+  for (let i=0;i<n;i++) { const v=edges[i]>0?0:255; out.data[i*4]=out.data[i*4+1]=out.data[i*4+2]=v; out.data[i*4+3]=255; }
+  ctx.putImageData(out, 0, 0);
+}
+
+function cpAnalyzeImage(imageData: ImageData, currentMethod: string): { stats: ColoringAutoStats } & Omit<ColoringSettings, 'method'> {
+  const d = imageData.data, n = imageData.width*imageData.height;
+  let sum=0, min=255, max=0;
+  const hist = new Uint32Array(256);
+  let samples = 0;
+  for (let i=0;i<d.length;i+=16) {
+    const g = 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    sum+=g; if(g<min)min=g; if(g>max)max=g; hist[Math.round(g)]++; samples++;
+  }
+  const brightness = (sum/samples)/255;
+  const contrast = (max-min)/255;
+
+  const w=imageData.width, h=imageData.height;
+  let edgeSum=0, eS=0; const step=4;
+  for (let y=step;y<h-step;y+=step) for (let x=step;x<w-step;x+=step) {
+    const ll=d[(y*w+x-step)*4],rr=d[(y*w+x+step)*4],tt=d[((y-step)*w+x)*4],bb=d[((y+step)*w+x)*4];
+    edgeSum+=Math.abs(rr-ll)+Math.abs(bb-tt); eS++;
+  }
+  const edgeDensity = edgeSum/(eS*510);
+
+  let nonZero = 0;
+  for (let i=0;i<256;i+=4) { let b=0; for(let j=0;j<4&&i+j<256;j++)b+=hist[i+j]; if(b>samples*0.003)nonZero++; }
+  const isCartoon = nonZero < 20;
+
+  function tune(m: string) {
+    let s = { edgeSensitivity:.5, smoothing:.4, detail:.45, lineThickness:1, gapClose:.25, cleanup:.4 };
+    if (isCartoon) {
+      s = m==="canny"
+        ? {edgeSensitivity:.55,smoothing:.2,detail:.4,lineThickness:1,gapClose:.2,cleanup:.55}
+        : m==="combined"
+        ? {edgeSensitivity:.4,smoothing:.25,detail:.35,lineThickness:1,gapClose:.2,cleanup:.55}
+        : {edgeSensitivity:.45,smoothing:.2,detail:.35,lineThickness:1.5,gapClose:.2,cleanup:.55};
+    } else if (contrast>.7 && edgeDensity<.15) {
+      s = m==="canny"
+        ? {edgeSensitivity:.5,smoothing:.3,detail:.4,lineThickness:1,gapClose:.3,cleanup:.4}
+        : m==="combined"
+        ? {edgeSensitivity:.35,smoothing:.35,detail:.35,lineThickness:1,gapClose:.2,cleanup:.4}
+        : {edgeSensitivity:.4,smoothing:.3,detail:.35,lineThickness:1.5,gapClose:.25,cleanup:.4};
+    } else if (edgeDensity>.25) {
+      s = m==="canny"
+        ? {edgeSensitivity:.4,smoothing:.75,detail:.3,lineThickness:1,gapClose:.15,cleanup:.65}
+        : m==="combined"
+        ? {edgeSensitivity:.4,smoothing:.7,detail:.25,lineThickness:1,gapClose:.15,cleanup:.65}
+        : {edgeSensitivity:.5,smoothing:.7,detail:.25,lineThickness:1,gapClose:.15,cleanup:.65};
+    } else if (contrast<.35) {
+      s = m==="canny"
+        ? {edgeSensitivity:.8,smoothing:.3,detail:.55,lineThickness:2,gapClose:.5,cleanup:.3}
+        : m==="combined"
+        ? {edgeSensitivity:.65,smoothing:.4,detail:.55,lineThickness:1.5,gapClose:.45,cleanup:.3}
+        : {edgeSensitivity:.7,smoothing:.35,detail:.5,lineThickness:1.5,gapClose:.45,cleanup:.3};
+    }
+    if (brightness<.3) s.edgeSensitivity=Math.min(s.edgeSensitivity+.15,.95);
+    if (brightness>.75) s.edgeSensitivity=Math.max(s.edgeSensitivity-.1,.25);
+    return s;
+  }
+
+  const tuned = tune(currentMethod);
+  const r = (v: number,d=2)=>Math.round(v*(10**d))/(10**d);
+  return {
+    edgeSensitivity:r(tuned.edgeSensitivity), lineThickness:r(tuned.lineThickness,1),
+    smoothing:r(tuned.smoothing), detail:r(tuned.detail),
+    gapClose:r(tuned.gapClose), cleanup:r(tuned.cleanup),
+    stats: { contrast:Math.round(contrast*100), brightness:Math.round(brightness*100), edgeDensity:Math.round(edgeDensity*100), cartoon:isCartoon }
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
   const hasRestoredRef = useRef(false);
   const triggerCheck = useAchievementTrigger();
@@ -160,7 +452,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushSize, setBrushSize] = useState(20);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
-  const [coloringDetail, setColoringDetail] = useState(50); // 0-100 detail level
+  const [coloringSettings, setColoringSettings] = useState<ColoringSettings>({
+    edgeSensitivity: .5, lineThickness: 1, smoothing: .4,
+    detail: .45, method: 'threshold', gapClose: .25, cleanup: .4,
+  });
+  const [coloringAutoStats, setColoringAutoStats] = useState<ColoringAutoStats | null>(null);
+  const coloringAnalyzedRef = useRef<ImageData | null>(null);
   const [showResourcePicker, setShowResourcePicker] = useState(false);
   const [resourceImages, setResourceImages] = useState<SavedImageRecord[]>([]);
   const [loadingResources, setLoadingResources] = useState(false);
@@ -1337,124 +1634,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   };
 
   // ========================================
-  // EDITOR: Coloring Page Generator
+  // EDITOR: Coloring Page Generator (v2)
   // ========================================
   const handleColoringPage = () => {
     const canvas = imageCanvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const w = canvas.width, h = canvas.height;
-    const imageData = ctx.getImageData(0, 0, w, h);
-    const d = imageData.data;
 
-    // Step 1: Convert to grayscale
-    const gray = new Float32Array(w * h);
-    for (let i = 0; i < w * h; i++) {
-      gray[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
-    }
-
-    // Step 2: Gaussian blur to remove noise/texture (radius scales with detail)
-    // Lower detail = more blur = fewer lines; higher detail = less blur = more lines
-    const blurRadius = Math.max(1, Math.round(4 - (coloringDetail / 100) * 3)); // 4 at 0%, 1 at 100%
-    const blurred = new Float32Array(w * h);
-
-    // Build 1D Gaussian kernel
-    const kernelSize = blurRadius * 2 + 1;
-    const kernel = new Float32Array(kernelSize);
-    const sigma = blurRadius / 2;
-    let kernelSum = 0;
-    for (let i = 0; i < kernelSize; i++) {
-      const x = i - blurRadius;
-      kernel[i] = Math.exp(-(x * x) / (2 * sigma * sigma));
-      kernelSum += kernel[i];
-    }
-    for (let i = 0; i < kernelSize; i++) kernel[i] /= kernelSum;
-
-    // Horizontal pass
-    const temp = new Float32Array(w * h);
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let sum = 0;
-        for (let k = -blurRadius; k <= blurRadius; k++) {
-          const sx = Math.min(w - 1, Math.max(0, x + k));
-          sum += gray[y * w + sx] * kernel[k + blurRadius];
-        }
-        temp[y * w + x] = sum;
-      }
-    }
-    // Vertical pass
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let sum = 0;
-        for (let k = -blurRadius; k <= blurRadius; k++) {
-          const sy = Math.min(h - 1, Math.max(0, y + k));
-          sum += temp[sy * w + x] * kernel[k + blurRadius];
-        }
-        blurred[y * w + x] = sum;
-      }
-    }
-
-    // Step 3: Sobel edge detection on blurred image
-    const edgeMag = new Float32Array(w * h);
-    let maxEdge = 0;
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        const idx = y * w + x;
-        const gx = -blurred[(y - 1) * w + (x - 1)] - 2 * blurred[y * w + (x - 1)] - blurred[(y + 1) * w + (x - 1)]
-                  + blurred[(y - 1) * w + (x + 1)] + 2 * blurred[y * w + (x + 1)] + blurred[(y + 1) * w + (x + 1)];
-        const gy = -blurred[(y - 1) * w + (x - 1)] - 2 * blurred[(y - 1) * w + x] - blurred[(y - 1) * w + (x + 1)]
-                  + blurred[(y + 1) * w + (x - 1)] + 2 * blurred[(y + 1) * w + x] + blurred[(y + 1) * w + (x + 1)];
-        const mag = Math.sqrt(gx * gx + gy * gy);
-        edgeMag[idx] = mag;
-        if (mag > maxEdge) maxEdge = mag;
-      }
-    }
-
-    // Step 4: Adaptive threshold based on detail level
-    // Normalize edges, then threshold
-    const threshold = 0.08 + (1 - coloringDetail / 100) * 0.15; // 0.08 at 100% detail, 0.23 at 0%
-    const edges = new Uint8Array(w * h);
-    for (let i = 0; i < w * h; i++) {
-      edges[i] = (maxEdge > 0 && edgeMag[i] / maxEdge > threshold) ? 1 : 0;
-    }
-
-    // Step 5: Remove isolated noise pixels (if a black pixel has fewer than 2 black neighbors, remove it)
-    const cleaned = new Uint8Array(w * h);
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        const idx = y * w + x;
-        if (!edges[idx]) continue;
-        let neighbors = 0;
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dy === 0 && dx === 0) continue;
-            if (edges[(y + dy) * w + (x + dx)]) neighbors++;
-          }
-        }
-        cleaned[idx] = neighbors >= 2 ? 1 : 0;
-      }
-    }
-
-    // Step 6: Thicken lines slightly for a more printable coloring page
-    const final = new Uint8Array(w * h);
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        if (cleaned[y * w + x]) {
-          // Set this pixel and immediate neighbors for thicker lines
-          final[y * w + x] = 1;
-          final[y * w + (x + 1)] = 1;
-          final[(y + 1) * w + x] = 1;
-        }
-      }
-    }
-
-    // Step 7: Write result — black lines on white background
-    for (let i = 0; i < w * h; i++) {
-      const c = final[i] ? 0 : 255;
-      d[i * 4] = c; d[i * 4 + 1] = c; d[i * 4 + 2] = c; d[i * 4 + 3] = 255;
-    }
-    ctx.putImageData(imageData, 0, 0);
+    cpProcessImage(canvas, coloringSettings);
 
     const newDataUrl = canvas.toDataURL('image/png');
     setHistory(prev => ({
@@ -1463,6 +1649,24 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       current: newDataUrl,
       redoStack: [],
     }));
+  };
+
+  const handleColoringAutoAdjust = (overrideMethod?: ColoringSettings['method']) => {
+    const canvas = imageCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (!coloringAnalyzedRef.current) {
+      const w = canvas.width, h = canvas.height;
+      coloringAnalyzedRef.current = ctx.getImageData(0, 0, w, h);
+    }
+
+    const m = overrideMethod || coloringSettings.method;
+    const result = cpAnalyzeImage(coloringAnalyzedRef.current, m);
+    const { stats, ...newSettings } = result;
+    setColoringAutoStats(stats);
+    setColoringSettings(prev => ({ ...prev, ...newSettings, method: m }));
   };
 
   // ========================================
@@ -2636,15 +2840,96 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     {/* Coloring Page */}
                     {editorTool === 'coloring-page' && (
                       <>
+                        {/* Style selector */}
                         <div>
-                          <label className="text-xs font-medium block mb-1">Detail Level: {coloringDetail}%</label>
-                          <input type="range" min="0" max="100" value={coloringDetail}
-                            onChange={e => setColoringDetail(Number(e.target.value))}
-                            className="w-full accent-orange-500" />
-                          <div className="flex justify-between text-[10px] text-theme-secondary mt-0.5">
-                            <span>Simple</span><span>Detailed</span>
+                          <label className="text-xs font-medium block mb-1.5">Style</label>
+                          <div className="grid grid-cols-3 gap-1">
+                            {([
+                              { key: 'threshold' as const, label: 'Clean', desc: 'Smooth outlines' },
+                              { key: 'canny' as const, label: 'Sharp', desc: 'Fine detail' },
+                              { key: 'combined' as const, label: 'Rich', desc: 'Maximum lines' },
+                            ]).map(m => (
+                              <button key={m.key} onClick={() => handleColoringAutoAdjust(m.key)}
+                                className={`p-1.5 rounded-lg border text-center transition-all ${
+                                  coloringSettings.method === m.key
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-950'
+                                    : 'border-theme hover:border-orange-300'
+                                }`}>
+                                <span className={`text-xs font-bold block ${coloringSettings.method === m.key ? 'text-orange-600' : 'text-theme-label'}`}>{m.label}</span>
+                                <span className="text-[9px] text-theme-hint">{m.desc}</span>
+                              </button>
+                            ))}
                           </div>
                         </div>
+
+                        {/* Sliders */}
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Edge Sensitivity: {Math.round(coloringSettings.edgeSensitivity * 100)}%</label>
+                          <input type="range" min="0" max="1" step="0.05" value={coloringSettings.edgeSensitivity}
+                            onChange={e => setColoringSettings(s => ({ ...s, edgeSensitivity: parseFloat(e.target.value) }))}
+                            className="w-full accent-orange-500" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Line Thickness: {Math.round(coloringSettings.lineThickness * 10) / 10}</label>
+                          <input type="range" min="1" max="4" step="0.5" value={coloringSettings.lineThickness}
+                            onChange={e => setColoringSettings(s => ({ ...s, lineThickness: parseFloat(e.target.value) }))}
+                            className="w-full accent-orange-500" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Smoothing: {Math.round(coloringSettings.smoothing * 100)}%</label>
+                          <input type="range" min="0" max="1" step="0.05" value={coloringSettings.smoothing}
+                            onChange={e => setColoringSettings(s => ({ ...s, smoothing: parseFloat(e.target.value) }))}
+                            className="w-full accent-orange-500" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Detail Level: {Math.round(coloringSettings.detail * 100)}%</label>
+                          <input type="range" min="0" max="1" step="0.05" value={coloringSettings.detail}
+                            onChange={e => setColoringSettings(s => ({ ...s, detail: parseFloat(e.target.value) }))}
+                            className="w-full accent-orange-500" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Cleanup: {Math.round(coloringSettings.cleanup * 100)}%</label>
+                          <input type="range" min="0" max="1" step="0.05" value={coloringSettings.cleanup}
+                            onChange={e => setColoringSettings(s => ({ ...s, cleanup: parseFloat(e.target.value) }))}
+                            className="w-full accent-orange-500" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Gap Closing: {Math.round(coloringSettings.gapClose * 100)}%</label>
+                          <input type="range" min="0" max="1" step="0.05" value={coloringSettings.gapClose}
+                            onChange={e => setColoringSettings(s => ({ ...s, gapClose: parseFloat(e.target.value) }))}
+                            className="w-full accent-orange-500" />
+                        </div>
+
+                        {/* Auto-adjust */}
+                        <button onClick={() => handleColoringAutoAdjust()}
+                          className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center text-sm font-semibold">
+                          Auto-Adjust
+                        </button>
+
+                        {/* Image analysis stats */}
+                        {coloringAutoStats && (
+                          <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <p className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1.5">Image Analysis</p>
+                            <div className="grid grid-cols-3 gap-1">
+                              {[
+                                { l: 'Contrast', v: coloringAutoStats.contrast },
+                                { l: 'Bright', v: coloringAutoStats.brightness },
+                                { l: 'Edges', v: coloringAutoStats.edgeDensity },
+                              ].map(s => (
+                                <div key={s.l} className="text-center p-1 bg-white dark:bg-gray-800 rounded">
+                                  <div className="text-sm font-bold text-theme-primary">{s.v}%</div>
+                                  <div className="text-[9px] text-theme-hint">{s.l}</div>
+                                </div>
+                              ))}
+                            </div>
+                            {coloringAutoStats.cartoon && (
+                              <div className="mt-1.5 p-1 bg-orange-100 dark:bg-orange-900/30 rounded text-center">
+                                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">Cartoon detected — tuned for bold outlines</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <div className="flex gap-2">
                           <button onClick={handleUndo} disabled={history.undoStack.length === 0}
                             className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
@@ -2660,8 +2945,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           <Save className="w-4 h-4 mr-1" />Save
                         </button>
                         <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                          <h4 className="text-xs font-semibold text-orange-900 dark:text-orange-300 mb-1">How to Use:</h4>
-                          <p className="text-xs text-orange-800 dark:text-orange-400">Adjust the detail slider, then click "Convert to Coloring Page". Use Undo to revert and try different detail levels.</p>
+                          <h4 className="text-xs font-semibold text-orange-900 dark:text-orange-300 mb-1">Tips:</h4>
+                          <p className="text-xs text-orange-800 dark:text-orange-400">"Cleanup" removes noise and dots. "Gap Closing" connects broken lines. Each style auto-tunes when selected.</p>
                         </div>
                       </>
                     )}

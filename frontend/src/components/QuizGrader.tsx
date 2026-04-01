@@ -557,7 +557,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
               <BulkGrader quiz={activeQuiz} onClose={onClose} embedded />
             )}
 
-            {/* ── Scan Grade Tab (HunyuanOCR) ── */}
+            {/* ── Scan Grade Tab (PaddleOCR-VL) ── */}
             {activeTab === 'scan' && (
               <QuizScanGrader onClose={onClose} />
             )}

@@ -44,7 +44,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartInput from './SmartInput';
 import SmartTextArea from './SmartTextArea';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
-import { buildStorybookPrompt } from '../utils/storybookPromptBuilder';
+import { buildStorybookPrompt, buildNarrativePrompt, buildStructurePromptTemplate } from '../utils/storybookPromptBuilder';
 import { BUNDLED_SCENES, findBestScene, getScenesByCategory, SCENE_CATEGORY_LABELS } from '../data/storybookScenes';
 import { compressTransparentImage } from '../utils/imageCompression';
 import {
@@ -497,6 +497,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const [isRemovingBg, setIsRemovingBg] = useState<number | null>(null); // page index
   const [activeTab, setActiveTab] = useState<'story' | 'questions' | 'settings'>('story');
   const [showImageGuidance, setShowImageGuidance] = useState(false);
+  const [generationPhase, setGenerationPhase] = useState<'idle' | 'writing_story' | 'formatting_pages'>('idle');
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<AnimatedHTMLProgress | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -581,16 +582,41 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     if (!validate()) return;
     clearStreaming(tabId, WS_ENDPOINT);
     setLivePages([]);
+    setGenerationPhase('idle');
     setView('streaming');
 
     const ws = getConnection(tabId, WS_ENDPOINT);
     wsRef.current = ws;
 
+    const useTwoPass = tier === 1;
+
+    if (useTwoPass) {
+      // Listen for two-pass status messages
+      const statusHandler = (event: MessageEvent) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'status') {
+            if (msg.status === 'writing_story') setGenerationPhase('writing_story');
+            else if (msg.status === 'formatting_pages') setGenerationPhase('formatting_pages');
+          }
+        } catch { /* ignore non-JSON */ }
+      };
+      ws.addEventListener('message', statusHandler);
+    }
+
     const prompt = buildStorybookPrompt(formData);
-    const send = () => ws.send(JSON.stringify({ prompt, grade: formData.gradeLevel }));
+    const payload: Record<string, unknown> = { prompt, grade: formData.gradeLevel };
+
+    if (useTwoPass) {
+      payload.twoPass = true;
+      payload.narrativePrompt = buildNarrativePrompt(formData);
+      payload.structurePromptTemplate = buildStructurePromptTemplate(formData);
+    }
+
+    const send = () => ws.send(JSON.stringify(payload));
     if (ws.readyState === WebSocket.OPEN) send();
     else ws.addEventListener('open', send, { once: true });
-  }, [formData, tabId, getConnection, clearStreaming]);
+  }, [formData, tabId, tier, getConnection, clearStreaming]);
 
   // ── Watch streaming content ────────────────────────────────────────────────
   const isStreaming = getIsStreaming(tabId, WS_ENDPOINT);
@@ -603,6 +629,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     if (!isStreaming && streamingContent) {
       // Streaming finished — parse full book
+      setGenerationPhase('idle');
       const full = tryParseFullBook(streamingContent);
       if (full && full.pages.length > 0) {
         // Auto-match bundled scenes
@@ -787,27 +814,48 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             </select>
           </div>
 
-          {/* Curriculum Alignment — directly after Grade + Subject */}
+          {/* Curriculum toggle + fields — directly after Grade + Subject */}
           {formData.subject && formData.gradeLevel && (
             <div>
-              <CurriculumAlignmentFields
-                subject={formData.subject}
-                gradeLevel={formData.gradeLevel.toLowerCase() === 'k' ? 'k' : formData.gradeLevel}
-                strand={formData.strand}
-                essentialOutcomes={formData.essentialOutcomes}
-                specificOutcomes={formData.specificOutcomes}
-                useCurriculum={formData.useCurriculum}
-                onStrandChange={v => updateForm('strand', v)}
-                onELOChange={v => updateForm('essentialOutcomes', v)}
-                onSCOsChange={v => updateForm('specificOutcomes', v)}
-                onToggleCurriculum={() => updateForm('useCurriculum', !formData.useCurriculum)}
-                accentColor={accentColor}
-                validationErrors={validationErrors}
-              />
-              {formData.useCurriculum && formData.strand && (
-                <p className="mt-2 text-xs text-theme-muted bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg px-3 py-2">
-                  The AI will weave the curriculum outcomes naturally into the story and generate comprehension questions you can use with students.
-                </p>
+              {/* Standalone toggle */}
+              <button
+                type="button"
+                onClick={() => updateForm('useCurriculum', !formData.useCurriculum)}
+                className="flex items-center gap-1.5 group mb-3"
+                title={formData.useCurriculum ? 'Curriculum alignment enabled' : 'Curriculum alignment disabled'}
+              >
+                <span className="text-sm font-medium text-theme-label group-hover:text-theme-heading transition-colors">
+                  Align to curriculum
+                </span>
+                <div className={`relative w-7 h-4 rounded-full transition-colors ${formData.useCurriculum ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${formData.useCurriculum ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                </div>
+              </button>
+
+              {/* Strand / ELO / SCO fields — only when curriculum is on */}
+              {formData.useCurriculum && (
+                <>
+                  <CurriculumAlignmentFields
+                    subject={formData.subject}
+                    gradeLevel={formData.gradeLevel.toLowerCase() === 'k' ? 'k' : formData.gradeLevel}
+                    strand={formData.strand}
+                    essentialOutcomes={formData.essentialOutcomes}
+                    specificOutcomes={formData.specificOutcomes}
+                    useCurriculum={true}
+                    onStrandChange={v => updateForm('strand', v)}
+                    onELOChange={v => updateForm('essentialOutcomes', v)}
+                    onSCOsChange={v => updateForm('specificOutcomes', v)}
+                    onToggleCurriculum={() => {}}
+                    accentColor={accentColor}
+                    validationErrors={validationErrors}
+                    hideToggle
+                  />
+                  {formData.strand && (
+                    <p className="mt-2 text-xs text-theme-muted bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg px-3 py-2">
+                      The AI will weave the curriculum outcomes naturally into the story and generate comprehension questions you can use with students.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -958,16 +1006,45 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
   // ─── Render: Streaming view ────────────────────────────────────────────────
   if (view === 'streaming') {
+    const phaseLabel = generationPhase === 'writing_story'
+      ? 'Writing the story...'
+      : generationPhase === 'formatting_pages'
+        ? 'Formatting into pages...'
+        : 'Writing your storybook...';
+    const phaseDetail = generationPhase === 'writing_story'
+      ? 'Creating a cohesive narrative first'
+      : generationPhase === 'formatting_pages'
+        ? livePages.length > 0
+          ? `${livePages.length} of ${formData.pageCount} pages ready`
+          : 'Breaking the story into illustrated pages'
+        : livePages.length > 0
+          ? `${livePages.length} of ${formData.pageCount} pages ready`
+          : 'Crafting characters and scenes';
+
     return (
       <div className="h-full flex flex-col items-center justify-center gap-6 p-8">
         <HeartbeatLoader color={accentColor} />
         <div className="text-center">
-          <p className="text-lg font-semibold text-theme-heading">Writing your storybook...</p>
-          <p className="text-sm text-theme-muted mt-1">
-            {livePages.length > 0
-              ? `${livePages.length} of ${formData.pageCount} pages ready`
-              : 'Crafting characters and scenes'}
-          </p>
+          <p className="text-lg font-semibold text-theme-heading">{phaseLabel}</p>
+          <p className="text-sm text-theme-muted mt-1">{phaseDetail}</p>
+          {generationPhase === 'writing_story' && (
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full" style={{ background: accentColor }} />
+                <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+              </div>
+              <span className="text-xs text-theme-muted">Step 1 of 2</span>
+            </div>
+          )}
+          {generationPhase === 'formatting_pages' && (
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full" style={{ background: accentColor }} />
+                <div className="w-2 h-2 rounded-full" style={{ background: accentColor }} />
+              </div>
+              <span className="text-xs text-theme-muted">Step 2 of 2</span>
+            </div>
+          )}
         </div>
         {livePages.length > 0 && (
           <div className="w-full max-w-md space-y-1">

@@ -2563,6 +2563,54 @@ async def storybook_websocket(websocket: WebSocket):
 
     cancelled_job_ids = set()
 
+    async def _run_generation(inference, prompt_text, full_prompt_tpl, max_tok, temp, job_id, *, stream_tokens=True):
+        """Run a generation pass. If stream_tokens is False, collect internally and return the text."""
+        collected = []
+        token_buffer = []
+        last_send = time.time()
+        async for chunk in inference.generate_stream(
+            tool_name="storybook",
+            input_data=prompt_text,
+            prompt_template=full_prompt_tpl,
+            max_tokens=max_tok,
+            temperature=temp,
+        ):
+            if job_id in cancelled_job_ids:
+                await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                return None
+
+            if chunk.get("error"):
+                try:
+                    await websocket.send_json({"type": "error", "message": chunk["error"]})
+                    await asyncio.sleep(0)
+                except:
+                    logger.error("Could not send error message - connection closed")
+                return None
+
+            if chunk.get("finished"):
+                if stream_tokens and token_buffer:
+                    try:
+                        await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                        await asyncio.sleep(0)
+                    except Exception as e:
+                        logger.error(f"Error sending final tokens: {e}")
+                return "".join(collected)
+
+            if chunk.get("token"):
+                collected.append(chunk["token"])
+                if stream_tokens:
+                    token_buffer.append(chunk["token"])
+                    if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
+                        try:
+                            await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                            token_buffer = []
+                            last_send = time.time()
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            return None
+        return "".join(collected)
+
     try:
         while True:
             data = await websocket.receive_json()
@@ -2577,8 +2625,11 @@ async def storybook_websocket(websocket: WebSocket):
             job_id = data.get("jobId") or data.get("id") or "storybook"
             generation_mode = data.get("generationMode", "queued")
             grade = data.get("grade", "K")
+            two_pass = data.get("twoPass", False)
+            narrative_prompt = data.get("narrativePrompt", "")
+            structure_prompt_template = data.get("structurePromptTemplate", "")
 
-            if not prompt:
+            if not prompt and not (two_pass and narrative_prompt):
                 continue
 
             # Tier-1 awareness
@@ -2587,20 +2638,8 @@ async def storybook_websocket(websocket: WebSocket):
             _is_tier1 = _tier_info["tier"] == 1
             _t1_params = get_tier1_gen_params("storybook") if _is_tier1 else {}
 
-            if _is_tier1:
-                system_prompt = get_tier1_system_prompt("storybook", grade)
-            else:
-                system_prompt = (
-                    "You are a children's storybook author specializing in early childhood education (K-2). "
-                    "Create engaging, age-appropriate stories with clear characters, simple vocabulary, "
-                    "and vivid scene descriptions. Tag every text segment with its speaker. "
-                    "Return ONLY valid JSON with no markdown fences or explanation."
-                )
-
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            max_tokens = _t1_params.get("max_tokens", 4000) if _is_tier1 else 4000
+            temperature = _t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
 
             slot_mode = None
             try:
@@ -2609,52 +2648,77 @@ async def storybook_websocket(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("storybook") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
-                token_buffer = []
-                last_send = time.time()
-                async for chunk in inference.generate_stream(
-                    tool_name="storybook",
-                    input_data=prompt,
-                    prompt_template=full_prompt,
-                    max_tokens=_t1_params.get("max_tokens", 4000) if _is_tier1 else 4000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
-                ):
-                    if job_id in cancelled_job_ids:
-                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
-                        break
+                if two_pass and narrative_prompt and structure_prompt_template:
+                    # ── Two-pass generation ──────────────────────────────────
+                    # Pass 1: Generate the story narrative (collect internally)
+                    narrative_system = (
+                        "You are a children's storybook author. Write engaging, age-appropriate stories "
+                        "with clear characters and vivid descriptions. Write the story as plain text."
+                    )
+                    narrative_full = "<|begin_of_text|>"
+                    narrative_full += f"<|start_header_id|>system<|end_header_id|>\n\n{narrative_system}<|eot_id|>"
+                    narrative_full += f"<|start_header_id|>user<|end_header_id|>\n\n{narrative_prompt}<|eot_id|>"
+                    narrative_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
 
-                    if chunk.get("error"):
-                        try:
-                            await websocket.send_json({"type": "error", "message": chunk["error"]})
-                            await asyncio.sleep(0)
-                        except:
-                            logger.error("Could not send error message - connection closed")
-                        break
+                    await websocket.send_json({"type": "status", "status": "writing_story", "jobId": job_id})
+                    narrative_text = await _run_generation(
+                        inference, narrative_prompt, narrative_full,
+                        max_tokens, temperature, job_id, stream_tokens=False,
+                    )
+                    if narrative_text is None:
+                        continue  # cancelled or errored
 
-                    if chunk.get("finished"):
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
+                    logger.info(f"[Storybook] Pass 1 complete — {len(narrative_text)} chars of narrative")
+
+                    # Pass 2: Convert narrative to structured JSON (stream to client)
+                    structure_prompt = structure_prompt_template.replace("{{NARRATIVE}}", narrative_text)
+                    structure_system = (
+                        "You are a JSON formatting assistant. Convert the provided story into the exact "
+                        "JSON structure requested. Return ONLY valid JSON with no markdown fences or explanation."
+                    )
+                    structure_full = "<|begin_of_text|>"
+                    structure_full += f"<|start_header_id|>system<|end_header_id|>\n\n{structure_system}<|eot_id|>"
+                    structure_full += f"<|start_header_id|>user<|end_header_id|>\n\n{structure_prompt}<|eot_id|>"
+                    structure_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+                    await websocket.send_json({"type": "status", "status": "formatting_pages", "jobId": job_id})
+                    result = await _run_generation(
+                        inference, structure_prompt, structure_full,
+                        max_tokens, temperature, job_id, stream_tokens=True,
+                    )
+                    if result is not None:
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
-                        break
+                else:
+                    # ── Single-pass generation (original path) ───────────────
+                    if _is_tier1:
+                        system_prompt = get_tier1_system_prompt("storybook", grade)
+                    else:
+                        system_prompt = (
+                            "You are a children's storybook author specializing in early childhood education (K-2). "
+                            "Create engaging, age-appropriate stories with clear characters, simple vocabulary, "
+                            "and vivid scene descriptions. Tag every text segment with its speaker. "
+                            "Return ONLY valid JSON with no markdown fences or explanation."
+                        )
 
-                    if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                    full_prompt = "<|begin_of_text|>"
+                    full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+                    full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
+                    full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+                    result = await _run_generation(
+                        inference, prompt, full_prompt,
+                        max_tokens, temperature, job_id, stream_tokens=True,
+                    )
+                    if result is not None:
+                        try:
+                            await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send done message - connection closed")
 
             except Exception as e:
                 logger.error(f"Storybook generation error: {e}")
@@ -4996,7 +5060,7 @@ async def grade_scanned_worksheets(
             pass
 
     if not use_ocr and not getattr(inference, 'has_vision', False):
-        raise HTTPException(status_code=400, detail="No grading backend available. Enable HunyuanOCR or load a multimodal vision model.")
+        raise HTTPException(status_code=400, detail="No grading backend available. Enable OCR or load a multimodal vision model.")
 
     # Pre-read all files so we can process them
     file_data = []
@@ -5059,7 +5123,7 @@ async def grade_scanned_worksheets_stream(
             pass
 
     if not use_ocr and not getattr(inference, 'has_vision', False):
-        raise HTTPException(status_code=400, detail="No grading backend available. Enable HunyuanOCR or load a multimodal vision model.")
+        raise HTTPException(status_code=400, detail="No grading backend available. Enable OCR or load a multimodal vision model.")
 
     # Pre-read all files
     file_data = []

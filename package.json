@@ -83,9 +83,12 @@
         ]
       },
       {
-        "from": "models/hunyuan-ocr-4bit",
-        "to": "models/hunyuan-ocr-4bit",
-        "filter": ["**/*"]
+        "from": "models/PaddleOCR-VL-1.5-Q4_K_M.gguf",
+        "to": "models/PaddleOCR-VL-1.5-Q4_K_M.gguf"
+      },
+      {
+        "from": "models/mmproj-PaddleOCR-VL-1.5-Q8_0.gguf",
+        "to": "models/mmproj-PaddleOCR-VL-1.5-Q8_0.gguf"
       }
     ],
     "asar": true,

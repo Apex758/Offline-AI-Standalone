@@ -275,7 +275,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const [fastModel, setFastModel] = useState<string | null>(null);
   const [taskRouting, setTaskRouting] = useState<Record<string, 'fast' | 'primary'>>({});
 
-  // OCR (HunyuanOCR) state
+  // OCR (PaddleOCR-VL) state
   const [ocrEnabled, setOcrEnabled] = useState(false);
   const [ocrStatus, setOcrStatus] = useState<{available: boolean; loaded: boolean; loading: boolean; saved_locally?: boolean; local_size_mb?: number} | null>(null);
   const [ocrMessage, setOcrMessage] = useState('');
@@ -649,11 +649,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   };
 
   const handleOcrPreload = async () => {
-    setOcrMessage('Loading HunyuanOCR model...');
+    setOcrMessage('Loading OCR model...');
     try {
       const response = await fetch('http://localhost:8000/api/ocr/load', { method: 'POST' });
       if (response.ok) {
-        setOcrMessage('HunyuanOCR loaded successfully');
+        setOcrMessage('OCR model loaded successfully');
         setOcrStatus(prev => prev ? { ...prev, loaded: true, loading: false } : prev);
       } else {
         const err = await response.json();
@@ -2074,12 +2074,12 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   </CardContent>
                 </Card>
 
-                {/* OCR Model (HunyuanOCR) */}
+                {/* OCR Model (PaddleOCR-VL) */}
                 <Card data-search-section="ocr-model">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <SpellCheck className="w-4.5 h-4.5 text-theme-secondary" />
-                      OCR Grading (HunyuanOCR)
+                      OCR Grading
                     </CardTitle>
                     <CardDescription>
                       Dedicated OCR model for reading scanned worksheets and quizzes. More accurate than vision LLM for handwriting recognition.
@@ -2089,9 +2089,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <div className="space-y-3">
                       <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
                         <div>
-                          <p className="text-sm font-medium text-theme-label">Use HunyuanOCR for scan grading</p>
+                          <p className="text-sm font-medium text-theme-label">Use dedicated OCR for scan grading</p>
                           <p className="text-xs text-theme-hint">
-                            When enabled, scanned worksheets are read by HunyuanOCR (1B, 4-bit, ~500MB) then graded by your text LLM. When disabled, the vision LLM handles both.
+                            When enabled, scanned worksheets are read by PaddleOCR-VL (0.9B, Q4, ~856MB) then graded by your text LLM. When disabled, the vision LLM handles both.
                           </p>
                         </div>
                         <input
@@ -2129,10 +2129,10 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
                       {ocrStatus && (
                         <div className="text-xs text-theme-hint space-y-1">
-                          <p>Status: {ocrStatus.loaded ? 'Loaded in VRAM' : ocrStatus.loading ? 'Loading...' : 'Not loaded (loads on first scan)'}</p>
-                          <p>Model: {ocrStatus.saved_locally ? `Saved locally (${ocrStatus.local_size_mb} MB)` : 'Not downloaded yet (will download on first use)'}</p>
-                          {!ocrStatus.available && (
-                            <p className="text-amber-600">Dependencies not installed. Run: pip install torch bitsandbytes accelerate</p>
+                          <p>Status: {ocrStatus.loaded ? 'Loaded in RAM' : ocrStatus.loading ? 'Loading...' : 'Not loaded (loads on first scan)'}</p>
+                          <p>Model: {ocrStatus.model_present ? `PaddleOCR-VL 1.5 Q4 (${ocrStatus.size_mb} MB)` : 'Not found — place GGUF files in models folder'}</p>
+                          {!ocrStatus.available && ocrStatus.model_present && (
+                            <p className="text-amber-600">llama-cpp-python not installed</p>
                           )}
                         </div>
                       )}

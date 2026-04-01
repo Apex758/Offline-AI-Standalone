@@ -210,3 +210,131 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown, no explanation:
 
 Generate all ${formData.pageCount} pages. Every page must have at least one textSegment. Return ONLY the JSON object.`;
 }
+
+// ─── Two-Pass Builders (for smaller models) ──────────────────────────────────
+
+/**
+ * Pass 1: Generate the full story as plain narrative text.
+ * Smaller models produce more coherent stories when not juggling JSON structure.
+ */
+export function buildNarrativePrompt(formData: StorybookFormData): string {
+  const grade = formData.gradeLevel;
+  const spec = GRADE_SPECS[grade];
+  const hasMultipleSpeakers = formData.speakerCount > 1;
+  const curriculumBlock = buildCurriculumBlock(formData);
+
+  const speakerNames = formData.speakers
+    .filter(s => s.role !== 'narrator' && s.characterName)
+    .map(s => s.characterName);
+  const characterNote = speakerNames.length > 0
+    ? `Include these characters: ${speakerNames.join(', ')}.`
+    : 'Create 1-2 named characters for the story.';
+
+  return `You are a children's storybook author for ${spec.name} (${spec.age}).
+
+Write a complete ${formData.pageCount}-page children's story as plain text. Each page should be separated by "---PAGE BREAK---".
+
+STORY REQUEST:
+Title: "${formData.title}"
+Description: ${formData.description}
+Grade Level: ${spec.name} (${spec.age})${formData.subject ? `\nSubject: ${formData.subject}` : ''}
+
+${curriculumBlock ? curriculumBlock + '\n\n' : ''}WRITING RULES:
+- ${spec.sentences}
+- Sentence length: ${spec.sentenceLength}
+- Vocabulary: ${spec.vocabulary}
+- Dialogue style: ${spec.dialogue}
+- Story style: ${spec.style}
+- Keep language warm, positive, and encouraging
+- Each page should have ONE clear moment or action
+- Introduce characters naturally on early pages
+- Build to a simple, satisfying conclusion
+- ${characterNote}
+${hasMultipleSpeakers ? '- Write dialogue with the character name before each line, like:\n  Narrator: One sunny morning, Max woke up early.\n  Max: "Today is a great day!"' : '- Write in third person narrative voice.'}
+
+IMPORTANT: The story must flow naturally from page to page. Each page should connect to the next. The story needs a clear beginning, middle, and end.
+
+Write exactly ${formData.pageCount} pages separated by "---PAGE BREAK---". Start writing the story now:`;
+}
+
+/**
+ * Pass 2: Build a template for converting narrative to structured JSON.
+ * Returns a prompt with {{NARRATIVE}} placeholder that the backend replaces
+ * with the actual story text from pass 1.
+ */
+export function buildStructurePromptTemplate(formData: StorybookFormData): string {
+  const grade = formData.gradeLevel;
+  const imageInstructions = buildImageInstructions(formData.imageMode);
+  const hasCurriculum = formData.useCurriculum && formData.strand;
+
+  const speakerLines = formData.speakers.map(s => {
+    const name = s.characterName ? `"${s.characterName}"` : s.role;
+    return `  - ${s.role === 'narrator' ? 'Narrator' : name} (voice: ${s.voice})`;
+  }).join('\n');
+
+  return `Convert the following children's story into structured JSON format.
+
+THE STORY:
+{{NARRATIVE}}
+
+SPEAKERS:
+${speakerLines}
+
+SCENE GROUPING:
+- Identify 2-5 unique locations/settings in the story
+- Assign each a short sceneId (e.g., "park", "home", "school")
+- Pages in the same location share the same sceneId
+
+IMAGE INSTRUCTIONS:
+${imageInstructions}
+- textAnimation: always "fadeIn"
+
+CHARACTER DESCRIPTIONS (for image consistency):
+For each named character, provide a "characterDescriptions" object with a detailed visual description (20-30 words).
+
+STYLE SUFFIX (include in output):
+"styleSuffix": "${STORYBOOK_STYLE_SUFFIX}"
+
+OUTPUT FORMAT — return ONLY valid JSON, no markdown, no explanation:
+
+{
+  "title": "${formData.title}",
+  "gradeLevel": "${grade}",
+  "learningObjectiveSummary": ${hasCurriculum ? '"one sentence — what students learn from this story"' : 'null'},
+  "characters": ["name1", "name2"],
+  "characterDescriptions": {
+    "CharacterName": "detailed visual description..."
+  },
+  "voiceAssignments": {
+    "narrator": "lessac",
+    "CharacterName": "ryan"
+  },
+  "styleSuffix": "${STORYBOOK_STYLE_SUFFIX}",
+  "scenes": [
+    { "id": "park", "description": "a sunny green park with tall oak trees and a wooden bench" }
+  ],
+  "pages": [
+    {
+      "pageNumber": 1,
+      "textSegments": [
+        { "speaker": "narrator", "text": "One sunny morning, Max woke up early." },
+        { "speaker": "Max", "text": "Today is a great day!" }
+      ],
+      "sceneId": "park",
+      "characterScene": "a golden puppy stretching and yawning near a bright window",
+      "imagePlacement": "right",
+      "characterAnimation": "slideInRight",
+      "textAnimation": "fadeIn"
+    }
+  ],
+  "comprehensionQuestions": ${hasCurriculum ? `[
+    {
+      "question": "What did the character do when...?",
+      "answer": "Expected answer or discussion points for the teacher",
+      "outcomeRef": "SCO text it targets"
+    }
+  ]` : '[]'}
+}
+
+IMPORTANT: Preserve the story text exactly as written above. Split it into pages matching the page breaks. Tag each sentence with the correct speaker. Return ONLY the JSON object.`;
+}
