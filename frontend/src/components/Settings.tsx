@@ -233,7 +233,7 @@ interface ModelInfo {
 
 const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
-  const { tier, hasVision, hasOcr, hasDiffusion, supportsThinking, dualModel, refreshCapabilities } = useCapabilities();
+  const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, supportsThinking, dualModel, refreshCapabilities } = useCapabilities();
   const { getActiveStreams } = useWebSocket();
   const { queue } = useQueue();
   const FEATURE_MODULE_LIST = FEATURE_MODULES;
@@ -716,6 +716,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       { type: 'worksheet-generator', label: 'Worksheet Builder', defaultColor: '#8b5cf6' },
       { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
       { type: 'presentation-builder', label: 'Slide Deck', defaultColor: '#f97316' },
+      { type: 'storybook', label: 'Storybook Creator', defaultColor: '#a855f7' },
     ] : []),
     // Performance metrics
     ...(settings.sidebarOrder.find(i => i.id === 'performance-metrics')?.enabled ? [
@@ -2172,50 +2173,20 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           {tier === 3 ? 'Creative — Text + Vision + Image Generation' : tier === 2 ? 'Multimodal — Text + Vision/OCR' : 'Text — Text generation only'}
                         </span>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="grid grid-cols-4 gap-2 text-xs">
                         <div className={`p-2 rounded-lg text-center ${hasVision ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
                           Vision {hasVision ? 'Active' : 'Off'}
                         </div>
-                        <div className={`p-2 rounded-lg text-center ${hasOcr ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
-                          OCR {hasOcr ? 'Active' : 'Off'}
+                        <div className={`p-2 rounded-lg text-center ${hasOcrModel ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                          OCR {hasOcrModel ? 'Found' : 'Missing'}
                         </div>
                         <div className={`p-2 rounded-lg text-center ${hasDiffusion ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
                           Diffusion {hasDiffusion ? 'Active' : 'Off'}
                         </div>
-                      </div>
-                      {tierConfig && availableModels.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-xs font-medium text-theme-label mb-2">Model Tier Assignments</p>
-                          <div className="space-y-1.5">
-                            {availableModels.map(m => {
-                              const currentTier = (tierConfig.tier2_models || []).some((t: string) => t.toLowerCase() === m.name.toLowerCase()) ? 2 : 1;
-                              return (
-                                <div key={m.name} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-theme-subtle">
-                                  <span className="text-xs text-theme-label truncate flex-1">{m.name}</span>
-                                  <select
-                                    className="text-xs px-2 py-1 border border-theme-strong rounded bg-theme-surface text-theme-label"
-                                    value={currentTier}
-                                    onChange={(e) => handleTierAssign(m.name, parseInt(e.target.value))}
-                                  >
-                                    <option value={1}>Tier 1 — Text</option>
-                                    <option value={2}>Tier 2 — Multimodal</option>
-                                  </select>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          {availableDiffusionModels.length > 0 && (
-                            <div className="mt-2 space-y-1.5">
-                              {availableDiffusionModels.map(m => (
-                                <div key={m.name} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-theme-subtle">
-                                  <span className="text-xs text-theme-label truncate flex-1">{m.name}</span>
-                                  <span className="text-xs px-2 py-1 rounded bg-purple-50 text-purple-600 border border-purple-200">Tier 3 — Creative</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        <div className={`p-2 rounded-lg text-center ${hasLama ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                          LaMa {hasLama ? 'Found' : 'Missing'}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

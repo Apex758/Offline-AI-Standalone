@@ -154,6 +154,15 @@ const searchIndex: SearchEntry[] = [
     toolType: 'presentation-builder',
   },
   {
+    id: 'tool-storybook',
+    title: 'Storybook Creator',
+    description: 'Illustrated K-2 stories with TTS narration and curriculum alignment',
+    keywords: ['storybook', 'story', 'book', 'kindergarten', 'k-2', 'narration', 'tts', 'read aloud', 'illustrated', 'characters', 'children', 'literacy'],
+    category: 'tool',
+    icon: 'StoryBook',
+    toolType: 'storybook',
+  },
+  {
     id: 'tool-brain-dump',
     title: 'Brain Dump',
     description: 'Dump your thoughts and turn them into actions',

@@ -64,6 +64,7 @@ def set_selected_model(model_name):
 # ============================================================================
 
 IMAGE_MODELS_DIR = MODELS_DIR / "image_generation"
+LAMA_MODEL_PATH = IMAGE_MODELS_DIR / "lama" / "big-lama.pt"
 DEFAULT_DIFFUSION_MODEL = ""  # Empty = disabled by default (Tier 1 start)
 DIFFUSION_CONFIG_FILE = MODELS_DIR / ".diffusion-model-config.json"
 
@@ -483,8 +484,14 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     # Vision check (from model's vision projector availability)
     has_vision = resolve_vision_projector_path(selected_llm) is not None
 
-    # OCR check — only meaningful if vision is available or LLM is tier 2
-    has_ocr = get_ocr_enabled() and (has_vision or llm_tier >= 2)
+    # OCR check — requires HunyuanOCR model files to be present
+    ocr_model_path = MODELS_DIR / "hunyuan-ocr-4bit"
+    has_ocr_model = (
+        ocr_model_path.exists()
+        and (ocr_model_path / "config.json").exists()
+        and (ocr_model_path / "tokenizer_config.json").exists()
+    )
+    has_ocr = has_ocr_model and get_ocr_enabled()
 
     # Diffusion check
     diffusion_model = get_selected_diffusion_model()
@@ -494,6 +501,9 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
         diffusion_model in diffusion_models_list
         and any(m["name"] == diffusion_model for m in available_diffusion)
     )
+
+    # LaMa inpainting model check
+    has_lama = LAMA_MODEL_PATH.exists()
 
     # Compute effective tier
     # The LLM tier is the base. Vision/OCR can bump 1→2, but only if the
@@ -525,6 +535,8 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
         "has_vision": has_vision,
         "has_ocr": has_ocr,
         "has_diffusion": has_diffusion,
+        "has_lama": has_lama,
+        "has_ocr_model": has_ocr_model,
         "selected_llm": selected_llm,
         "selected_diffusion": diffusion_model,
         "dual_model": dual_model,

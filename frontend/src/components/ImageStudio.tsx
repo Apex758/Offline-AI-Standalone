@@ -109,7 +109,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const hasRestoredRef = useRef(false);
   const triggerCheck = useAchievementTrigger();
   const { notify } = useNotification();
-  const { hasDiffusion } = useCapabilities();
+  const { hasDiffusion, hasLama } = useCapabilities();
 
   const IMAGE_STORAGE_KEY = `image-studio-${tabId}`;
 
@@ -2474,17 +2474,17 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   {/* Tool selector */}
                   <div className="grid grid-cols-6 gap-1 mb-1 p-1 bg-theme-tertiary rounded-lg">
                     {([
-                      { id: 'remove-object' as EditorTool, icon: Eraser, label: 'Object Remover', needsDiffusion: false },
-                      { id: 'remove-background' as EditorTool, icon: ImageOff, label: 'Background Remover', needsDiffusion: false },
-                      { id: 'annotate' as EditorTool, icon: Pencil, label: 'Annotate', needsDiffusion: false },
-                      { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page', needsDiffusion: false },
-                      { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker', needsDiffusion: false },
-                      { id: 'comic-maker' as EditorTool, icon: BookOpen, label: 'Comic Maker', needsDiffusion: true },
-                    ]).map(({ id, icon: Icon, label, needsDiffusion }) => {
-                      const toolLocked = needsDiffusion && !hasDiffusion;
+                      { id: 'remove-object' as EditorTool, icon: Eraser, label: 'Object Remover', needsDiffusion: false, needsLama: true },
+                      { id: 'remove-background' as EditorTool, icon: ImageOff, label: 'Background Remover', needsDiffusion: false, needsLama: false },
+                      { id: 'annotate' as EditorTool, icon: Pencil, label: 'Annotate', needsDiffusion: false, needsLama: false },
+                      { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page', needsDiffusion: false, needsLama: false },
+                      { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker', needsDiffusion: false, needsLama: false },
+                      { id: 'comic-maker' as EditorTool, icon: BookOpen, label: 'Comic Maker', needsDiffusion: true, needsLama: false },
+                    ]).map(({ id, icon: Icon, label, needsDiffusion, needsLama }) => {
+                      const toolLocked = (needsDiffusion && !hasDiffusion) || (needsLama && !hasLama);
                       return (
                         <button key={id} onClick={() => { if (!toolLocked) setEditorTool(id); }}
-                          title={toolLocked ? `${label} requires a diffusion model` : label}
+                          title={toolLocked ? `${label} requires ${needsLama && !hasLama ? 'the LaMa model (big-lama.pt)' : 'a diffusion model'}` : label}
                           disabled={toolLocked}
                           className={`p-2 rounded-md flex items-center justify-center transition ${
                             editorTool === id ? 'bg-blue-600 text-white shadow' : 'text-theme-label hover:bg-theme-hover'

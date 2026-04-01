@@ -47,5 +47,25 @@
     },
     "step": 1,
     "curriculumMatches": []
+  },
+  {
+    "id": "draft_quiz-generator-1775032901399_1775033190448",
+    "title": "Science - K",
+    "timestamp": "2026-04-01T08:46:30.448Z",
+    "plannerType": "quiz",
+    "formData": {
+      "subject": "Science",
+      "gradeLevel": "K",
+      "learningOutcomes": "",
+      "questionTypes": [],
+      "cognitiveLevels": [],
+      "timeLimitPerQuestion": "",
+      "numberOfQuestions": "10",
+      "strand": "",
+      "essentialOutcomes": "",
+      "specificOutcomes": ""
+    },
+    "step": 1,
+    "curriculumMatches": []
   }
 ]

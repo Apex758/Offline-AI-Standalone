@@ -12,6 +12,8 @@ export interface Capabilities {
   hasVision: boolean;
   hasOcr: boolean;
   hasDiffusion: boolean;
+  hasLama: boolean;
+  hasOcrModel: boolean;
   supportsThinking: boolean;
   selectedLlm: string;
   selectedDiffusion: string;
@@ -29,6 +31,8 @@ const defaultCapabilities: Capabilities = {
   hasVision: false,
   hasOcr: false,
   hasDiffusion: false,
+  hasLama: false,
+  hasOcrModel: false,
   supportsThinking: false,
   selectedLlm: '',
   selectedDiffusion: '',
@@ -61,6 +65,8 @@ export function CapabilitiesProvider({ children }: { children: React.ReactNode }
         hasVision: data.has_vision ?? false,
         hasOcr: data.has_ocr ?? false,
         hasDiffusion: data.has_diffusion ?? false,
+        hasLama: data.has_lama ?? false,
+        hasOcrModel: data.has_ocr_model ?? false,
         supportsThinking: data.supports_thinking ?? false,
         selectedLlm: data.selected_llm ?? '',
         selectedDiffusion: data.selected_diffusion ?? '',

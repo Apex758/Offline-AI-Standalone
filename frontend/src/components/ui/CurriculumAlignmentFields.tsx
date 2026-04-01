@@ -48,8 +48,13 @@ export default function CurriculumAlignmentFields({
   const [scoDropdownOpen, setScoDropdownOpen] = useState(false);
   const scoDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Use a unique delimiter to separate SCOs, since individual SCO texts may contain newlines
+  const SCO_DELIM = '\n---SCO---\n';
+
   const selectedSCOs: string[] = specificOutcomes
-    ? specificOutcomes.split('\n').filter(s => s.trim())
+    ? (specificOutcomes.includes(SCO_DELIM)
+        ? specificOutcomes.split(SCO_DELIM).filter(s => s.trim())
+        : specificOutcomes.split('\n').filter(s => s.trim()))
     : [];
 
   const scosStructuredAll = getSCOsStructured(subject, gradeLevel, strand, essentialOutcomes);
@@ -63,7 +68,7 @@ export default function CurriculumAlignmentFields({
     } else {
       updated = [...current, sco];
     }
-    onSCOsChange(updated.join('\n'));
+    onSCOsChange(updated.join(SCO_DELIM));
   };
 
   useEffect(() => {
@@ -195,7 +200,7 @@ export default function CurriculumAlignmentFields({
                           if (selectedSCOs.length === scosStructured.length) {
                             onSCOsChange('');
                           } else {
-                            onSCOsChange(scoTexts.join('\n'));
+                            onSCOsChange(scoTexts.join(SCO_DELIM));
                           }
                         }}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium"

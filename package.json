@@ -81,6 +81,11 @@
         "filter": [
           "**/*.json"
         ]
+      },
+      {
+        "from": "models/hunyuan-ocr-4bit",
+        "to": "models/hunyuan-ocr-4bit",
+        "filter": ["**/*"]
       }
     ],
     "asar": true,

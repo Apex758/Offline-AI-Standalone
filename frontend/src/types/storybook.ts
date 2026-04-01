@@ -1,0 +1,127 @@
+import type { ImageMode } from './index';
+
+// ─── Speaker / Voice ────────────────────────────────────────────────────────
+
+export type VoiceName = 'lessac' | 'ryan' | 'amy';
+export type SpeakerRole = 'narrator' | 'character1' | 'character2';
+
+export interface SpeakerConfig {
+  role: SpeakerRole;
+  voice: VoiceName;
+  /** The character's name as it will appear in dialogue tags (e.g., "Max", "Luna") */
+  characterName?: string;
+}
+
+// ─── Story Content ───────────────────────────────────────────────────────────
+
+export interface TextSegment {
+  /** Either 'narrator' or a character name matching a SpeakerConfig.characterName */
+  speaker: string;
+  text: string;
+}
+
+export interface StoryPage {
+  pageNumber: number;
+  /** All text segments on this page, tagged by speaker */
+  textSegments: TextSegment[];
+  /** References a scene in ParsedStorybook.scenes[].id */
+  sceneId: string;
+  /** Short diffusion prompt for character image (when imageMode === 'ai') */
+  characterScene?: string;
+  /** Bundled scene key — set after matching sceneId to bundled library */
+  bundledSceneId?: string;
+  /** base64 PNG of the character with background removed */
+  characterImageData?: string;
+  /** base64 of the background scene (custom-generated or uploaded) */
+  backgroundImageData?: string;
+  /** Which side the character floats to for CSS shape-outside layout */
+  imagePlacement: 'left' | 'right' | 'none';
+  /** animate.css class hint for character entrance */
+  characterAnimation?: 'slideInLeft' | 'slideInRight' | 'bounceIn' | 'fadeIn' | 'zoomIn';
+  /** animate.css class hint for text entrance */
+  textAnimation?: 'fadeIn' | 'slideInUp';
+}
+
+export interface StoryScene {
+  id: string;
+  /** Description used to fuzzy-match against bundled scene names */
+  description: string;
+}
+
+export interface ParsedStorybook {
+  title: string;
+  gradeLevel: 'K' | '1' | '2';
+  /** Character names in the story */
+  characters?: string[];
+  /**
+   * Hyper-detailed visual descriptions per character for prompt anchoring.
+   * Key = character name, value = detailed visual description.
+   */
+  characterDescriptions?: Record<string, string>;
+  /**
+   * Maps speaker role/name → voice name.
+   * Built from teacher's SpeakerConfig, injected into LLM prompt.
+   */
+  voiceAssignments?: Record<string, VoiceName>;
+  /** Locked style suffix for all AI image generation */
+  styleSuffix?: string;
+  /** Unique scene locations — pages reference these by id */
+  scenes: StoryScene[];
+  pages: StoryPage[];
+  /**
+   * Comprehension questions + discussion prompts generated alongside the story.
+   * Used by teachers to check understanding and connect to classwork.
+   */
+  comprehensionQuestions?: ComprehensionQuestion[];
+  /** One-sentence summary of the curriculum learning objective embedded in the story */
+  learningObjectiveSummary?: string;
+}
+
+// ─── Comprehension ───────────────────────────────────────────────────────────
+
+export interface ComprehensionQuestion {
+  question: string;
+  /** Expected answer or discussion points for the teacher */
+  answer: string;
+  /** Which SCO/ELO this question targets */
+  outcomeRef?: string;
+}
+
+// ─── Form Data ───────────────────────────────────────────────────────────────
+
+export interface StorybookFormData {
+  title: string;
+  description: string;
+  gradeLevel: 'K' | '1' | '2';
+  subject: string;
+  pageCount: number;
+  imageMode: ImageMode;
+  speakerCount: 1 | 2 | 3;
+  speakers: SpeakerConfig[];
+  // Curriculum alignment
+  useCurriculum: boolean;
+  strand: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
+}
+
+// ─── Bundled Scene Library ───────────────────────────────────────────────────
+
+export type SceneCategory = 'outdoors' | 'indoors' | 'fantasy' | 'weather';
+
+export interface BundledScene {
+  id: string;
+  name: string;
+  category: SceneCategory;
+  /** Path relative to assets/storybook-scenes/ */
+  file: string;
+  /** Keywords for fuzzy matching against LLM sceneId */
+  keywords: string[];
+}
+
+// ─── Export / Playback ───────────────────────────────────────────────────────
+
+export interface StorybookAudioData {
+  /** pageIndex → array of base64 WAV strings (one per text segment) */
+  pageAudio: Record<number, string[]>;
+}

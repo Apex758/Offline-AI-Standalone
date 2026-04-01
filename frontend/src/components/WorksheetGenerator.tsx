@@ -80,6 +80,8 @@ import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import SmartInput from './SmartInput';
 import { useSettings } from '../contexts/SettingsContext';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
+import ImageModeSelector from './ui/ImageModeSelector';
+import type { ImageMode } from '../types';
 
 
 // Curriculum types removed — now using curriculumLoader directly
@@ -121,7 +123,9 @@ interface WorksheetFormData {
   questionType: string;
   selectedTemplate: string;
   worksheetTitle: string;
-  includeImages: boolean;
+  imageMode: ImageMode;
+  /** @deprecated use imageMode instead — kept for migration only */
+  includeImages?: boolean;
   imageStyle: string;
   imagePlacement: string;
   essentialOutcomes: string;
@@ -223,7 +227,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     questionType: '',
     selectedTemplate: '',
     worksheetTitle: '',
-    includeImages: false,
+    imageMode: 'none' as ImageMode,
     imageStyle: 'cartoon_3d',
     imagePlacement: 'large-centered',
     essentialOutcomes: '',
@@ -233,24 +237,28 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [formData, setFormData] = useState<WorksheetFormData>(() => {
     const validStyles = ['cartoon_3d', 'line_art_bw', 'illustrated_painting', 'realistic'];
     
-    if (savedData?.formData && typeof savedData.formData === 'object') {
-      // Normalize invalid imageStyle values
-      const data = savedData.formData as WorksheetFormData;
+    const migrateFormData = (data: any): WorksheetFormData => {
       if (data.imageStyle && !validStyles.includes(data.imageStyle)) {
-        data.imageStyle = 'cartoon_3d'; // Default to valid style
+        data.imageStyle = 'cartoon_3d';
       }
-      return data;
+      // Migrate legacy includeImages boolean → imageMode
+      if (data.imageMode === undefined && data.includeImages !== undefined) {
+        data.imageMode = data.includeImages ? 'my-images' : 'none';
+        delete data.includeImages;
+      }
+      if (!data.imageMode) data.imageMode = 'none';
+      return data as WorksheetFormData;
+    };
+
+    if (savedData?.formData && typeof savedData.formData === 'object') {
+      return migrateFormData({ ...savedData.formData });
     }
     try {
       const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (savedState) {
         const parsed = JSON.parse(savedState);
         if (parsed.formData && typeof parsed.formData === 'object') {
-          // Normalize invalid imageStyle values
-          if (parsed.formData.imageStyle && !validStyles.includes(parsed.formData.imageStyle)) {
-            parsed.formData.imageStyle = 'cartoon_3d';
-          }
-          return parsed.formData;
+          return migrateFormData({ ...parsed.formData });
         }
       }
     } catch (e) {
@@ -515,8 +523,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   // Auto-disable images for Mathematics
   useEffect(() => {
-    if (formData.subject === 'Mathematics' && formData.includeImages) {
-      handleInputChange('includeImages', false);
+    if (formData.subject === 'Mathematics' && formData.imageMode !== 'none') {
+      handleInputChange('imageMode', 'none' as ImageMode);
     }
   }, [formData.subject]);
 
@@ -664,16 +672,16 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
 
     // ✅ VALIDATION: Image settings required when images are included
-    if (formData.includeImages) {
-      if (imageSource === 'generate' && !selectedPreset) {
+    if (formData.imageMode !== 'none') {
+      if (formData.imageMode === 'ai' && !selectedPreset) {
         setGenerationError('Please select an Image Intent before generating the worksheet.');
         return;
       }
-      if (imageSource === 'upload' && !userUploadedImage) {
+      if (formData.imageMode === 'my-images' && !userUploadedImage) {
         setGenerationError('Please upload an image before generating the worksheet.');
         return;
       }
-      if (imageSource === 'upload' && !userImageDescription.trim()) {
+      if (formData.imageMode === 'my-images' && !userImageDescription.trim()) {
         setGenerationError('Please describe what is in the uploaded image so the AI can generate relevant questions.');
         return;
       }
@@ -686,14 +694,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     let currentUserImageDescription: string | undefined;
 
     // ✅ HANDLE IMAGE BASED ON SOURCE
-    if (formData.includeImages) {
-      if (imageSource === 'upload' && userUploadedImage) {
+    if (formData.imageMode !== 'none') {
+      if (formData.imageMode === 'my-images' && userUploadedImage) {
         // User-uploaded image: use directly, pass description as context
         setGeneratedImages([userUploadedImage]);
         currentUserImageDescription = userImageDescription;
         imageWasGenerated = true;
         console.log('📷 Using user-uploaded image with description:', userImageDescription.slice(0, 80));
-      } else if (imageSource === 'generate' && selectedPreset) {
+      } else if (formData.imageMode === 'ai' && selectedPreset) {
         // Auto-generate scene image from preset
         console.log('🎨 Auto-generating image before worksheet...');
         setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
@@ -735,11 +743,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setGeneratedWorksheet('');
     setParsedWorksheet(null);
     // Only clear images if we're not using images AND we didn't just auto-generate them
-    if (!formData.includeImages && !imageWasGenerated) {
+    if (formData.imageMode === 'none' && !imageWasGenerated) {
       console.log('Clearing old images (not using images in this worksheet)');
       setGeneratedImages([]);
     } else {
-      console.log('Keeping generated images - includeImages:', formData.includeImages, 'imageWasGenerated:', imageWasGenerated, 'current count:', generatedImages.length);
+      console.log('Keeping generated images - imageMode:', formData.imageMode, 'imageWasGenerated:', imageWasGenerated, 'current count:', generatedImages.length);
     }
     setGenerationError(null);
     setIsEditing(false);
@@ -910,7 +918,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       questionCount: questionCount,  // ✅ Use validated count
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
-      includeImages: formData.includeImages,
+      includeImages: formData.imageMode !== 'none',
       imagePlacement: formData.imagePlacement,
       generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
       showAnswers: viewMode === 'teacher',
@@ -943,7 +951,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       strand: formData.strand,
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || parsedWorksheet.metadata.title,
-      includeImages: formData.includeImages,
+      includeImages: formData.imageMode !== 'none',
       imagePlacement: formData.imagePlacement,
       generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
       accentColor: accentColor || undefined,
@@ -1006,7 +1014,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       questionCount: qCount,
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || 'Worksheet',
-      includeImages: formData.includeImages,
+      includeImages: formData.imageMode !== 'none',
       imagePlacement: formData.imagePlacement,
       generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
       showAnswers: viewMode === 'teacher',
@@ -1457,71 +1465,41 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
 
-            {/* Include Images */}
+            {/* Image Mode */}
             <div className="space-y-4" data-tutorial="worksheet-generator-include-images">
               <div>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.includeImages}
-                    onChange={(e) => handleInputChange('includeImages', e.target.checked)}
-                    disabled={formData.subject === 'Mathematics'}  // ✅ ADD THIS
-                    className="rounded border-theme-strong text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                <label className="block text-sm font-medium text-theme-label mb-2">Images</label>
+                {formData.subject === 'Mathematics' ? (
+                  <p className="text-xs text-theme-hint italic">Images are not available for Mathematics worksheets</p>
+                ) : (
+                  <ImageModeSelector
+                    imageMode={formData.imageMode}
+                    onModeChange={(m) => handleInputChange('imageMode', m)}
+                    accentColor={accentColor || '#3b82f6'}
+                    hasDiffusion={hasDiffusion}
+                    hasVision={hasVision}
+                    labels={{ none: 'No Images', ai: 'AI Generated', myImages: 'My Images', suggested: 'Image Guidance' }}
+                    descs={{ none: 'Text only', ai: 'Scene preset', myImages: 'Upload image', suggested: 'AI suggests images' }}
                   />
-                  <span className={`text-sm font-medium ${formData.subject === 'Mathematics' ? 'text-theme-hint' : 'text-theme-label'}`}>
-                    Include Images
-                  </span>
-                </label>
-                <p className="text-xs text-theme-hint mt-1">
-                  {formData.subject === 'Mathematics' 
-                    ? 'Images are not available for Mathematics worksheets'
-                    : 'Add relevant images to enhance the worksheet'}
-                </p>
+                )}
               </div>
             </div>
 
-            {/* Image Source Selection */}
-            {formData.includeImages && formData.subject !== 'Mathematics' && (
+            {/* Image sections — shown based on selected imageMode */}
+            {formData.imageMode !== 'none' && formData.subject !== 'Mathematics' && (
               <div className="space-y-4" data-tutorial="worksheet-generator-image-prompt">
-                {/* Image Source Toggle */}
-                <div>
-                  <label className="block text-sm font-medium text-theme-label mb-2">Image Source</label>
-                  <div className={`grid ${hasDiffusion ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
-                    {hasDiffusion ? (
-                      <button
-                        onClick={() => setImageSource('generate')}
-                        className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2
-                          ${imageSource === 'generate'
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 text-blue-600'
-                            : 'border-theme hover:border-blue-300 text-theme-label'
-                          }`}
-                      >
-                        <Wand2 className="w-4 h-4" />
-                        Generate from Preset
-                      </button>
-                    ) : (
-                      <div className="py-2.5 px-3 rounded-lg border border-theme bg-gray-50 dark:bg-gray-800 text-sm font-medium flex items-center justify-center gap-2 text-theme-muted opacity-60 cursor-not-allowed">
-                        <Wand2 className="w-4 h-4" />
-                        Generate from Preset
-                        <span className="ml-1 text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded-full">Tier 3 required</span>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => setImageSource('upload')}
-                      className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2
-                        ${imageSource === 'upload'
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 text-blue-600'
-                          : 'border-theme hover:border-blue-300 text-theme-label'
-                        }`}
-                    >
-                      <Upload className="w-4 h-4" />
-                      Upload My Own
-                    </button>
-                  </div>
-                </div>
 
-                {/* Generate from Preset */}
-                {hasDiffusion && imageSource === 'generate' && (
+                {/* Image Guidance mode info */}
+                {formData.imageMode === 'suggested' && (
+                  <div className="p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      The AI will describe where and what kind of images to add to the worksheet. You can source these images yourself.
+                    </p>
+                  </div>
+                )}
+
+                {/* Generate from Preset (AI mode) */}
+                {hasDiffusion && formData.imageMode === 'ai' && (
                 <>
                 <h3 className="text-lg font-semibold text-theme-heading">Scene-Based Image Generation</h3>
 
@@ -1649,7 +1627,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 )}
 
                 {/* Upload My Own Image */}
-                {imageSource === 'upload' && (
+                {formData.imageMode === 'my-images' && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-theme-heading">Upload Your Own Image</h3>
                     <p className="text-sm text-theme-hint">
@@ -1760,7 +1738,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
 
             {/* Template Options */}
-            {formData.selectedTemplate === 'comprehension' && formData.includeImages && (
+            {formData.selectedTemplate === 'comprehension' && formData.imageMode !== 'none' && (
               <div className="space-y-4" data-tutorial="worksheet-generator-template-options">
                 <h3 className="text-lg font-semibold text-theme-heading">Template-Specific Options</h3>
                 <div>
@@ -2260,7 +2238,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                        questionCount={parsedWorksheet.questions.length}
                        questionType={formData.questionType}
                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                       includeImages={formData.includeImages}
+                       includeImages={formData.imageMode !== 'none'}
                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
                        questions={parsedWorksheet.questions.map((q) => ({
                          id: q.id,
@@ -2280,7 +2258,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       questionCount={parsedWorksheet.questions.length}
                       questionType={formData.questionType}
                       worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.includeImages}
+                      includeImages={formData.imageMode !== 'none'}
                       imagePlacement={formData.imagePlacement}
                       generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
                       passage={parsedWorksheet.passage}
@@ -2297,7 +2275,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       questionCount={parsedWorksheet.questions.length}
                       questionType={formData.questionType}
                       worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.includeImages}
+                      includeImages={formData.imageMode !== 'none'}
                       generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
                       columnA={parsedWorksheet.matchingItems?.columnA}
                       columnB={parsedWorksheet.matchingItems?.columnB}
@@ -2313,7 +2291,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       questionCount={parsedWorksheet.questions.length}
                       questionType={formData.questionType}
                       worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.includeImages}
+                      includeImages={formData.imageMode !== 'none'}
                       generatedImage={generatedImage}
                       questions={parsedWorksheet.questions}
                       wordBank={parsedWorksheet.wordBank}

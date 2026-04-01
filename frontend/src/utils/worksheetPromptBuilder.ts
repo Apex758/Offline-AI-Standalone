@@ -11,7 +11,9 @@ interface WorksheetFormData {
   questionType: string;
   selectedTemplate: string;
   worksheetTitle: string;
-  includeImages: boolean;
+  imageMode?: string;
+  /** @deprecated use imageMode */
+  includeImages?: boolean;
   imageStyle: string;
   imagePlacement: string;
   essentialOutcomes: string;
@@ -954,13 +956,14 @@ Generate EXACTLY ${questionCount} questions.
   }
 
   // Image instructions
-  const imageInstructions = formData.includeImages ? `
+  const effectiveImageMode = formData.imageMode || (formData.includeImages ? 'my-images' : 'none');
+  const imageInstructions = effectiveImageMode !== 'none' ? `
 
 IMAGE INSTRUCTIONS:
-- Include relevant images to enhance understanding
-- Image Style: ${formData.imageStyle}
-- Image Placement: ${formData.imagePlacement}
-- Generate descriptive image prompts or placeholders where images should appear
+${effectiveImageMode === 'suggested'
+  ? '- At the top of the worksheet, include an IMAGE GUIDANCE section describing 1-3 images that would illustrate this topic, where to place them, and what they should show. Format: "IMAGE GUIDANCE: [placement] — [description]"'
+  : `- Include relevant images to enhance understanding\n- Image Style: ${formData.imageStyle}\n- Image Placement: ${formData.imagePlacement}\n- Generate descriptive image prompts or placeholders where images should appear`
+}
 
 ` : '';
 

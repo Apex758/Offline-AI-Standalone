@@ -52,7 +52,9 @@ def is_ocr_available() -> bool:
     try:
         import torch
         import transformers
-        import bitsandbytes
+        # bitsandbytes only required for GPU (4-bit quantization); CPU path skips it
+        if torch.cuda.is_available():
+            import bitsandbytes
         return True
     except ImportError:
         return False
@@ -69,10 +71,12 @@ def is_ocr_loading() -> bool:
 
 
 def _load_model():
-    """Load HunyuanOCR with 4-bit quantization.
+    """Load HunyuanOCR.
 
-    - If a pre-quantized copy exists in models/hunyuan-ocr-4bit/, load from there (fast).
-    - Otherwise, download from HuggingFace, quantize, save locally, then keep in memory.
+    - GPU available: 4-bit NF4 quantization via bitsandbytes (~500MB VRAM).
+    - CPU only: 4-bit int4 quantization via optimum-quanto (~500MB RAM).
+    - If a pre-saved copy exists in models/hunyuan-ocr-4bit/, load from there.
+    - Otherwise, download from HuggingFace, save locally, then keep in memory.
     """
     global _ocr_model, _ocr_processor, _ocr_loaded, _ocr_loading
 
@@ -82,64 +86,56 @@ def _load_model():
     _ocr_loading = True
     try:
         import torch
-        from transformers import AutoProcessor, BitsAndBytesConfig
+        from transformers import AutoProcessor, HunYuanVLForConditionalGeneration
 
+        has_cuda = torch.cuda.is_available()
         local_path = _get_local_ocr_path()
         has_local = _is_locally_saved()
 
-        # Determine where to load from
-        model_source = str(local_path) if has_local else HUNYUAN_OCR_MODEL_ID
+        if not has_local:
+            raise RuntimeError(
+                f"HunyuanOCR model not found at {local_path}. "
+                "Run: backend/python-embed/python.exe models/download_hunyuan_ocr.py"
+            )
 
-        if has_local:
-            logger.info(f"Loading pre-quantized HunyuanOCR from {local_path}...")
-        else:
-            logger.info(f"First run: downloading HunyuanOCR from HuggingFace and quantizing to 4-bit...")
-
-        # 4-bit NF4 quantization config
-        quant_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_use_double_quant=True,
-        )
+        model_source = str(local_path)
+        mode_label = 'GPU 4-bit NF4' if has_cuda else 'CPU 4-bit int4'
+        logger.info(f"Loading HunyuanOCR from {local_path} ({mode_label})...")
 
         # Load processor
         _ocr_processor = AutoProcessor.from_pretrained(
             model_source,
-            trust_remote_code=True,
             use_fast=False,
         )
 
-        # Load model with quantization
-        from transformers import HunYuanVLForConditionalGeneration
-
-        _ocr_model = HunYuanVLForConditionalGeneration.from_pretrained(
-            model_source,
-            quantization_config=quant_config,
-            device_map="auto",
-            trust_remote_code=True,
-            attn_implementation="eager",
-        )
-
-        # If this was downloaded fresh, save the quantized model + processor locally
-        if not has_local:
-            logger.info(f"Saving quantized model to {local_path}...")
-            local_path.mkdir(parents=True, exist_ok=True)
-
-            _ocr_model.save_pretrained(local_path)
-            _ocr_processor.save_pretrained(local_path)
-
-            logger.info(f"Quantized HunyuanOCR saved to {local_path}")
-
-            # Log the size
-            total_size = sum(
-                f.stat().st_size for f in local_path.rglob('*') if f.is_file()
+        # GPU: 4-bit NF4 via bitsandbytes
+        # CPU: 4-bit int4 via optimum-quanto (QuantoConfig) — quantized in-memory each load
+        if has_cuda:
+            from transformers import BitsAndBytesConfig
+            quant_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_use_double_quant=True,
             )
-            size_mb = total_size / (1024 * 1024)
-            logger.info(f"Model size on disk: {size_mb:.0f} MB")
+            _ocr_model = HunYuanVLForConditionalGeneration.from_pretrained(
+                model_source,
+                quantization_config=quant_config,
+                device_map="auto",
+                attn_implementation="eager",
+            )
+        else:
+            from transformers import QuantoConfig
+            quant_config = QuantoConfig(weights="int4")
+            _ocr_model = HunYuanVLForConditionalGeneration.from_pretrained(
+                model_source,
+                quantization_config=quant_config,
+                device_map="cpu",
+                attn_implementation="eager",
+            )
 
         _ocr_loaded = True
-        logger.info("HunyuanOCR loaded successfully (4-bit NF4, ~500MB VRAM)")
+        logger.info(f"HunyuanOCR loaded successfully ({mode_label})")
 
     except Exception as e:
         logger.error(f"Failed to load HunyuanOCR: {e}")

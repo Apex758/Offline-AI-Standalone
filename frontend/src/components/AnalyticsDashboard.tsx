@@ -95,6 +95,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 }) => {
   // Achievement data
   const { earned, totalAvailable, showcase, definitions } = useAchievementContext();
+  const { settings } = useSettings();
   // State management
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
@@ -119,9 +120,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
-  const [showShowcase, setShowShowcase] = useState(false);
+  const [showShowcase, setShowShowcase] = useState(settings.showTrophiesByDefault);
   const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    setShowShowcase(settings.showTrophiesByDefault);
+  }, [settings.showTrophiesByDefault]);
 
   useEffect(() => {
     const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains('dark')));
@@ -1132,6 +1137,25 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             )}
           </div>
         )}
+
+        {/* Trophy Display Preference */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--dash-text-sub)' }}>
+              Show Trophies by Default
+            </p>
+            <p className="text-xs" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
+              Display trophy showcase instead of stats
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            checked={settings.showTrophiesByDefault}
+            onChange={(e) => updateSettings({ showTrophiesByDefault: e.target.checked })}
+            className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+            style={{ accentColor: 'var(--dash-primary)' }}
+          />
+        </div>
 
         {/* Actions */}
         <div className="flex space-x-3">

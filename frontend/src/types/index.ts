@@ -6,6 +6,8 @@ export interface User {
 
 export type Theme = 'light' | 'dark' | 'system';
 
+export type ImageMode = 'none' | 'ai' | 'my-images' | 'suggested';
+
 export interface FileOperationPlan {
   action: string;
   description: string;
@@ -41,7 +43,7 @@ export interface SplitViewState {
 export interface Tab {
   id: string;
   title: string;
-  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder' | 'achievements';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder' | 'achievements' | 'storybook';
   active: boolean;
   data?: any;
   lastActiveTime?: number;
@@ -51,7 +53,7 @@ export interface Tool {
   id: string;
   name: string;
   icon: string;
-  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder' | 'achievements';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder' | 'achievements' | 'storybook';
   description: string;
   group?: string;
 }

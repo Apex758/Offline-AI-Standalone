@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import type { ImageMode } from '../types';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -85,7 +86,7 @@ interface Draft {
 
 type InputMode = 'scratch' | 'lesson';
 type RightTab = 'color' | 'edit' | 'layouts';
-type ImageMode = 'none' | 'ai' | 'my-images' | 'suggested';
+
 
 const SLIDE_LAYOUTS = ['title', 'objectives', 'hook', 'instruction', 'activity', 'assessment', 'closing'];
 

@@ -24,6 +24,9 @@ export interface TabColors {
   settings: string;
   'brain-dump': string;
   'performance-metrics': string;
+  'presentation-builder': string;
+  'achievements': string;
+  'storybook': string;
 }
 
 export interface TutorialState {
@@ -107,6 +110,8 @@ export interface Settings {
   brightness: number;       // 50–150, default 100
   warmTone: number;          // 0–100, default 0
   warmToneEnabled: boolean;
+  // Trophy showcase
+  showTrophiesByDefault: boolean;
 }
 
 export interface SettingsContextValue {
@@ -154,7 +159,8 @@ export const DEFAULT_SETTINGS: Settings = {
     'brain-dump': '#a855f7',
     'performance-metrics': '#10b981',
     'presentation-builder': '#f97316',
-    'achievements': '#f59e0b'
+    'achievements': '#f59e0b',
+    'storybook': '#a855f7',
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',
@@ -202,6 +208,8 @@ export const DEFAULT_SETTINGS: Settings = {
   brightness: 100,
   warmTone: 0,
   warmToneEnabled: false,
+  // Trophy showcase
+  showTrophiesByDefault: false,
 };
 
 // localStorage key

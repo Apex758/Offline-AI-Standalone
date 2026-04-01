@@ -378,6 +378,30 @@ export const FEATURE_CATALOG: DiscoverableFeature[] = [
     },
   },
 
+  {
+    id: 'tool-storybook',
+    name: 'Storybook Creator',
+    category: 'visual',
+    description: 'Create illustrated K-2 storybooks with multi-voice TTS narration, curriculum-aligned content, and animated playback. Export as PDF, PPTX, or a self-contained HTML ebook.',
+    howToUse: [
+      'Enable "Visual Studio" in Settings > Features > Sidebar Tools',
+      'Click "Storybook Creator" under Visual Studio in the sidebar',
+      'Enter a title and describe the story (or use the microphone)',
+      'Pick a grade level (K–2), subject, and optionally align to curriculum',
+      'Choose image mode and set up narrator/character voices',
+      'Generate — the AI writes the story and comprehension questions',
+      'Edit pages, assign background scenes, upload character images',
+      'Press Play to preview with animated narration, then export',
+    ],
+    toolType: 'storybook',
+    detectionStrategy: {
+      type: 'composite',
+      strategies: [
+        { type: 'toolUsage', toolType: 'storybook' },
+      ],
+    },
+  },
+
   // ─── Writing Assistant ───────────────────────────────────────
   {
     id: 'sub-spell-check',

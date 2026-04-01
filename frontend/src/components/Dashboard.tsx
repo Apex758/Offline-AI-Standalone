@@ -38,6 +38,7 @@ import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
 import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
+import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
@@ -86,6 +87,7 @@ const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const Speedometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Activity01IconData} {...p} />;
 const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
 const Trophy: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Trophy01IconData} {...p} />;
+const StoryBook: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StoryBookIconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
@@ -111,6 +113,7 @@ const SupportReporting = React.lazy(() => import('./SupportReporting'));
 const BrainDump = React.lazy(() => import('./BrainDump'));
 const PerformanceMetrics = React.lazy(() => import('./PerformanceMetrics'));
 const PresentationBuilder = React.lazy(() => import('./PresentationBuilder'));
+const StoryBookCreator = React.lazy(() => import('./StoryBookCreator'));
 const Achievements = React.lazy(() => import('./Achievements'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -297,6 +300,14 @@ const tools: Tool[] = [
     type: 'presentation-builder',
     description: 'Create presentations from lesson plans',
     group: 'visual-studio'
+  },
+  {
+    id: 'storybook',
+    name: 'Storybook Creator',
+    icon: 'StoryBook',
+    type: 'storybook',
+    description: 'Illustrated K-2 stories with TTS narration',
+    group: 'visual-studio'
   }
 ];
 
@@ -331,7 +342,8 @@ const iconMap: { [key: string]: React.ElementType } = {
   Brain,
   Speedometer,
   Presentation,
-  Trophy
+  Trophy,
+  StoryBook,
 };
 
 const WELCOME_TIPS = [
@@ -812,7 +824,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   // Mapping from sidebar item IDs to the tab types they control
   const SIDEBAR_ID_TO_TAB_TYPES: Record<string, string[]> = {
-    'visual-studio': ['worksheet-generator', 'image-studio', 'presentation-builder'],
+    'visual-studio': ['worksheet-generator', 'image-studio', 'presentation-builder', 'storybook'],
     'lesson-planners': ['lesson-planner', 'kindergarten-planner', 'multigrade-planner', 'cross-curricular-planner'],
     'performance-metrics': ['performance-metrics'],
     'brain-dump': ['brain-dump'],
@@ -1845,6 +1857,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'presentation-builder':
         return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+      case 'storybook':
+        return <StoryBookCreator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'settings':
         return <Settings tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} onNavigateToTool={(toolType) => { const tool = tools.find(t => t.type === toolType); if (tool) openTool(tool); }} />;
       case 'class-management':

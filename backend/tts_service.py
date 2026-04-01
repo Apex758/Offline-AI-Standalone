@@ -1,8 +1,8 @@
 """
 Piper TTS Service — fully offline, natural-sounding text-to-speech.
 
-Uses piper-tts with ONNX voice models (~60 MB).
-Voice model is auto-downloaded on first use.
+Supports multiple named voices for storybook multi-character narration.
+Voice models are auto-downloaded on first use (~60-100 MB each).
 """
 
 import io
@@ -15,14 +15,24 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Model config
+# Voice registry — 3 named voices for storybook multi-character support
 # ---------------------------------------------------------------------------
-# Default voice: en_US-lessac-high (female, highest quality, ~100 MB)
+
 DEFAULT_VOICE = "en_US-lessac-high"
+
+VOICE_REGISTRY: dict[str, str] = {
+    "lessac": "en_US-lessac-high",   # Female narrator (pre-installed)
+    "ryan":   "en_US-ryan-high",     # Male character voice
+    "amy":    "en_US-amy-medium",    # Female character voice (different tone)
+}
+
+def resolve_voice_model_name(voice_key: str) -> str:
+    """Resolve a short voice key (e.g. 'ryan') to its full Piper model name."""
+    return VOICE_REGISTRY.get(voice_key.lower(), voice_key)
+
 
 def _get_voices_dir() -> Path:
     """Get the directory where Piper voice models are stored."""
-    # Check environment override first
     if os.environ.get("MODELS_DIR"):
         base = Path(os.environ["MODELS_DIR"])
     else:
@@ -74,7 +84,6 @@ def _download_voice(voice_name: str) -> tuple[Path, Path]:
             print(f"[OK] [TTS] Downloaded {filename} ({target.stat().st_size / 1024 / 1024:.1f} MB)", flush=True)
         except Exception as e:
             logger.error(f"Failed to download {url}: {e}")
-            # Clean up partial downloads
             if target.exists():
                 target.unlink()
             raise RuntimeError(f"Failed to download TTS voice model: {e}")
@@ -82,15 +91,23 @@ def _download_voice(voice_name: str) -> tuple[Path, Path]:
     return onnx_path, json_path
 
 
-# ---------------------------------------------------------------------------
-# Singleton service
-# ---------------------------------------------------------------------------
-class TTSService:
-    """Lazy-loading Piper TTS singleton."""
+def is_voice_available(voice_key: str) -> bool:
+    """Check if a voice model is downloaded and available."""
+    model_name = resolve_voice_model_name(voice_key)
+    onnx, _ = _find_voice_model(model_name)
+    return onnx is not None
 
-    def __init__(self):
+
+# ---------------------------------------------------------------------------
+# Per-voice loader — each voice gets its own lazy-loaded instance
+# ---------------------------------------------------------------------------
+
+class _VoiceInstance:
+    """Lazy-loading wrapper for a single Piper voice model."""
+
+    def __init__(self, voice_name: str):
+        self._voice_name = voice_name
         self._voice = None
-        self._voice_name = DEFAULT_VOICE
         self._lock = threading.Lock()
         self._loaded = False
 
@@ -98,8 +115,7 @@ class TTSService:
     def is_loaded(self) -> bool:
         return self._loaded
 
-    def _ensure_loaded(self):
-        """Load the voice model if not already loaded."""
+    def ensure_loaded(self):
         if self._loaded:
             return
         with self._lock:
@@ -107,7 +123,6 @@ class TTSService:
                 return
             try:
                 from piper import PiperVoice
-
                 onnx_path, json_path = _find_voice_model(self._voice_name)
                 if onnx_path is None:
                     print(f"v [TTS] Voice model not found locally, downloading {self._voice_name}...", flush=True)
@@ -116,29 +131,23 @@ class TTSService:
                 print(f"[OK] [TTS] Loading voice model: {onnx_path}", flush=True)
                 self._voice = PiperVoice.load(str(onnx_path), config_path=str(json_path))
                 self._loaded = True
-                print(f"[OK] [TTS] Voice loaded successfully ({self._voice_name})", flush=True)
+                print(f"[OK] [TTS] Voice loaded: {self._voice_name}", flush=True)
                 logger.info(f"TTS voice loaded: {self._voice_name}")
             except Exception as e:
-                logger.error(f"Failed to load TTS voice: {e}")
-                print(f"[ERR] [TTS] Failed to load voice: {e}", flush=True)
+                logger.error(f"Failed to load TTS voice {self._voice_name}: {e}")
+                print(f"[ERR] [TTS] Failed to load voice {self._voice_name}: {e}", flush=True)
                 raise
 
     def synthesize(self, text: str, speed: float = 1.0) -> bytes:
-        """Synthesize text to WAV bytes."""
-        self._ensure_loaded()
+        self.ensure_loaded()
         from piper.config import SynthesisConfig
 
         config = SynthesisConfig()
-        # Slightly slower pace for natural flow (1.05 = ~5% slower)
         config.length_scale = 1.05 / speed
-        # Voice variation — adds warmth and natural inflection
         config.noise_scale = 0.667
-        # Phoneme duration variation — prevents robotic monotone rhythm
         config.noise_w_scale = 0.8
 
-        # Break long text into sentences for more natural pauses
-        sentences = self._split_sentences(text)
-
+        sentences = _split_sentences(text)
         buf = io.BytesIO()
         with wave.open(buf, "wb") as wav_file:
             for i, sentence in enumerate(sentences):
@@ -147,33 +156,88 @@ class TTSService:
                     continue
                 self._voice.synthesize_wav(sentence, wav_file, syn_config=config,
                                            set_wav_format=(i == 0))
-                # Insert a natural pause between sentences (~250ms of silence)
                 if i < len(sentences) - 1:
                     sample_rate = self._voice.config.sample_rate
                     silence_samples = int(sample_rate * 0.25)
                     wav_file.writeframes(b'\x00\x00' * silence_samples)
         return buf.getvalue()
 
-    @staticmethod
-    def _split_sentences(text: str) -> list[str]:
-        """Split text into sentences for natural pauses."""
-        import re
-        # Split on sentence-ending punctuation followed by space or end
-        parts = re.split(r'(?<=[.!?])\s+', text)
-        return [p for p in parts if p.strip()]
+    def get_sample_rate(self) -> int:
+        self.ensure_loaded()
+        return self._voice.config.sample_rate
+
+
+def _split_sentences(text: str) -> list[str]:
+    import re
+    parts = re.split(r'(?<=[.!?])\s+', text)
+    return [p for p in parts if p.strip()]
+
+
+# ---------------------------------------------------------------------------
+# TTSService — multi-voice facade
+# ---------------------------------------------------------------------------
+
+class TTSService:
+    """
+    Multi-voice TTS service.
+
+    Supports 3 named voices: lessac (default), ryan, amy.
+    Each voice model is lazy-loaded on first use and kept in memory.
+    """
+
+    def __init__(self):
+        self._voices: dict[str, _VoiceInstance] = {}
+        self._lock = threading.Lock()
+
+    def _get_voice_instance(self, voice_key: str) -> _VoiceInstance:
+        model_name = resolve_voice_model_name(voice_key)
+        with self._lock:
+            if model_name not in self._voices:
+                self._voices[model_name] = _VoiceInstance(model_name)
+        return self._voices[model_name]
+
+    @property
+    def is_loaded(self) -> bool:
+        """True if the default voice is loaded."""
+        default_model = resolve_voice_model_name("lessac")
+        return default_model in self._voices and self._voices[default_model].is_loaded
+
+    def synthesize(self, text: str, speed: float = 1.0, voice: str = "lessac") -> bytes:
+        """
+        Synthesize text to WAV bytes.
+
+        Args:
+            text: Text to synthesize.
+            speed: Playback speed multiplier (1.0 = normal).
+            voice: Voice key — 'lessac' (default), 'ryan', or 'amy'.
+        """
+        instance = self._get_voice_instance(voice)
+        return instance.synthesize(text, speed=speed)
 
     def get_voice_info(self) -> dict:
-        """Return info about the current voice."""
+        """Return info about available voices."""
+        voices_dir = _get_voices_dir()
+        available = {}
+        for key, model_name in VOICE_REGISTRY.items():
+            onnx, _ = _find_voice_model(model_name)
+            available[key] = {
+                "model_name": model_name,
+                "downloaded": onnx is not None,
+                "loaded": (
+                    model_name in self._voices and
+                    self._voices[model_name].is_loaded
+                ),
+            }
         return {
-            "voice_name": self._voice_name,
-            "loaded": self._loaded,
-            "model_dir": str(_get_voices_dir()),
+            "default_voice": "lessac",
+            "voices": available,
+            "model_dir": str(voices_dir),
         }
 
     def cleanup(self):
-        """Release resources."""
-        self._voice = None
-        self._loaded = False
+        """Release all loaded voice models."""
+        with self._lock:
+            self._voices.clear()
 
 
 # ---------------------------------------------------------------------------

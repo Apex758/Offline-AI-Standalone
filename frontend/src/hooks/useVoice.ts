@@ -99,12 +99,13 @@ export function useTTS() {
 
   const fetchChunkAudio = useCallback(async (
     text: string,
-    signal: AbortSignal
+    signal: AbortSignal,
+    voice?: string
   ): Promise<string> => {
     const response = await fetch('http://localhost:8000/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, ...(voice ? { voice } : {}) }),
       signal,
     });
     if (!response.ok) throw new Error('TTS request failed');
@@ -112,7 +113,7 @@ export function useTTS() {
     return URL.createObjectURL(blob);
   }, []);
 
-  const speak = useCallback(async (text: string, onEnd?: () => void) => {
+  const speak = useCallback(async (text: string, onEnd?: () => void, voice?: string) => {
     const cleaned = cleanTextForTTS(text);
     if (!cleaned) return;
 
@@ -130,7 +131,7 @@ export function useTTS() {
     try {
       // Pre-fetch first chunk immediately
       let nextAudioPromise: Promise<string> | null =
-        chunks.length > 0 ? fetchChunkAudio(chunks[0], controller.signal) : null;
+        chunks.length > 0 ? fetchChunkAudio(chunks[0], controller.signal, voice) : null;
 
       for (let i = 0; i < chunks.length; i++) {
         if (cancelledRef.current) break;
@@ -141,7 +142,7 @@ export function useTTS() {
 
         // Start pre-fetching the next chunk while this one plays
         if (i + 1 < chunks.length) {
-          nextAudioPromise = fetchChunkAudio(chunks[i + 1], controller.signal);
+          nextAudioPromise = fetchChunkAudio(chunks[i + 1], controller.signal, voice);
         } else {
           nextAudioPromise = null;
         }

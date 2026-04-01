@@ -39,6 +39,7 @@ from config import (
     IMAGE_MODELS_DIR, get_selected_diffusion_model, set_selected_diffusion_model,
     get_diffusion_model_path, scan_diffusion_models, get_image_model_info,
     get_tier_config, set_tier_config, get_model_tier, compute_effective_tier,
+    LAMA_MODEL_PATH,
 )
 from pathlib import Path
 from datetime import datetime
@@ -2554,6 +2555,127 @@ async def presentation_websocket(websocket: WebSocket):
         logger.error(f"Presentation WebSocket error: {str(e)}")
 
 
+@app.websocket("/ws/storybook")
+async def storybook_websocket(websocket: WebSocket):
+    """Generate children's storybook JSON from teacher description."""
+    await websocket.accept()
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
+            prompt = data.get("prompt", "")
+            job_id = data.get("jobId") or data.get("id") or "storybook"
+            generation_mode = data.get("generationMode", "queued")
+            grade = data.get("grade", "K")
+
+            if not prompt:
+                continue
+
+            # Tier-1 awareness
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("storybook") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("storybook", grade)
+            else:
+                system_prompt = (
+                    "You are a children's storybook author specializing in early childhood education (K-2). "
+                    "Create engaging, age-appropriate stories with clear characters, simple vocabulary, "
+                    "and vivid scene descriptions. Tag every text segment with its speaker. "
+                    "Return ONLY valid JSON with no markdown fences or explanation."
+                )
+
+            full_prompt = "<|begin_of_text|>"
+            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
+            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+            slot_mode = None
+            try:
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("storybook") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+
+                token_buffer = []
+                last_send = time.time()
+                async for chunk in inference.generate_stream(
+                    tool_name="storybook",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=_t1_params.get("max_tokens", 4000) if _is_tier1 else 4000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({"type": "error", "message": chunk["error"]})
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+
+                    if chunk.get("finished"):
+                        if token_buffer:
+                            try:
+                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                                await asyncio.sleep(0)
+                            except Exception as e:
+                                logger.error(f"Error sending final tokens: {e}")
+                        try:
+                            await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+
+                    if chunk.get("token"):
+                        token_buffer.append(chunk["token"])
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
+                            try:
+                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                                token_buffer = []
+                                last_send = time.time()
+                                await asyncio.sleep(0)
+                            except Exception as e:
+                                logger.error(f"Error sending token: {e}")
+                                break
+
+            except Exception as e:
+                logger.error(f"Storybook generation error: {e}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                try:
+                    await websocket.send_json({"type": "error", "message": str(e)})
+                except:
+                    logger.error("Could not send error message - connection closed")
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
+    except WebSocketDisconnect:
+        logger.info("Storybook WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Storybook WebSocket error: {str(e)}")
+
+
 # ─── Brain Dump: category keyword map & helpers ──────────────────────────────
 BRAIN_DUMP_ACTION_DESCRIPTIONS = {
     "lesson-plan":           '- "lesson-plan": Create a lesson plan (details: subject, grade, topic, duration)',
@@ -2565,6 +2687,7 @@ BRAIN_DUMP_ACTION_DESCRIPTIONS = {
     "multigrade-plan":       '- "multigrade-plan": Create a multi-level lesson plan (details: subject, grades, topic)',
     "cross-curricular-plan": '- "cross-curricular-plan": Create an integrated cross-subject lesson (details: subjects, grade, topic)',
     "image-studio":          '- "image-studio": Create a visual aid or image (details: description, style)',
+    "storybook":             '- "storybook": Create an illustrated storybook for K-2 students (details: title, grade, description, pageCount)',
     "presentation":          '- "presentation": Create a slide deck or presentation (details: subject, grade, topic, slideCount)',
     "grade-quiz":            '- "grade-quiz": Grade or mark a quiz/test (details: subject, grade, topic)',
     "grade-worksheet":       '- "grade-worksheet": Grade or mark a worksheet (details: subject, grade, topic)',
@@ -6374,6 +6497,7 @@ async def text_to_speech(request: Request):
         data = await request.json()
         text = data.get("text", "").strip()
         speed = float(data.get("speed", 1.0))
+        voice = data.get("voice", "lessac")  # 'lessac' | 'ryan' | 'amy'
 
         if not text:
             return JSONResponse(status_code=400, content={"error": "Text is required"})
@@ -6383,7 +6507,9 @@ async def text_to_speech(request: Request):
 
         # Run synthesis in thread pool to avoid blocking the event loop
         loop = asyncio.get_event_loop()
-        wav_bytes = await loop.run_in_executor(None, tts.synthesize, text, speed)
+        wav_bytes = await loop.run_in_executor(
+            None, lambda: tts.synthesize(text, speed=speed, voice=voice)
+        )
 
         return Response(content=wav_bytes, media_type="audio/wav")
 
@@ -6405,10 +6531,10 @@ async def preload_tts():
         tts = get_tts_service()
         if tts.is_loaded:
             return {"status": "loaded"}
-        logger.info("Preloading TTS voice model...")
+        logger.info("Preloading TTS default voice model...")
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, tts._ensure_loaded)
-        logger.info("TTS voice model preloaded successfully")
+        await loop.run_in_executor(None, lambda: tts.synthesize("ready", voice="lessac"))
+        logger.info("TTS default voice preloaded successfully")
         return {"status": "loaded"}
     except Exception as e:
         logger.error(f"Error preloading TTS model: {e}")
@@ -6424,6 +6550,29 @@ async def tts_status():
         return JSONResponse(content=tts.get_voice_info())
     except Exception as e:
         return JSONResponse(content={"loaded": False, "error": str(e)})
+
+
+@app.get("/api/tts/voices")
+async def tts_voices():
+    """Return available storybook voices with download status."""
+    try:
+        from tts_service import get_tts_service, VOICE_REGISTRY, is_voice_available
+        tts = get_tts_service()
+        voices = []
+        display_names = {
+            "lessac": "Lessac (Female)",
+            "ryan":   "Ryan (Male)",
+            "amy":    "Amy (Female)",
+        }
+        for key in VOICE_REGISTRY:
+            voices.append({
+                "key": key,
+                "displayName": display_names.get(key, key),
+                "available": is_voice_available(key),
+            })
+        return JSONResponse(content={"voices": voices})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/api/generate-image")
@@ -6786,17 +6935,23 @@ async def inpaint_image(
     Returns:
         Inpainted image as PNG
     """
+    if not LAMA_MODEL_PATH.exists():
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Object Remover is unavailable: big-lama.pt not found in models/image_generation/lama/"}
+        )
+
     try:
         # Read uploaded files
         image_data = await image.read()
         mask_data = await mask.read()
-        
+
         if not image_data or not mask_data:
             return JSONResponse(
                 status_code=400,
                 content={"error": "Both image and mask are required"}
             )
-        
+
         # Get image service
         image_service = get_image_service()
         
@@ -6845,6 +7000,12 @@ async def inpaint_image_base64(request: Request):
         "imageData": "data:image/png;base64,..."
     }
     """
+    if not LAMA_MODEL_PATH.exists():
+        return JSONResponse(
+            status_code=503,
+            content={"success": False, "error": "Object Remover is unavailable: big-lama.pt not found in models/image_generation/lama/"}
+        )
+
     try:
         logger.info("=== INPAINT-BASE64 REQUEST RECEIVED ===")
         data = await request.json()

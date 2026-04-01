@@ -45,6 +45,7 @@ TIER1_MAX_TOKENS = {
     "worksheet": 3000,
     "presentation": 2500,
     "presentation_with_suggestions": 2500,
+    "storybook": 3000,
     "brain-dump": 4000,
     "title-generation": 30,
     "autocomplete": 30,
@@ -183,6 +184,19 @@ TIER1_PROMPTS = {
         "Keep titles under 7 words. Keep bullet points under 12 words each. "
         "Make 5-8 slides. Only add imageScene on 2-3 slides where a visual would help students understand. "
         "Write imageScene as a descriptive suggestion (10-20 words) a teacher could use to find an image."
+    ),
+
+    "storybook": (
+        "You are a children's storybook writer for K-2 students. "
+        "Return ONLY valid JSON matching this exact structure — no markdown, no explanation:\n"
+        '{"title":"...","gradeLevel":"K","characters":["name"],'
+        '"characterDescriptions":{"Name":"visual description"},'
+        '"voiceAssignments":{"narrator":"lessac"},'
+        '"styleSuffix":"flat vector illustration, children\'s book style, bold outlines, pastel colors",'
+        '"scenes":[{"id":"park","description":"setting description"}],'
+        '"pages":[{"pageNumber":1,"textSegments":[{"speaker":"narrator","text":"short sentence."}],'
+        '"sceneId":"park","characterScene":"short image prompt","imagePlacement":"right",'
+        '"characterAnimation":"slideInRight","textAnimation":"fadeIn"}]}'
     ),
 
     "brain-dump": (
