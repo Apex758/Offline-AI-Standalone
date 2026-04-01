@@ -35,34 +35,40 @@ async def initialize_milestones(teacher_id: str):
     if not curriculum_matcher:
         raise HTTPException(status_code=500, detail="Curriculum matcher not available")
 
-    db = get_milestone_db()
+    try:
+        db = get_milestone_db()
 
-    # Check if already initialized
-    existing = db.get_milestones(teacher_id, include_hidden=True)
-    if existing:
-        # Sync with current curriculum data (adds new, removes stale, updates metadata)
-        result = db.sync_milestones_with_curriculum(
+        # Check if already initialized
+        existing = db.get_milestones(teacher_id, include_hidden=True)
+        if existing:
+            # Sync with current curriculum data (adds new, removes stale, updates metadata)
+            result = db.sync_milestones_with_curriculum(
+                teacher_id=teacher_id,
+                curriculum_pages=curriculum_matcher.all_pages()
+            )
+            synced = db.get_milestones(teacher_id)
+            return {
+                "success": True,
+                "message": f"Synced milestones: {result['added']} added, {result['updated']} updated, {result['removed']} removed",
+                "count": len(synced)
+            }
+
+        # Generate from curriculum
+        count = db.generate_milestones_from_curriculum(
             teacher_id=teacher_id,
-            curriculum_pages=curriculum_matcher.all_page_ids()
+            curriculum_pages=curriculum_matcher.all_pages()
         )
-        synced = db.get_milestones(teacher_id)
+
         return {
             "success": True,
-            "message": f"Synced milestones: {result['added']} added, {result['updated']} updated, {result['removed']} removed",
-            "count": len(synced)
+            "message": f"Generated {count} milestones",
+            "count": count
         }
-
-    # Generate from curriculum
-    count = db.generate_milestones_from_curriculum(
-        teacher_id=teacher_id,
-        curriculum_pages=curriculum_matcher.all_page_ids()
-    )
-
-    return {
-        "success": True,
-        "message": f"Generated {count} milestones",
-        "count": count
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to initialize milestones for {teacher_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Milestone initialization failed: {str(e)}")
 
 @router.post("/sync/{teacher_id}")
 async def sync_milestones(teacher_id: str):
@@ -73,7 +79,7 @@ async def sync_milestones(teacher_id: str):
     db = get_milestone_db()
     result = db.sync_milestones_with_curriculum(
         teacher_id=teacher_id,
-        curriculum_pages=curriculum_matcher.all_page_ids()
+        curriculum_pages=curriculum_matcher.all_pages()
     )
 
     return {

@@ -134,6 +134,9 @@ import ActiveGenerationDialog from './ActiveGenerationDialog';
 import CloseAllDialog, { CloseAllSummary } from './CloseAllDialog';
 import { useTabBusy } from '../contexts/TabBusyContext';
 import { TabIdProvider } from '../contexts/TabIdContext';
+import { useStickyNotes } from '../contexts/StickyNoteContext';
+import { StickyNoteOverlay } from './sticky-notes/StickyNoteOverlay';
+import { StickyNoteFabPanel } from './sticky-notes/StickyNoteFabPanel';
 import { NudgeProvider, useNudge } from './Nudge/NudgeProvider';
 
 
@@ -486,6 +489,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { unreadCount } = useNotification();
   const { queue } = useQueue();
   const { isTabHttpBusy } = useTabBusy();
+  const { openNoteIds, fabPanelOpen, setFabPanelOpen } = useStickyNotes();
   const activeStreams = getActiveStreams();
   const queuedTabEndpoints = new Set(
     queue.filter(item => item.status === 'generating').map(item => `${item.tabId}::${item.endpoint}`)
@@ -616,16 +620,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         // If navigating to a settings section, scroll to it after the tab renders
         if (entry.settingsSection) {
           const sectionId = entry.settingsSection;
-          setTimeout(() => {
+
+          const tryScrollTo = () => {
             const el = document.querySelector(`[data-tutorial="${sectionId}"]`) ||
                        document.querySelector(`[data-search-section="${sectionId}"]`);
             if (el) {
               el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              // Flash highlight
               el.classList.add('search-highlight-flash');
               setTimeout(() => el.classList.remove('search-highlight-flash'), 2000);
+              return true;
             }
-          }, 400);
+            return false;
+          };
+
+          // Try after a short delay (panel may already be rendered)
+          setTimeout(() => {
+            if (tryScrollTo()) return;
+
+            // If not found, observe DOM for the element to appear (panel switching)
+            const observer = new MutationObserver(() => {
+              if (tryScrollTo()) {
+                observer.disconnect();
+              }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            // Safety timeout: stop observing after 3s
+            setTimeout(() => observer.disconnect(), 3000);
+          }, 100);
         }
       }
     }
@@ -2858,6 +2880,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           onStartTutorial={() => startTutorial(TUTORIAL_IDS.DASHBOARD_MAIN)}
           onOpenSearch={() => setCommandPaletteOpen(true)}
           onScreenshotTicket={handleScreenshotTicket}
+          onStickyNote={() => setFabPanelOpen(!fabPanelOpen)}
+          stickyNoteCount={openNoteIds.length}
           position="bottom-right"
         />
       );
@@ -2871,6 +2895,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           onStartTutorial={() => startTutorial(TUTORIAL_IDS.ANALYTICS)}
           onOpenSearch={() => setCommandPaletteOpen(true)}
           onScreenshotTicket={handleScreenshotTicket}
+          onStickyNote={() => setFabPanelOpen(!fabPanelOpen)}
+          stickyNoteCount={openNoteIds.length}
           position="bottom-right"
         />
       );
@@ -2886,11 +2912,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         onStartTutorial={() => startTutorial(tutorialId as TutorialId)}
         onOpenSearch={() => setCommandPaletteOpen(true)}
         onScreenshotTicket={handleScreenshotTicket}
+        onStickyNote={() => setFabPanelOpen(!fabPanelOpen)}
+        stickyNoteCount={openNoteIds.length}
         position={isChat ? 'bottom-left' : 'bottom-right'}
         ghost={isChat}
       />
     );
   })()}
+
+      {/* Sticky Notes Overlay — renders all visible sticky notes above content */}
+      <StickyNoteOverlay activeTabId={activeTabId} />
+
+      {/* Sticky Notes FAB Panel — side popup for managing notes */}
+      {fabPanelOpen && (
+        <StickyNoteFabPanel
+          activeTabId={activeTabId}
+          onClose={() => setFabPanelOpen(false)}
+        />
+      )}
 
       {showCloseAllDialog && (
         <CloseAllDialog

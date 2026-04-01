@@ -244,15 +244,34 @@ class CurriculumMatcher:
 
     def all_page_ids(self) -> List[str]:
         """Get all curriculum page IDs."""
-        ids = []
+        return [p['id'] for p in self.all_pages()]
+
+    def all_pages(self) -> List[Dict[str, Any]]:
+        """Get all curriculum pages as dicts with id, displayName, grade, subject, strand, route, and specificOutcomes."""
+        pages = []
         for key, data in self.files.items():
             meta = data.get("metadata", {})
             file_grade = meta.get("grade", "")
             file_subject = meta.get("subject", "")
-            grade_prefix = "kindergarten" if file_grade == "K" else f"grade{file_grade}"
+            norm_grade = self._normalize_grade(file_grade)
+            grade_prefix = "kindergarten" if norm_grade == "K" else f"grade{norm_grade}"
             sub_slug = file_subject.lower().replace(" ", "-")
             for s in data.get("strands", []):
                 sn = s.get("strand_name", "")
                 strand_slug = sn.lower().replace(" ", "-")
-                ids.append(f"{grade_prefix}-{sub_slug}-{strand_slug}")
-        return ids
+                page_id = f"{grade_prefix}-{sub_slug}-{strand_slug}"
+                # Collect all specific outcomes across ELOs
+                specific_outcomes = []
+                for elo in s.get("essential_learning_outcomes", []):
+                    for sco in elo.get("specific_curriculum_outcomes", []):
+                        specific_outcomes.append(sco.get("description", sco.get("sco_code", "")))
+                pages.append({
+                    "id": page_id,
+                    "displayName": f"{file_subject} - {sn}",
+                    "grade": file_grade,
+                    "subject": file_subject,
+                    "strand": sn,
+                    "route": f"/{grade_prefix}-subjects/{sub_slug}/{strand_slug}",
+                    "specificOutcomes": specific_outcomes,
+                })
+        return pages

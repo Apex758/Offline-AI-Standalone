@@ -10,6 +10,7 @@ import Sun01IconData from '@hugeicons/core-free-icons/Sun01Icon';
 import Sun02IconData from '@hugeicons/core-free-icons/Sun02Icon';
 import FireIconData from '@hugeicons/core-free-icons/FireIcon';
 import { useSettings } from '../contexts/SettingsContext';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import { OECS_LOGO_BASE64 } from '../utils/logoBase64';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -27,12 +28,15 @@ const Moon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const Sun: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun01IconData} {...p} />;
 const Sun02: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun02IconData} {...p} />;
 const Fire: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FireIconData} {...p} />;
+const StickyNoteIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
 
 interface TutorialButtonProps {
   tutorialId: string;
   onStartTutorial: () => void;
   onOpenSearch?: () => void;
   onScreenshotTicket?: () => void;
+  onStickyNote?: () => void;
+  stickyNoteCount?: number;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   ghost?: boolean;
 }
@@ -42,6 +46,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   onStartTutorial,
   onOpenSearch,
   onScreenshotTicket,
+  onStickyNote,
+  stickyNoteCount = 0,
   position = 'bottom-right',
   ghost = false
 }) => {
@@ -117,6 +123,11 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   const handleScreenshotClick = async () => {
     setExpanded(false);
     onScreenshotTicket?.();
+  };
+
+  const handleStickyNoteClick = () => {
+    setExpanded(false);
+    onStickyNote?.();
   };
 
   const handleToggleTheme = () => {
@@ -392,6 +403,58 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 }}
               >
                 Report Issue (Screenshot)
+                <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
+              </span>
+            </button>
+          )}
+
+          {/* Sticky Notes button */}
+          {onStickyNote && (
+            <button
+              onClick={handleStickyNoteClick}
+              className="rounded-2xl flex items-center justify-center text-white group/sub relative"
+              style={{
+                ...subButtonBase,
+                background: 'linear-gradient(135deg, rgba(251,191,36,0.72), rgba(234,179,8,0.82))',
+                boxShadow: expanded
+                  ? '0 6px 24px rgba(234,179,8,0.45), 0 2px 8px rgba(0,0,0,0.15)'
+                  : '0 0 0 rgba(0,0,0,0)',
+                opacity: expanded ? 1 : 0,
+                transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+                pointerEvents: expanded ? 'auto' : 'none',
+                transitionDelay: expanded ? '0.04s' : '0.03s',
+              }}
+              title="Sticky Notes"
+              aria-label="Sticky Notes"
+            >
+              <StickyNoteIcon className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+              {/* Count badge */}
+              {stickyNoteCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-white text-[9px] font-bold"
+                  style={{
+                    width: 16, height: 16,
+                    background: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+                    boxShadow: '0 0 6px rgba(244,63,94,0.6)',
+                  }}
+                >
+                  {stickyNoteCount}
+                </span>
+              )}
+              {/* Tooltip */}
+              <span
+                className="absolute right-full mr-3 px-3 py-1.5 text-white text-xs rounded-xl opacity-0 group-hover/sub:opacity-100 whitespace-nowrap pointer-events-none"
+                style={{
+                  background: 'rgba(15,15,25,0.9)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                  transition: 'opacity 0.15s ease',
+                  fontWeight: 500,
+                  letterSpacing: '0.01em',
+                }}
+              >
+                Sticky Notes
                 <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
               </span>
             </button>

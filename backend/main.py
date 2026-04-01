@@ -291,6 +291,25 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 
+# Add CORS middleware FIRST, before routers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Catch-all exception handler so error responses go through CORSMiddleware
+@app.exception_handler(Exception)
+async def _global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled error on {request.method} {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
 # Include milestone routes
 app.include_router(milestones.router)
 
@@ -311,18 +330,7 @@ class _QuietPollFilter(logging.Filter):
 
 logging.getLogger("uvicorn.access").addFilter(_QuietPollFilter())
 
-# Add CORS middleware AFTER creating app
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],  # This allows OPTIONS, POST, DELETE, etc.
-    allow_headers=["*"],
-)
+# CORS middleware is registered above, right after app creation
 
 
 class LoginRequest(BaseModel):
@@ -699,13 +707,13 @@ async def smart_search(request: SmartSearchRequest):
             return {"intent": "info", "summary": "", "steps": [], "confidence": 0}
 
         from inference_factory import resolve_inference_for_task
-        from smart_search_prompt import SMART_SEARCH_SYSTEM_PROMPT, SMART_SEARCH_TIER1_PROMPT
+        from smart_search_prompt import build_smart_search_prompt, SMART_SEARCH_TIER1_PROMPT
         from tier1_prompts import get_tier1_gen_params
 
         _tier_info = compute_effective_tier()
         _is_tier1 = _tier_info["tier"] == 1
 
-        system_prompt = SMART_SEARCH_TIER1_PROMPT if _is_tier1 else SMART_SEARCH_SYSTEM_PROMPT
+        system_prompt = SMART_SEARCH_TIER1_PROMPT if _is_tier1 else build_smart_search_prompt(query)
         user_prompt = f"Teacher asks: {query}"
 
         prompt = build_prompt(system_prompt, user_prompt)

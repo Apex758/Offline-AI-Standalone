@@ -39,6 +39,8 @@ import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
 import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
 import searchIndex, { SearchEntry } from '../data/searchIndex';
 import { useSTT } from '../hooks/useVoice';
+import { useStickyNotes, StickyChecklistItem } from '../contexts/StickyNoteContext';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -83,6 +85,7 @@ const Speedometer: React.FC<{ className?: string; style?: React.CSSProperties }>
 const Trophy: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
 const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Mic01IconData} {...p} />;
 const MicOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MicOff01IconData} {...p} />;
+const PencilEdit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
 
 // Check if SpeechRecognition is available
 const HAS_STT = typeof window !== 'undefined' && !!(
@@ -327,6 +330,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
   const listRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const aiAbortRef = useRef<AbortController | null>(null);
+  const { createNote } = useStickyNotes();
 
   // Speech-to-text
   const sttIsListeningRef = useRef(false);
@@ -653,15 +657,41 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
                       </li>
                     ))}
                   </ol>
-                  {aiResponse.action && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleAiAction(); }}
-                      className="mt-2 px-3 py-1 rounded-md text-xs font-medium text-white transition-colors"
-                      style={{ background: '#22c55e' }}
-                    >
-                      Go to {aiResponse.action.toolType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} →
-                    </button>
-                  )}
+                  <div className="flex gap-2 mt-2">
+                    {aiResponse.action && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleAiAction(); }}
+                        className="px-3 py-1 rounded-md text-xs font-medium text-white transition-colors"
+                        style={{ background: '#22c55e' }}
+                      >
+                        Go to {aiResponse.action.toolType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} →
+                      </button>
+                    )}
+                    {aiResponse.steps.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const checklist: StickyChecklistItem[] = aiResponse.steps.map((step, i) => ({
+                            id: `step_${Date.now()}_${i}`,
+                            text: step,
+                            completed: false,
+                            action: aiResponse.action ? { toolType: aiResponse.action.toolType, settingsSection: aiResponse.action.settingsSection } : undefined,
+                          }));
+                          createNote({
+                            title: aiResponse.summary || query,
+                            checklist,
+                            pinned: true,
+                            color: '#bbf7d0',
+                          });
+                          onClose();
+                        }}
+                        className="px-3 py-1 rounded-md text-xs font-medium transition-colors flex items-center gap-1"
+                        style={{ background: 'rgba(234,179,8,0.15)', color: '#b45309', border: '1px solid rgba(234,179,8,0.3)' }}
+                      >
+                        <PencilEdit className="w-3 h-3" /> Sticky Note
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); setAiResponse(null); }}

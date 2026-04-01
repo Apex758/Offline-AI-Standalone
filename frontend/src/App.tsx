@@ -8,6 +8,7 @@ import { WebSocketProvider } from './contexts/WebSocketContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { QueueProvider } from './contexts/QueueContext';
 import { TabBusyProvider } from './contexts/TabBusyContext';
+import { StickyNoteProvider } from './contexts/StickyNoteContext';
 import { CapabilitiesProvider } from './contexts/CapabilitiesContext';
 import { LicenseProvider } from './contexts/LicenseContext';
 import { LicenseGate } from './components/LicenseGate';
@@ -80,8 +81,10 @@ function App() {
               <WebSocketProvider>
                 <QueueProvider>
                   <TabBusyProvider>
-                    <AppContent />
-                    <ToastContainer />
+                    <StickyNoteProvider>
+                      <AppContent />
+                      <ToastContainer />
+                    </StickyNoteProvider>
                   </TabBusyProvider>
                 </QueueProvider>
               </WebSocketProvider>
