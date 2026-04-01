@@ -33,6 +33,8 @@ import TextFontIconData from '@hugeicons/core-free-icons/TextFontIcon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowTurnDownIconData from '@hugeicons/core-free-icons/ArrowTurnDownIcon';
 import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
+import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
+import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
 import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
 import searchIndex, { SearchEntry } from '../data/searchIndex';
@@ -77,6 +79,8 @@ const Type: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const ArrowRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
 const CornerDownLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowTurnDownIconData} {...p} />;
 const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
+const Speedometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Activity01IconData} {...p} />;
+const Trophy: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
 const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Mic01IconData} {...p} />;
 const MicOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MicOff01IconData} {...p} />;
 
@@ -99,6 +103,7 @@ const iconMap: Record<string, React.ElementType> = {
   BookMarked, School, Users, Library, Settings, Target, FileSpreadsheet,
   Palette, Bell, Columns, XCircle, Sun, HelpCircle, Cpu, Layers,
   ToggleLeft, RotateCcw, FilePlus, Image, Paintbrush, ImagePlus, Type, ArrowRight,
+  Brain, Speedometer, Trophy,
 };
 
 const categoryLabels: Record<string, string> = {
@@ -343,6 +348,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
   }, [stt.isListening]);
 
   // AI smart search
+  const [aiError, setAiError] = useState<string | null>(null);
   const fetchAiSearch = useCallback(async (q: string) => {
     if (!q.trim()) return;
     aiAbortRef.current?.abort();
@@ -350,6 +356,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
     aiAbortRef.current = controller;
     setAiLoading(true);
     setAiResponse(null);
+    setAiError(null);
     try {
       const res = await fetch('http://localhost:8000/api/smart-search', {
         method: 'POST',
@@ -357,14 +364,17 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
         body: JSON.stringify({ query: q }),
         signal: controller.signal,
       });
-      if (!res.ok) throw new Error('Smart search failed');
+      if (!res.ok) throw new Error(`Smart search failed (${res.status})`);
       const data: SmartSearchResponse = await res.json();
-      if (data.confidence > 0.3) {
+      if (data.summary || (data.steps && data.steps.length > 0)) {
         setAiResponse(data);
+      } else {
+        setAiError('No guidance found for that query. Try rephrasing.');
       }
     } catch (e: any) {
       if (e.name !== 'AbortError') {
         console.error('[SmartSearch] Error:', e);
+        setAiError('Could not reach AI. Make sure the backend is running.');
       }
     } finally {
       setAiLoading(false);
@@ -415,6 +425,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
       setSelectedIndex(0);
       setAiResponse(null);
       setAiLoading(false);
+      setAiError(null);
       requestAnimationFrame(() => inputRef.current?.focus());
     } else {
       // Stop STT when palette closes
@@ -474,6 +485,8 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
         break;
       case 'Enter':
         e.preventDefault();
+        // Stop STT if listening
+        if (stt.isListening) stt.stopListening();
         // If AI mode is on and no specific item selected (or at AI card), trigger AI search
         if (aiMode && selectedIndex === 0 && !aiResponse && query.trim()) {
           fetchAiSearch(query);
@@ -569,7 +582,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
           ) : query ? (
             // Has text — show clear button
             <button
-              onClick={() => { setQuery(''); setAiResponse(null); inputRef.current?.focus(); }}
+              onClick={() => { setQuery(''); setAiResponse(null); setAiError(null); inputRef.current?.focus(); }}
               className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition flex-shrink-0"
               title="Clear search"
             >
@@ -601,6 +614,14 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
                 <span className="text-xs font-medium" style={{ color: 'var(--text-hint, #6b7280)' }}>
                   Searching with AI...
                 </span>
+              </div>
+            </div>
+          )}
+          {aiError && !aiLoading && (
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-default, #e5e7eb)', background: 'rgba(239,68,68,0.05)' }}>
+              <div className="flex items-center gap-2">
+                <Brain className="w-4 h-4" style={{ color: '#ef4444' }} />
+                <span className="text-xs" style={{ color: '#ef4444' }}>{aiError}</span>
               </div>
             </div>
           )}

@@ -229,7 +229,7 @@ interface ModelInfo {
   supports_thinking?: boolean;
 }
 
-const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
+const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
   const { tier, hasVision, hasOcr, hasDiffusion, supportsThinking, dualModel, refreshCapabilities } = useCapabilities();
   const FEATURE_MODULE_LIST = FEATURE_MODULES;
@@ -334,7 +334,15 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
 
   // Section navigation
   type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'discovery' | 'files' | 'license' | 'danger';
-  const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
+  const initialSection = (savedData?.initialSection as SettingsSection) || 'profile';
+  const [activeSection, setActiveSection] = useState<SettingsSection>(initialSection);
+
+  // React to external section navigation (e.g. from command palette)
+  useEffect(() => {
+    if (savedData?.initialSection) {
+      setActiveSection(savedData.initialSection as SettingsSection);
+    }
+  }, [savedData?.initialSection]);
 
   // Load profile name & image from localStorage (synced with Dashboard)
   useEffect(() => {

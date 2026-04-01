@@ -725,24 +725,55 @@ async def smart_search(request: SmartSearchRequest):
             return {"intent": "info", "summary": "Sorry, I couldn't process that.", "steps": [], "confidence": 0}
 
         raw = result["result"].strip()
+        logger.info(f"[SmartSearch] Raw response: {raw[:500]}")
 
         # Extract JSON from the response (model may wrap it in markdown code blocks)
         json_match = _re.search(r'\{[\s\S]*\}', raw)
         if json_match:
+            json_str = json_match.group()
+            # Try to fix common model errors before parsing
+            # Some models output "step1": "..." instead of array
             try:
-                data = _json.loads(json_match.group())
-                # Validate required fields
+                data = _json.loads(json_str)
+            except _json.JSONDecodeError:
+                # Try fixing common issues: trailing commas, unescaped quotes
+                cleaned = _re.sub(r',\s*}', '}', json_str)
+                cleaned = _re.sub(r',\s*]', ']', cleaned)
+                try:
+                    data = _json.loads(cleaned)
+                except _json.JSONDecodeError:
+                    data = None
+
+            if data and isinstance(data, dict):
+                # Normalize steps — handle both array and dict formats
+                raw_steps = data.get("steps", [])
+                if isinstance(raw_steps, dict):
+                    # Model returned {"step1": "...", "step2": "..."} instead of array
+                    steps = [v for k, v in sorted(raw_steps.items()) if isinstance(v, str)]
+                elif isinstance(raw_steps, list):
+                    steps = [s for s in raw_steps if isinstance(s, str)]
+                else:
+                    steps = []
+
+                # Normalize intent — model may output the template "navigation|generation|..."
+                intent = data.get("intent", "info")
+                if "|" in str(intent):
+                    intent = "info"
+
+                summary = data.get("summary", "")
+
                 response = {
-                    "intent": data.get("intent", "info"),
-                    "summary": data.get("summary", ""),
-                    "steps": data.get("steps", []),
-                    "confidence": float(data.get("confidence", 0.5)),
+                    "intent": intent,
+                    "summary": summary,
+                    "steps": steps,
+                    "confidence": float(data.get("confidence", 0.7)),
                 }
                 if "action" in data and isinstance(data["action"], dict):
-                    response["action"] = data["action"]
+                    action = data["action"]
+                    # Clean up action — remove template values
+                    if action.get("toolType") and "|" not in action["toolType"]:
+                        response["action"] = action
                 return response
-            except (_json.JSONDecodeError, ValueError):
-                pass
 
         # Fallback: return the raw text as a summary
         return {

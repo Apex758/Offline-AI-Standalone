@@ -583,8 +583,35 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     if (entry.toolType) {
       const tool = tools.find(t => t.type === entry.toolType);
       if (tool) {
-        // Pass prefill data as initial tab data if provided
-        openTool(tool, prefill ? { prefill } : undefined);
+        // For settings entries, map the settingsSection to the correct sidebar panel
+        let initialData = prefill ? { prefill } : undefined;
+        if (entry.toolType === 'settings' && entry.settingsSection) {
+          const sectionToPanel: Record<string, string> = {
+            'font-size': 'appearance',
+            'brightness': 'appearance',
+            'night-tone': 'appearance',
+            'settings-tab-colors': 'appearance',
+            'settings-appearance': 'appearance',
+            'ai-model': 'models',
+            'thinking-mode': 'models',
+            'diffusion-model': 'models',
+            'ocr-model': 'models',
+            'settings-notifications': 'general',
+            'generation-mode': 'general',
+            'settings-tutorials': 'general',
+            'feature-modules': 'features',
+            'sidebar-tools': 'features',
+            'visual-studio': 'features',
+            'writing-assistant': 'features',
+            'system-behavior': 'features',
+            'settings-reset': 'danger',
+            'settings-wipe': 'danger',
+          };
+          const panel = sectionToPanel[entry.settingsSection] || 'profile';
+          initialData = { ...initialData, initialSection: panel };
+        }
+
+        openTool(tool, initialData);
 
         // If navigating to a settings section, scroll to it after the tab renders
         if (entry.settingsSection) {
@@ -598,7 +625,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               el.classList.add('search-highlight-flash');
               setTimeout(() => el.classList.remove('search-highlight-flash'), 2000);
             }
-          }, 300);
+          }, 400);
         }
       }
     }
@@ -855,6 +882,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
+        // Merge initialData into existing tab so components can react to new props
+        if (initialData) {
+          updateTabData(existing.id, initialData);
+        }
         navigateToExistingTab(existing);
         return;
       }
