@@ -151,7 +151,7 @@ export const StickyNoteFabPanel: React.FC<Props> = ({ activeTabId, onClose }) =>
                       <div
                         key={n.id}
                         className="flex items-stretch cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
-                        onClick={() => { openNote(n.id); onClose(); }}
+                        onClick={() => { openNote(n.id, activeTabId); onClose(); }}
                       >
                         {/* Branch line */}
                         <div className="flex flex-col items-center ml-6" style={{ width: 20 }}>
@@ -209,7 +209,7 @@ export const StickyNoteFabPanel: React.FC<Props> = ({ activeTabId, onClose }) =>
               <div
                 key={n.id}
                 className="flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
-                onClick={() => { openNote(n.id); onClose(); }}
+                onClick={() => { openNote(n.id, activeTabId); onClose(); }}
               >
                 <div
                   className="w-3 h-3 rounded-full flex-shrink-0"

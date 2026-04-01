@@ -47,7 +47,7 @@ interface StickyNoteContextValue {
   createNote: (partial?: Partial<StickyNote>) => StickyNote;
   updateNote: (id: string, updates: Partial<StickyNote>) => void;
   deleteNote: (id: string) => void;
-  openNote: (id: string) => void;
+  openNote: (id: string, tabId?: string | null) => void;
   closeNote: (id: string) => void;
   bringToFront: (id: string) => void;
   toggleChecklistItem: (noteId: string, itemId: string) => void;
@@ -178,7 +178,13 @@ export const StickyNoteProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     );
   }, []);
 
-  const openNote = useCallback((id: string) => {
+  const openNote = useCallback((id: string, tabId?: string | null) => {
+    // If a tabId is provided, move the note to that tab so it becomes visible there
+    if (tabId !== undefined) {
+      setNotes(prev =>
+        prev.map(n => (n.id === id && !n.pinned ? { ...n, tabId, updatedAt: new Date().toISOString() } : n))
+      );
+    }
     setOpenNoteIds(prev => (prev.includes(id) ? prev : [...prev, id]));
     setZOrder(prev => [...prev.filter(x => x !== id), id]);
   }, []);

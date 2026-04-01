@@ -27,6 +27,8 @@ import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
 import Video01IconData from '@hugeicons/core-free-icons/Video01Icon';
 import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import FloppyDiskIconData from '@hugeicons/core-free-icons/FloppyDiskIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -56,8 +58,13 @@ import {
 import type {
   StorybookFormData, ParsedStorybook, StoryPage, SpeakerConfig,
   VoiceName, SpeakerRole, ComprehensionQuestion, BundledScene,
+  SavedStorybook, StorybookExportSettings,
 } from '../types/storybook';
 import type { ImageMode } from '../types';
+import {
+  getSavedStorybooks, saveStorybook, deleteSavedStorybook,
+  getExportSettings, setExportSettings, DEFAULT_EXPORT_SETTINGS,
+} from '../utils/storybookStorage';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -141,6 +148,241 @@ function tryParseFullBook(raw: string): ParsedStorybook | null {
   } catch {
     return null;
   }
+}
+
+// ─── Speaker Validation ──────────────────────────────────────────────────────
+
+/**
+ * Validate and fix the generated book to ensure it respects the speaker config.
+ * - Removes dialogue from speakers that don't exist in the config
+ * - Reassigns unknown speaker names to narrator
+ * - Ensures voiceAssignments match the form's speaker setup
+ */
+function validateSpeakers(book: ParsedStorybook, formData: StorybookFormData): ParsedStorybook {
+  const allowedSpeakers = new Set<string>(['narrator']);
+  const voiceAssignments: Record<string, VoiceName> = { narrator: formData.speakers[0]?.voice || 'lessac' };
+
+  for (const sp of formData.speakers) {
+    if (sp.role !== 'narrator' && sp.characterName) {
+      allowedSpeakers.add(sp.characterName);
+      voiceAssignments[sp.characterName] = sp.voice;
+    }
+  }
+
+  // If only narrator (speakerCount === 1), collapse all dialogue to narrator
+  const narratorOnly = formData.speakerCount === 1;
+
+  const pages = book.pages.map(page => ({
+    ...page,
+    textSegments: page.textSegments.map(seg => {
+      if (narratorOnly) {
+        return { ...seg, speaker: 'narrator' };
+      }
+      if (!allowedSpeakers.has(seg.speaker)) {
+        // Try case-insensitive match
+        const match = [...allowedSpeakers].find(
+          s => s.toLowerCase() === seg.speaker.toLowerCase()
+        );
+        return { ...seg, speaker: match || 'narrator' };
+      }
+      return seg;
+    }),
+  }));
+
+  // Fix characters array to match allowed speakers
+  const characters = [...allowedSpeakers].filter(s => s !== 'narrator');
+
+  return {
+    ...book,
+    pages,
+    characters: characters.length > 0 ? characters : book.characters,
+    voiceAssignments,
+  };
+}
+
+// ─── History Panel ───────────────────────────────────────────────────────────
+
+function HistoryPanel({
+  onLoad,
+  onClose,
+  accentColor,
+}: {
+  onLoad: (saved: SavedStorybook) => void;
+  onClose: () => void;
+  accentColor: string;
+}) {
+  const [items, setItems] = React.useState<SavedStorybook[]>(() => getSavedStorybooks());
+
+  const handleDelete = (id: string) => {
+    deleteSavedStorybook(id);
+    setItems(getSavedStorybooks());
+  };
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+      + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-theme">
+          <h3 className="font-semibold text-theme-heading flex items-center gap-2">
+            <Icon icon={Clock01IconData} className="w-5" style={{ color: accentColor }} />
+            Storybook History
+          </h3>
+          <button onClick={onClose} className="text-theme-muted hover:text-theme-heading">
+            <Icon icon={Cancel01IconData} className="w-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {items.length === 0 ? (
+            <div className="text-center py-12 text-theme-muted">
+              <Icon icon={BookOpen01IconData} className="w-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">No saved storybooks yet.</p>
+              <p className="text-xs mt-1">Save a draft or complete a storybook to see it here.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {items.map(item => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-theme hover:bg-theme-secondary transition-colors group"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-theme-heading truncate">
+                        {item.formData.title || 'Untitled'}
+                      </p>
+                      <span
+                        className="shrink-0 text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-full"
+                        style={{
+                          background: item.status === 'completed' ? '#dcfce7' : '#fef3c7',
+                          color: item.status === 'completed' ? '#166534' : '#92400e',
+                        }}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-theme-muted mt-0.5">
+                      {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
+                      {item.formData.subject && ` · ${item.formData.subject}`}
+                      {item.parsedBook && ` · ${item.parsedBook.pages.length} pages`}
+                      {' · '}{formatDate(item.savedAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => onLoad(item)}
+                      className="px-2.5 py-1 text-xs font-medium rounded-lg text-white"
+                      style={{ background: accentColor }}
+                    >
+                      Open
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-1 text-red-400 hover:text-red-600"
+                    >
+                      <Icon icon={Delete02IconData} className="w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Export Settings Panel ────────────────────────────────────────────────────
+
+function ExportSettingsPanel({
+  settings,
+  onChange,
+  onClose,
+  accentColor,
+}: {
+  settings: StorybookExportSettings;
+  onChange: (s: StorybookExportSettings) => void;
+  onClose: () => void;
+  accentColor: string;
+}) {
+  const update = <K extends keyof StorybookExportSettings>(key: K, val: StorybookExportSettings[K]) => {
+    const next = { ...settings, [key]: val };
+    onChange(next);
+    setExportSettings(next);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm">
+        <div className="flex items-center justify-between p-4 border-b border-theme">
+          <h3 className="font-semibold text-theme-heading flex items-center gap-2">
+            <Icon icon={Settings01IconData} className="w-5" style={{ color: accentColor }} />
+            Export Settings
+          </h3>
+          <button onClick={onClose} className="text-theme-muted hover:text-theme-heading">
+            <Icon icon={Cancel01IconData} className="w-5" />
+          </button>
+        </div>
+        <div className="p-4 space-y-4">
+          {/* Default format */}
+          <div>
+            <label className="block text-sm font-medium text-theme-label mb-1.5">Default Export Format</label>
+            <select
+              value={settings.defaultFormat}
+              onChange={e => update('defaultFormat', e.target.value as 'pdf' | 'pptx' | 'html')}
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm bg-theme"
+            >
+              <option value="html">Animated HTML</option>
+              <option value="pdf">PDF</option>
+              <option value="pptx">PowerPoint (PPTX)</option>
+            </select>
+          </div>
+
+          {/* Include audio */}
+          <label className="flex items-center justify-between gap-3 cursor-pointer">
+            <div>
+              <p className="text-sm font-medium text-theme-label">Include Audio in HTML</p>
+              <p className="text-xs text-theme-muted">Embed TTS audio in interactive HTML exports</p>
+            </div>
+            <div
+              onClick={() => update('includeAudioInHTML', !settings.includeAudioInHTML)}
+              className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${settings.includeAudioInHTML ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${settings.includeAudioInHTML ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+            </div>
+          </label>
+
+          {/* Include comprehension questions */}
+          <label className="flex items-center justify-between gap-3 cursor-pointer">
+            <div>
+              <p className="text-sm font-medium text-theme-label">Comprehension Questions</p>
+              <p className="text-xs text-theme-muted">Include questions page in PDF/PPTX exports</p>
+            </div>
+            <div
+              onClick={() => update('includeComprehensionQuestions', !settings.includeComprehensionQuestions)}
+              className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${settings.includeComprehensionQuestions ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${settings.includeComprehensionQuestions ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+            </div>
+          </label>
+        </div>
+        <div className="p-4 border-t border-theme">
+          <button
+            onClick={onClose}
+            className="w-full py-2 rounded-lg text-sm font-medium text-white"
+            style={{ background: accentColor }}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Scene Picker Modal ───────────────────────────────────────────────────────
@@ -476,7 +718,7 @@ interface StoryBookCreatorProps {
   onDataChange: (data: any) => void;
 }
 
-type View = 'input' | 'streaming' | 'editor' | 'playing';
+type View = 'input' | 'streaming' | 'editor' | 'playing' | 'history';
 
 export default function StoryBookCreator({ tabId, savedData, onDataChange }: StoryBookCreatorProps) {
   const { settings } = useSettings();
@@ -501,6 +743,11 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<AnimatedHTMLProgress | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showExportSettings, setShowExportSettings] = useState(false);
+  const [exportSettings, setExportSettingsState] = useState<StorybookExportSettings>(() => getExportSettings());
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+  const [saveToast, setSaveToast] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -637,9 +884,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           ...p,
           bundledSceneId: findBestScene(p.sceneId).id,
         }));
-        setParsedBook({ ...full, pages });
+        // Validate speakers match form config
+        const validated = validateSpeakers({ ...full, pages }, formData);
+        setParsedBook(validated);
         setCurrentPageIdx(0);
         setView('editor');
+        // Auto-save completed storybook
+        const saved = saveStorybook(formData, validated, currentDraftId || undefined);
+        setCurrentDraftId(saved.id);
       } else {
         setView('input');
       }
@@ -708,6 +960,27 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     }
   }, [parsedBook, formData, accentColor]);
 
+  // ── Save / Load Draft ──────────────────────────────────────────────────────
+  const handleSaveDraft = useCallback(() => {
+    const saved = saveStorybook(formData, parsedBook, currentDraftId || undefined);
+    setCurrentDraftId(saved.id);
+    setSaveToast(parsedBook ? 'Storybook saved!' : 'Draft saved!');
+    setTimeout(() => setSaveToast(null), 2000);
+  }, [formData, parsedBook, currentDraftId]);
+
+  const handleLoadSaved = useCallback((saved: SavedStorybook) => {
+    setFormData({ ...DEFAULT_FORM, ...saved.formData });
+    setCurrentDraftId(saved.id);
+    if (saved.parsedBook && saved.parsedBook.pages.length > 0) {
+      setParsedBook(saved.parsedBook);
+      setView('editor');
+    } else {
+      setParsedBook(null);
+      setView('input');
+    }
+    setShowHistory(false);
+  }, []);
+
   // ── Subjects / grades filtered by profile ─────────────────────────────────
   const allSubjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies'];
   const allGrades = ['K', '1', '2'];
@@ -739,9 +1012,27 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${accentColor}22` }}>
               <Icon icon={BookOpen01IconData} className="w-5" style={{ color: accentColor }} />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-bold text-theme-heading">Storybook Creator</h1>
               <p className="text-sm text-theme-muted">Create illustrated stories for K-2 students</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSaveDraft}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading transition-colors"
+                title="Save draft"
+              >
+                <Icon icon={FloppyDiskIconData} className="w-4" />
+                Save
+              </button>
+              <button
+                onClick={() => setShowHistory(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading transition-colors"
+                title="Open saved storybooks"
+              >
+                <Icon icon={Clock01IconData} className="w-4" />
+                History
+              </button>
             </div>
           </div>
 
@@ -1000,6 +1291,23 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             Generate Storybook
           </button>
         </div>
+
+        {/* History modal */}
+        {showHistory && (
+          <HistoryPanel
+            onLoad={handleLoadSaved}
+            onClose={() => setShowHistory(false)}
+            accentColor={accentColor}
+          />
+        )}
+
+        {/* Save toast */}
+        {saveToast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg flex items-center gap-2 animate-fade-in">
+            <Icon icon={Tick01IconData} className="w-4" style={{ color: '#4ade80' }} />
+            {saveToast}
+          </div>
+        )}
       </div>
     );
   }
@@ -1103,6 +1411,22 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Save */}
+          <button
+            onClick={handleSaveDraft}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
+            title="Save storybook"
+          >
+            <Icon icon={FloppyDiskIconData} className="w-4" />
+          </button>
+          {/* History */}
+          <button
+            onClick={() => setShowHistory(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
+            title="Storybook history"
+          >
+            <Icon icon={Clock01IconData} className="w-4" />
+          </button>
           <button
             onClick={() => setView('playing')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
@@ -1138,6 +1462,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     <Icon icon={iconData} className="w-4" />{label}
                   </button>
                 ))}
+                <div className="border-t border-theme">
+                  <button
+                    onClick={() => { setShowExportMenu(false); setShowExportSettings(true); }}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-theme-muted hover:bg-theme-secondary rounded-b-xl"
+                  >
+                    <Icon icon={Settings01IconData} className="w-4" /> Export Settings
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1470,6 +1802,33 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         className="hidden"
         onChange={onFileSelected}
       />
+
+      {/* History modal */}
+      {showHistory && (
+        <HistoryPanel
+          onLoad={handleLoadSaved}
+          onClose={() => setShowHistory(false)}
+          accentColor={accentColor}
+        />
+      )}
+
+      {/* Export settings modal */}
+      {showExportSettings && (
+        <ExportSettingsPanel
+          settings={exportSettings}
+          onChange={setExportSettingsState}
+          onClose={() => setShowExportSettings(false)}
+          accentColor={accentColor}
+        />
+      )}
+
+      {/* Save toast */}
+      {saveToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg flex items-center gap-2">
+          <Icon icon={Tick01IconData} className="w-4" style={{ color: '#4ade80' }} />
+          {saveToast}
+        </div>
+      )}
     </div>
   );
 }

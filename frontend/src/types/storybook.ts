@@ -125,3 +125,29 @@ export interface StorybookAudioData {
   /** pageIndex → array of base64 WAV strings (one per text segment) */
   pageAudio: Record<number, string[]>;
 }
+
+// ─── Export Settings ─────────────────────────────────────────────────────────
+
+export interface StorybookExportSettings {
+  /** Default export format when clicking the export button */
+  defaultFormat: 'pdf' | 'pptx' | 'html';
+  /** Whether to include TTS audio in the interactive HTML export */
+  includeAudioInHTML: boolean;
+  /** Whether to append comprehension questions page in PDF/PPTX exports */
+  includeComprehensionQuestions: boolean;
+}
+
+// ─── Saved Drafts / History ──────────────────────────────────────────────────
+
+export interface SavedStorybook {
+  /** Unique identifier */
+  id: string;
+  /** When this was saved */
+  savedAt: string;
+  /** Whether this is a completed storybook or a work-in-progress draft */
+  status: 'draft' | 'completed';
+  /** The form data at time of save */
+  formData: StorybookFormData;
+  /** The parsed book data (null if draft saved before generation) */
+  parsedBook: ParsedStorybook | null;
+}

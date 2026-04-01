@@ -119,10 +119,10 @@ export function buildStorybookPrompt(formData: StorybookFormData): string {
   }).join('\n');
 
   const speakerInstruction = hasMultipleSpeakers
-    ? `SPEAKERS (${formData.speakerCount} total):
+    ? `SPEAKERS (exactly ${formData.speakerCount} total — no more, no fewer):
 ${speakerLines}
-Tag every text segment with the correct speaker name. Narrator reads scene/action text. Characters only speak in dialogue.`
-    : `SPEAKER: Single narrator only. All text uses speaker: "narrator".`;
+IMPORTANT: Use ONLY these ${formData.speakerCount} speakers. Do NOT invent additional characters who speak. Tag every text segment with the correct speaker name. Narrator reads scene/action text. Characters only speak in dialogue. The "voiceAssignments" object must contain exactly these speakers and no others.`
+    : `SPEAKER: Single narrator only. All text uses speaker: "narrator". Do NOT create any speaking characters. The entire story must be narrated in third person by the narrator. The "voiceAssignments" object must contain only: {"narrator": "${formData.speakers[0]?.voice || 'lessac'}"}.`;
 
   const imageInstructions = buildImageInstructions(formData.imageMode);
   const curriculumBlock = buildCurriculumBlock(formData);
