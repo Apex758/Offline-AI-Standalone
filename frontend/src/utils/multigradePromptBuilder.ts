@@ -15,6 +15,7 @@ interface MultigradeFormData {
 const GRADE_SPECS = {
   'K': {
     name: 'Kindergarten',
+    ageRange: '5-6 years',
     pedagogicalApproach: 'Play-based, hands-on learning with frequent transitions',
     activityTypes: 'Sensory play, movement, songs, stories, dramatic play, art',
     assessmentMethods: 'Observation checklists, anecdotal notes, thumbs up/down',
@@ -24,6 +25,7 @@ const GRADE_SPECS = {
   },
   '1': {
     name: 'Grade 1',
+    ageRange: '6-7 years',
     pedagogicalApproach: 'Concrete experiences with guided practice and modeling',
     activityTypes: 'Center activities, partner work, simple experiments, craft projects',
     assessmentMethods: 'Exit tickets, work samples, simple rubrics, oral responses',
@@ -33,6 +35,7 @@ const GRADE_SPECS = {
   },
   '2': {
     name: 'Grade 2',
+    ageRange: '7-8 years',
     pedagogicalApproach: 'Guided discovery with structured collaboration',
     activityTypes: 'Small group projects, hands-on investigations, role-play, journals',
     assessmentMethods: 'Rubrics, peer assessment, self-reflection, portfolios',
@@ -42,6 +45,7 @@ const GRADE_SPECS = {
   },
   '3': {
     name: 'Grade 3',
+    ageRange: '8-9 years',
     pedagogicalApproach: 'Inquiry-based with scaffolded independence',
     activityTypes: 'Research projects, experiments, presentations, collaborative tasks',
     assessmentMethods: 'Performance tasks, written responses, project rubrics, quizzes',
@@ -51,6 +55,7 @@ const GRADE_SPECS = {
   },
   '4': {
     name: 'Grade 4',
+    ageRange: '9-10 years',
     pedagogicalApproach: 'Student-centered inquiry with differentiation',
     activityTypes: 'Independent research, debates, design challenges, multimedia projects',
     assessmentMethods: 'Essays, presentations, self-assessment, peer review, tests',
@@ -60,6 +65,7 @@ const GRADE_SPECS = {
   },
   '5': {
     name: 'Grade 5',
+    ageRange: '10-11 years',
     pedagogicalApproach: 'Collaborative inquiry with critical thinking emphasis',
     activityTypes: 'Extended projects, scientific investigations, literary analysis, debates',
     assessmentMethods: 'Research papers, oral presentations, portfolios, authentic assessments',
@@ -69,6 +75,7 @@ const GRADE_SPECS = {
   },
   '6': {
     name: 'Grade 6',
+    ageRange: '11-12 years',
     pedagogicalApproach: 'Independent inquiry with real-world connections',
     activityTypes: 'Capstone projects, expert presentations, community partnerships, research',
     assessmentMethods: 'Authentic assessments, portfolios, peer and expert feedback, exhibitions',
@@ -306,7 +313,7 @@ GRADE-SPECIFIC REQUIREMENTS BY LEVEL:
 ${formData.gradeLevels.map(grade => {
   const gradeSpec = GRADE_SPECS[grade as keyof typeof GRADE_SPECS];
   return gradeSpec ? `
-Grade ${grade} (${gradeSpec.name}):
+Grade ${grade} (${gradeSpec.name}, aged ${gradeSpec.ageRange}):
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
 - Activity Types: ${gradeSpec.activityTypes}
 - Assessment Methods: ${gradeSpec.assessmentMethods}

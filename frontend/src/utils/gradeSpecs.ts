@@ -5,6 +5,7 @@
 
 export interface BaseGradeSpec {
   name: string;
+  ageRange: string;
   pedagogicalApproach: string;
   activityTypes: string;
   assessmentMethods: string;
@@ -13,9 +14,21 @@ export interface BaseGradeSpec {
   instructionalLanguage: string;
 }
 
+/** Hardcoded grade → typical student age range mapping */
+export const GRADE_AGE_MAP: Record<string, string> = {
+  'K': '5-6 years',
+  '1': '6-7 years',
+  '2': '7-8 years',
+  '3': '8-9 years',
+  '4': '9-10 years',
+  '5': '10-11 years',
+  '6': '11-12 years',
+};
+
 export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   'K': {
     name: 'Kindergarten',
+    ageRange: '5-6 years',
     pedagogicalApproach: 'Play-based, hands-on learning with frequent transitions',
     activityTypes: 'Sensory play, movement, songs, stories, dramatic play, art',
     assessmentMethods: 'Observation checklists, anecdotal notes, thumbs up/down',
@@ -25,6 +38,7 @@ export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   },
   '1': {
     name: 'Grade 1',
+    ageRange: '6-7 years',
     pedagogicalApproach: 'Concrete experiences with guided practice and modeling',
     activityTypes: 'Center activities, partner work, simple experiments, craft projects',
     assessmentMethods: 'Exit tickets, work samples, simple rubrics, oral responses',
@@ -34,6 +48,7 @@ export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   },
   '2': {
     name: 'Grade 2',
+    ageRange: '7-8 years',
     pedagogicalApproach: 'Guided discovery with structured collaboration',
     activityTypes: 'Small group projects, hands-on investigations, role-play, journals',
     assessmentMethods: 'Rubrics, peer assessment, self-reflection, portfolios',
@@ -43,6 +58,7 @@ export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   },
   '3': {
     name: 'Grade 3',
+    ageRange: '8-9 years',
     pedagogicalApproach: 'Inquiry-based with scaffolded independence',
     activityTypes: 'Research projects, experiments, presentations, collaborative tasks',
     assessmentMethods: 'Performance tasks, written responses, project rubrics, quizzes',
@@ -52,6 +68,7 @@ export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   },
   '4': {
     name: 'Grade 4',
+    ageRange: '9-10 years',
     pedagogicalApproach: 'Student-centered inquiry with differentiation',
     activityTypes: 'Independent research, debates, design challenges, multimedia projects',
     assessmentMethods: 'Essays, presentations, self-assessment, peer review, tests',
@@ -61,6 +78,7 @@ export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   },
   '5': {
     name: 'Grade 5',
+    ageRange: '10-11 years',
     pedagogicalApproach: 'Collaborative inquiry with critical thinking emphasis',
     activityTypes: 'Extended projects, scientific investigations, literary analysis, debates',
     assessmentMethods: 'Research papers, oral presentations, portfolios, authentic assessments',
@@ -70,6 +88,7 @@ export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   },
   '6': {
     name: 'Grade 6',
+    ageRange: '11-12 years',
     pedagogicalApproach: 'Independent inquiry with real-world connections',
     activityTypes: 'Capstone projects, expert presentations, community partnerships, research',
     assessmentMethods: 'Authentic assessments, portfolios, peer and expert feedback, exhibitions',

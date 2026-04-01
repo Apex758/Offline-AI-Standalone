@@ -18,7 +18,7 @@ const GRADE_SPECS = BASE_GRADE_SPECS;
 export function buildLessonPrompt(formData: any, curriculumRefs?: CurriculumReference[]): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   
-  let prompt = `Create a complete, detailed lesson plan for Grade ${formData.gradeLevel} students following this criteria:
+  let prompt = `Create a complete, detailed lesson plan for Grade ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}) following this criteria:
 
 
 SUBJECT: ${formData.subject}

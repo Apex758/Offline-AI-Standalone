@@ -1438,8 +1438,9 @@ async def websocket_lesson_plan(websocket: WebSocket):
             _is_tier1 = _tier_info["tier"] == 1
             _t1_params = get_tier1_gen_params("lesson-plan") if _is_tier1 else {}
 
+            _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("lesson-plan")
+                system_prompt = get_tier1_system_prompt("lesson-plan", _grade)
             else:
                 system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
 
@@ -1609,9 +1610,10 @@ async def quiz_websocket(websocket: WebSocket):
             # instructional context: grade specs, curriculum, format templates).
             # Fall back to a basic system prompt for backward compatibility.
             system_prompt = data.get("systemPrompt", "").strip()
+            _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
             if not system_prompt:
                 if _is_tier1:
-                    system_prompt = get_tier1_system_prompt("quiz")
+                    system_prompt = get_tier1_system_prompt("quiz", _grade)
                 else:
                     system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
 
@@ -1760,8 +1762,9 @@ async def rubric_websocket(websocket: WebSocket):
             _is_tier1 = _tier_info["tier"] == 1
             _t1_params = get_tier1_gen_params("rubric") if _is_tier1 else {}
 
+            _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("rubric")
+                system_prompt = get_tier1_system_prompt("rubric", _grade)
             else:
                 system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
 
@@ -1906,7 +1909,7 @@ async def kindergarten_websocket(websocket: WebSocket):
             _t1_params = get_tier1_gen_params("kindergarten") if _is_tier1 else {}
 
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("kindergarten")
+                system_prompt = get_tier1_system_prompt("kindergarten", "K")
             else:
                 system_prompt = "You are an expert early childhood educator specializing in kindergarten education. Create developmentally appropriate, engaging, and playful lesson plans that foster learning through exploration and hands-on activities."
 
@@ -2163,8 +2166,9 @@ async def cross_curricular_websocket(websocket: WebSocket):
             _is_tier1 = _tier_info["tier"] == 1
             _t1_params = get_tier1_gen_params("cross-curricular") if _is_tier1 else {}
 
+            _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("cross-curricular")
+                system_prompt = get_tier1_system_prompt("cross-curricular", _grade)
             else:
                 system_prompt = "You are an expert educational consultant specializing in integrated and cross-curricular lesson planning. Create comprehensive lesson plans that meaningfully connect multiple subject areas and demonstrate authentic interdisciplinary learning."
 
@@ -2307,8 +2311,9 @@ async def worksheet_websocket(websocket: WebSocket):
             _is_tier1 = _tier_info["tier"] == 1
             _t1_params = get_tier1_gen_params("worksheet") if _is_tier1 else {}
 
+            _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("worksheet")
+                system_prompt = get_tier1_system_prompt("worksheet", _grade)
             else:
                 system_prompt = f"You are an expert educational worksheet designer. Create comprehensive, well-structured worksheets that accurately assess student learning and align with curriculum standards. Focus on clear instructions, appropriate difficulty level, and educational value."
 
@@ -2459,8 +2464,9 @@ async def presentation_websocket(websocket: WebSocket):
             _t1_prompt_key = "presentation_with_suggestions" if suggested_mode else "presentation"
             _t1_params = get_tier1_gen_params(_t1_prompt_key) if _is_tier1 else {}
 
+            _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt(_t1_prompt_key)
+                system_prompt = get_tier1_system_prompt(_t1_prompt_key, _grade)
             else:
                 system_prompt = (
                     "You are an expert presentation designer for educational content. "

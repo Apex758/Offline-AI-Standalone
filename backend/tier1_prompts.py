@@ -8,6 +8,24 @@ rather than open-ended instructions. This module provides:
 - Reduced max_tokens to prevent late-generation degradation
 """
 
+# ── Grade → typical student age mapping ──────────────────────────────────────
+
+GRADE_AGE_MAP = {
+    "K": "5-6 years",
+    "1": "6-7 years",
+    "2": "7-8 years",
+    "3": "8-9 years",
+    "4": "9-10 years",
+    "5": "10-11 years",
+    "6": "11-12 years",
+}
+
+
+def get_age_for_grade(grade: str) -> str:
+    """Return the typical age range for a grade level, or empty string if unknown."""
+    return GRADE_AGE_MAP.get(str(grade).strip().upper().replace("GRADE ", "").replace("KINDERGARTEN", "K"), "")
+
+
 # ── Generation parameter overrides for Tier 1 ─────────────────────────────────
 
 TIER1_GEN_PARAMS = {
@@ -195,9 +213,17 @@ TIER1_PROMPTS = {
 
 # ── Public helpers ─────────────────────────────────────────────────────────────
 
-def get_tier1_system_prompt(task_type: str) -> str | None:
-    """Return the Tier-1 system prompt for a task type, or None if unchanged."""
-    return TIER1_PROMPTS.get(task_type, TIER1_PROMPTS["chat"])
+def get_tier1_system_prompt(task_type: str, grade: str | None = None) -> str | None:
+    """Return the Tier-1 system prompt for a task type, or None if unchanged.
+
+    If a grade is provided, appends age context so the model knows the target student age.
+    """
+    prompt = TIER1_PROMPTS.get(task_type, TIER1_PROMPTS["chat"])
+    if prompt and grade:
+        age = get_age_for_grade(grade)
+        if age:
+            prompt += f"\n\nTarget students: Grade {grade}, typically aged {age}. Ensure all content is developmentally appropriate for this age group."
+    return prompt
 
 
 def get_tier1_gen_params(task_type: str) -> dict:

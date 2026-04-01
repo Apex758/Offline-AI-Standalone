@@ -1,4 +1,5 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { GRADE_AGE_MAP } from './gradeSpecs';
 
 export interface PresentationFormData {
   subject: string;
@@ -45,12 +46,14 @@ export function buildPresentationPromptFromForm(formData: PresentationFormData, 
     'lesson'
   );
 
+  const ageRange = GRADE_AGE_MAP[formData.gradeLevel] || '';
+
   return `Convert the following lesson information into a structured presentation slide deck.
 Return ONLY valid JSON — no markdown, no code fences, no explanation.
 
 LESSON DETAILS:
 Subject: ${formData.subject}
-Grade Level: ${formData.gradeLevel}
+Grade Level: ${formData.gradeLevel}${ageRange ? ` (students typically aged ${ageRange})` : ''}
 Topic: ${formData.topic}
 Strand: ${formData.strand}
 Duration: ${formData.duration} minutes
@@ -74,13 +77,13 @@ RULES:
 - Closing slide: summary and takeaway as headline, review points as bullets
 - Make content grade-appropriate for Grade ${formData.gradeLevel} students
 - Keep language clear and educational${isKids ? `
-- IMPORTANT: This presentation is FOR STUDENTS to view in the classroom. Write as if you are TEACHING the students directly.
+- IMPORTANT: This presentation is FOR STUDENTS (typically aged ${ageRange || formData.gradeLevel}) to view in the classroom. Write as if you are TEACHING the students directly.
 - Use simple, age-appropriate language that Grade ${formData.gradeLevel} students can understand
 - Include interactive prompts like "Can you think of...?", "Let's try...", "Turn to your partner and...", "What do you notice?"
 - Make hook slides genuinely engaging with fun questions or surprising facts
 - Activity slides should have clear, step-by-step student instructions
 - Use encouraging, warm tone throughout — make learning feel exciting` : `
-- This is a PROFESSIONAL teacher reference presentation — formal, structured, and information-dense
+- This is a PROFESSIONAL teacher reference presentation for students aged ${ageRange || formData.gradeLevel} — formal, structured, and information-dense
 - Use precise academic language and proper terminology
 - Focus on clear delivery of content, key concepts, and curriculum alignment
 - Keep tone neutral and professional — suitable for staff meetings or parent presentations
@@ -120,13 +123,15 @@ export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, raw
     }
   }
 
+  const lessonAgeRange = GRADE_AGE_MAP[meta.grade] || GRADE_AGE_MAP[fb.gradeLevel || ''] || '';
+
   return `Convert this complete lesson plan into a structured presentation slide deck.
 Return ONLY valid JSON — no markdown, no code fences, no explanation.
 
 LESSON PLAN:
 Title: ${meta.title || meta.topic || 'Lesson'}
 Subject: ${meta.subject}
-Grade: ${meta.grade}
+Grade: ${meta.grade}${lessonAgeRange ? ` (students typically aged ${lessonAgeRange})` : ''}
 Strand: ${meta.strand || ''}
 Topic: ${meta.topic}
 Duration: ${meta.duration || ''}
@@ -159,13 +164,13 @@ RULES:
 - Make content grade-appropriate for Grade ${meta.grade || 'K-6'} students
 - Keep language clear and educational
 - Use the ACTUAL content from the lesson plan — do not make up new content${isKids ? `
-- IMPORTANT: This presentation is FOR STUDENTS to view in the classroom. Write as if you are TEACHING the students directly.
+- IMPORTANT: This presentation is FOR STUDENTS (typically aged ${lessonAgeRange || meta.grade || 'K-6'}) to view in the classroom. Write as if you are TEACHING the students directly.
 - Use simple, age-appropriate language that Grade ${meta.grade || 'K-6'} students can understand
 - Include interactive prompts like "Can you think of...?", "Let's try...", "Turn to your partner and...", "What do you notice?"
 - Make hook slides genuinely engaging with fun questions or surprising facts
 - Activity slides should have clear, step-by-step student instructions
 - Use encouraging, warm tone throughout — make learning feel exciting` : `
-- This is a PROFESSIONAL teacher reference presentation — formal, structured, and information-dense
+- This is a PROFESSIONAL teacher reference presentation for students aged ${lessonAgeRange || meta.grade || 'K-6'} — formal, structured, and information-dense
 - Use precise academic language and proper terminology
 - Focus on clear delivery of content, key concepts, and curriculum alignment
 - Keep tone neutral and professional — suitable for staff meetings or parent presentations

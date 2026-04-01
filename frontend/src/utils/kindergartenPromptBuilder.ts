@@ -1,4 +1,5 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { GRADE_AGE_MAP } from './gradeSpecs';
 
 interface KindergartenFormData {
   theme: string;
@@ -18,7 +19,7 @@ interface KindergartenFormData {
 
 // Kindergarten-specific developmental and pedagogical specifications
 const KINDERGARTEN_SPECS = {
-  developmentalStage: '5-6 years, pre-operational (Piaget)',
+  developmentalStage: `${GRADE_AGE_MAP['K']}, pre-operational (Piaget)`,
   attentionSpan: '10-15 min per activity, frequent transitions',
   pedagogicalApproach: 'Play-based, hands-on, multi-sensory exploration',
   instructionalLanguage: 'Simple 3-5 word directions with visual cues',
