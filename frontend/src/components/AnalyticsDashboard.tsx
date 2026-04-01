@@ -121,6 +121,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showShowcase, setShowShowcase] = useState(false);
   const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains('dark')));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
 
   // Load user profile
   useEffect(() => {
@@ -654,7 +661,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   pointerEvents: showShowcase ? 'auto' : 'none',
                   overflow: 'visible',
                 }}>
-                  <div className="flex items-center gap-3" style={{ overflow: 'visible' }}>
+                  <div className="flex items-center gap-5" style={{ overflow: 'visible' }}>
                     {showcase.slice(0, 5).map(id => {
                       const def = definitions.find(d => d.id === id);
                       if (!def) return null;
@@ -684,20 +691,21 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                       );
                     })}
                   </div>
-                  {/* Collapse arrow — overlaid on right edge */}
+                  {/* Collapse arrow — overlaid on right edge, visible on hover */}
                   <div
                     onClick={(e) => { e.stopPropagation(); setShowShowcase(false); }}
                     title="Show stats"
+                    className="group-hover:!opacity-100"
                     style={{
                       position: 'absolute',
-                      right: -4,
+                      right: -16,
                       top: '50%',
                       transform: 'translateY(-50%)',
                       width: 24,
                       height: 24,
                       borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.1)',
-                      border: '1px solid rgba(255,255,255,0.2)',
+                      background: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.15)'}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -706,12 +714,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                       transition: 'opacity 0.2s ease, background 0.2s ease',
                       zIndex: 10,
                     }}
-                    className="group-hover:!opacity-100"
-                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)'; }}
                   >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M4.5 2.5L8 6l-3.5 3.5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M4.5 2.5L8 6l-3.5 3.5" stroke={isDark ? 'rgba(255,255,255,0.9)' : '#fff'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                 </div>

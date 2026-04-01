@@ -230,11 +230,17 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
             className="rounded-2xl flex items-center justify-center text-white group/sub relative"
             style={{
               ...subButtonBase,
-              background: displayPanelOpen
-                ? 'linear-gradient(135deg, rgba(251,191,36,0.95), rgba(245,158,11,0.95))'
-                : 'linear-gradient(135deg, rgba(251,191,36,0.92), rgba(245,158,11,0.92))',
+              background: isDarkMode
+                ? (displayPanelOpen
+                  ? 'linear-gradient(135deg, rgba(99,102,241,0.95), rgba(79,70,229,0.95))'
+                  : 'linear-gradient(135deg, rgba(99,102,241,0.92), rgba(79,70,229,0.92))')
+                : (displayPanelOpen
+                  ? 'linear-gradient(135deg, rgba(251,191,36,0.95), rgba(245,158,11,0.95))'
+                  : 'linear-gradient(135deg, rgba(251,191,36,0.92), rgba(245,158,11,0.92))'),
               boxShadow: expanded
-                ? '0 6px 24px rgba(251,191,36,0.45), 0 2px 8px rgba(0,0,0,0.15)'
+                ? (isDarkMode
+                  ? '0 6px 24px rgba(99,102,241,0.45), 0 2px 8px rgba(0,0,0,0.15)'
+                  : '0 6px 24px rgba(251,191,36,0.45), 0 2px 8px rgba(0,0,0,0.15)')
                 : '0 0 0 rgba(0,0,0,0)',
               opacity: expanded ? 1 : 0,
               transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
@@ -244,7 +250,11 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
             title="Display Controls"
             aria-label="Display Controls"
           >
-            <Sun02 className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+            {isDarkMode ? (
+              <Moon className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+            ) : (
+              <Sun02 className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+            )}
             {/* Tooltip */}
             <span
               className="absolute right-full mr-3 px-3 py-1.5 text-white text-xs rounded-xl opacity-0 group-hover/sub:opacity-100 whitespace-nowrap pointer-events-none"
@@ -326,12 +336,12 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                   className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-colors hover:bg-white/10"
                 >
                   {isDarkMode ? (
-                    <Sun className="w-4 h-4" style={{ color: '#fbbf24' }} />
-                  ) : (
                     <Moon className="w-4 h-4" style={{ color: '#a5b4fc' }} />
+                  ) : (
+                    <Sun className="w-4 h-4" style={{ color: '#fbbf24' }} />
                   )}
                   <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">
-                    {isDarkMode ? 'Light' : 'Dark'}
+                    {isDarkMode ? 'Dark' : 'Light'}
                   </span>
                   <div
                     className={`relative w-9 h-5 rounded-full transition-colors ${

@@ -301,11 +301,11 @@ export default function Achievements({ tabId }: AchievementsProps) {
               onClick={() => setFiltersOpen(o => !o)}
               className="flex items-center justify-center rounded-full transition-all duration-200"
               style={{
-                width: 28,
-                height: 28,
-                backgroundColor: (headerHovered || filtersOpen) ? 'rgba(255,255,255,0.2)' : 'transparent',
-                border: `1px solid ${(headerHovered || filtersOpen) ? 'rgba(255,255,255,0.3)' : 'transparent'}`,
-                opacity: (headerHovered || filtersOpen) ? 1 : 0,
+                width: 30,
+                height: 30,
+                backgroundColor: (headerHovered || filtersOpen) ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.3)',
+                border: `1px solid rgba(255,255,255,0.5)`,
+                opacity: 1,
                 color: '#fff',
                 transform: filtersOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.25s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
@@ -726,8 +726,8 @@ function AchievementCard({
               title={isPinned ? 'Unpin from showcase' : canPin ? 'Pin to showcase' : 'Showcase full (5 max)'}
               style={{
                 width: 26, height: 26,
-                backgroundColor: isPinned ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-                border: `1px solid ${isPinned ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)'}`,
+                backgroundColor: isPinned ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.2)',
+                border: `1px solid ${isPinned ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.3)'}`,
                 opacity: canPin || isPinned ? 1 : 0.4,
                 cursor: canPin || isPinned ? 'pointer' : 'not-allowed',
               }}

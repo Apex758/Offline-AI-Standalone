@@ -3,13 +3,34 @@ import { getTrophyType } from '../config/trophyMap';
 import TROPHY_IMAGES from '../assets/trophyImages';
 
 const RARITY_THEME: Record<AchievementRarity, {
-  primary: string; accent: string; glow: string; badge: string; badgeText: string; label: string;
+  primary: string; accent: string; glow: string; label: string;
+  darkBg: string; lightBg: string; darkBorder: string; lightBorder: string;
 }> = {
-  common:    { primary: '#9ca3af', accent: '#d1d5db', glow: 'rgba(156,163,175,0.35)', badge: 'rgba(156,163,175,0.18)', badgeText: '#d1d5db', label: 'COMMON' },
-  uncommon:  { primary: '#22c55e', accent: '#4ade80', glow: 'rgba(34,197,94,0.35)',  badge: 'rgba(34,197,94,0.18)',  badgeText: '#86efac', label: 'UNCOMMON' },
-  rare:      { primary: '#3b82f6', accent: '#60a5fa', glow: 'rgba(59,130,246,0.35)', badge: 'rgba(59,130,246,0.18)', badgeText: '#93c5fd', label: 'RARE' },
-  epic:      { primary: '#a855f7', accent: '#c084fc', glow: 'rgba(139,92,246,0.35)', badge: 'rgba(139,92,246,0.18)', badgeText: '#c4b5fd', label: 'EPIC' },
-  legendary: { primary: '#f59e0b', accent: '#fde68a', glow: 'rgba(236,168,48,0.35)', badge: 'rgba(245,158,11,0.18)', badgeText: '#fde68a', label: 'LEGENDARY' },
+  common: {
+    primary: '#9ca3af', accent: '#d1d5db', glow: 'rgba(156,163,175,0.35)', label: 'COMMON',
+    darkBg: 'rgba(156,163,175,0.08)', lightBg: 'rgba(156,163,175,0.10)',
+    darkBorder: 'rgba(156,163,175,0.20)', lightBorder: 'rgba(156,163,175,0.25)',
+  },
+  uncommon: {
+    primary: '#22c55e', accent: '#4ade80', glow: 'rgba(34,197,94,0.35)', label: 'UNCOMMON',
+    darkBg: 'rgba(34,197,94,0.08)', lightBg: 'rgba(34,197,94,0.08)',
+    darkBorder: 'rgba(34,197,94,0.20)', lightBorder: 'rgba(34,197,94,0.25)',
+  },
+  rare: {
+    primary: '#3b82f6', accent: '#60a5fa', glow: 'rgba(59,130,246,0.35)', label: 'RARE',
+    darkBg: 'rgba(59,130,246,0.08)', lightBg: 'rgba(59,130,246,0.08)',
+    darkBorder: 'rgba(59,130,246,0.20)', lightBorder: 'rgba(59,130,246,0.25)',
+  },
+  epic: {
+    primary: '#a855f7', accent: '#c084fc', glow: 'rgba(139,92,246,0.35)', label: 'EPIC',
+    darkBg: 'rgba(139,92,246,0.08)', lightBg: 'rgba(139,92,246,0.08)',
+    darkBorder: 'rgba(139,92,246,0.20)', lightBorder: 'rgba(139,92,246,0.25)',
+  },
+  legendary: {
+    primary: '#f59e0b', accent: '#fde68a', glow: 'rgba(236,168,48,0.35)', label: 'LEGENDARY',
+    darkBg: 'rgba(245,158,11,0.08)', lightBg: 'rgba(245,158,11,0.08)',
+    darkBorder: 'rgba(245,158,11,0.20)', lightBorder: 'rgba(245,158,11,0.25)',
+  },
 };
 
 interface MiniTrophyCardProps {
@@ -38,17 +59,15 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
           width: 130px;
           min-width: 130px;
           height: 68px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(16px) saturate(160%);
-          -webkit-backdrop-filter: blur(16px) saturate(160%);
-          border: 1px solid rgba(255,255,255,0.10);
+          background: color-mix(in srgb, var(--dash-card-bg) 88%, ${theme.primary} 12%);
+          border: 1px solid ${theme.darkBorder};
           border-radius: 12px;
           padding: 0;
           cursor: pointer;
           transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
           box-shadow:
-            0 0 0 1px rgba(255,255,255,0.03) inset,
-            0 6px 16px rgba(0,0,0,0.3),
+            0 0 0 1px color-mix(in srgb, ${theme.primary} 5%, transparent) inset,
+            0 6px 16px var(--dash-card-shadow, rgba(0,0,0,0.3)),
             0 0 14px ${theme.glow.replace('0.35', '0.06')};
           overflow: visible;
           flex-shrink: 0;
@@ -56,18 +75,18 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
           align-items: center;
         }
         .${uid}:hover {
-          border-color: ${theme.primary}50;
+          border-color: ${theme.primary}60;
           box-shadow:
-            0 0 0 1px rgba(255,255,255,0.06) inset,
-            0 12px 28px rgba(0,0,0,0.4),
+            0 0 0 1px color-mix(in srgb, ${theme.primary} 10%, transparent) inset,
+            0 12px 28px var(--dash-card-shadow, rgba(0,0,0,0.4)),
             0 0 22px ${theme.glow.replace('0.35', '0.18')};
         }
         .${uid} .mtc-shine {
           position: absolute;
           top: 0; left: 0; right: 0;
           height: 50%;
-          background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-          border-radius: 14px 14px 0 0;
+          background: linear-gradient(180deg, color-mix(in srgb, ${theme.primary} 6%, transparent) 0%, transparent 100%);
+          border-radius: 12px 12px 0 0;
           pointer-events: none;
         }
         .${uid} .mtc-content {
@@ -79,34 +98,12 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
           gap: 4px;
           z-index: 2;
         }
-        .${uid} .mtc-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: ${theme.badge};
-          border: 1px solid ${theme.primary}40;
-          border-radius: 100px;
-          padding: 2px 6px;
-          width: fit-content;
-        }
-        .${uid} .mtc-badge-dot {
-          width: 4px; height: 4px;
-          border-radius: 50%;
-          background: ${theme.badgeText};
-        }
-        .${uid} .mtc-badge-label {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 6.5px;
-          font-weight: 600;
-          color: ${theme.badgeText};
-          letter-spacing: 0.06em;
-        }
         .${uid} .mtc-name {
           font-family: 'Syne', sans-serif;
           font-size: 9px;
           font-weight: 800;
           line-height: 1.15;
-          color: #ffffff;
+          color: var(--dash-text);
           letter-spacing: -0.02em;
         }
         .${uid} .mtc-name span {
@@ -124,6 +121,8 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
           align-items: flex-start;
           justify-content: center;
           overflow: visible;
+          transition: transform 0.25s ease;
+          z-index: 5;
         }
         .${uid} .mtc-trophy-glow {
           position: absolute;
@@ -141,15 +140,11 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
           width: 130px;
           min-width: 95px;
           height: auto;
-          z-index: 2;
+          z-index: 5;
           right: -30px;
           top: -10px;
           filter: drop-shadow(0 4px 8px ${theme.glow.replace('0.35', '0.3')});
           animation: mtc-float-${definition.id} 4s ease-in-out infinite;
-        }
-        .${uid} .mtc-trophy-side {
-          transition: transform 0.25s ease;
-          z-index: 1;
         }
         .${uid}:hover .mtc-trophy-side {
           transform: scale(1.35);
