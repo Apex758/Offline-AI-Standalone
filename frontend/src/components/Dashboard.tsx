@@ -477,8 +477,8 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements']);
-const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook']);
+const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook']);
 
 const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
   'lesson-planner': { storagePrefix: 'lesson_state_', plannerType: 'lesson', generatedKey: 'generatedPlan' },
