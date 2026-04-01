@@ -90,8 +90,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   }, [expanded]);
 
   const positionStyles: Record<typeof position, string> = {
-    'bottom-right': 'bottom-6 right-6',
-    'bottom-left': 'bottom-9 left-6',
+    'bottom-right': 'bottom-6 right-12',
+    'bottom-left': 'bottom-[2.6rem] left-[5.5rem]',
     'top-right': 'top-6 right-6',
     'top-left': 'top-6 left-6'
   };
@@ -144,8 +144,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   }, [expanded]);
 
   const mainButtonStyle: React.CSSProperties = {
-    width: '52px',
-    height: '52px',
+    width: '48px',
+    height: '48px',
     background: expanded
       ? 'linear-gradient(135deg, rgba(100,116,139,0.95), rgba(71,85,105,0.95))'
       : 'linear-gradient(135deg, #22c55e, #16a34a)',

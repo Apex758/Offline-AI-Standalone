@@ -72,7 +72,7 @@ import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP, GRADE_LEVELS } from '../data/teacherConstants';
-import curriculumTree from '../data/curriculumTree.json';
+import curriculumIndex from '../data/curriculumIndex.json';
 
 // ── File API abstraction (works in Electron & dev/browser) ──
 const fileAPI = {
@@ -202,6 +202,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [titleSet, setTitleSet] = useState(false);
   const [generatingTitle, setGeneratingTitle] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
 
   // Files panel state
@@ -267,6 +268,21 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // Smart thinking suggestion
   const [showThinkingSuggestion, setShowThinkingSuggestion] = useState(false);
+
+  // Auto-resize textarea to fit content (up to 10 lines, ~220px)
+  useEffect(() => {
+    const ta = chatTextareaRef.current;
+    if (!ta) {
+      // Find the textarea via data attribute as fallback
+      const el = document.querySelector('[data-tutorial="chat-input"]') as HTMLTextAreaElement | null;
+      if (el) chatTextareaRef.current = el;
+    }
+    const textarea = chatTextareaRef.current;
+    if (textarea) {
+      textarea.style.height = '28px'; // reset to min
+      textarea.style.height = Math.min(textarea.scrollHeight, 220) + 'px';
+    }
+  }, [input]);
 
   // File operation two-pass state
   const [pendingPlan, setPendingPlan] = useState<FileOperationPlan | null>(null);
@@ -1028,73 +1044,103 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   }, [filesTab]);
 
   // ── Curriculum tree helpers ──
-  const getFilteredCurriculumTree = useCallback(() => {
-    const tree = curriculumTree as Record<string, any>;
+  interface CurriculumStrandNode {
+    id: string;
+    displayName: string;
+    route: string;
+    strand: string;
+    essentialOutcomes: { id: string; text: string }[];
+    specificOutcomes: { id: string; text: string; eloRef?: string }[];
+  }
+  interface CurriculumSubjectNode {
+    subjectKey: string;
+    subjectLabel: string;
+    strands: CurriculumStrandNode[];
+  }
+  interface CurriculumGradeNode {
+    gradeValue: string;
+    gradeLabel: string;
+    subjects: CurriculumSubjectNode[];
+  }
+
+  const getFilteredCurriculumTree = useCallback((): CurriculumGradeNode[] => {
+    const pages = (curriculumIndex as any).indexedPages as any[];
+    if (!pages) return [];
+
     const mapping = settings.profile.gradeSubjects || {};
     const teacherGrades = getTeacherGrades(mapping);
     const teacherSubjects = getTeacherSubjects(mapping);
     const filterEnabled = settings.profile.filterContentByProfile;
 
-    // Build filtered structure: { gradeKey: { subjectKey: { activities... } } }
-    const result: { gradeKey: string; gradeLabel: string; subjects: { subjectKey: string; subjectLabel: string; activities: { name: string; route: string }[] }[] }[] = [];
+    // Filter pages by teacher profile
+    const filtered = pages.filter(page => {
+      if (!page.grade || !page.subject) return false;
+      if (filterEnabled && teacherGrades.length > 0 && !teacherGrades.includes(page.grade)) return false;
+      if (filterEnabled && teacherSubjects.length > 0 && !teacherSubjects.includes(page.subject)) return false;
+      return true;
+    });
 
-    for (const [gradeKey, gradeData] of Object.entries(tree)) {
-      // Extract grade number from key like "grade1-subjects" or "gradek-subjects"
-      const gradeMatch = gradeKey.match(/grade(\w+)-subjects/);
-      if (!gradeMatch) continue;
-      const gradeValue = gradeMatch[1];
+    // Group: grade -> subject -> strands
+    const gradeMap = new Map<string, Map<string, CurriculumStrandNode[]>>();
+    for (const page of filtered) {
+      if (!gradeMap.has(page.grade)) gradeMap.set(page.grade, new Map());
+      const subjectMap = gradeMap.get(page.grade)!;
+      if (!subjectMap.has(page.subject)) subjectMap.set(page.subject, []);
+      subjectMap.get(page.subject)!.push({
+        id: page.id,
+        displayName: page.displayName,
+        route: page.route,
+        strand: page.strand,
+        essentialOutcomes: (page.essentialOutcomes || []).map((e: any) =>
+          typeof e === 'string' ? { id: '', text: e } : { id: e.id || '', text: e.text || '' }
+        ),
+        specificOutcomes: (page.specificOutcomes || []).map((s: any) =>
+          typeof s === 'string' ? { id: '', text: s } : { id: s.id || '', text: s.text || '', eloRef: s.eloRef }
+        ),
+      });
+    }
 
-      // Filter by teacher's grades if filtering enabled
-      if (filterEnabled && teacherGrades.length > 0 && !teacherGrades.includes(gradeValue)) continue;
-
-      const gradeLabel = GRADE_LABEL_MAP[gradeValue] || `Grade ${gradeValue}`;
-      const activities = (gradeData as any)?.activities;
-      if (!activities) continue;
-
-      const subjects: { subjectKey: string; subjectLabel: string; activities: { name: string; route: string }[] }[] = [];
-
-      for (const [subjectKey, subjectData] of Object.entries(activities)) {
-        // Normalize subject key to label (e.g. "language-arts" -> "Language Arts")
-        const subjectLabel = subjectKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-
-        // Filter by teacher's subjects if filtering enabled
-        if (filterEnabled && teacherSubjects.length > 0 && !teacherSubjects.includes(subjectLabel)) continue;
-
-        const activityList: { name: string; route: string }[] = [];
-        // Collect page.tsx entries from subjectData and its children
-        const collectActivities = (data: any, depth: number = 0) => {
-          if (!data || typeof data !== 'object') return;
-          for (const [key, val] of Object.entries(data)) {
-            if (key === 'loading.tsx' || key === 'page.tsx') {
-              if (key === 'page.tsx' && (val as any)?.route && depth > 0) {
-                activityList.push({ name: (val as any).name || key, route: (val as any).route });
-              }
-              continue;
-            }
-            // Check if this is a nested activity folder
-            if (typeof val === 'object' && val !== null) {
-              const pageTsx = (val as any)['page.tsx'];
-              if (pageTsx?.route) {
-                activityList.push({ name: pageTsx.name || key, route: pageTsx.route });
-              }
-              collectActivities(val, depth + 1);
-            }
-          }
-        };
-        collectActivities(subjectData, 0);
-
-        if (activityList.length > 0) {
-          subjects.push({ subjectKey, subjectLabel, activities: activityList });
-        }
+    // Sort grades by GRADE_LEVELS order
+    const gradeOrder = GRADE_LEVELS.map(g => g.value);
+    const result: CurriculumGradeNode[] = [];
+    for (const gradeValue of gradeOrder) {
+      const subjectMap = gradeMap.get(gradeValue);
+      if (!subjectMap) continue;
+      const subjects: CurriculumSubjectNode[] = [];
+      for (const [subjectLabel, strands] of subjectMap) {
+        subjects.push({
+          subjectKey: subjectLabel.toLowerCase().replace(/\s+/g, '-'),
+          subjectLabel,
+          strands: strands.sort((a, b) => a.displayName.localeCompare(b.displayName)),
+        });
       }
-
-      if (subjects.length > 0) {
-        result.push({ gradeKey, gradeLabel, subjects });
-      }
+      subjects.sort((a, b) => a.subjectLabel.localeCompare(b.subjectLabel));
+      result.push({
+        gradeValue,
+        gradeLabel: GRADE_LABEL_MAP[gradeValue] || `Grade ${gradeValue}`,
+        subjects,
+      });
     }
 
     return result;
   }, [settings.profile.gradeSubjects, settings.profile.filterContentByProfile]);
+
+  const buildCurriculumContext = (strand: CurriculumStrandNode, gradeLabel: string, subjectLabel: string): string => {
+    let content = `Curriculum: ${strand.displayName}\nGrade: ${gradeLabel}\nSubject: ${subjectLabel}\nStrand: ${strand.strand}\n`;
+    if (strand.essentialOutcomes.length > 0) {
+      content += `\nEssential Learning Outcomes:\n`;
+      for (const elo of strand.essentialOutcomes) {
+        content += `- [${elo.id}] ${elo.text}\n`;
+      }
+    }
+    if (strand.specificOutcomes.length > 0) {
+      content += `\nSpecific Curriculum Outcomes:\n`;
+      for (const sco of strand.specificOutcomes) {
+        content += `- [${sco.id}] ${sco.text}${sco.eloRef ? ` (ELO: ${sco.eloRef})` : ''}\n`;
+      }
+    }
+    return content;
+  };
 
   const toggleCurriculumNode = (nodeId: string) => {
     setExpandedCurriculumNodes(prev => {
@@ -1666,7 +1712,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           )}
         </div>
 
-        <div className="border-t border-theme p-4">
+        <div className="border-t border-theme py-4 pr-4 pl-20">
           {/* Attached file chips */}
           {(attachedFiles.length > 0 || pendingDropFiles.length > 0 || attachingFile) && (
             <div className="flex flex-wrap gap-2 mb-3">
@@ -1749,49 +1795,66 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               )}
             </div>
           )}
-          <div className="flex space-x-2">
-            {supportsThinking && (
+          <div className="flex items-end space-x-2">
+            {/* Input field with mic (left) and brain (right) inside */}
+            <div className={`flex-1 flex items-center border rounded-xl px-3 py-2 transition ${
+              stt.isListening ? 'border-red-400 bg-red-50 dark:bg-red-900/10' : 'border-theme-strong focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent'
+            }`} style={{ minHeight: '48px' }}>
+              {/* Mic button — left side, pinned to bottom */}
               <button
-                onClick={() => updateSettings({ thinkingEnabled: !settings.thinkingEnabled })}
-                className={`px-3 py-3 rounded-xl transition flex items-center justify-center gap-1.5 border text-sm font-medium ${
-                  settings.thinkingEnabled
-                    ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300'
-                    : 'bg-theme-tertiary border-theme-strong text-theme-muted hover:bg-theme-hover'
+                onClick={stt.toggleListening}
+                disabled={loading}
+                className={`rounded-lg transition flex-shrink-0 flex items-center justify-center ${
+                  stt.isListening
+                    ? 'text-red-500 animate-pulse'
+                    : 'text-theme-muted hover:text-theme-heading hover:bg-theme-hover'
                 }`}
-                title={settings.thinkingEnabled ? 'Thinking mode ON — click to disable' : 'Enable thinking mode for deeper reasoning'}
+                style={{ width: '28px', height: '28px' }}
+                title={stt.isListening ? 'Stop listening' : 'Voice input'}
               >
-                <BrainIcon className="w-4.5 h-4.5" />
+                {stt.isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
               </button>
-            )}
-            <button
-              onClick={stt.toggleListening}
-              disabled={loading}
-              className={`px-3 py-3 rounded-xl transition flex items-center justify-center ${
-                stt.isListening
-                  ? 'bg-red-500 text-white animate-pulse'
-                  : 'bg-theme-tertiary text-theme-label hover:bg-theme-hover border border-theme-strong'
-              }`}
-              title={stt.isListening ? 'Stop listening' : 'Voice input'}
-            >
-              {stt.isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </button>
-            <SmartTextArea
-              value={input}
-              onChange={setInput}
-              onKeyDown={handleKeyDown}
-              placeholder={stt.isListening ? 'Listening...' : 'Ask me anything...'}
-              className={`flex-1 px-4 py-3 border rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-800 dark:text-gray-100 ${
-                stt.isListening ? 'border-red-400 bg-red-50 dark:bg-red-900/10' : 'border-theme-strong'
-              }`}
-              rows={1}
-              style={{ minHeight: '48px', maxHeight: '120px' }}
-              disabled={loading}
-              data-tutorial="chat-input"
-            />
+
+              {/* Text area — grows up to 10 lines then scrolls */}
+              <SmartTextArea
+                value={input}
+                onChange={setInput}
+                onKeyDown={handleKeyDown}
+                placeholder={stt.isListening ? 'Listening...' : 'Ask me anything...'}
+                className="flex-1 resize-none outline-none bg-transparent dark:text-gray-100 overflow-y-auto leading-7"
+                rows={1}
+                style={{ minHeight: '28px', maxHeight: '220px', padding: '0 12px' }}
+                disabled={loading}
+                data-tutorial="chat-input"
+              />
+
+              {/* Brain / thinking toggle — right side */}
+              {supportsThinking && (
+                <div className="relative flex-shrink-0 group/brain">
+                  <button
+                    onClick={() => updateSettings({ thinkingEnabled: !settings.thinkingEnabled })}
+                    className={`rounded-lg transition flex items-center justify-center ${
+                      settings.thinkingEnabled
+                        ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40'
+                        : 'text-theme-muted hover:text-purple-600 hover:bg-theme-hover'
+                    }`}
+                    style={{ width: '28px', height: '28px' }}
+                  >
+                    <BrainIcon className="w-6 h-6" />
+                  </button>
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover/brain:opacity-100 pointer-events-none transition-opacity bg-gray-900 dark:bg-gray-700 text-white shadow-lg">
+                    Thinking Mode {settings.thinkingEnabled ? '(ON)' : '(OFF)'}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Send button */}
             <button
               onClick={handleSend}
               disabled={loading || !input.trim()}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+              className="px-5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 self-stretch"
               data-tutorial="chat-send"
             >
               {loading ? (
@@ -2341,7 +2404,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               <>
                 {/* Hint */}
                 <div className="px-4 pb-2">
-                  <p className="text-[11px] text-theme-hint">Browse curriculum activities to attach as context.</p>
+                  <p className="text-[11px] text-theme-hint">Check a strand to attach its ELOs/SCOs as context. Click the name to open in curriculum browser.</p>
                 </div>
 
                 {/* Curriculum tree */}
@@ -2366,18 +2429,18 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                         <div className="text-center text-theme-hint mt-8">
                           <BookMarkIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
                           <p className="text-sm">No curriculum found</p>
-                          <p className="text-xs mt-1">No activities match your grade/subject profile</p>
+                          <p className="text-xs mt-1">No strands match your grade/subject profile</p>
                         </div>
                       );
                     }
 
                     return tree.map(grade => {
-                      const gradeExpanded = expandedCurriculumNodes.has(grade.gradeKey);
+                      const gradeExpanded = expandedCurriculumNodes.has(grade.gradeValue);
                       return (
-                        <div key={grade.gradeKey}>
+                        <div key={grade.gradeValue}>
                           {/* Grade level */}
                           <button
-                            onClick={() => toggleCurriculumNode(grade.gradeKey)}
+                            onClick={() => toggleCurriculumNode(grade.gradeValue)}
                             className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-theme-subtle transition text-left"
                           >
                             {gradeExpanded
@@ -2386,13 +2449,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                             }
                             <GraduationIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
                             <span className="text-sm font-medium text-theme-heading">{grade.gradeLabel}</span>
-                            <span className="text-[10px] text-theme-hint ml-auto">{grade.subjects.reduce((n, s) => n + s.activities.length, 0)}</span>
+                            <span className="text-[10px] text-theme-hint ml-auto">{grade.subjects.reduce((n, s) => n + s.strands.length, 0)}</span>
                           </button>
 
                           {gradeExpanded && (
                             <div className="ml-5 border-l border-theme-strong/20 pl-2 space-y-0.5">
                               {grade.subjects.map(subject => {
-                                const subjectNodeId = `${grade.gradeKey}:${subject.subjectKey}`;
+                                const subjectNodeId = `${grade.gradeValue}:${subject.subjectKey}`;
                                 const subjectExpanded = expandedCurriculumNodes.has(subjectNodeId);
                                 return (
                                   <div key={subjectNodeId}>
@@ -2407,42 +2470,60 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                       }
                                       <BookMarkIcon className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
                                       <span className="text-xs font-medium text-theme-heading">{subject.subjectLabel}</span>
-                                      <span className="text-[10px] text-theme-hint ml-auto">{subject.activities.length}</span>
+                                      <span className="text-[10px] text-theme-hint ml-auto">{subject.strands.length}</span>
                                     </button>
 
                                     {subjectExpanded && (
                                       <div className="ml-4 border-l border-theme-strong/20 pl-2 space-y-0.5">
-                                        {subject.activities.map(activity => {
-                                          const activityPath = `curriculum:${activity.route}`;
-                                          const isAttached = attachedFiles.some(f => f.path === activityPath);
+                                        {subject.strands.map(strand => {
+                                          const strandPath = `curriculum:${strand.id}`;
+                                          const isAttached = attachedFiles.some(f => f.path === strandPath);
                                           return (
                                             <div
-                                              key={activity.route}
-                                              onClick={() => {
-                                                if (isAttached) {
-                                                  setAttachedFiles(prev => prev.filter(f => f.path !== activityPath));
-                                                } else {
-                                                  setAttachedFiles(prev => [...prev, {
-                                                    name: activity.name,
-                                                    path: activityPath,
-                                                    extension: '.curriculum',
-                                                    previewText: `Curriculum: ${grade.gradeLabel} > ${subject.subjectLabel} > ${activity.name}`,
-                                                    fullContent: `Curriculum Activity: ${activity.name}\nGrade: ${grade.gradeLabel}\nSubject: ${subject.subjectLabel}\nRoute: ${activity.route}`,
-                                                  }]);
-                                                }
-                                              }}
-                                              className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
+                                              key={strand.id}
+                                              className={`flex items-center gap-2 p-1.5 rounded-lg transition ${
                                                 isAttached ? 'bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800' : 'hover:bg-theme-subtle'
                                               }`}
-                                              title={`${grade.gradeLabel} > ${subject.subjectLabel} > ${activity.name}`}
+                                              title={`${grade.gradeLabel} > ${subject.subjectLabel} > ${strand.displayName}\n${strand.essentialOutcomes.length} ELO(s), ${strand.specificOutcomes.length} SCO(s)`}
                                             >
-                                              <div className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition ${
-                                                isAttached ? 'bg-purple-600 border-purple-600' : 'border-gray-300 dark:border-gray-600'
-                                              }`}>
+                                              {/* Checkbox — attach/detach curriculum context */}
+                                              <div
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  if (isAttached) {
+                                                    setAttachedFiles(prev => prev.filter(f => f.path !== strandPath));
+                                                  } else {
+                                                    setAttachedFiles(prev => [...prev, {
+                                                      name: strand.displayName,
+                                                      path: strandPath,
+                                                      extension: '.curriculum',
+                                                      previewText: `${grade.gradeLabel} > ${subject.subjectLabel} > ${strand.displayName}`,
+                                                      fullContent: buildCurriculumContext(strand, grade.gradeLabel, subject.subjectLabel),
+                                                    }]);
+                                                  }
+                                                }}
+                                                className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 cursor-pointer transition ${
+                                                  isAttached ? 'bg-purple-600 border-purple-600' : 'border-gray-300 dark:border-gray-600 hover:border-purple-400'
+                                                }`}
+                                              >
                                                 {isAttached && <CheckIcon className="w-2.5 h-2.5 text-white" />}
                                               </div>
-                                              <FileIcon className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                                              <span className="text-xs text-theme-heading truncate flex-1">{activity.name}</span>
+                                              {/* Clickable name — navigate to curriculum browser */}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  if (onOpenCurriculumTab) onOpenCurriculumTab(strand.route);
+                                                }}
+                                                className="flex items-center gap-1.5 flex-1 min-w-0 text-left group"
+                                                title="Open in Curriculum Browser"
+                                              >
+                                                <FileIcon className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                                                <span className="text-xs text-theme-heading truncate flex-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:underline transition-colors">{strand.displayName}</span>
+                                              </button>
+                                              {/* ELO/SCO count badge */}
+                                              <span className="text-[9px] text-theme-hint flex-shrink-0 whitespace-nowrap">
+                                                {strand.essentialOutcomes.length}E {strand.specificOutcomes.length}S
+                                              </span>
                                             </div>
                                           );
                                         })}

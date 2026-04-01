@@ -32,7 +32,11 @@ import ImageAdd01IconData from '@hugeicons/core-free-icons/ImageAdd01Icon';
 import TextFontIconData from '@hugeicons/core-free-icons/TextFontIcon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowTurnDownIconData from '@hugeicons/core-free-icons/ArrowTurnDownIcon';
+import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
+import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
+import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
 import searchIndex, { SearchEntry } from '../data/searchIndex';
+import { useSTT } from '../hooks/useVoice';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -72,6 +76,23 @@ const ImagePlus: React.FC<{ className?: string; style?: React.CSSProperties }> =
 const Type: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextFontIconData} {...p} />;
 const ArrowRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
 const CornerDownLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowTurnDownIconData} {...p} />;
+const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
+const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Mic01IconData} {...p} />;
+const MicOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MicOff01IconData} {...p} />;
+
+// Check if SpeechRecognition is available
+const HAS_STT = typeof window !== 'undefined' && !!(
+  (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+);
+
+// AI Smart Search response type
+interface SmartSearchResponse {
+  intent: 'navigation' | 'generation' | 'settings' | 'info';
+  summary: string;
+  steps: string[];
+  action?: { toolType: string; prefill?: Record<string, any>; settingsSection?: string };
+  confidence: number;
+}
 
 const iconMap: Record<string, React.ElementType> = {
   BarChart3, MessageSquare, BookOpen, FileText, GraduationCap, ListChecks,
@@ -93,7 +114,7 @@ const categoryOrder = ['action', 'tool', 'setting', 'resource'];
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigate: (entry: SearchEntry) => void;
+  onNavigate: (entry: SearchEntry, prefill?: Record<string, any>) => void;
 }
 
 // ── Natural language search engine ──
@@ -294,9 +315,61 @@ function scoreMatch(query: string, entry: SearchEntry): number {
 const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavigate }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [aiMode, setAiMode] = useState(false);
+  const [aiResponse, setAiResponse] = useState<SmartSearchResponse | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const aiAbortRef = useRef<AbortController | null>(null);
+
+  // Speech-to-text
+  const sttIsListeningRef = useRef(false);
+  const stt = useSTT(
+    // onResult — final transcript sets the query
+    (finalText) => {
+      setQuery(finalText);
+      sttIsListeningRef.current = false;
+    },
+    // onInterim — live preview in the input
+    (partialText) => {
+      setQuery(partialText);
+    }
+  );
+
+  // Keep ref in sync
+  useEffect(() => {
+    sttIsListeningRef.current = stt.isListening;
+  }, [stt.isListening]);
+
+  // AI smart search
+  const fetchAiSearch = useCallback(async (q: string) => {
+    if (!q.trim()) return;
+    aiAbortRef.current?.abort();
+    const controller = new AbortController();
+    aiAbortRef.current = controller;
+    setAiLoading(true);
+    setAiResponse(null);
+    try {
+      const res = await fetch('http://localhost:8000/api/smart-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error('Smart search failed');
+      const data: SmartSearchResponse = await res.json();
+      if (data.confidence > 0.3) {
+        setAiResponse(data);
+      }
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error('[SmartSearch] Error:', e);
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  }, []);
 
   // Filter and score results
   const results = useMemo(() => {
@@ -335,14 +408,20 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
   // Flat list for keyboard navigation
   const flatResults = useMemo(() => results, [results]);
 
-  // Reset on open
+  // Reset on open / cleanup on close
   useEffect(() => {
     if (isOpen) {
       setQuery('');
       setSelectedIndex(0);
+      setAiResponse(null);
+      setAiLoading(false);
       requestAnimationFrame(() => inputRef.current?.focus());
+    } else {
+      // Stop STT when palette closes
+      if (stt.isListening) stt.stopListening();
+      aiAbortRef.current?.abort();
     }
-  }, [isOpen]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset selection when results change
   useEffect(() => {
@@ -357,16 +436,37 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
     }
   }, [selectedIndex]);
 
-  const handleSelect = useCallback((entry: SearchEntry) => {
-    onNavigate(entry);
+  const handleSelect = useCallback((entry: SearchEntry, prefill?: Record<string, any>) => {
+    onNavigate(entry, prefill);
     onClose();
   }, [onNavigate, onClose]);
 
+  // Handle clicking the AI suggestion "Go" action
+  const handleAiAction = useCallback(() => {
+    if (!aiResponse?.action) return;
+    const syntheticEntry: SearchEntry = {
+      id: 'ai-suggestion',
+      title: aiResponse.summary,
+      description: aiResponse.steps.join(' → '),
+      keywords: [],
+      category: 'action',
+      icon: 'ArrowRight',
+      toolType: aiResponse.action.toolType,
+      settingsSection: aiResponse.action.settingsSection,
+    };
+    onNavigate(syntheticEntry, aiResponse.action.prefill);
+    onClose();
+  }, [aiResponse, onNavigate, onClose]);
+
+  // Total selectable items: AI card (if present) + flat results
+  const aiCardOffset = aiResponse ? 1 : 0;
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const totalItems = flatResults.length + aiCardOffset;
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev => Math.min(prev + 1, flatResults.length - 1));
+        setSelectedIndex(prev => Math.min(prev + 1, totalItems - 1));
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -374,8 +474,19 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
         break;
       case 'Enter':
         e.preventDefault();
-        if (flatResults[selectedIndex]) {
-          handleSelect(flatResults[selectedIndex]);
+        // If AI mode is on and no specific item selected (or at AI card), trigger AI search
+        if (aiMode && selectedIndex === 0 && !aiResponse && query.trim()) {
+          fetchAiSearch(query);
+        } else if (aiResponse && selectedIndex === 0) {
+          // Selecting the AI card
+          if (aiResponse.action) {
+            handleAiAction();
+          }
+        } else {
+          const resultIndex = selectedIndex - aiCardOffset;
+          if (flatResults[resultIndex]) {
+            handleSelect(flatResults[resultIndex]);
+          }
         }
         break;
       case 'Escape':
@@ -383,7 +494,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
         onClose();
         break;
     }
-  }, [flatResults, selectedIndex, handleSelect, onClose]);
+  }, [flatResults, selectedIndex, handleSelect, onClose, aiMode, aiResponse, aiCardOffset, query, fetchAiSearch, handleAiAction]);
 
   if (!isOpen) return null;
 
@@ -409,37 +520,71 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
         onKeyDown={handleKeyDown}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid var(--border-default, #e5e7eb)' }}>
+        <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid var(--border-default, #e5e7eb)' }}>
+          {/* Brain toggle (left) */}
+          <button
+            onClick={() => setAiMode(prev => !prev)}
+            className={`p-1.5 rounded-lg transition-all flex-shrink-0 ${
+              aiMode
+                ? 'bg-green-100 dark:bg-green-900/30'
+                : 'hover:bg-black/5 dark:hover:bg-white/10'
+            }`}
+            style={aiMode ? {
+              boxShadow: '0 0 8px rgba(34, 197, 94, 0.4)',
+            } : undefined}
+            title={aiMode ? 'AI search active — press Enter to search with AI' : 'Enable AI-powered search'}
+          >
+            <Brain
+              className="w-5 h-5"
+              style={{ color: aiMode ? '#22c55e' : 'var(--text-hint, #6b7280)' }}
+            />
+          </button>
+
+          {/* Vertical divider */}
+          <div className="w-px h-5 flex-shrink-0" style={{ background: 'var(--border-default, #e5e7eb)' }} />
+
           <Search className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--text-hint, #6b7280)' }} />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search tools, settings, resources..."
+            placeholder={stt.isListening ? 'Listening...' : aiMode ? 'Ask anything... (Enter to search with AI)' : 'Search tools, settings, resources...'}
             className="flex-1 bg-transparent border-none outline-none text-[15px]"
             style={{ color: 'var(--text-title, #111827)' }}
             autoComplete="off"
             spellCheck={false}
           />
-          {query && (
+
+          {/* Mic / Clear button (right) — mutually exclusive */}
+          {stt.isListening ? (
+            // Actively listening — show pulsing mic-off to stop
             <button
-              onClick={() => { setQuery(''); inputRef.current?.focus(); }}
-              className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition"
+              onClick={stt.stopListening}
+              className="p-1.5 rounded-lg bg-red-500 text-white animate-pulse transition flex-shrink-0"
+              title="Stop listening"
+            >
+              <MicOff className="w-4 h-4" />
+            </button>
+          ) : query ? (
+            // Has text — show clear button
+            <button
+              onClick={() => { setQuery(''); setAiResponse(null); inputRef.current?.focus(); }}
+              className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition flex-shrink-0"
+              title="Clear search"
             >
               <X className="w-4 h-4" style={{ color: 'var(--text-hint, #6b7280)' }} />
             </button>
-          )}
-          <kbd
-            className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
-            style={{
-              background: 'var(--bg-tertiary, #f3f4f6)',
-              color: 'var(--text-hint, #6b7280)',
-              border: '1px solid var(--border-default, #e5e7eb)',
-            }}
-          >
-            ESC
-          </kbd>
+          ) : HAS_STT ? (
+            // Empty input + STT available — show mic
+            <button
+              onClick={stt.startListening}
+              className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition flex-shrink-0"
+              title="Voice search"
+            >
+              <Mic className="w-4 h-4" style={{ color: 'var(--text-hint, #6b7280)' }} />
+            </button>
+          ) : null}
         </div>
 
         {/* Results */}
@@ -448,10 +593,72 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
           className="overflow-y-auto"
           style={{ maxHeight: '55vh' }}
         >
-          {flatResults.length === 0 ? (
+          {/* AI Suggestion Card */}
+          {aiLoading && (
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-default, #e5e7eb)', background: 'var(--bg-secondary, #f9fafb)' }}>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs font-medium" style={{ color: 'var(--text-hint, #6b7280)' }}>
+                  Searching with AI...
+                </span>
+              </div>
+            </div>
+          )}
+          {aiResponse && !aiLoading && (
+            <div
+              className="px-4 py-3 cursor-pointer transition-colors"
+              style={{
+                borderBottom: '1px solid var(--border-default, #e5e7eb)',
+                background: selectedIndex === 0
+                  ? 'var(--bg-hover, #f3f4f6)'
+                  : 'linear-gradient(135deg, rgba(34,197,94,0.05), rgba(34,197,94,0.02))',
+              }}
+              onMouseEnter={() => setSelectedIndex(0)}
+              onClick={() => aiResponse.action ? handleAiAction() : undefined}
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-green-100 dark:bg-green-900/30">
+                  <Brain className="w-4 h-4" style={{ color: '#22c55e' }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium" style={{ color: 'var(--text-title, #111827)' }}>
+                    {aiResponse.summary}
+                  </p>
+                  <ol className="mt-1.5 space-y-0.5">
+                    {aiResponse.steps.map((step, i) => (
+                      <li key={i} className="text-xs flex gap-1.5" style={{ color: 'var(--text-muted, #4b5563)' }}>
+                        <span className="font-semibold text-green-600 dark:text-green-400 flex-shrink-0">{i + 1}.</span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                  {aiResponse.action && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleAiAction(); }}
+                      className="mt-2 px-3 py-1 rounded-md text-xs font-medium text-white transition-colors"
+                      style={{ background: '#22c55e' }}
+                    >
+                      Go to {aiResponse.action.toolType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} →
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setAiResponse(null); }}
+                  className="p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/10 flex-shrink-0"
+                >
+                  <X className="w-3 h-3" style={{ color: 'var(--text-hint, #6b7280)' }} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {flatResults.length === 0 && !aiResponse && !aiLoading ? (
             <div className="px-4 py-10 text-center">
               <p className="text-sm" style={{ color: 'var(--text-hint, #6b7280)' }}>
                 No results for "<span className="font-medium" style={{ color: 'var(--text-label, #374151)' }}>{query}</span>"
+                {aiMode && (
+                  <span className="block mt-1 text-xs">Press Enter to search with AI</span>
+                )}
               </p>
             </div>
           ) : (
@@ -472,7 +679,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
                 {/* Items */}
                 {group.items.map(entry => {
                   flatIndex++;
-                  const idx = flatIndex;
+                  const idx = flatIndex + aiCardOffset;
                   const isSelected = idx === selectedIndex;
                   const IconComponent = iconMap[entry.icon] || ArrowRight;
 
@@ -542,10 +749,18 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1 py-0.5 rounded font-medium" style={{ background: 'var(--bg-tertiary, #f3f4f6)', border: '1px solid var(--border-default, #e5e7eb)' }}>↵</kbd>
-              open
+              {aiMode ? 'open / AI search' : 'open'}
             </span>
           </div>
-          <span>{flatResults.length} result{flatResults.length !== 1 ? 's' : ''}</span>
+          <div className="flex items-center gap-2">
+            {aiMode && (
+              <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
+                <Brain className="w-3 h-3" style={{ color: '#22c55e' }} />
+                AI
+              </span>
+            )}
+            <span>{flatResults.length} result{flatResults.length !== 1 ? 's' : ''}</span>
+          </div>
         </div>
       </div>
     </div>

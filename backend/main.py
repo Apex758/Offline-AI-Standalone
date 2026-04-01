@@ -360,6 +360,9 @@ class AutocompleteRequest(BaseModel):
     text: str
     max_tokens: int = 20
 
+class SmartSearchRequest(BaseModel):
+    query: str
+
 class StudentCreate(BaseModel):
     full_name: str
     date_of_birth: Optional[str] = None
@@ -683,6 +686,75 @@ async def autocomplete(request: AutocompleteRequest):
     except Exception as e:
         logger.error(f"Autocomplete error: {e}")
         return {"completion": ""}
+
+
+@app.post("/api/smart-search")
+async def smart_search(request: SmartSearchRequest):
+    """AI-powered search that returns structured guidance for the command palette."""
+    import json as _json
+    import re as _re
+    try:
+        query = request.query.strip()
+        if not query or len(query) < 3:
+            return {"intent": "info", "summary": "", "steps": [], "confidence": 0}
+
+        from inference_factory import resolve_inference_for_task
+        from smart_search_prompt import SMART_SEARCH_SYSTEM_PROMPT, SMART_SEARCH_TIER1_PROMPT
+        from tier1_prompts import get_tier1_gen_params
+
+        _tier_info = compute_effective_tier()
+        _is_tier1 = _tier_info["tier"] == 1
+
+        system_prompt = SMART_SEARCH_TIER1_PROMPT if _is_tier1 else SMART_SEARCH_SYSTEM_PROMPT
+        user_prompt = f"Teacher asks: {query}"
+
+        prompt = build_prompt(system_prompt, user_prompt)
+
+        inference = resolve_inference_for_task("smart-search")
+        _t1_params = get_tier1_gen_params("autocomplete") if _is_tier1 else {}
+
+        result = await inference.generate(
+            tool_name="smart-search",
+            input_data=query,
+            prompt_template=prompt,
+            max_tokens=300,
+            temperature=_t1_params.get("temperature", 0.3)
+        )
+
+        if result["metadata"]["status"] == "error":
+            return {"intent": "info", "summary": "Sorry, I couldn't process that.", "steps": [], "confidence": 0}
+
+        raw = result["result"].strip()
+
+        # Extract JSON from the response (model may wrap it in markdown code blocks)
+        json_match = _re.search(r'\{[\s\S]*\}', raw)
+        if json_match:
+            try:
+                data = _json.loads(json_match.group())
+                # Validate required fields
+                response = {
+                    "intent": data.get("intent", "info"),
+                    "summary": data.get("summary", ""),
+                    "steps": data.get("steps", []),
+                    "confidence": float(data.get("confidence", 0.5)),
+                }
+                if "action" in data and isinstance(data["action"], dict):
+                    response["action"] = data["action"]
+                return response
+            except (_json.JSONDecodeError, ValueError):
+                pass
+
+        # Fallback: return the raw text as a summary
+        return {
+            "intent": "info",
+            "summary": raw[:200] if raw else "I couldn't understand that query.",
+            "steps": [],
+            "confidence": 0.3,
+        }
+
+    except Exception as e:
+        logger.error(f"Smart search error: {e}")
+        return {"intent": "info", "summary": "An error occurred.", "steps": [], "confidence": 0}
 
 
 @app.websocket("/ws/chat")

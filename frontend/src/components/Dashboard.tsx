@@ -558,7 +558,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
-  const handleCommandPaletteNavigate = (entry: SearchEntry) => {
+  const handleCommandPaletteNavigate = (entry: SearchEntry, prefill?: Record<string, any>) => {
     // Handle direct actions
     if (entry.action) {
       switch (entry.action) {
@@ -583,7 +583,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     if (entry.toolType) {
       const tool = tools.find(t => t.type === entry.toolType);
       if (tool) {
-        openTool(tool);
+        // Pass prefill data as initial tab data if provided
+        openTool(tool, prefill ? { prefill } : undefined);
 
         // If navigating to a settings section, scroll to it after the tab renders
         if (entry.settingsSection) {
@@ -848,7 +849,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }, 50);
   };
 
-  const openTool = (tool: Tool) => {
+  const openTool = (tool: Tool, initialData?: Record<string, any>) => {
     // Single-instance tool types: navigate to existing tab if open
     const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements'];
     if (singleInstanceTypes.includes(tool.type)) {
@@ -877,7 +878,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       title: tool.name,
       type: tool.type,
       active: true,
-      data: {}
+      data: initialData || {}
     };
     setTabs([...tabs, newTab]);
     setActiveTabId(newTab.id);
