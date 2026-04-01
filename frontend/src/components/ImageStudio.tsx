@@ -59,6 +59,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
 import { useNotification } from '../contexts/NotificationContext';
 import { useTabProcessing } from '../contexts/TabBusyContext';
+import { useCapabilities } from '../contexts/CapabilitiesContext';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 
@@ -108,13 +109,14 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const hasRestoredRef = useRef(false);
   const triggerCheck = useAchievementTrigger();
   const { notify } = useNotification();
+  const { hasDiffusion } = useCapabilities();
 
   const IMAGE_STORAGE_KEY = `image-studio-${tabId}`;
 
   // ========================================
   // Tab Management
   // ========================================
-  const [activeTab, setActiveTab] = useState<'generator' | 'editor'>('generator');
+  const [activeTab, setActiveTab] = useState<'generator' | 'editor'>(hasDiffusion ? 'generator' : 'editor');
 
   // ========================================
   // Generator States
@@ -368,7 +370,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // ========================================
   useEffect(() => {
     if (savedData && !hasRestoredRef.current) {
-      if (savedData.initialTab) setActiveTab(savedData.initialTab);
+      if (savedData.initialTab) setActiveTab(!hasDiffusion && savedData.initialTab === 'generator' ? 'editor' : savedData.initialTab);
       if (savedData.prompt) setPrompt(savedData.prompt);
       if (savedData.selectedStyle) setSelectedStyle(savedData.selectedStyle);
       if (savedData.imageSlots) setImageSlots(savedData.imageSlots);
@@ -1708,10 +1710,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             }`}
           />
            <button
-             onClick={() => setActiveTab('generator')}
+             onClick={() => { if (hasDiffusion) setActiveTab('generator'); }}
+             disabled={!hasDiffusion}
+             title={!hasDiffusion ? 'Requires a diffusion model' : undefined}
              className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
                activeTab === 'generator' ? 'text-white' : 'text-theme-label hover:text-theme-title'
-             }`}
+             } ${!hasDiffusion ? 'opacity-40 cursor-not-allowed' : ''}`}
            >
             <Palette className="w-4 h-4 mr-2" />
             Image Generator
@@ -2470,20 +2474,25 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   {/* Tool selector */}
                   <div className="grid grid-cols-6 gap-1 mb-1 p-1 bg-theme-tertiary rounded-lg">
                     {([
-                      { id: 'remove-object' as EditorTool, icon: Eraser, label: 'Object Remover' },
-                      { id: 'remove-background' as EditorTool, icon: ImageOff, label: 'Background Remover' },
-                      { id: 'annotate' as EditorTool, icon: Pencil, label: 'Annotate' },
-                      { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page' },
-                      { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker' },
-                      { id: 'comic-maker' as EditorTool, icon: BookOpen, label: 'Comic Maker' },
-                    ]).map(({ id, icon: Icon, label }) => (
-                      <button key={id} onClick={() => setEditorTool(id)} title={label}
-                        className={`p-2 rounded-md flex items-center justify-center transition ${
-                          editorTool === id ? 'bg-blue-600 text-white shadow' : 'text-theme-label hover:bg-theme-hover'
-                        }`}>
-                        <Icon className="w-4 h-4" />
-                      </button>
-                    ))}
+                      { id: 'remove-object' as EditorTool, icon: Eraser, label: 'Object Remover', needsDiffusion: false },
+                      { id: 'remove-background' as EditorTool, icon: ImageOff, label: 'Background Remover', needsDiffusion: false },
+                      { id: 'annotate' as EditorTool, icon: Pencil, label: 'Annotate', needsDiffusion: false },
+                      { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page', needsDiffusion: false },
+                      { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker', needsDiffusion: false },
+                      { id: 'comic-maker' as EditorTool, icon: BookOpen, label: 'Comic Maker', needsDiffusion: true },
+                    ]).map(({ id, icon: Icon, label, needsDiffusion }) => {
+                      const toolLocked = needsDiffusion && !hasDiffusion;
+                      return (
+                        <button key={id} onClick={() => { if (!toolLocked) setEditorTool(id); }}
+                          title={toolLocked ? `${label} requires a diffusion model` : label}
+                          disabled={toolLocked}
+                          className={`p-2 rounded-md flex items-center justify-center transition ${
+                            editorTool === id ? 'bg-blue-600 text-white shadow' : 'text-theme-label hover:bg-theme-hover'
+                          } ${toolLocked ? 'opacity-30 cursor-not-allowed' : ''}`}>
+                          <Icon className="w-4 h-4" />
+                        </button>
+                      );
+                    })}
                   </div>
                   <p className="text-xs text-theme-hint text-center mb-4">
                     {editorTool === 'remove-object' && 'Object Remover'}

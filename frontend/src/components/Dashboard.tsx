@@ -1842,26 +1842,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }}
         />;
       case 'image-studio':
-        if (!hasDiffusion) {
-          return (
-            <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)' }}>
-                <Icon icon={SquareLock01IconData} className="w-8 h-8" style={{ color: '#a855f7' }} />
-              </div>
-              <h2 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Image Studio Locked</h2>
-              <p className="text-sm max-w-md" style={{ color: 'var(--text-secondary)' }}>
-                Image Studio requires a diffusion model (Tier 3). Select and enable a diffusion model in Settings to unlock image generation capabilities.
-              </p>
-              <button
-                onClick={() => { const settingsTool = tools.find(t => t.type === 'settings'); if (settingsTool) openTool(settingsTool); }}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-                style={{ background: 'linear-gradient(135deg, #8b5cf6, #a855f7)' }}
-              >
-                Open Settings
-              </button>
-            </div>
-          );
-        }
         return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'presentation-builder':
         return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
@@ -2277,7 +2257,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       const at = tabs.find(t => t.id === activeTabId);
                       const isActive = at?.type === tool.type;
                       const tc = settings.tabColors[tool.type as keyof typeof settings.tabColors];
-                      const isLocked = tool.type === 'image-studio' && !hasDiffusion;
+                      const isLocked = false;
                       return (
                         <button key={tool.id} data-tool-type={tool.type} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', opacity: isLocked ? 0.5 : 1, transition: 'background-color 0.2s' }}
                           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive && tc) { ic.style.color = tc; ic.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
