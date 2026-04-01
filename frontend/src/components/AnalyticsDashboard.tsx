@@ -554,7 +554,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Header */}
       <header className="sticky top-0 z-20 backdrop-blur-sm" style={{
         backgroundColor: 'var(--dash-bg-alpha)',
-        boxShadow: `0 4px 16px var(--dash-shadow)`
+        boxShadow: `0 4px 16px var(--dash-shadow)`,
+        overflow: 'visible'
       }}>
         <div className="px-8 py-5 flex items-center justify-between">
           {/* Profile Section */}
@@ -596,7 +597,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
 
           {/* Quick Stats - Minimal */}
-          <div className="flex items-center space-x-6" data-tutorial="analytics-quick-stats">
+          <div className="flex items-center space-x-6" data-tutorial="analytics-quick-stats" style={{ overflow: 'visible' }}>
             <div className="text-center">
               <div className="text-2xl font-bold" style={{ color: 'var(--dash-primary)' }}>
                 {quickStats.totalResources}
@@ -613,7 +614,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               className="text-center cursor-pointer group relative"
               onClick={() => showcase.length > 0 ? setShowShowcase(s => !s) : onCreateTab?.('achievements')}
               title={showcase.length > 0 ? (showShowcase ? 'Show stats' : 'Show showcase') : 'View Achievements'}
-              style={{ minWidth: showShowcase && showcase.length > 0 ? Math.min(showcase.length, 5) * 110 : undefined, transition: 'min-width 0.3s ease' }}
+              style={{ minWidth: showShowcase && showcase.length > 0 ? Math.min(showcase.length, 5) * 152 : undefined, transition: 'min-width 0.3s ease', overflow: 'visible' }}
             >
               {/* Stats view */}
               <div style={{
@@ -649,8 +650,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   pointerEvents: showShowcase ? 'auto' : 'none',
+                  overflow: 'visible',
                 }}>
-                  <div className="flex items-center gap-3" style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
+                  <div className="flex items-center gap-3" style={{ overflow: 'visible' }}>
                     {showcase.slice(0, 5).map(id => {
                       const def = definitions.find(d => d.id === id);
                       if (!def) return null;
@@ -679,9 +681,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                         />
                       );
                     })}
-                  </div>
-                  <div className="text-[10px] mt-1" style={{ color: 'var(--dash-text-sub)' }}>
-                    My Trophies
                   </div>
                 </div>
               )}

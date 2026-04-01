@@ -35,29 +35,27 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
       <style>{`
         .${uid} {
           position: relative;
-          width: 100px;
-          min-width: 100px;
+          width: 140px;
+          min-width: 140px;
+          height: 72px;
           background: rgba(255,255,255,0.04);
           backdrop-filter: blur(16px) saturate(160%);
           -webkit-backdrop-filter: blur(16px) saturate(160%);
           border: 1px solid rgba(255,255,255,0.10);
           border-radius: 14px;
-          padding: 8px 6px 8px;
+          padding: 0;
           cursor: pointer;
           transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
           box-shadow:
             0 0 0 1px rgba(255,255,255,0.03) inset,
             0 6px 16px rgba(0,0,0,0.3),
             0 0 14px ${theme.glow.replace('0.35', '0.06')};
-          overflow: hidden;
+          overflow: visible;
           flex-shrink: 0;
-          text-align: center;
           display: flex;
-          flex-direction: column;
           align-items: center;
         }
         .${uid}:hover {
-          transform: translateY(-3px) scale(1.04);
           border-color: ${theme.primary}50;
           box-shadow:
             0 0 0 1px rgba(255,255,255,0.06) inset,
@@ -72,6 +70,15 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
           border-radius: 14px 14px 0 0;
           pointer-events: none;
         }
+        .${uid} .mtc-content {
+          flex: 1;
+          min-width: 0;
+          padding: 8px 0 8px 10px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          z-index: 2;
+        }
         .${uid} .mtc-badge {
           display: inline-flex;
           align-items: center;
@@ -79,32 +86,48 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
           background: ${theme.badge};
           border: 1px solid ${theme.primary}40;
           border-radius: 100px;
-          padding: 2px 7px;
-          margin-bottom: 4px;
+          padding: 2px 6px;
+          width: fit-content;
         }
         .${uid} .mtc-badge-dot {
-          width: 5px; height: 5px;
+          width: 4px; height: 4px;
           border-radius: 50%;
           background: ${theme.badgeText};
         }
         .${uid} .mtc-badge-label {
           font-family: 'DM Sans', sans-serif;
-          font-size: 7px;
+          font-size: 6.5px;
           font-weight: 600;
           color: ${theme.badgeText};
           letter-spacing: 0.06em;
         }
-        .${uid} .mtc-trophy-wrap {
+        .${uid} .mtc-name {
+          font-family: 'Syne', sans-serif;
+          font-size: 10px;
+          font-weight: 800;
+          line-height: 1.15;
+          color: #ffffff;
+          letter-spacing: -0.02em;
+        }
+        .${uid} .mtc-name span {
+          background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .${uid} .mtc-trophy-side {
           position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          width: 68px;
+          min-width: 68px;
           height: 72px;
-          margin: 0 -4px 4px;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          overflow: visible;
         }
         .${uid} .mtc-trophy-glow {
           position: absolute;
-          width: 50px; height: 50px;
+          width: 44px; height: 44px;
           border-radius: 50%;
           background: radial-gradient(circle, ${theme.glow.replace('0.35', '0.3')} 0%, transparent 70%);
           animation: mtc-glow-${definition.id} 3s ease-in-out infinite;
@@ -115,39 +138,39 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
         }
         .${uid} .mtc-trophy-img {
           position: relative;
-          width: 76px;
+          width: 90px;
           height: auto;
           z-index: 2;
+          margin-right: -8px;
+          margin-top: 6px;
           filter: drop-shadow(0 4px 8px ${theme.glow.replace('0.35', '0.3')});
           animation: mtc-float-${definition.id} 4s ease-in-out infinite;
+        }
+        .${uid} .mtc-trophy-side {
+          transition: transform 0.25s ease;
+        }
+        .${uid}:hover .mtc-trophy-side {
+          transform: scale(1.35);
         }
         @keyframes mtc-float-${definition.id} {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-4px); }
         }
-        .${uid} .mtc-name {
-          font-family: 'Syne', sans-serif;
-          font-size: 9px;
-          font-weight: 700;
-          line-height: 1.15;
-          color: #ffffff;
-          letter-spacing: -0.01em;
-        }
-        .${uid} .mtc-name span {
-          background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
       `}</style>
       <div className={uid} onClick={onClick} title={definition.description}>
         <div className="mtc-shine" />
-        <div className="mtc-badge">
-          <div className="mtc-badge-dot" />
-          <span className="mtc-badge-label">{theme.label}</span>
+        <div className="mtc-content">
+          <div className="mtc-badge">
+            <div className="mtc-badge-dot" />
+            <span className="mtc-badge-label">{theme.label}</span>
+          </div>
+          <div className="mtc-name">
+            {line1}<br />
+            <span>{line2}</span>
+          </div>
         </div>
         {trophyImg && (
-          <div className="mtc-trophy-wrap">
+          <div className="mtc-trophy-side">
             <div className="mtc-trophy-glow" />
             <img
               className="mtc-trophy-img"
@@ -157,10 +180,6 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
             />
           </div>
         )}
-        <div className="mtc-name">
-          {line1}<br />
-          <span>{line2}</span>
-        </div>
       </div>
     </>
   );
