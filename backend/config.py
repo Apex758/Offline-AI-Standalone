@@ -414,7 +414,8 @@ DEFAULT_TIER_CONFIG = {
             "presentation": "primary",
             "brain-dump": "fast",
             "title-generation": "fast",
-            "autocomplete": "fast"
+            "autocomplete": "fast",
+            "organize-note": "fast"
         }
     }
 }

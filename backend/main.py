@@ -369,6 +369,9 @@ class AutocompleteRequest(BaseModel):
     text: str
     max_tokens: int = 20
 
+class OrganizeNoteRequest(BaseModel):
+    content: str
+
 class SmartSearchRequest(BaseModel):
     query: str
 
@@ -695,6 +698,48 @@ async def autocomplete(request: AutocompleteRequest):
     except Exception as e:
         logger.error(f"Autocomplete error: {e}")
         return {"completion": ""}
+
+
+@app.post("/api/organize-note")
+async def organize_note(request: OrganizeNoteRequest):
+    """Use AI to organize and structure the content of a sticky note."""
+    try:
+        content = request.content.strip()
+        if not content:
+            return {"organized": content, "success": False}
+
+        # Strip HTML tags to get plain text for the prompt
+        import re
+        plain = re.sub(r'<[^>]*>', ' ', content)
+        plain = re.sub(r'\s+', ' ', plain).strip()
+
+        prompt = (
+            "You are organizing a sticky note. Rewrite the following messy notes into clean, "
+            "well-structured HTML suitable for a rich-text sticky note. Group related ideas under "
+            "short bold headings (<b>), use bullet lists (<ul><li>) for items, and keep it concise. "
+            "Only output the organized HTML, no explanation.\n\n"
+            f"Notes:\n{plain}"
+        )
+
+        from inference_factory import resolve_inference_for_task
+        inference = resolve_inference_for_task("organize-note")
+        result = await inference.generate(
+            tool_name="organize_note",
+            input_data=plain,
+            prompt_template=prompt,
+            max_tokens=500,
+            temperature=0.3
+        )
+
+        if result["metadata"]["status"] == "error":
+            return {"organized": content, "success": False}
+
+        organized = result["result"].strip()
+        return {"organized": organized, "success": True}
+
+    except Exception as e:
+        logger.error(f"Organize note error: {e}")
+        return {"organized": content, "success": False}
 
 
 @app.post("/api/smart-search")

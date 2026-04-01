@@ -301,7 +301,7 @@ export default function KidsStorybookSkeletonDay() {
 
   return (
     <div style={{
-      minHeight: "100vh",
+      height: "100%", width: "100%",
       display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
       background: "linear-gradient(170deg, #a8d8ea 0%, #c5e8f2 30%, #f2e6d0 65%, #edd9bb 100%)",

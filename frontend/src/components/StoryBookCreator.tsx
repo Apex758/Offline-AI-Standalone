@@ -42,7 +42,8 @@ import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import ImageModeSelector from './ui/ImageModeSelector';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
-import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import KidsStorybookSkeletonDay from './KidsStorybookSkeletonDay';
+import KidsStorybookSkeletonNight from './KidsStorybookSkeletonNight';
 import SmartInput from './SmartInput';
 import SmartTextArea from './SmartTextArea';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
@@ -665,7 +666,7 @@ function PagePreview({
   return (
     <div
       className="relative rounded-xl overflow-hidden border border-theme shadow-sm"
-      style={{ background: bgColor, minHeight: 320, fontFamily: 'Georgia, serif' }}
+      style={{ background: bgColor, aspectRatio: '297 / 210', fontFamily: 'Georgia, serif' }}
     >
       {page.backgroundImageData && (
         <img src={page.backgroundImageData} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
@@ -727,6 +728,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const { speak, stop: stopTTS, isSpeaking } = useTTS();
 
   const accentColor = (settings.tabColors as any)['storybook'] || '#a855f7';
+
+  // ── Dark mode detection ───────────────────────────────────────────────────
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains('dark')));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [view, setView] = useState<View>('input');
@@ -1330,45 +1339,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           : 'Crafting characters and scenes';
 
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-6 p-8">
-        <HeartbeatLoader color={accentColor} />
-        <div className="text-center">
-          <p className="text-lg font-semibold text-theme-heading">{phaseLabel}</p>
-          <p className="text-sm text-theme-muted mt-1">{phaseDetail}</p>
-          {generationPhase === 'writing_story' && (
-            <div className="flex items-center justify-center gap-2 mt-3">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full" style={{ background: accentColor }} />
-                <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
-              </div>
-              <span className="text-xs text-theme-muted">Step 1 of 2</span>
-            </div>
-          )}
-          {generationPhase === 'formatting_pages' && (
-            <div className="flex items-center justify-center gap-2 mt-3">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full" style={{ background: accentColor }} />
-                <div className="w-2 h-2 rounded-full" style={{ background: accentColor }} />
-              </div>
-              <span className="text-xs text-theme-muted">Step 2 of 2</span>
-            </div>
-          )}
-        </div>
-        {livePages.length > 0 && (
-          <div className="w-full max-w-md space-y-1">
-            {livePages.slice(-3).map((p, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm text-theme-muted animate-pulse">
-                <span className="text-xs font-mono w-6 shrink-0 mt-0.5" style={{ color: accentColor }}>
-                  P{p.pageNumber}
-                </span>
-                <span className="truncate">{p.textSegments[0]?.text}</span>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="h-full relative overflow-hidden">
+        {isDark ? <KidsStorybookSkeletonNight /> : <KidsStorybookSkeletonDay />}
+        {/* Cancel button overlaid on bottom-right */}
         <button
           onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setView('input'); }}
-          className="text-sm text-theme-muted hover:text-theme-heading"
+          className="absolute bottom-4 right-4 z-10 text-sm px-3 py-1.5 rounded-lg bg-black/20 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/30 transition-colors"
         >
           Cancel
         </button>
@@ -1579,7 +1555,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
           {/* Center: Page preview */}
           <div className="flex-1 overflow-y-auto p-4">
-            <div className="max-w-xl mx-auto space-y-4">
+            <div className="max-w-3xl mx-auto space-y-4">
               {/* Page nav */}
               <div className="flex items-center justify-between">
                 <button

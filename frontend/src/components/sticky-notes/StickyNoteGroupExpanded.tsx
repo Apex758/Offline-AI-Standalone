@@ -192,7 +192,7 @@ export const StickyNoteGroupExpanded: React.FC<Props> = ({ group, zIndex, active
               }}
               onClick={() => {
                 removeNoteFromGroup(group.id, n.id);
-                openNote(n.id);
+                openNote(n.id, activeTabId);
                 handleClose();
               }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)'; }}

@@ -332,7 +332,7 @@ export default function KidsStorybookSkeletonNight() {
 
   return (
     <div style={{
-      minHeight: "100vh",
+      height: "100%", width: "100%",
       display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
       background: "linear-gradient(170deg, #0d0d2b 0%, #1a1a3e 25%, #1e1e4a 50%, #2a1a3a 75%, #1a1028 100%)",

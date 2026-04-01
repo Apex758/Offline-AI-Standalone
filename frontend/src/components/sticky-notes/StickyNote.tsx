@@ -15,8 +15,10 @@ import LeftToRightListBulletIconData from '@hugeicons/core-free-icons/LeftToRigh
 import LeftToRightListNumberIconData from '@hugeicons/core-free-icons/LeftToRightListNumberIcon';
 import QuoteDownIconData from '@hugeicons/core-free-icons/QuoteDownIcon';
 import Link01IconData from '@hugeicons/core-free-icons/Link01Icon';
+import CleanIconData from '@hugeicons/core-free-icons/CleanIcon';
 import { useStickyNotes, StickyNote as StickyNoteType } from '../../contexts/StickyNoteContext';
 import { StickyNoteChecklist } from './StickyNoteChecklist';
+import axios from 'axios';
 
 const SIcon: React.FC<{ icon: any; size?: number; style?: React.CSSProperties }> = ({ icon, size = 14, style }) => (
   <HugeiconsIcon icon={icon} size={size} style={style} />
@@ -38,6 +40,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
   const [isResizing, setIsResizing] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [animState, setAnimState] = useState<'opening' | 'open' | 'closing'>('opening');
+  const [isOrganizing, setIsOrganizing] = useState(false);
 
   // Opening animation
   useEffect(() => {
@@ -160,6 +163,32 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
       }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show broom button when note has enough content (~10 lines)
+  const plainText = (note.content || '').replace(/<[^>]*>/g, '');
+  const lineCount = plainText.split(/\n|<br\s*\/?>/).length;
+  const charThreshold = plainText.length > 150;
+  const showOrganize = !note.checklist && (lineCount >= 10 || charThreshold);
+
+  const handleOrganize = async () => {
+    if (isOrganizing || !note.content) return;
+    setIsOrganizing(true);
+    try {
+      const res = await axios.post('http://localhost:8000/api/organize-note', {
+        content: note.content,
+      }, { timeout: 15000 });
+      if (res.data?.success && res.data.organized) {
+        updateNote(note.id, { content: res.data.organized });
+        if (editorRef.current) {
+          editorRef.current.innerHTML = res.data.organized;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to organize note:', err);
+    } finally {
+      setIsOrganizing(false);
+    }
+  };
 
   const handleClose = () => {
     setAnimState('closing');
@@ -448,6 +477,29 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
                 <line x1="2" y1="8" x2="14" y2="8" />
               </svg>
             </button>
+
+            {/* Organize / Broom button — appears when note has enough content */}
+            {showOrganize && (
+              <>
+                <div className="w-px h-4 mx-0.5 flex-shrink-0" style={{ background: 'rgba(0,0,0,0.12)' }} />
+                <button
+                  className="p-1.5 rounded-lg hover:bg-black/8 active:bg-black/15 flex items-center justify-center transition-colors flex-shrink-0"
+                  title="Organize notes with AI"
+                  onMouseDown={e => { e.preventDefault(); handleOrganize(); }}
+                  disabled={isOrganizing}
+                  style={{ opacity: isOrganizing ? 0.5 : 1 }}
+                >
+                  <SIcon
+                    icon={CleanIconData}
+                    size={16}
+                    style={{
+                      color: isOrganizing ? '#999' : '#444',
+                      animation: isOrganizing ? 'spin 1s linear infinite' : 'none',
+                    }}
+                  />
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -481,6 +533,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
         [data-sticky-id] hr { border: none; border-top: 1px solid rgba(0,0,0,0.15); margin: 0.5em 0; }
         .sn-toolbar-scroll { scrollbar-width: none; -ms-overflow-style: none; }
         .sn-toolbar-scroll::-webkit-scrollbar { display: none; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
