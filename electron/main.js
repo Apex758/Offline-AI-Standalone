@@ -594,6 +594,16 @@ ipcMain.on('splashscreen-complete', () => {
   loadMainContent();
 });
 
+// IPC handler for user-initiated app restart
+ipcMain.handle('restart-app', async () => {
+  log.info('User-initiated app restart...');
+  if (backendProcess && !backendProcess.killed) {
+    killProcessTree(backendProcess.pid);
+  }
+  app.relaunch();
+  app.exit(0);
+});
+
 // IPC handlers for task data persistence
 ipcMain.handle('get-tasks-data', async () => {
   try {

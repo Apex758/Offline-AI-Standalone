@@ -74,6 +74,7 @@ interface QuizGeneratorProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  isActive?: boolean;
 }
 
 interface QuizHistory {

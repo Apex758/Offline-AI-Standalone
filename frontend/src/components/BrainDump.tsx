@@ -137,6 +137,7 @@ interface BrainDumpProps {
   savedData?: any;
   onDataChange: (data: any) => void;
   onCreateTab?: (type: string, data?: any) => void;
+  isActive?: boolean;
 }
 
 const ACTION_META: Record<BrainDumpActionType, { icon: React.ElementType; label: string; color: string }> = {

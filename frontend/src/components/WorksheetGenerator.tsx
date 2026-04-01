@@ -91,6 +91,7 @@ interface WorksheetGeneratorProps {
   savedData?: Record<string, unknown>;
   onDataChange?: (data: Record<string, unknown>) => void;
   onOpenCurriculumTab?: (route: string) => void;
+  isActive?: boolean;
 }
 
 interface WorksheetHistory {

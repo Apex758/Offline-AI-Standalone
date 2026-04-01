@@ -156,6 +156,7 @@ interface SupportReportingProps {
   savedData?: any;
   onDataChange?: (data: any) => void;
   initialScreenshot?: string | null;
+  isActive?: boolean;
 }
 
 interface FAQItem { question: string; answer: string; }

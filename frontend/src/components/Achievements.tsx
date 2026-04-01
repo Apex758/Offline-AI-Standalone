@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Lock01IconData from '@hugeicons/core-free-icons/LockIcon';
@@ -22,6 +22,7 @@ import AnalyticsIconData from '@hugeicons/core-free-icons/Analytics01Icon';
 import { useAchievementContext } from '../contexts/AchievementContext';
 import { useSettings } from '../contexts/SettingsContext';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
+import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import TrophyDetailCard from './TrophyDetailCard';
 import TROPHY_IMAGES from '../assets/trophyImages';
 import { getTrophyType } from '../config/trophyMap';
@@ -125,9 +126,10 @@ interface AchievementsProps {
   tabId: string;
   savedData?: any;
   onDataChange?: (data: any) => void;
+  isActive?: boolean;
 }
 
-export default function Achievements({ tabId }: AchievementsProps) {
+export default function Achievements({ tabId, isActive = true }: AchievementsProps) {
   const {
     definitions,
     earned,
@@ -140,9 +142,12 @@ export default function Achievements({ tabId }: AchievementsProps) {
     counts,
     showcase,
     updateShowcase,
+    triggerCheck,
     isLoading,
   } = useAchievementContext();
   const { settings } = useSettings();
+
+  useRefetchOnActivation(isActive, useCallback(() => { triggerCheck(); }, [triggerCheck]));
   const tabColor = settings.tabColors['achievements'] || '#f59e0b';
 
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');

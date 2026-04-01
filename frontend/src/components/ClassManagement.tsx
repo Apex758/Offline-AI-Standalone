@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
@@ -173,9 +174,10 @@ interface ClassManagementProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  isActive?: boolean;
 }
 
-const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onDataChange }) => {
+const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onDataChange, isActive = true }) => {
   const { settings } = useSettings();
   const triggerCheck = useAchievementTrigger();
   const accentColor = settings.tabColors['class-management'] ?? '#f97316';
@@ -326,6 +328,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   }, [classViewTab, rightView, expandedGrades, expandedClasses, search, attendanceDate, activeStudent]);
 
   useEffect(() => { fetchStudents(); }, []);
+
+  useRefetchOnActivation(isActive, useCallback(() => { fetchStudents(); }, []));
 
   // Load attendance when viewing a class and date changes
   useEffect(() => {

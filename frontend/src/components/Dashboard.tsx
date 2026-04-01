@@ -1590,7 +1590,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     setActiveTabId(newTab.id);
   }, [typeToToolType]);
 
-  const renderSingleTabContent = (tab: Tab) => {
+  const renderSingleTabContent = (tab: Tab, isActive: boolean) => {
     const { onDataChange, onTitleChange } = getTabCallbacks(tab.id);
     const content = (() => { switch (tab.type) {
       case 'analytics':
@@ -1600,6 +1600,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               tabId={tab.id}
               savedData={tab.data}
               onDataChange={onDataChange}
+              isActive={isActive}
               onNavigate={(route) => {
                 // Handle navigation to curriculum
                 if (route.startsWith('/curriculum')) {
@@ -1680,7 +1681,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </>
         );
       case 'curriculum-tracker':
-        return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'chat':
         return (
           <Chat
@@ -1688,6 +1689,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             savedData={tab.data}
             onDataChange={onDataChange}
             onTitleChange={onTitleChange}
+            isActive={isActive}
             onPanelClick={() => setSidebarOpen(false)}
             onOpenCurriculumTab={(route: string) => {
               const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
@@ -1728,6 +1730,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             savedData={tab.data}
             onDataChange={onDataChange}
             onPanelClick={() => setSidebarOpen(false)}
+            isActive={isActive}
           />
         );
       case 'resource-manager':
@@ -1739,6 +1742,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               onDataChange={onDataChange}
               onViewResource={handleViewResource}
               onEditResource={handleEditResource}
+              isActive={isActive}
             />
             
             {/* ResourceManager Tutorial Components */}
@@ -1769,6 +1773,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             tabId={tab.id}
             savedData={tab.data}
             onDataChange={onDataChange}
+            isActive={isActive}
             onOpenCurriculumTab={(route: string) => {
               // Smart curriculum tab management (same logic as analytics onNavigate)
               const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
@@ -1805,20 +1810,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           />
         );
       case 'kindergarten-planner':
-        return <KindergartenPlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <KindergartenPlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'multigrade-planner':
-        return <MultigradePlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <MultigradePlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'cross-curricular-planner':
-        return <CrossCurricularPlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <CrossCurricularPlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'quiz-generator':
-        return <QuizGenerator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <QuizGenerator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'rubric-generator':
-        return <RubricGenerator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <RubricGenerator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'worksheet-generator':
         return <WorksheetGenerator
           tabId={tab.id}
           savedData={tab.data}
           onDataChange={onDataChange}
+          isActive={isActive}
           onOpenCurriculumTab={(route: string) => {
             // Smart curriculum tab management (same logic as analytics onNavigate)
             const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
@@ -1854,27 +1860,28 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }}
         />;
       case 'image-studio':
-        return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'presentation-builder':
-        return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'storybook':
-        return <StoryBookCreator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <StoryBookCreator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'settings':
-        return <Settings tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} onNavigateToTool={(toolType) => { const tool = tools.find(t => t.type === toolType); if (tool) openTool(tool); }} />;
+        return <Settings tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} onNavigateToTool={(toolType) => { const tool = tools.find(t => t.type === toolType); if (tool) openTool(tool); }} />;
       case 'class-management':
-        return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'support':
-        return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} initialScreenshot={tab.data?.initialScreenshot || null} />;
+        return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} initialScreenshot={tab.data?.initialScreenshot || null} />;
       case 'achievements':
-        return <Achievements tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <Achievements tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'performance-metrics':
-        return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
+        return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'brain-dump':
         return (
           <BrainDump
             tabId={tab.id}
             savedData={tab.data}
             onDataChange={onDataChange}
+            isActive={isActive}
             onCreateTab={(toolType, prefillData) => {
               const tool = tools.find(t => t.type === toolType);
               if (tool) {
@@ -1995,7 +2002,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 className="absolute inset-0"
                 style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
               >
-                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab)}</React.Suspense>
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab, tab.id === activeTabId)}</React.Suspense>
               </div>
             );
           }
@@ -2008,7 +2015,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             // Hidden tab — keep mounted but invisible
             return (
               <div key={tab.id} style={{ display: 'none' }}>
-                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab)}</React.Suspense>
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab, false)}</React.Suspense>
               </div>
             );
           }
@@ -2040,7 +2047,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 zIndex: 1
               }}
             >
-              <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab)}</React.Suspense>
+              <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab, true)}</React.Suspense>
             </div>
           );
         })}

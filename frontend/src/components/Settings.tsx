@@ -220,6 +220,7 @@ interface SettingsProps {
   savedData?: Record<string, unknown>;
   onDataChange?: (data: Record<string, unknown>) => void;
   onNavigateToTool?: (toolType: string) => void;
+  isActive?: boolean;
 }
 
 interface ModelInfo {
@@ -457,6 +458,20 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       console.error('Failed to fetch models:', error);
     } finally {
       setLoadingModels(false);
+    }
+  };
+
+  const handleRestartApp = async () => {
+    const isElectron = !!(window as any).electronAPI?.restartApp;
+    if (isElectron) {
+      await (window as any).electronAPI.restartApp();
+    } else {
+      try {
+        await fetch('/api/shutdown', { method: 'POST' });
+      } catch (e) {
+        // Backend may already be down
+      }
+      setTimeout(() => window.location.reload(), 1000);
     }
   };
 
@@ -1994,7 +2009,20 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                             ? 'bg-green-100 text-green-800 border border-green-300'
                             : 'bg-red-100 text-red-800 border border-red-300'
                         }`}>
-                          {modelChangeMessage}
+                          <div className="flex items-center justify-between gap-2">
+                            <span>{modelChangeMessage}</span>
+                            {modelChangeMessage.startsWith('\u2705') && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleRestartApp}
+                                className="shrink-0 bg-green-200 hover:bg-green-300 text-green-900 border-green-400"
+                              >
+                                <RefreshCw className="w-3 h-3 mr-1" />
+                                Restart
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )}
                       <div className="flex gap-2">
@@ -2106,7 +2134,20 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                             ? 'bg-green-100 text-green-800 border border-green-300'
                             : 'bg-red-100 text-red-800 border border-red-300'
                         }`}>
-                          {diffusionModelChangeMessage}
+                          <div className="flex items-center justify-between gap-2">
+                            <span>{diffusionModelChangeMessage}</span>
+                            {diffusionModelChangeMessage.startsWith('Model changed') && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleRestartApp}
+                                className="shrink-0 bg-green-200 hover:bg-green-300 text-green-900 border-green-400"
+                              >
+                                <RefreshCw className="w-3 h-3 mr-1" />
+                                Restart
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )}
                       <div className="flex gap-2">

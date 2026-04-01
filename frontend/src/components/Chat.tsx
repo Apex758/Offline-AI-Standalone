@@ -112,6 +112,7 @@ interface ChatProps {
   onTitleChange?: (title: string) => void;
   onPanelClick?: () => void;
   onOpenCurriculumTab?: (route: string) => void;
+  isActive?: boolean;
 }
 
 interface ChatHistory {

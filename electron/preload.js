@@ -35,6 +35,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Forward renderer logs to main.logs
   sendLog: (level, message) => ipcRenderer.send('frontend-log', { level, message }),
 
+  // App restart
+  restartApp: () => ipcRenderer.invoke('restart-app'),
+
   // System behavior
   setMinimizeToTray: (enabled) => ipcRenderer.invoke('set-minimize-to-tray', enabled),
   setStartOnBoot: (enabled) => ipcRenderer.invoke('set-start-on-boot', enabled),

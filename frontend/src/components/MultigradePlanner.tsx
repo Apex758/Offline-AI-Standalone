@@ -57,6 +57,7 @@ interface MultigradePlannerProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  isActive?: boolean;
 }
 
 interface MultigradeHistory {

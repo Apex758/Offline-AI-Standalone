@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
@@ -98,6 +99,7 @@ interface Props {
   tabId: string;
   savedData?: any;
   onDataChange?: (data: any) => void;
+  isActive?: boolean;
 }
 
 const Icon: React.FC<{ icon: any; size?: number; className?: string }> = ({ icon, size = 20, className }) => (
@@ -249,7 +251,7 @@ const LiveAreaChart: React.FC<{
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
-const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
+const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
   const [summary, setSummary] = useState<MetricsSummary | null>(null);
   const [history, setHistory] = useState<InferenceMetric[]>([]);
   const [liveStats, setLiveStats] = useState<LiveStats | null>(null);
@@ -304,6 +306,8 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
     fetchData();
     fetchLiveStats();
   }, [fetchData, fetchLiveStats]);
+
+  useRefetchOnActivation(isActive, fetchData);
 
   useEffect(() => {
     pollRef.current = setInterval(fetchLiveStats, POLL_INTERVAL);

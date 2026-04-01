@@ -64,6 +64,7 @@ interface LessonPlannerProps {
   savedData?: any;
   onDataChange: (data: any) => void;
   onOpenCurriculumTab?: (route: string) => void;
+  isActive?: boolean;
 }
 
 interface LessonPlanHistory {

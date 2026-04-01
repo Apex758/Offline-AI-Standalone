@@ -67,6 +67,7 @@ interface ImageStudioProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  isActive?: boolean;
 }
 
 interface ImageHistory {

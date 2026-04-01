@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
@@ -71,6 +72,7 @@ interface ResourceManagerProps {
   onDataChange: (data: any) => void;
   onEditResource?: (type: string, resource: any) => void;
   onViewResource?: (type: string, resource: any) => void;
+  isActive?: boolean;
 }
 
 interface Resource {
@@ -104,7 +106,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   savedData,
   onDataChange,
   onViewResource,
-  onEditResource
+  onEditResource,
+  isActive = true
 }) => {
   const { startTutorial } = useTutorials();
   const { settings } = useSettings();
@@ -285,6 +288,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   useEffect(() => {
     loadAllResources();
   }, []);
+
+  useRefetchOnActivation(isActive, useCallback(() => { loadAllResources(); }, []));
 
   // ESC key handler for image modal
   useEffect(() => {

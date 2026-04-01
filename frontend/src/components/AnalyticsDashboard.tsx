@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import UserIconData from '@hugeicons/core-free-icons/UserIcon';
 import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
@@ -75,6 +75,7 @@ import TrophyDetailCard from './TrophyDetailCard';
 import { getTrophyType } from '../config/trophyMap';
 import TROPHY_IMAGES from '../assets/trophyImages';
 import type { NewlyEarnedAchievement } from '../types/achievement';
+import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -83,6 +84,7 @@ interface AnalyticsDashboardProps {
   onNavigate?: (route: string) => void;
   onCreateTab?: (type: string) => void;
   tabColors?: { [key: string]: string };
+  isActive?: boolean;
 }
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
@@ -91,7 +93,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   onDataChange,
   onNavigate,
   onCreateTab,
-  tabColors = {}
+  tabColors = {},
+  isActive = true
 }) => {
   // Achievement data
   const { earned, totalAvailable, showcase, definitions } = useAchievementContext();
@@ -290,6 +293,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       setLoading(false);
     }
   };
+
+  useRefetchOnActivation(isActive, useCallback(() => {
+    const storedUser = localStorage.getItem('user');
+    let teacherId: string | null = null;
+    if (storedUser) {
+      try { teacherId = JSON.parse(storedUser).username || JSON.parse(storedUser).id || null; } catch {}
+    }
+    loadAllData(teacherId);
+  }, []));
 
   // Process data for charts
   const trendData = useMemo(() => {

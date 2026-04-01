@@ -26,6 +26,7 @@ interface CurriculumViewerProps {
   savedData?: any;
   onDataChange: (data: any) => void;
   onPanelClick?: () => void;
+  isActive?: boolean;
 }
 
 // Import all curriculum pages using Vite's glob import (lazy-loaded)

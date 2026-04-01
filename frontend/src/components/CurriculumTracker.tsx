@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
@@ -55,6 +55,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
 import CurriculumSkillTree from './CurriculumSkillTree';
+import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 
 interface EloGroup {
   elo: string;
@@ -103,12 +104,14 @@ interface CurriculumTrackerProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  isActive?: boolean;
 }
 
 const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   tabId,
   savedData,
-  onDataChange
+  onDataChange,
+  isActive = true
 }) => {
   const [curriculumReady, setCurriculumReady] = useState(false);
   useEffect(() => {
@@ -186,6 +189,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   useEffect(() => {
     loadMilestones();
   }, [filters]);
+
+  useRefetchOnActivation(isActive, useCallback(() => { loadMilestones(); }, []));
 
   // Tutorial auto-show logic
   useEffect(() => {

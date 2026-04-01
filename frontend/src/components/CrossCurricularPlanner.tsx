@@ -57,6 +57,7 @@ interface CrossCurricularPlannerProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  isActive?: boolean;
 }
 
 interface CrossCurricularHistory {

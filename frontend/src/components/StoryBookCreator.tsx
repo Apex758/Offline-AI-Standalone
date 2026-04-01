@@ -829,6 +829,7 @@ interface StoryBookCreatorProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  isActive?: boolean;
 }
 
 type View = 'input' | 'streaming' | 'editor' | 'playing' | 'history';
