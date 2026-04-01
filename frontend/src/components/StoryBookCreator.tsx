@@ -51,6 +51,12 @@ import { buildStorybookPrompt, buildNarrativePrompt, buildStructurePromptTemplat
 import { BUNDLED_SCENES, findBestScene, getScenesByCategory, SCENE_CATEGORY_LABELS } from '../data/storybookScenes';
 import { compressTransparentImage } from '../utils/imageCompression';
 import {
+  generateAllPageImages,
+  generateCharacterImage,
+  removeCharacterBg,
+  generateBackgroundImage,
+} from '../utils/storyImagePipeline';
+import {
   exportStorybookPDF,
   exportStorybookPPTX,
   exportAnimatedHTML,
@@ -201,96 +207,145 @@ function validateSpeakers(book: ParsedStorybook, formData: StorybookFormData): P
   };
 }
 
-// ─── History Panel ───────────────────────────────────────────────────────────
+// ─── History Side Panel ─────────────────────────────────────────────────────
 
-function HistoryPanel({
+function HistorySidePanel({
+  open,
   onLoad,
   onClose,
   accentColor,
+  currentDraftId,
 }: {
+  open: boolean;
   onLoad: (saved: SavedStorybook) => void;
   onClose: () => void;
   accentColor: string;
+  currentDraftId: string | null;
 }) {
   const [items, setItems] = React.useState<SavedStorybook[]>(() => getSavedStorybooks());
+  const [draftsExpanded, setDraftsExpanded] = React.useState(true);
 
-  const handleDelete = (id: string) => {
+  // Refresh items when panel opens
+  React.useEffect(() => {
+    if (open) setItems(getSavedStorybooks());
+  }, [open]);
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     deleteSavedStorybook(id);
     setItems(getSavedStorybooks());
   };
 
-  const formatDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-      + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  };
+  const drafts = items.filter(i => i.status === 'draft');
+  const completed = items.filter(i => i.status === 'completed');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-theme">
-          <h3 className="font-semibold text-theme-heading flex items-center gap-2">
-            <Icon icon={Clock01IconData} className="w-5" style={{ color: accentColor }} />
-            Storybook History
-          </h3>
-          <button onClick={onClose} className="text-theme-muted hover:text-theme-heading">
-            <Icon icon={Cancel01IconData} className="w-5" />
+    <div
+      className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
+        open ? 'w-80' : 'w-0'
+      }`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="h-full flex flex-col p-4 w-80">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-theme-heading">Saved Storybooks</h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-theme-hover transition"
+          >
+            <Icon icon={Cancel01IconData} className="w-5 text-theme-muted" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          {items.length === 0 ? (
-            <div className="text-center py-12 text-theme-muted">
-              <Icon icon={BookOpen01IconData} className="w-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No saved storybooks yet.</p>
-              <p className="text-xs mt-1">Save a draft or complete a storybook to see it here.</p>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
+          {/* Drafts section */}
+          {drafts.length > 0 && (
+            <>
+              <div
+                className="flex items-center gap-1 cursor-pointer select-none py-1"
+                onClick={() => setDraftsExpanded(!draftsExpanded)}
+              >
+                <span className="text-xs text-theme-muted transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
+                <span className="text-sm font-medium text-amber-500">Drafts ({drafts.length})</span>
+              </div>
+              {draftsExpanded && (
+                <div className="space-y-2">
+                  {drafts.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => onLoad(item)}
+                      className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                        currentDraftId === item.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                      }`}
+                      style={{ border: '1px dashed rgb(217 119 6 / 0.5)' }}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 uppercase tracking-wide">Draft</span>
+                            <p className="text-sm font-medium text-theme-heading line-clamp-2">{item.formData.title || 'Untitled'}</p>
+                          </div>
+                          <p className="text-xs text-theme-hint mt-1">
+                            {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
+                            {item.formData.subject && ` · ${item.formData.subject}`}
+                            {' · '}{new Date(item.savedAt).toLocaleDateString()} {new Date(item.savedAt).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => handleDelete(item.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                          title="Delete draft"
+                        >
+                          <Icon icon={Delete02IconData} className="w-4 text-red-600" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="border-b border-theme my-2"></div>
+            </>
+          )}
+
+          {/* Completed / Saved section */}
+          {drafts.length === 0 && completed.length === 0 ? (
+            <div className="text-center text-theme-hint mt-8">
+              <Icon icon={BookOpen01IconData} className="w-12 mx-auto mb-2 text-theme-hint" />
+              <p className="text-sm">No saved storybooks yet</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {items.map(item => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-theme hover:bg-theme-secondary transition-colors group"
-                >
+            completed.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => onLoad(item)}
+                className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                  currentDraftId === item.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-theme-heading truncate">
-                        {item.formData.title || 'Untitled'}
-                      </p>
-                      <span
-                        className="shrink-0 text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-full"
-                        style={{
-                          background: item.status === 'completed' ? '#dcfce7' : '#fef3c7',
-                          color: item.status === 'completed' ? '#166534' : '#92400e',
-                        }}
-                      >
-                        {item.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-theme-muted mt-0.5">
+                    <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                      {item.formData.title || 'Untitled'}
+                    </p>
+                    <p className="text-xs text-theme-hint mt-1">
                       {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
                       {item.formData.subject && ` · ${item.formData.subject}`}
                       {item.parsedBook && ` · ${item.parsedBook.pages.length} pages`}
-                      {' · '}{formatDate(item.savedAt)}
+                      {' · '}{new Date(item.savedAt).toLocaleDateString()} {new Date(item.savedAt).toLocaleTimeString()}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => onLoad(item)}
-                      className="px-2.5 py-1 text-xs font-medium rounded-lg text-white"
-                      style={{ background: accentColor }}
-                    >
-                      Open
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-1 text-red-400 hover:text-red-600"
-                    >
-                      <Icon icon={Delete02IconData} className="w-4" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={(e) => handleDelete(item.id, e)}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                    title="Delete storybook"
+                  >
+                    <Icon icon={Delete02IconData} className="w-4 text-red-600" />
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -757,6 +812,10 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const [exportSettings, setExportSettingsState] = useState<StorybookExportSettings>(() => getExportSettings());
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [saveToast, setSaveToast] = useState<string | null>(null);
+  // Image generation pipeline state
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+  const [imageGenProgress, setImageGenProgress] = useState<{ current: number; total: number; stage: 'character' | 'background' } | null>(null);
+  const imageGenAbortRef = useRef<AbortController | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -901,6 +960,11 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         // Auto-save completed storybook
         const saved = saveStorybook(formData, validated, currentDraftId || undefined);
         setCurrentDraftId(saved.id);
+        // Auto-trigger image generation when imageMode is 'ai' and diffusion is available
+        if (formData.imageMode === 'ai' && hasDiffusion) {
+          // Defer so state settles before pipeline starts
+          setTimeout(() => handleGenerateAllImages(validated), 300);
+        }
       } else {
         setView('input');
       }
@@ -946,6 +1010,115 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     reader.readAsDataURL(file);
     e.target.value = '';
   };
+
+  // ── AI Image Generation Pipeline ──────────────────────────────────────────
+
+  /** Generate all images for the current book (backgrounds + characters). */
+  const handleGenerateAllImages = useCallback(async (book?: ParsedStorybook) => {
+    const target = book || parsedBook;
+    if (!target || isGeneratingImages) return;
+
+    const abort = new AbortController();
+    imageGenAbortRef.current = abort;
+    setIsGeneratingImages(true);
+    setImageGenProgress(null);
+
+    try {
+      const result = await generateAllPageImages(target, {
+        onProgress: (current, total, stage) => {
+          setImageGenProgress({ current, total, stage });
+        },
+        signal: abort.signal,
+      });
+
+      // Apply results to pages
+      setParsedBook(prev => {
+        if (!prev) return prev;
+        const updatedPages = [...prev.pages];
+        for (const r of result.pages) {
+          const page = updatedPages[r.pageIndex];
+          if (!page) continue;
+          updatedPages[r.pageIndex] = {
+            ...page,
+            ...(r.characterImageData && { characterImageData: r.characterImageData }),
+            ...(r.characterSeed != null && { characterSeed: r.characterSeed }),
+            ...(r.backgroundImageData && { backgroundImageData: r.backgroundImageData }),
+          };
+        }
+        return { ...prev, pages: updatedPages };
+      });
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error('[StoryBook] Image generation pipeline failed:', e);
+      }
+    } finally {
+      setIsGeneratingImages(false);
+      setImageGenProgress(null);
+      imageGenAbortRef.current = null;
+    }
+  }, [parsedBook, isGeneratingImages]);
+
+  /** Generate a single page's character image. */
+  const handleGeneratePageImage = useCallback(async (pageIdx: number) => {
+    if (!parsedBook) return;
+    const page = parsedBook.pages[pageIdx];
+    if (!page?.characterScene) return;
+
+    setIsRemovingBg(pageIdx); // reuse spinner state
+
+    const styleSuffix = parsedBook.styleSuffix || "flat vector illustration, children's book style, bold outlines, pastel colors, bright and cheerful, simple shapes, no text";
+    const charDescs = parsedBook.characterDescriptions || {};
+
+    // Try to reuse seed from another page for consistency
+    const existingSeed = parsedBook.pages.find(p => p.characterSeed)?.characterSeed;
+
+    try {
+      const { imageData: rawChar, seed } = await generateCharacterImage(
+        charDescs, page.characterScene, styleSuffix, existingSeed,
+      );
+      let finalChar: string;
+      try {
+        finalChar = await removeCharacterBg(rawChar);
+      } catch {
+        finalChar = rawChar;
+      }
+      updatePage(pageIdx, {
+        characterImageData: finalChar,
+        characterSeed: seed,
+        imagePlacement: page.imagePlacement === 'none' ? 'right' : page.imagePlacement,
+      });
+    } catch (e) {
+      console.error(`[StoryBook] Failed to generate image for page ${pageIdx + 1}:`, e);
+    } finally {
+      setIsRemovingBg(null);
+    }
+  }, [parsedBook]);
+
+  /** Generate a single page's background image. */
+  const handleGeneratePageBackground = useCallback(async (pageIdx: number) => {
+    if (!parsedBook) return;
+    const page = parsedBook.pages[pageIdx];
+    const scene = parsedBook.scenes.find(s => s.id === page.sceneId);
+    if (!scene) return;
+
+    setIsRemovingBg(pageIdx); // reuse spinner state
+
+    const styleSuffix = parsedBook.styleSuffix || "flat vector illustration, children's book style, bold outlines, pastel colors, bright and cheerful, simple shapes, no text";
+
+    try {
+      const imgData = await generateBackgroundImage(scene.description, styleSuffix);
+      updatePage(pageIdx, { backgroundImageData: imgData });
+    } catch (e) {
+      console.error(`[StoryBook] Failed to generate background for page ${pageIdx + 1}:`, e);
+    } finally {
+      setIsRemovingBg(null);
+    }
+  }, [parsedBook]);
+
+  /** Cancel an in-progress image generation pipeline. */
+  const handleCancelImageGen = useCallback(() => {
+    imageGenAbortRef.current?.abort();
+  }, []);
 
   // ── Export ────────────────────────────────────────────────────────────────
   const handleExport = useCallback(async (format: 'pdf' | 'pptx' | 'html') => {
@@ -1014,7 +1187,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   // ─── Render: Input view ──────────────────────────────────────────────────────
   if (view === 'input') {
     return (
-      <div className="h-full overflow-y-auto">
+      <div className="flex h-full">
+      <div className="flex-1 h-full overflow-y-auto">
         <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
           {/* Header */}
           <div className="flex items-center gap-3">
@@ -1025,24 +1199,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               <h1 className="text-xl font-bold text-theme-heading">Storybook Creator</h1>
               <p className="text-sm text-theme-muted">Create illustrated stories for K-2 students</p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleSaveDraft}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading transition-colors"
-                title="Save draft"
-              >
-                <Icon icon={FloppyDiskIconData} className="w-4" />
-                Save
-              </button>
-              <button
-                onClick={() => setShowHistory(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading transition-colors"
-                title="Open saved storybooks"
-              >
-                <Icon icon={Clock01IconData} className="w-4" />
-                History
-              </button>
-            </div>
+            <button
+              onClick={() => setShowHistory(prev => !prev)}
+              className="p-2 rounded-lg hover:bg-theme-hover transition"
+              title="Storybook History"
+            >
+              <Icon icon={Clock01IconData} className="w-5 text-theme-muted" />
+            </button>
           </div>
 
           {/* Title */}
@@ -1301,15 +1464,6 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           </button>
         </div>
 
-        {/* History modal */}
-        {showHistory && (
-          <HistoryPanel
-            onLoad={handleLoadSaved}
-            onClose={() => setShowHistory(false)}
-            accentColor={accentColor}
-          />
-        )}
-
         {/* Save toast */}
         {saveToast && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg flex items-center gap-2 animate-fade-in">
@@ -1317,6 +1471,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             {saveToast}
           </div>
         )}
+      </div>
+      <HistorySidePanel
+        open={showHistory}
+        onLoad={handleLoadSaved}
+        onClose={() => setShowHistory(false)}
+        accentColor={accentColor}
+        currentDraftId={currentDraftId}
+      />
       </div>
     );
   }
@@ -1369,7 +1531,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const currentPage = parsedBook.pages[currentPageIdx];
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="flex h-full">
+    <div className="flex-1 h-full flex flex-col overflow-hidden">
       {/* Top bar */}
       <div className="shrink-0 border-b border-theme px-4 py-2 flex items-center gap-3" style={{ borderBottomColor: `${accentColor}33` }}>
         <button
@@ -1397,12 +1560,34 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           </button>
           {/* History */}
           <button
-            onClick={() => setShowHistory(true)}
+            onClick={() => setShowHistory(prev => !prev)}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
             title="Storybook history"
           >
             <Icon icon={Clock01IconData} className="w-4" />
           </button>
+          {/* Generate All Images */}
+          {hasDiffusion && formData.imageMode === 'ai' && (
+            isGeneratingImages ? (
+              <button
+                onClick={handleCancelImageGen}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+              >
+                <Icon icon={Loading03IconData} className="w-4 animate-spin" />
+                {imageGenProgress
+                  ? `${imageGenProgress.stage === 'background' ? 'Backgrounds' : 'Characters'} ${imageGenProgress.current}/${imageGenProgress.total}`
+                  : 'Generating…'}
+              </button>
+            ) : (
+              <button
+                onClick={() => handleGenerateAllImages()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-theme-strong hover:bg-theme-secondary text-theme-heading"
+              >
+                <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />
+                Generate Images
+              </button>
+            )
+          )}
           <button
             onClick={() => setView('playing')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
@@ -1451,6 +1636,40 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           </div>
         </div>
       </div>
+
+      {/* Image generation progress bar */}
+      {isGeneratingImages && imageGenProgress && (
+        <div className="shrink-0 px-4 py-2 bg-theme-secondary border-b border-theme">
+          <div className="flex items-center gap-3">
+            <Icon icon={Loading03IconData} className="w-4 animate-spin" style={{ color: accentColor }} />
+            <div className="flex-1">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-theme-heading font-medium">
+                  {imageGenProgress.stage === 'background' ? 'Generating backgrounds…' : 'Generating characters…'}
+                </span>
+                <span className="text-theme-muted">
+                  {imageGenProgress.current} / {imageGenProgress.total}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${(imageGenProgress.current / imageGenProgress.total) * 100}%`,
+                    background: accentColor,
+                  }}
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleCancelImageGen}
+              className="text-theme-muted hover:text-red-500 text-xs"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Editor tabs (Story / Questions / Export) */}
       <div className="shrink-0 flex border-b border-theme px-4">
@@ -1603,6 +1822,34 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   {BUNDLED_SCENES.find(s => s.id === currentPage.bundledSceneId)?.name || 'Choose scene'}
                 </span>
               </button>
+              {/* AI background generation */}
+              {hasDiffusion && (
+                <button
+                  onClick={() => handleGeneratePageBackground(currentPageIdx)}
+                  disabled={isRemovingBg === currentPageIdx}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm text-theme-muted disabled:opacity-60 mt-2"
+                >
+                  {isRemovingBg === currentPageIdx
+                    ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
+                    : <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />}
+                  Generate AI Background
+                </button>
+              )}
+              {currentPage.backgroundImageData && (
+                <div className="relative mt-2">
+                  <img
+                    src={currentPage.backgroundImageData}
+                    alt="background"
+                    className="w-full h-16 object-cover rounded-lg border border-theme"
+                  />
+                  <button
+                    onClick={() => updatePage(currentPageIdx, { backgroundImageData: undefined })}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                  >
+                    <Icon icon={Cancel01IconData} className="w-3" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Character image */}
@@ -1623,6 +1870,20 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       <Icon icon={Cancel01IconData} className="w-3" />
                     </button>
                   </div>
+                )}
+                {/* AI character generation */}
+                {hasDiffusion && currentPage.characterScene && (
+                  <button
+                    onClick={() => handleGeneratePageImage(currentPageIdx)}
+                    disabled={isRemovingBg === currentPageIdx}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm disabled:opacity-60"
+                    style={{ color: accentColor }}
+                  >
+                    {isRemovingBg === currentPageIdx
+                      ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
+                      : <Icon icon={Image01IconData} className="w-4" />}
+                    Generate AI Character
+                  </button>
                 )}
                 <button
                   onClick={() => handleImageUpload(currentPageIdx)}
@@ -1779,15 +2040,6 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         onChange={onFileSelected}
       />
 
-      {/* History modal */}
-      {showHistory && (
-        <HistoryPanel
-          onLoad={handleLoadSaved}
-          onClose={() => setShowHistory(false)}
-          accentColor={accentColor}
-        />
-      )}
-
       {/* Export settings modal */}
       {showExportSettings && (
         <ExportSettingsPanel
@@ -1805,6 +2057,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {saveToast}
         </div>
       )}
+    </div>
+    <HistorySidePanel
+      open={showHistory}
+      onLoad={handleLoadSaved}
+      onClose={() => setShowHistory(false)}
+      accentColor={accentColor}
+      currentDraftId={currentDraftId}
+    />
     </div>
   );
 }

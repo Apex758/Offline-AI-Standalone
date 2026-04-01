@@ -32,6 +32,8 @@ export interface StoryPage {
   bundledSceneId?: string;
   /** base64 PNG of the character with background removed */
   characterImageData?: string;
+  /** Seed used for character image generation — reuse across pages for visual consistency */
+  characterSeed?: number;
   /** base64 of the background scene (custom-generated or uploaded) */
   backgroundImageData?: string;
   /** Which side the character floats to for CSS shape-outside layout */
