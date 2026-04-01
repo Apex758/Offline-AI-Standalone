@@ -217,7 +217,8 @@ export async function exportStorybookPPTX(
 
 // ─── TTS Audio Pre-generation ──────────────────────────────────────────────────
 
-async function fetchAudioBase64(text: string, voice: string): Promise<string> {
+/** Fetch TTS audio as a raw Blob (WAV). Shared by save, export, and playback. */
+export async function fetchTTSBlob(text: string, voice: string): Promise<Blob> {
   const isElectron = typeof window !== 'undefined' && 'electronAPI' in window;
   const apiBase = isElectron ? 'http://127.0.0.1:8000' : 'http://localhost:8000';
 
@@ -227,7 +228,11 @@ async function fetchAudioBase64(text: string, voice: string): Promise<string> {
     body: JSON.stringify({ text, voice }),
   });
   if (!res.ok) throw new Error('TTS failed');
-  const blob = await res.blob();
+  return res.blob();
+}
+
+async function fetchAudioBase64(text: string, voice: string): Promise<string> {
+  const blob = await fetchTTSBlob(text, voice);
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve((reader.result as string).split(',')[1]);

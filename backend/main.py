@@ -5267,6 +5267,57 @@ async def ocr_extract(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"OCR extraction failed: {str(e)}")
 
 
+@app.get("/api/ocr-models")
+async def get_available_ocr_models():
+    """Get list of available OCR models in the models directory."""
+    try:
+        from config import scan_ocr_models
+        models = scan_ocr_models()
+        return {
+            "success": True,
+            "models": models,
+            "count": len(models),
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving OCR models: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving OCR models: {str(e)}")
+
+
+@app.post("/api/ocr-models/select")
+async def select_ocr_model(request: Request):
+    """Set the active OCR model."""
+    try:
+        from config import set_selected_ocr_model, get_selected_ocr_model
+        data = await request.json()
+        model_name = data.get("modelName", "")
+
+        if not model_name:
+            return JSONResponse(status_code=400, content={"error": "Model name is required"})
+
+        old_model = get_selected_ocr_model()
+        if set_selected_ocr_model(model_name):
+            # Unload old model if it was loaded so the new one loads on next use
+            if model_name != old_model:
+                try:
+                    import ocr_service
+                    if ocr_service.is_ocr_loaded():
+                        ocr_service.unload_ocr_model()
+                        logger.info(f"Unloaded previous OCR model ({old_model}) for switch to {model_name}")
+                except Exception as e:
+                    logger.warning(f"Could not unload previous OCR model: {e}")
+
+            return JSONResponse(content={
+                "success": True,
+                "message": f"OCR model set to {model_name}",
+                "selectedModel": model_name,
+            })
+        else:
+            return JSONResponse(status_code=500, content={"error": "Failed to save OCR model selection"})
+    except Exception as e:
+        logger.error(f"Error selecting OCR model: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 @app.get("/api/rubric-history")
 async def get_rubric_history():
     return load_json_data("rubric_history.json")
@@ -5512,12 +5563,24 @@ def scan_models_directory():
     # Vision projector files are auxiliary — hide them from the selector
     vision_keywords = ["vision", "mmproj", "clip-model"]
 
+    # OCR models belong in the OCR section, not the main model dropdown
+    tier_config = get_tier_config()
+    ocr_model_names = [m.lower() for m in tier_config.get("ocr_models", [])]
+    # Also catch any file with "ocr" in the name as a safety net
+    ocr_keywords = ["paddleocr", "hunyuanocr"]
+
     try:
         for file_path in MODELS_DIR.iterdir():
             if file_path.is_file() and file_path.suffix.lower() in model_extensions:
                 # Skip vision projector files
                 name_lower = file_path.name.lower()
                 if any(kw in name_lower for kw in vision_keywords):
+                    continue
+
+                # Skip OCR models (by tier config list + keyword fallback)
+                if any(ocr_name in name_lower for ocr_name in ocr_model_names):
+                    continue
+                if any(kw in name_lower for kw in ocr_keywords):
                     continue
 
                 file_size_mb = file_path.stat().st_size / (1024 * 1024)

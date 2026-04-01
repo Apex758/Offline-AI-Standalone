@@ -152,4 +152,8 @@ export interface SavedStorybook {
   formData: StorybookFormData;
   /** The parsed book data (null if draft saved before generation) */
   parsedBook: ParsedStorybook | null;
+  /** Whether images were saved to IndexedDB */
+  hasImages?: boolean;
+  /** Whether TTS audio was saved to IndexedDB */
+  hasAudio?: boolean;
 }

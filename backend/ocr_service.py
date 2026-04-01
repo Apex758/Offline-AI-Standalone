@@ -23,19 +23,26 @@ _ocr_loaded = False
 _ocr_loading = False
 _ocr_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="ocr")
 
-# Model filenames (expected in MODELS_DIR)
-OCR_MODEL_FILENAME = "PaddleOCR-VL-1.5-Q4_K_M.gguf"
-OCR_MMPROJ_FILENAME = "mmproj-PaddleOCR-VL-1.5-Q8_0.gguf"
-
-
 def _get_model_path() -> Path:
-    from config import MODELS_DIR
-    return MODELS_DIR / OCR_MODEL_FILENAME
+    from config import MODELS_DIR, get_selected_ocr_model
+    selected = get_selected_ocr_model()
+    return MODELS_DIR / f"{selected}.gguf"
 
 
 def _get_mmproj_path() -> Path:
-    from config import MODELS_DIR
-    return MODELS_DIR / OCR_MMPROJ_FILENAME
+    import re
+    from config import MODELS_DIR, get_selected_ocr_model
+    selected = get_selected_ocr_model()
+    # Strip quant suffix to match mmproj with different quant
+    base_name = re.sub(r'-Q\d.*$', '', selected)
+    matches = list(MODELS_DIR.glob(f"mmproj-{base_name}*.gguf"))
+    if matches:
+        return matches[0]
+    # Fallback: try exact name
+    matches = list(MODELS_DIR.glob(f"mmproj-{selected}*.gguf"))
+    if matches:
+        return matches[0]
+    return MODELS_DIR / f"mmproj-{selected}-Q8_0.gguf"
 
 
 def is_ocr_model_present() -> bool:
@@ -222,13 +229,16 @@ def get_ocr_status() -> dict:
         except Exception:
             pass
 
+    from config import get_selected_ocr_model
+    selected = get_selected_ocr_model()
+
     return {
         "available": is_ocr_available(),
         "loaded": is_ocr_loaded(),
         "loading": is_ocr_loading(),
-        "model_id": "PaddleOCR-VL-1.5-Q4_K_M",
-        "quantization": "Q4_K_M (GGUF)",
-        "estimated_ram_mb": 856,
+        "model_id": selected,
+        "quantization": "GGUF",
+        "estimated_ram_mb": size_mb if size_mb else None,
         "model_present": model_present,
         "model_path": str(model_path) if model_present else None,
         "size_mb": size_mb,

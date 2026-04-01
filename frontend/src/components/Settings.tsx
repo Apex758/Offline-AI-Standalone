@@ -277,8 +277,12 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
   // OCR (PaddleOCR-VL) state
   const [ocrEnabled, setOcrEnabled] = useState(false);
-  const [ocrStatus, setOcrStatus] = useState<{available: boolean; loaded: boolean; loading: boolean; saved_locally?: boolean; local_size_mb?: number} | null>(null);
+  const [ocrStatus, setOcrStatus] = useState<{available: boolean; loaded: boolean; loading: boolean; saved_locally?: boolean; local_size_mb?: number; model_present?: boolean; model_id?: string; size_mb?: number} | null>(null);
   const [ocrMessage, setOcrMessage] = useState('');
+  const [availableOcrModels, setAvailableOcrModels] = useState<{name: string; size_mb: number; is_active: boolean}[]>([]);
+  const [loadingOcrModels, setLoadingOcrModels] = useState(false);
+  const [selectedOcrModel, setSelectedOcrModel] = useState('');
+  const [isSelectingOcrModel, setIsSelectingOcrModel] = useState(false);
 
   // Export / Import state
   const DATA_CATEGORIES = [
@@ -411,6 +415,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     fetchAvailableModels();
     fetchAvailableDiffusionModels();
     fetchOcrStatus();
+    fetchAvailableOcrModels();
   }, []);
 
   useEffect(() => {
@@ -624,7 +629,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       const response = await fetch('http://localhost:8000/api/ocr/status');
       if (response.ok) {
         const data = await response.json();
-        setOcrStatus({ available: data.available, loaded: data.loaded, loading: data.loading, saved_locally: data.saved_locally, local_size_mb: data.local_size_mb });
+        setOcrStatus({ available: data.available, loaded: data.loaded, loading: data.loading, saved_locally: data.saved_locally, local_size_mb: data.local_size_mb, model_present: data.model_present, model_id: data.model_id, size_mb: data.size_mb });
         setOcrEnabled(data.enabled);
       }
     } catch {
@@ -674,6 +679,55 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       setOcrMessage('Failed to unload OCR model');
     }
     setTimeout(() => setOcrMessage(''), 4000);
+  };
+
+  const fetchAvailableOcrModels = async () => {
+    setLoadingOcrModels(true);
+    try {
+      const response = await axios.get('http://localhost:8000/api/ocr-models');
+      if (response.data.success) {
+        setAvailableOcrModels(response.data.models);
+        const activeModel = response.data.models.find((m: any) => m.is_active);
+        if (activeModel) {
+          setSelectedOcrModel(activeModel.name);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch OCR models:', error);
+    } finally {
+      setLoadingOcrModels(false);
+    }
+  };
+
+  const handleOcrModelSelect = async (modelName: string) => {
+    if (modelName === selectedOcrModel) return;
+
+    setIsSelectingOcrModel(true);
+    setOcrMessage('');
+
+    try {
+      const response = await fetch('http://localhost:8000/api/ocr-models/select', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelName }),
+      });
+
+      if (response.ok) {
+        setSelectedOcrModel(modelName);
+        setOcrMessage(`OCR model changed to ${modelName}. Will load on next scan.`);
+        setOcrStatus(prev => prev ? { ...prev, loaded: false } : prev);
+        await refreshCapabilities();
+      } else {
+        const error = await response.json();
+        setOcrMessage(`Error: ${error.error || 'Failed to change OCR model'}`);
+      }
+    } catch (error) {
+      console.error('Error selecting OCR model:', error);
+      setOcrMessage('Error: Failed to communicate with backend');
+    } finally {
+      setIsSelectingOcrModel(false);
+      setTimeout(() => setOcrMessage(''), 5000);
+    }
   };
 
   const handleTutorialComplete = () => {
@@ -2102,6 +2156,39 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         />
                       </label>
 
+                      {ocrEnabled && availableOcrModels.length > 0 && (
+                        <div className="flex gap-2">
+                          <select
+                            className="flex-1 px-4 py-2 border border-theme-strong rounded-md bg-theme-surface text-theme-label focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-theme-tertiary disabled:cursor-not-allowed"
+                            value={selectedOcrModel}
+                            onChange={(e) => handleOcrModelSelect(e.target.value)}
+                            disabled={isSelectingOcrModel || loadingOcrModels}
+                          >
+                            {isSelectingOcrModel ? (
+                              <option value="">Changing model...</option>
+                            ) : loadingOcrModels ? (
+                              <option>Loading models...</option>
+                            ) : (
+                              availableOcrModels.map((model) => (
+                                <option key={model.name} value={model.name}>
+                                  {model.name} ({model.size_mb.toFixed(0)} MB)
+                                </option>
+                              ))
+                            )}
+                          </select>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={fetchAvailableOcrModels}
+                            disabled={loadingOcrModels}
+                            className="px-3"
+                            title="Refresh OCR model list"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+
                       {ocrEnabled && (
                         <div className="flex gap-2">
                           {ocrStatus?.loaded ? (
@@ -2130,7 +2217,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       {ocrStatus && (
                         <div className="text-xs text-theme-hint space-y-1">
                           <p>Status: {ocrStatus.loaded ? 'Loaded in RAM' : ocrStatus.loading ? 'Loading...' : 'Not loaded (loads on first scan)'}</p>
-                          <p>Model: {ocrStatus.model_present ? `PaddleOCR-VL 1.5 Q4 (${ocrStatus.size_mb} MB)` : 'Not found — place GGUF files in models folder'}</p>
+                          <p>Model: {ocrStatus.model_present ? `${selectedOcrModel || ocrStatus.model_id || 'OCR'} (${ocrStatus.size_mb} MB)` : 'Not found — place GGUF files in models folder'}</p>
                           {!ocrStatus.available && ocrStatus.model_present && (
                             <p className="text-amber-600">llama-cpp-python not installed</p>
                           )}

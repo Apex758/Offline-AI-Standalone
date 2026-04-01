@@ -116,12 +116,28 @@ def _load_loras(pipe, model_path: Path):
 
 # ── pipeline loaders ─────────────────────────────────────────────────────────
 
+def _detect_openvino_device() -> str:
+    """Detect best available OpenVINO device: GPU (iGPU/dGPU) if available, else CPU."""
+    try:
+        import openvino as ov
+        core = ov.Core()
+        devices = core.available_devices
+        if "GPU" in devices:
+            logger.info(f"OpenVINO GPU device detected — using GPU (available: {devices})")
+            return "GPU"
+        logger.info(f"No OpenVINO GPU found — using CPU (available: {devices})")
+    except Exception as e:
+        logger.warning(f"Could not detect OpenVINO devices: {e}")
+    return "CPU"
+
+
 def _load_openvino(model_path: Path):
     """Load SDXL-Turbo via OpenVINO with optional Tiny Autoencoder and INT8 UNet."""
     from optimum.intel.openvino import OVStableDiffusionXLPipeline
     import openvino as ov
 
-    pipe = OVStableDiffusionXLPipeline.from_pretrained(str(model_path), compile=False)
+    device = _detect_openvino_device()
+    pipe = OVStableDiffusionXLPipeline.from_pretrained(str(model_path), compile=False, device=device)
 
     core = ov.Core()
 
@@ -146,7 +162,8 @@ def _load_openvino_img2img(model_path: Path):
     from optimum.intel.openvino import OVStableDiffusionXLImg2ImgPipeline
     import openvino as ov
 
-    pipe = OVStableDiffusionXLImg2ImgPipeline.from_pretrained(str(model_path), compile=False)
+    device = _detect_openvino_device()
+    pipe = OVStableDiffusionXLImg2ImgPipeline.from_pretrained(str(model_path), compile=False, device=device)
 
     core = ov.Core()
 
@@ -186,10 +203,45 @@ def _load_flux_schnell_ov(model_path: Path):
     return pipe
 
 
+def _load_flux_schnell_gguf(model_path: Path, gguf_file: str = None):
+    """Load FLUX.1 Schnell GGUF via stable-diffusion-cpp-python (CPU)."""
+    from stable_diffusion_cpp import StableDiffusion
+
+    if gguf_file is None:
+        gguf_file = "flux1-schnell-Q4_K_M.gguf"
+
+    diffusion_path = str(model_path / gguf_file)
+    clip_l_path    = str(model_path / "clip_l.safetensors")
+    t5xxl_path     = str(model_path / "t5-v1_1-xxl-encoder-Q8_0.gguf")
+    vae_path       = str(model_path / "ae.safetensors")
+
+    for fpath, label in [(diffusion_path, "diffusion model"),
+                         (clip_l_path, "CLIP-L"),
+                         (t5xxl_path, "T5-XXL"),
+                         (vae_path, "VAE")]:
+        if not Path(fpath).exists():
+            raise FileNotFoundError(f"FLUX GGUF {label} not found: {fpath}")
+
+    logger.info(f"Loading FLUX GGUF: {gguf_file}")
+    logger.info(f"  CLIP-L: clip_l.safetensors")
+    logger.info(f"  T5-XXL: t5-v1_1-xxl-encoder-Q8_0.gguf")
+    logger.info(f"  VAE:    ae.safetensors")
+
+    sd = StableDiffusion(
+        diffusion_model_path=diffusion_path,
+        clip_l_path=clip_l_path,
+        t5xxl_path=t5xxl_path,
+        vae_path=vae_path,
+        vae_decode_only=True,
+    )
+    return sd
+
+
 # Map backend key → loader function
 _LOADERS = {
     "openvino":            _load_openvino,
     "openvino_flux":       _load_flux_schnell_ov,
+    "sd_cpp_flux":         _load_flux_schnell_gguf,
 }
 
 
@@ -301,7 +353,10 @@ class ImageService:
 
         try:
             logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
-            self.pipeline = loader(self.model_path)
+            if backend == "sd_cpp_flux":
+                self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
+            else:
+                self.pipeline = loader(self.model_path)
             logger.info("Pipeline loaded successfully.")
             return True
         except Exception as e:
@@ -482,6 +537,24 @@ class ImageService:
                     guidance_scale=guidance_scale,
                     height=height, width=width,
                 )
+
+            elif backend == "sd_cpp_flux":
+                # FLUX GGUF via stable-diffusion.cpp — no negative_prompt or img2img
+                if init_image is not None:
+                    logger.warning("FLUX GGUF does not support img2img — init_image ignored")
+                output = self.pipeline.txt_to_img(
+                    prompt=prompt,
+                    width=width,
+                    height=height,
+                    cfg_scale=guidance_scale,
+                    sample_steps=num_inference_steps,
+                    seed=seed if seed is not None else -1,
+                )
+                # sd.cpp returns a list of PIL Images; wrap for compatibility
+                class _SDCppResult:
+                    def __init__(self, images):
+                        self.images = images
+                result = _SDCppResult(output)
 
             else:
                 logger.error(f"Unknown backend: {backend}")

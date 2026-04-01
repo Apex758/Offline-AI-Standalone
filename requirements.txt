@@ -18,6 +18,7 @@ google-genai>=0.3.0
 # Let iopaint manage diffusers/huggingface-hub/transformers versions
 iopaint==1.6.0
 optimum-intel[openvino]
+stable-diffusion-cpp-python>=0.4.5
 Pillow>=9.5.0
 requests>=2.31.0
 

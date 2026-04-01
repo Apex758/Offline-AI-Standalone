@@ -60,8 +60,16 @@ import {
   exportStorybookPDF,
   exportStorybookPPTX,
   exportAnimatedHTML,
+  fetchTTSBlob,
   type AnimatedHTMLProgress,
 } from '../utils/storybookExportUtils';
+import {
+  saveStorybookImages,
+  loadStorybookImages,
+  saveStorybookAudio,
+  loadStorybookAudio,
+  type AudioEntry,
+} from '../utils/storybookIndexedDB';
 import type {
   StorybookFormData, ParsedStorybook, StoryPage, SpeakerConfig,
   VoiceName, SpeakerRole, ComprehensionQuestion, BundledScene,
@@ -326,9 +334,17 @@ function HistorySidePanel({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                      {item.formData.title || 'Untitled'}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                        {item.formData.title || 'Untitled'}
+                      </p>
+                      {item.hasImages && (
+                        <span title="Images saved" className="shrink-0 text-green-500"><Icon icon={Image01IconData} className="w-3.5" /></span>
+                      )}
+                      {item.hasAudio && (
+                        <span title="Audio saved" className="shrink-0 text-blue-500"><Icon icon={Mic01IconData} className="w-3.5" /></span>
+                      )}
+                    </div>
                     <p className="text-xs text-theme-hint mt-1">
                       {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
                       {item.formData.subject && ` · ${item.formData.subject}`}
@@ -517,10 +533,12 @@ function PlaybackView({
   book,
   onClose,
   accentColor,
+  cachedAudio,
 }: {
   book: ParsedStorybook;
   onClose: () => void;
   accentColor: string;
+  cachedAudio?: Map<string, Blob> | null;
 }) {
   const [pageIdx, setPageIdx] = useState(0);
   const [phase, setPhase] = useState<'bg' | 'char' | 'text' | 'done'>('bg');
@@ -528,6 +546,7 @@ function PlaybackView({
   const { speak, stop, isSpeaking } = useTTS();
   const [autoPlay, setAutoPlay] = useState(true);
   const phaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cachedAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const page = book.pages[pageIdx];
   const totalPages = book.pages.length;
@@ -541,19 +560,57 @@ function PlaybackView({
       setPhase('done');
       return;
     }
+
+    // Check for cached audio first
+    const cacheKey = `${pageIdx}:${idx}`;
+    const cachedBlob = cachedAudio?.get(cacheKey);
+
+    if (cachedBlob) {
+      // Play from cache
+      const url = URL.createObjectURL(cachedBlob);
+      const audio = new Audio(url);
+      cachedAudioRef.current = audio;
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        cachedAudioRef.current = null;
+        setSegmentIdx(idx + 1);
+        speakSegment(idx + 1);
+      };
+      audio.play().catch(() => {
+        URL.revokeObjectURL(url);
+        // Fallback to live TTS if cached playback fails
+        const seg = page.textSegments[idx];
+        const voice = book.voiceAssignments?.[seg.speaker] || 'lessac';
+        speak(seg.text, () => {
+          setSegmentIdx(idx + 1);
+          speakSegment(idx + 1);
+        }, voice);
+      });
+      return;
+    }
+
+    // Fall back to live TTS
     const seg = page.textSegments[idx];
     const voice = book.voiceAssignments?.[seg.speaker] || 'lessac';
     speak(seg.text, () => {
       setSegmentIdx(idx + 1);
       speakSegment(idx + 1);
     }, voice);
-  }, [page, book.voiceAssignments, speak]);
+  }, [page, pageIdx, book.voiceAssignments, speak, cachedAudio]);
+
+  const stopAll = useCallback(() => {
+    stop();
+    if (cachedAudioRef.current) {
+      cachedAudioRef.current.pause();
+      cachedAudioRef.current = null;
+    }
+  }, [stop]);
 
   // Animate phases: bg → char (500ms) → text (800ms) → TTS
   useEffect(() => {
     setPhase('bg');
     setSegmentIdx(0);
-    stop();
+    stopAll();
     clearTimer();
     phaseTimerRef.current = setTimeout(() => setPhase('char'), 400);
     return clearTimer;
@@ -572,14 +629,14 @@ function PlaybackView({
   }, [phase]);
 
   const nextPage = useCallback(() => {
-    stop();
+    stopAll();
     if (pageIdx < totalPages - 1) setPageIdx(p => p + 1);
-  }, [pageIdx, totalPages, stop]);
+  }, [pageIdx, totalPages, stopAll]);
 
   const prevPage = useCallback(() => {
-    stop();
+    stopAll();
     setPageIdx(p => Math.max(0, p - 1));
-  }, [stop]);
+  }, [stopAll]);
 
   // Auto-advance after TTS finishes on last segment
   useEffect(() => {
@@ -596,7 +653,7 @@ function PlaybackView({
     <div className="fixed inset-0 z-50 bg-black flex flex-col" style={{ fontFamily: 'Georgia, serif' }}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-black/80">
-        <button onClick={() => { stop(); onClose(); }} className="text-white/70 hover:text-white flex items-center gap-1 text-sm">
+        <button onClick={() => { stopAll(); onClose(); }} className="text-white/70 hover:text-white flex items-center gap-1 text-sm">
           <Icon icon={Cancel01IconData} className="w-4" /> Exit
         </button>
         <div className="text-white/60 text-sm">{pageIdx + 1} / {totalPages}</div>
@@ -608,7 +665,7 @@ function PlaybackView({
             {autoPlay ? <Icon icon={PauseIconData} className="w-4" /> : <Icon icon={PlayIconData} className="w-4" />}
             {autoPlay ? 'Pause Auto' : 'Auto Play'}
           </button>
-          <button onClick={() => { stop(); speakSegment(0); }} className="text-white/60 hover:text-white">
+          <button onClick={() => { stopAll(); speakSegment(0); }} className="text-white/60 hover:text-white">
             <Icon icon={RefreshIconData} className="w-4" />
           </button>
         </div>
@@ -692,7 +749,7 @@ function PlaybackView({
         {book.pages.map((_, i) => (
           <button
             key={i}
-            onClick={() => { stop(); setPageIdx(i); }}
+            onClick={() => { stopAll(); setPageIdx(i); }}
             className="w-2 h-2 rounded-full transition-all"
             style={{ background: i === pageIdx ? accentColor : 'rgba(255,255,255,0.3)' }}
           />
@@ -816,6 +873,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const [imageGenProgress, setImageGenProgress] = useState<{ current: number; total: number; stage: 'character' | 'background' } | null>(null);
   const imageGenAbortRef = useRef<AbortController | null>(null);
+  // Save dialog state
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveIncludeImages, setSaveIncludeImages] = useState(true);
+  const [saveIncludeAudio, setSaveIncludeAudio] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveProgress, setSaveProgress] = useState<{ current: number; total: number } | null>(null);
+  // Cached audio for playback (loaded from IndexedDB)
+  const cachedAudioRef = useRef<Map<string, Blob> | null>(null);
+  const [isRestoringImages, setIsRestoringImages] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -960,11 +1026,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         // Auto-save completed storybook
         const saved = saveStorybook(formData, validated, currentDraftId || undefined);
         setCurrentDraftId(saved.id);
-        // Auto-trigger image generation when imageMode is 'ai' and diffusion is available
-        if (formData.imageMode === 'ai' && hasDiffusion) {
-          // Defer so state settles before pipeline starts
-          setTimeout(() => handleGenerateAllImages(validated), 300);
-        }
+        // User can click "Generate Images" or generate per-page individually
       } else {
         setView('input');
       }
@@ -1040,9 +1102,10 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           if (!page) continue;
           updatedPages[r.pageIndex] = {
             ...page,
-            ...(r.characterImageData && { characterImageData: r.characterImageData }),
-            ...(r.characterSeed != null && { characterSeed: r.characterSeed }),
-            ...(r.backgroundImageData && { backgroundImageData: r.backgroundImageData }),
+            // Don't overwrite images the user already generated individually
+            ...(r.characterImageData && !page.characterImageData && { characterImageData: r.characterImageData }),
+            ...(r.characterSeed != null && !page.characterSeed && { characterSeed: r.characterSeed }),
+            ...(r.backgroundImageData && !page.backgroundImageData && { backgroundImageData: r.backgroundImageData }),
           };
         }
         return { ...prev, pages: updatedPages };
@@ -1107,7 +1170,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     try {
       const imgData = await generateBackgroundImage(scene.description, styleSuffix);
-      updatePage(pageIdx, { backgroundImageData: imgData });
+      // Apply to ALL pages sharing the same sceneId
+      const targetSceneId = page.sceneId;
+      setParsedBook(prev => {
+        if (!prev) return prev;
+        const pages = prev.pages.map(p =>
+          p.sceneId === targetSceneId ? { ...p, backgroundImageData: imgData } : p
+        );
+        return { ...prev, pages };
+      });
     } catch (e) {
       console.error(`[StoryBook] Failed to generate background for page ${pageIdx + 1}:`, e);
     } finally {
@@ -1144,21 +1215,124 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
   // ── Save / Load Draft ──────────────────────────────────────────────────────
   const handleSaveDraft = useCallback(() => {
-    const saved = saveStorybook(formData, parsedBook, currentDraftId || undefined);
-    setCurrentDraftId(saved.id);
-    setSaveToast(parsedBook ? 'Storybook saved!' : 'Draft saved!');
-    setTimeout(() => setSaveToast(null), 2000);
+    // If no parsed book yet (draft), save immediately without dialog
+    if (!parsedBook) {
+      const saved = saveStorybook(formData, null, currentDraftId || undefined);
+      setCurrentDraftId(saved.id);
+      setSaveToast('Draft saved!');
+      setTimeout(() => setSaveToast(null), 2000);
+      return;
+    }
+    // Show save options dialog for completed storybooks
+    setSaveIncludeImages(true);
+    setSaveIncludeAudio(false);
+    setShowSaveDialog(true);
   }, [formData, parsedBook, currentDraftId]);
 
-  const handleLoadSaved = useCallback((saved: SavedStorybook) => {
+  const handleConfirmSave = useCallback(async () => {
+    setIsSaving(true);
+    setSaveProgress(null);
+    try {
+      const saved = saveStorybook(formData, parsedBook, currentDraftId || undefined, {
+        includeImages: saveIncludeImages,
+        includeAudio: saveIncludeAudio,
+      });
+      setCurrentDraftId(saved.id);
+
+      // Pre-generate and save audio if requested
+      if (saveIncludeAudio && parsedBook) {
+        const entries: AudioEntry[] = [];
+        const totalSegs = parsedBook.pages.reduce((sum, p) => sum + p.textSegments.length, 0);
+        let done = 0;
+
+        for (let pi = 0; pi < parsedBook.pages.length; pi++) {
+          const page = parsedBook.pages[pi];
+          for (let si = 0; si < page.textSegments.length; si++) {
+            const seg = page.textSegments[si];
+            const voice = parsedBook.voiceAssignments?.[seg.speaker] || 'lessac';
+            setSaveProgress({ current: done, total: totalSegs });
+            try {
+              const blob = await fetchTTSBlob(seg.text, voice);
+              entries.push({ pageIndex: pi, segmentIndex: si, blob });
+            } catch {
+              // Skip failed segments
+            }
+            done++;
+          }
+        }
+        setSaveProgress({ current: totalSegs, total: totalSegs });
+        await saveStorybookAudio(saved.id, entries);
+
+        // Update the localStorage entry to mark hasAudio
+        const items = getSavedStorybooks();
+        const idx = items.findIndex(s => s.id === saved.id);
+        if (idx !== -1) {
+          items[idx].hasAudio = true;
+          localStorage.setItem('storybook_history', JSON.stringify(items));
+        }
+      }
+
+      setShowSaveDialog(false);
+      setSaveToast('Storybook saved!');
+      setTimeout(() => setSaveToast(null), 2000);
+    } catch (e) {
+      console.error('[StoryBook] Save failed:', e);
+      setSaveToast('Save failed');
+      setTimeout(() => setSaveToast(null), 2000);
+    } finally {
+      setIsSaving(false);
+      setSaveProgress(null);
+    }
+  }, [formData, parsedBook, currentDraftId, saveIncludeImages, saveIncludeAudio]);
+
+  const handleLoadSaved = useCallback(async (saved: SavedStorybook) => {
     setFormData({ ...DEFAULT_FORM, ...saved.formData });
     setCurrentDraftId(saved.id);
     if (saved.parsedBook && saved.parsedBook.pages.length > 0) {
       setParsedBook(saved.parsedBook);
       setView('editor');
+
+      // Restore images from IndexedDB if available
+      if (saved.hasImages) {
+        setIsRestoringImages(true);
+        try {
+          const imageMap = await loadStorybookImages(saved.id);
+          if (imageMap.size > 0) {
+            setParsedBook(prev => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                pages: prev.pages.map((p, i) => ({
+                  ...p,
+                  characterImageData: imageMap.get(`${i}:character`) ?? p.characterImageData,
+                  backgroundImageData: imageMap.get(`${i}:background`) ?? p.backgroundImageData,
+                })),
+              };
+            });
+          }
+        } catch (e) {
+          console.error('[StoryBook] Failed to restore images from IndexedDB:', e);
+        } finally {
+          setIsRestoringImages(false);
+        }
+      }
+
+      // Load cached audio if available
+      if (saved.hasAudio) {
+        try {
+          const audioMap = await loadStorybookAudio(saved.id);
+          cachedAudioRef.current = audioMap.size > 0 ? audioMap : null;
+        } catch (e) {
+          console.error('[StoryBook] Failed to load cached audio:', e);
+          cachedAudioRef.current = null;
+        }
+      } else {
+        cachedAudioRef.current = null;
+      }
     } else {
       setParsedBook(null);
       setView('input');
+      cachedAudioRef.current = null;
     }
     setShowHistory(false);
   }, []);
@@ -1521,6 +1695,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         book={parsedBook}
         onClose={() => setView('editor')}
         accentColor={accentColor}
+        cachedAudio={cachedAudioRef.current}
       />
     );
   }
@@ -1589,7 +1764,16 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             )
           )}
           <button
-            onClick={() => setView('playing')}
+            onClick={() => {
+              if (parsedBook) {
+                const missing = parsedBook.pages.some(p => !p.backgroundImageData || (!p.characterImageData && p.characterScene && p.imagePlacement !== 'none'));
+                if (missing) {
+                  setSaveToast('Some pages are missing images');
+                  setTimeout(() => setSaveToast(null), 3000);
+                }
+              }
+              setView('playing');
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
             style={{ background: accentColor }}
           >
@@ -1826,7 +2010,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               {hasDiffusion && (
                 <button
                   onClick={() => handleGeneratePageBackground(currentPageIdx)}
-                  disabled={isRemovingBg === currentPageIdx}
+                  disabled={isRemovingBg === currentPageIdx || isGeneratingImages}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm text-theme-muted disabled:opacity-60 mt-2"
                 >
                   {isRemovingBg === currentPageIdx
@@ -1875,7 +2059,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 {hasDiffusion && currentPage.characterScene && (
                   <button
                     onClick={() => handleGeneratePageImage(currentPageIdx)}
-                    disabled={isRemovingBg === currentPageIdx}
+                    disabled={isRemovingBg === currentPageIdx || isGeneratingImages}
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm disabled:opacity-60"
                     style={{ color: accentColor }}
                   >
@@ -2048,6 +2232,103 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           onClose={() => setShowExportSettings(false)}
           accentColor={accentColor}
         />
+      )}
+
+      {/* Save dialog */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between p-4 border-b border-theme">
+              <h3 className="font-semibold text-theme-heading">Save Storybook</h3>
+              <button onClick={() => !isSaving && setShowSaveDialog(false)} className="p-1 rounded hover:bg-theme-hover">
+                <Icon icon={Cancel01IconData} className="w-5 text-theme-muted" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              {/* Include images */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={saveIncludeImages}
+                  onChange={e => setSaveIncludeImages(e.target.checked)}
+                  disabled={isSaving || !parsedBook?.pages.some(p => p.characterImageData || p.backgroundImageData)}
+                  className="w-4 h-4 rounded"
+                />
+                <div>
+                  <p className="text-sm font-medium text-theme-heading flex items-center gap-1.5">
+                    <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />
+                    Save images
+                  </p>
+                  <p className="text-xs text-theme-muted">Preserves character and background images</p>
+                </div>
+              </label>
+
+              {/* Include audio */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={saveIncludeAudio}
+                  onChange={e => setSaveIncludeAudio(e.target.checked)}
+                  disabled={isSaving}
+                  className="w-4 h-4 rounded"
+                />
+                <div>
+                  <p className="text-sm font-medium text-theme-heading flex items-center gap-1.5">
+                    <Icon icon={Mic01IconData} className="w-4" style={{ color: accentColor }} />
+                    Save narration audio
+                  </p>
+                  <p className="text-xs text-theme-muted">Pre-generates all speech (uses more storage but enables instant playback)</p>
+                </div>
+              </label>
+
+              {/* Progress bar */}
+              {isSaving && saveProgress && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs text-theme-muted">
+                    <Icon icon={Loading03IconData} className="w-3 animate-spin" />
+                    Generating audio... {saveProgress.current}/{saveProgress.total}
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${(saveProgress.current / saveProgress.total) * 100}%`, background: accentColor }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 p-4 border-t border-theme">
+              <button
+                onClick={() => setShowSaveDialog(false)}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-lg text-sm text-theme-muted hover:bg-theme-secondary disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmSave}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+                style={{ background: accentColor }}
+              >
+                {isSaving ? (
+                  <span className="flex items-center gap-1.5">
+                    <Icon icon={Loading03IconData} className="w-3 animate-spin" />
+                    Saving...
+                  </span>
+                ) : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Restoring images overlay */}
+      {isRestoringImages && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg flex items-center gap-2">
+          <Icon icon={Loading03IconData} className="w-4 animate-spin" style={{ color: accentColor }} />
+          Restoring images...
+        </div>
       )}
 
       {/* Save toast */}

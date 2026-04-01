@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 sys.stdout.reconfigure(encoding='utf-8')
 from pathlib import Path
 from typing import Optional
@@ -105,28 +106,53 @@ def get_diffusion_model_path():
     return str(bundled_path)
 
 def scan_diffusion_models():
-    """Scan the image_generation directory for available diffusion models."""
+    """Scan the image_generation directory for available diffusion models.
+
+    Registry-aware: when multiple registry entries share the same folder
+    (e.g. two GGUF quant variants), each gets its own entry in the list
+    so the user can select them independently.
+    """
     models = []
     if not IMAGE_MODELS_DIR.exists():
         return models
 
     selected = get_selected_diffusion_model()
-    # Exclude non-model directories (e.g., lama is for inpainting)
     exclude_dirs = {'lama', '__pycache__'}
+    seen_names = set()
+    covered_folders = set()
 
     try:
+        # Pass 1: emit one entry per registry key whose folder exists on disk
+        for reg_key, reg_info in IMAGE_MODEL_REGISTRY.items():
+            folder = reg_info.get("folder", reg_key)
+            folder_path = IMAGE_MODELS_DIR / folder
+            if folder_path.is_dir() and folder not in exclude_dirs:
+                if reg_key not in seen_names:
+                    total_size = sum(f.stat().st_size for f in folder_path.rglob('*') if f.is_file())
+                    size_mb = total_size / (1024 * 1024)
+                    models.append({
+                        "name": reg_key,
+                        "path": str(folder_path),
+                        "size_mb": round(size_mb, 2),
+                        "is_active": reg_key == selected,
+                        "description": reg_info.get("description", ""),
+                    })
+                    seen_names.add(reg_key)
+                    covered_folders.add(folder)
+
+        # Pass 2: pick up any folders not covered by the registry
         for item in IMAGE_MODELS_DIR.iterdir():
             if item.is_dir() and item.name not in exclude_dirs and not item.name.startswith('.'):
-                # Calculate directory size
-                total_size = sum(f.stat().st_size for f in item.rglob('*') if f.is_file())
-                size_mb = total_size / (1024 * 1024)
-
-                models.append({
-                    "name": item.name,
-                    "path": str(item),
-                    "size_mb": round(size_mb, 2),
-                    "is_active": item.name == selected
-                })
+                if item.name not in seen_names and item.name not in covered_folders:
+                    total_size = sum(f.stat().st_size for f in item.rglob('*') if f.is_file())
+                    size_mb = total_size / (1024 * 1024)
+                    models.append({
+                        "name": item.name,
+                        "path": str(item),
+                        "size_mb": round(size_mb, 2),
+                        "is_active": item.name == selected
+                    })
+                    seen_names.add(item.name)
 
         models.sort(key=lambda x: x["name"])
     except Exception as e:
@@ -149,12 +175,41 @@ IMAGE_MODEL_REGISTRY = {
         "supports_negative_prompt": True,
         "supports_img2img":        True,
     },
+    "sdxl-turbo-int8": {
+        "folder":      "sdxl-turbo-int8",
+        "backend":     "openvino",
+        "description": "SDXL-Turbo INT8 (OpenVINO) — faster, ~2 GB",
+        "steps":       2,
+        "guidance":    0.0,
+        "supports_negative_prompt": True,
+        "supports_img2img":        True,
+    },
     "flux-schnell": {
         "folder":      "flux-schnell",
         "backend":     "openvino_flux",
         "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
         "steps":       3,
         "guidance":    0.0,
+        "supports_negative_prompt": False,
+        "supports_img2img":        False,
+    },
+    "flux-schnell-gguf-q5": {
+        "folder":      "flux-schnell-gguf",
+        "backend":     "sd_cpp_flux",
+        "gguf_file":   "flux1-schnell-Q5_K_M.gguf",
+        "description": "FLUX.1 Schnell Q5_K_M (GGUF) — high quality, ~8.4 GB",
+        "steps":       3,
+        "guidance":    1.0,
+        "supports_negative_prompt": False,
+        "supports_img2img":        False,
+    },
+    "flux-schnell-gguf-q4": {
+        "folder":      "flux-schnell-gguf",
+        "backend":     "sd_cpp_flux",
+        "gguf_file":   "flux1-schnell-Q4_K_M.gguf",
+        "description": "FLUX.1 Schnell Q4_K_M (GGUF) — good quality, ~6.9 GB",
+        "steps":       3,
+        "guidance":    1.0,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
     },
@@ -388,6 +443,72 @@ def set_ocr_enabled(enabled: bool):
 
 print(f"✓ [CONFIG] OCR grading: {'enabled' if get_ocr_enabled() else 'disabled'}", flush=True)
 
+# OCR model selection (supports multiple OCR models)
+DEFAULT_OCR_MODEL = "PaddleOCR-VL-1.5-Q4_K_M"
+OCR_MODEL_CONFIG_FILE = MODELS_DIR / ".ocr-model-config.json"
+
+def get_selected_ocr_model() -> str:
+    """Get the currently selected OCR model from config file."""
+    if OCR_MODEL_CONFIG_FILE.exists():
+        try:
+            with open(OCR_MODEL_CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                return config.get('selectedModel', DEFAULT_OCR_MODEL)
+        except Exception:
+            pass
+    return DEFAULT_OCR_MODEL
+
+def set_selected_ocr_model(model_name: str) -> bool:
+    """Save the selected OCR model to config file."""
+    try:
+        OCR_MODEL_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(OCR_MODEL_CONFIG_FILE, 'w') as f:
+            json.dump({'selectedModel': model_name}, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving OCR model config: {e}", flush=True)
+        return False
+
+def scan_ocr_models() -> list:
+    """Scan MODELS_DIR for available OCR models (those in the ocr_models tier list)."""
+    models = []
+    if not MODELS_DIR.exists():
+        return models
+
+    tier_config = get_tier_config()
+    ocr_model_names = tier_config.get("ocr_models", [])
+    selected = get_selected_ocr_model()
+
+    for model_name in ocr_model_names:
+        # Look for the main GGUF file
+        main_gguf = MODELS_DIR / f"{model_name}.gguf"
+        if not main_gguf.exists():
+            continue
+
+        # Look for a matching mmproj file — strip quant suffix (e.g. -Q4_K_M)
+        # to match mmproj with different quant (e.g. mmproj-PaddleOCR-VL-1.5-Q8_0.gguf)
+        base_name = re.sub(r'-Q\d.*$', '', model_name)  # PaddleOCR-VL-1.5
+        mmproj_matches = list(MODELS_DIR.glob(f"mmproj-{base_name}*.gguf"))
+        if not mmproj_matches:
+            # Fallback: try exact name match
+            mmproj_matches = list(MODELS_DIR.glob(f"mmproj-{model_name}*.gguf"))
+        if not mmproj_matches:
+            continue
+
+        mmproj_file = mmproj_matches[0]
+        total_size_mb = (main_gguf.stat().st_size + mmproj_file.stat().st_size) / (1024 * 1024)
+
+        models.append({
+            "name": model_name,
+            "main_file": main_gguf.name,
+            "mmproj_file": mmproj_file.name,
+            "size_mb": round(total_size_mb, 2),
+            "is_active": model_name == selected,
+        })
+
+    models.sort(key=lambda x: x["name"])
+    return models
+
 # ============================================================================
 # TIER CONFIGURATION (auto-detected model capability tiers)
 # ============================================================================
@@ -398,7 +519,7 @@ DEFAULT_TIER_CONFIG = {
     "tier1_models": ["PEARL_AI.gguf"],
     "tier2_models": [],
     "ocr_models": ["PaddleOCR-VL-1.5-Q4_K_M"],
-    "tier3_diffusion_models": ["sdxl-turbo-openvino", "flux-schnell"],
+    "tier3_diffusion_models": ["sdxl-turbo-openvino", "sdxl-turbo-int8", "flux-schnell", "flux-schnell-gguf-q5", "flux-schnell-gguf-q4"],
     "dual_model": {
         "enabled": False,
         "fast_model": None,
@@ -485,11 +606,12 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     # Vision check (from model's vision projector availability)
     has_vision = resolve_vision_projector_path(selected_llm) is not None
 
-    # OCR check — requires PaddleOCR-VL GGUF files to be present
-    has_ocr_model = (
-        (MODELS_DIR / "PaddleOCR-VL-1.5-Q4_K_M.gguf").exists()
-        and (MODELS_DIR / "mmproj-PaddleOCR-VL-1.5-Q8_0.gguf").exists()
-    )
+    # OCR check — requires selected OCR model GGUF + mmproj to be present
+    selected_ocr = get_selected_ocr_model()
+    ocr_main = MODELS_DIR / f"{selected_ocr}.gguf"
+    ocr_base = re.sub(r'-Q\d.*$', '', selected_ocr)
+    ocr_mmproj_matches = list(MODELS_DIR.glob(f"mmproj-{ocr_base}*.gguf")) if MODELS_DIR.exists() else []
+    has_ocr_model = ocr_main.exists() and len(ocr_mmproj_matches) > 0
     has_ocr = has_ocr_model and get_ocr_enabled()
 
     # Diffusion check
@@ -538,6 +660,7 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
         "has_ocr_model": has_ocr_model,
         "selected_llm": selected_llm,
         "selected_diffusion": diffusion_model,
+        "selected_ocr": selected_ocr,
         "dual_model": dual_model,
         "supports_thinking": supports_thinking,
     }
