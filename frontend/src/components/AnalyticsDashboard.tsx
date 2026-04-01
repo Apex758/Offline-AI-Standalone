@@ -70,6 +70,11 @@ import CurriculumProgressWidget from './widgets/CurriculumProgressWidget';
 import MostUsedTools from './widgets/MostUsedTools';
 import RecentActivityTimeline from './widgets/RecentActivityTimeline';
 import { useAchievementContext } from '../contexts/AchievementContext';
+import MiniTrophyCard from './MiniTrophyCard';
+import TrophyDetailCard from './TrophyDetailCard';
+import { getTrophyType } from '../config/trophyMap';
+import TROPHY_IMAGES from '../assets/trophyImages';
+import type { NewlyEarnedAchievement } from '../types/achievement';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -115,6 +120,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showShowcase, setShowShowcase] = useState(false);
+  const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
 
   // Load user profile
   useEffect(() => {
@@ -607,7 +613,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               className="text-center cursor-pointer group relative"
               onClick={() => showcase.length > 0 ? setShowShowcase(s => !s) : onCreateTab?.('achievements')}
               title={showcase.length > 0 ? (showShowcase ? 'Show stats' : 'Show showcase') : 'View Achievements'}
-              style={{ minWidth: showShowcase && showcase.length > 0 ? 180 : undefined, transition: 'min-width 0.3s ease' }}
+              style={{ minWidth: showShowcase && showcase.length > 0 ? Math.min(showcase.length, 5) * 110 : undefined, transition: 'min-width 0.3s ease' }}
             >
               {/* Stats view */}
               <div style={{
@@ -630,7 +636,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   Achievements
                 </div>
               </div>
-              {/* Showcase view */}
+              {/* Showcase view — inline mini trophy cards */}
               {showcase.length > 0 && (
                 <div style={{
                   opacity: showShowcase ? 1 : 0,
@@ -644,24 +650,33 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   justifyContent: 'center',
                   pointerEvents: showShowcase ? 'auto' : 'none',
                 }}>
-                  <div className="flex items-center gap-2 flex-wrap justify-center">
+                  <div className="flex items-center gap-3" style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
                     {showcase.slice(0, 5).map(id => {
                       const def = definitions.find(d => d.id === id);
                       if (!def) return null;
-                      const rc: Record<string, string> = {
-                        common: '#9ca3af', uncommon: '#22c55e', rare: '#3b82f6', epic: '#a855f7', legendary: '#f59e0b',
-                      };
-                      const c = rc[def.rarity] || '#9ca3af';
+                      const earnedEntry = earned.find(e => e.achievement_id === id);
                       return (
-                        <div
+                        <MiniTrophyCard
                           key={id}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg"
-                          style={{ backgroundColor: `${c}15`, border: `1px solid ${c}30` }}
-                          title={def.description}
-                        >
-                          <HugeiconsIcon icon={Medal01IconData} size={11} style={{ color: c }} />
-                          <span className="text-[10px] font-semibold" style={{ color: c }}>{def.name}</span>
-                        </div>
+                          definition={def}
+                          earnedAt={earnedEntry?.earned_at}
+                          onClick={() => {
+                            const tType = getTrophyType(id);
+                            const tSrc = tType ? TROPHY_IMAGES[tType] : undefined;
+                            if (tSrc) {
+                              setViewingTrophy({
+                                achievement_id: def.id,
+                                earned_at: earnedEntry?.earned_at || '',
+                                name: def.name,
+                                description: def.description,
+                                category: def.category,
+                                icon_name: def.icon_name,
+                                rarity: def.rarity,
+                                points: def.points,
+                              });
+                            }
+                          }}
+                        />
                       );
                     })}
                   </div>
@@ -687,44 +702,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
       </header>
 
-      {/* Trophy Showcase (legacy strip — replaced by inline toggle in header stats) */}
-      {false && showcase.length > 0 && (() => {
-        const showcaseDefs = showcase
-          .map(id => definitions.find(d => d.id === id))
-          .filter(Boolean) as typeof definitions;
-        const SHOWCASE_RARITY_COLORS: Record<string, string> = {
-          common: '#9ca3af', uncommon: '#22c55e', rare: '#3b82f6', epic: '#a855f7', legendary: '#f59e0b',
-        };
-        return showcaseDefs.length > 0 ? (
-          <div className="px-8 pt-4">
-            <div
-              className="flex items-center gap-3 px-4 py-3 rounded-xl"
-              style={{ border: '1px solid var(--dash-border)', backgroundColor: 'var(--dash-card-bg, var(--dash-bg))' }}
-            >
-              <HugeiconsIcon icon={Trophy01IconData} size={16} style={{ color: '#f59e0b' }} />
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>
-                My Trophies
-              </span>
-              <div className="flex items-center gap-2 ml-2">
-                {showcaseDefs.map(def => (
-                  <div
-                    key={def.id}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
-                    style={{
-                      backgroundColor: `${SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af'}15`,
-                      border: `1px solid ${SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af'}30`,
-                    }}
-                    title={def.description}
-                  >
-                    <HugeiconsIcon icon={Medal01IconData} size={12} style={{ color: SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af' }} />
-                    <span className="text-[11px] font-semibold" style={{ color: SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af' }}>
-                      {def.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+      {/* Trophy Detail Modal */}
+      {viewingTrophy && (() => {
+        const tType = getTrophyType(viewingTrophy.achievement_id);
+        const tSrc = tType ? TROPHY_IMAGES[tType] : undefined;
+        return tSrc ? (
+          <TrophyDetailCard
+            achievement={viewingTrophy}
+            trophyImageSrc={tSrc}
+            earnedAt={viewingTrophy.earned_at}
+            onClose={() => setViewingTrophy(null)}
+          />
         ) : null;
       })()}
 

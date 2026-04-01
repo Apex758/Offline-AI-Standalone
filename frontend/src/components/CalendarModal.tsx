@@ -1054,7 +1054,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
 
         .cal-weekday-cell {
           text-align: center;
-          font-size: 0.6875rem;
+          font-size: 0.8125rem;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.08em;
@@ -1120,7 +1120,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
         }
 
         .cal-day-number {
-          font-size: 0.875rem;
+          font-size: 1rem;
           font-weight: 600;
           color: #374151;
           line-height: 1;

@@ -403,7 +403,7 @@ export function calculateQuickStats(resources: any[], tasks: Task[], timeframe: 
       const date = new Date(r.timestamp);
       return date >= start && date <= end;
     } catch (error) {
-      console.error('Error parsing resource timestamp:', eyrror);
+      console.error('Error parsing resource timestamp:', error);
       return false;
     }
   });

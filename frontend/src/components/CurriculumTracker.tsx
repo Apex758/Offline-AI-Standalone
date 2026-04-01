@@ -48,7 +48,7 @@ import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode, ChecklistItem } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
-import { getTeacherGrades, getTeacherSubjects } from '../data/teacherConstants';
+import { getTeacherGrades, getTeacherSubjects, GRADE_VALUE_MAP } from '../data/teacherConstants';
 import SmartTextArea from './SmartTextArea';
 
 import { TutorialOverlay } from './TutorialOverlay';
@@ -239,9 +239,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     const tSubjects = getTeacherSubjects(gradeMapping);
     if (tGrades.length === 0 && tSubjects.length === 0) return milestones;
     return milestones.filter(m => {
-      const gradeOk = tGrades.length === 0 || tGrades.includes(m.grade.toLowerCase());
+      // Normalize milestone grade (e.g. "Grade 1" -> "1", "Kindergarten" -> "k") to match profile keys
+      const gradeKey = (GRADE_VALUE_MAP[m.grade] || m.grade).toLowerCase();
+      const gradeOk = tGrades.length === 0 || tGrades.includes(gradeKey);
       // For per-grade filtering: check if this subject is taught for this grade
-      const gradeKey = m.grade.toLowerCase();
       const gradeSubjectList = gradeMapping[gradeKey] || [];
       const subjectOk = gradeSubjectList.length === 0 || gradeSubjectList.includes(m.subject);
       return gradeOk && subjectOk;

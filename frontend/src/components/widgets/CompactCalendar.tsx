@@ -251,7 +251,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
 
         .cc-weekday {
           text-align: center;
-          font-size: 0.625rem;
+          font-size: 0.75rem;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -294,7 +294,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
         }
 
         .cc-day-num {
-          font-size: 0.75rem;
+          font-size: 0.875rem;
           font-weight: 500;
           color: var(--dash-text, #374151);
           line-height: 1;
