@@ -49,6 +49,13 @@ TIER1_MAX_TOKENS = {
     "brain-dump": 4000,
     "title-generation": 30,
     "autocomplete": 30,
+    # Educator Insights — multi-pass analysis
+    "insights-curriculum": 500,
+    "insights-performance": 500,
+    "insights-content": 500,
+    "insights-attendance": 500,
+    "insights-recommendations": 600,
+    "insights-synthesis": 1500,
 }
 
 # ── System prompts with embedded output templates ──────────────────────────────
@@ -222,6 +229,76 @@ TIER1_PROMPTS = {
     ),
 
     "autocomplete": None,  # No change needed, uses direct prompt
+
+    # ── Educator Insights — multi-pass analysis prompts ──────────────────────
+
+    "insights-curriculum": (
+        "You are an educational data analyst. Review the curriculum milestone data below and write a brief analysis.\n\n"
+        "DATA:\n{data}\n\n"
+        "Write exactly 3-5 bullet points about:\n"
+        "- Overall completion rate and what it means for the school year\n"
+        "- Which subjects or grades are ahead or behind schedule\n"
+        "- One specific gap the teacher should address next\n\n"
+        "Keep each bullet under 30 words. Start each with \"- \"."
+    ),
+
+    "insights-performance": (
+        "You are an educational data analyst. Review the student grade data below and write a brief analysis.\n\n"
+        "DATA:\n{data}\n\n"
+        "Write exactly 3-5 bullet points about:\n"
+        "- Overall class performance and average scores\n"
+        "- Subjects where students struggle most\n"
+        "- Any notable patterns in the grade distribution\n\n"
+        "Keep each bullet under 30 words. Start each with \"- \"."
+    ),
+
+    "insights-content": (
+        "You are an educational data analyst. Review the content creation data below and write a brief analysis.\n\n"
+        "DATA:\n{data}\n\n"
+        "Write exactly 3-5 bullet points about:\n"
+        "- Most and least used content types\n"
+        "- Subject coverage in the created content\n"
+        "- Suggestions for improving content variety\n\n"
+        "Keep each bullet under 30 words. Start each with \"- \"."
+    ),
+
+    "insights-attendance": (
+        "You are an educational data analyst. Review the attendance and engagement data below and write a brief analysis.\n\n"
+        "DATA:\n{data}\n\n"
+        "Write exactly 3-5 bullet points about:\n"
+        "- Overall attendance rate and trends\n"
+        "- Engagement level patterns across classes\n"
+        "- Students or classes needing immediate attention\n\n"
+        "Keep each bullet under 30 words. Start each with \"- \"."
+    ),
+
+    "insights-recommendations": (
+        "You are an experienced teaching coach. Based on these data findings from a teacher's classroom, suggest practical improvements.\n\n"
+        "FINDINGS:\n{data}\n\n"
+        "Write exactly 4-6 specific, actionable recommendations. Each should be one clear sentence.\n"
+        "Number them 1-6. Focus on what the teacher should DO next.\n"
+        "Consider teaching strategies, assessment practices, student engagement, and curriculum pacing."
+    ),
+
+    "insights-synthesis": (
+        "You are a teaching advisor writing a brief report for a teacher. Combine these analysis sections into a clear summary report.\n\n"
+        "CURRICULUM ANALYSIS:\n{curriculum}\n\n"
+        "STUDENT PERFORMANCE:\n{performance}\n\n"
+        "CONTENT CREATION:\n{content}\n\n"
+        "ATTENDANCE & ENGAGEMENT:\n{attendance}\n\n"
+        "RECOMMENDATIONS:\n{recommendations}\n\n"
+        "Write this report using exactly this format:\n\n"
+        "## Executive Summary\n"
+        "[2-3 sentences summarizing the teacher's overall classroom status]\n\n"
+        "## Priority Actions\n"
+        "1. [most important action to take now]\n"
+        "2. [second priority]\n"
+        "3. [third priority]\n\n"
+        "## Questions for You\n"
+        "1. [question about what area the teacher wants to focus on]\n"
+        "2. [question about a specific challenge noticed in the data]\n"
+        "3. [question to help refine future advice]"
+    ),
 }
 
 

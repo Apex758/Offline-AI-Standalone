@@ -43,7 +43,7 @@ from config import (
 )
 from pathlib import Path
 from datetime import datetime
-from routes import milestones, achievements
+from routes import milestones, achievements, insights
 import student_service
 from llama_inference import LlamaInference
 from process_pool import submit_task, shutdown_executor
@@ -316,6 +316,9 @@ app.include_router(milestones.router)
 
 # Include achievement routes
 app.include_router(achievements.router)
+
+# Include educator insights routes
+app.include_router(insights.router)
 
 # Include scene-based image generation routes
 from scene_api_endpoints import router as scene_router
@@ -3167,6 +3170,240 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
         logger.info("Brain Dump WebSocket disconnected")
     except Exception as e:
         logger.error(f"Brain Dump WebSocket error: {e}")
+
+
+# ── Educator Insights — multi-pass LLM analysis ────────────────────────────
+
+@app.websocket("/ws/educator-insights")
+async def educator_insights_websocket(websocket: WebSocket):
+    """Run multi-pass LLM analysis across teacher data and stream results progressively."""
+    await websocket.accept()
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    PASS_DEFINITIONS = [
+        {"key": "curriculum", "name": "Curriculum Coverage", "task": "insights-curriculum"},
+        {"key": "performance", "name": "Student Performance", "task": "insights-performance"},
+        {"key": "content", "name": "Content Creation", "task": "insights-content"},
+        {"key": "attendance", "name": "Attendance & Engagement", "task": "insights-attendance"},
+        {"key": "recommendations", "name": "Teaching Recommendations", "task": "insights-recommendations"},
+        {"key": "synthesis", "name": "Final Synthesis", "task": "insights-synthesis"},
+    ]
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            action = data.get("action", "")
+            if action != "generate":
+                continue
+
+            generation_mode = data.get("generationMode", "queued")
+
+            # Aggregate all data
+            import insights_service
+            try:
+                all_data = insights_service.aggregate_all()
+            except Exception as e:
+                logger.error(f"Insights data aggregation error: {e}")
+                await websocket.send_json({"type": "error", "message": f"Data aggregation failed: {e}"})
+                continue
+
+            # Determine which passes have data
+            pass_outputs = {}
+            from tier1_prompts import get_tier1_gen_params, TIER1_PROMPTS
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+
+            total_passes = len(PASS_DEFINITIONS)
+
+            for pass_idx, pass_def in enumerate(PASS_DEFINITIONS):
+                pass_num = pass_idx + 1
+                pass_key = pass_def["key"]
+                pass_name = pass_def["name"]
+                task_type = pass_def["task"]
+
+                # Send status
+                try:
+                    await websocket.send_json({
+                        "type": "status",
+                        "pass": pass_num,
+                        "passName": pass_name,
+                        "total": total_passes
+                    })
+                    await asyncio.sleep(0)
+                except Exception:
+                    break
+
+                # Build the prompt data for this pass
+                if pass_key in ("curriculum", "performance", "content", "attendance"):
+                    dimension_data = all_data.get(pass_key, {})
+                    if not dimension_data.get("has_data"):
+                        # Skip this pass — no data
+                        no_data_msg = f"No {pass_name.lower()} data available yet."
+                        pass_outputs[pass_key] = no_data_msg
+                        try:
+                            await websocket.send_json({
+                                "type": "pass_complete",
+                                "pass": pass_num,
+                                "passName": pass_name,
+                                "result": no_data_msg,
+                                "skipped": True
+                            })
+                            await asyncio.sleep(0)
+                        except Exception:
+                            break
+                        continue
+                    llm_input = dimension_data.get("llm_text", "")
+                    system_prompt_template = TIER1_PROMPTS.get(task_type, "Analyze the data and provide bullet points.")
+                    system_prompt = system_prompt_template.replace("{data}", llm_input)
+
+                elif pass_key == "recommendations":
+                    # Combine outputs from passes 1-4
+                    combined = []
+                    for key in ("curriculum", "performance", "content", "attendance"):
+                        output = pass_outputs.get(key, "")
+                        if output:
+                            combined.append(f"[{key.upper()}]\n{output}")
+                    combined_text = "\n\n".join(combined) if combined else "No analysis data available."
+                    system_prompt_template = TIER1_PROMPTS.get(task_type, "Provide teaching recommendations.")
+                    system_prompt = system_prompt_template.replace("{data}", combined_text)
+
+                elif pass_key == "synthesis":
+                    # Combine all prior outputs
+                    system_prompt_template = TIER1_PROMPTS.get(task_type, "Write a summary report.")
+                    system_prompt = system_prompt_template
+                    system_prompt = system_prompt.replace("{curriculum}", pass_outputs.get("curriculum", "No data"))
+                    system_prompt = system_prompt.replace("{performance}", pass_outputs.get("performance", "No data"))
+                    system_prompt = system_prompt.replace("{content}", pass_outputs.get("content", "No data"))
+                    system_prompt = system_prompt.replace("{attendance}", pass_outputs.get("attendance", "No data"))
+                    system_prompt = system_prompt.replace("{recommendations}", pass_outputs.get("recommendations", "No data"))
+                else:
+                    continue
+
+                user_prompt = "Analyze the data provided and generate your response."
+                full_prompt = build_prompt(system_prompt, user_prompt)
+
+                _t1_params = get_tier1_gen_params(task_type) if _is_tier1 else {}
+                max_tokens = _t1_params.get("max_tokens", 1000) if _is_tier1 else 1500
+                temperature = _t1_params.get("temperature", 0.5) if _is_tier1 else 0.5
+
+                # Acquire slot and generate
+                slot_mode = None
+                accumulated_text = []
+                try:
+                    slot_mode = await acquire_generation_slot(websocket, generation_mode, f"insights-{pass_key}")
+                    from inference_factory import get_inference_instance, resolve_inference_for_task
+                    inference = resolve_inference_for_task(task_type) if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+
+                    token_buffer = []
+                    last_send = time.time()
+                    async for chunk in inference.generate_stream(
+                        tool_name=f"insights_{pass_key}",
+                        input_data=user_prompt,
+                        prompt_template=full_prompt,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                    ):
+                        if chunk.get("error"):
+                            try:
+                                await websocket.send_json({"type": "error", "message": chunk["error"]})
+                                await asyncio.sleep(0)
+                            except Exception:
+                                pass
+                            break
+
+                        if chunk.get("finished"):
+                            if token_buffer:
+                                text_chunk = "".join(token_buffer)
+                                accumulated_text.append(text_chunk)
+                                try:
+                                    await websocket.send_json({
+                                        "type": "token",
+                                        "pass": pass_num,
+                                        "content": text_chunk
+                                    })
+                                    await asyncio.sleep(0)
+                                except Exception:
+                                    pass
+                            break
+
+                        if chunk.get("token"):
+                            token_buffer.append(chunk["token"])
+                            accumulated_text.append(chunk["token"])
+                            if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
+                                try:
+                                    await websocket.send_json({
+                                        "type": "token",
+                                        "pass": pass_num,
+                                        "content": "".join(token_buffer)
+                                    })
+                                    token_buffer = []
+                                    last_send = time.time()
+                                    await asyncio.sleep(0)
+                                except Exception:
+                                    break
+
+                except Exception as e:
+                    logger.error(f"Insights pass {pass_name} error: {e}")
+                    import traceback
+                    logger.error(f"Full traceback: {traceback.format_exc()}")
+                    try:
+                        await websocket.send_json({"type": "error", "message": f"Pass '{pass_name}' failed: {e}"})
+                    except Exception:
+                        pass
+                finally:
+                    try:
+                        release_generation_slot(slot_mode or generation_mode)
+                    except Exception:
+                        pass
+
+                # Store pass output
+                full_output = "".join(accumulated_text)
+                pass_outputs[pass_key] = full_output
+
+                # Send pass_complete
+                try:
+                    await websocket.send_json({
+                        "type": "pass_complete",
+                        "pass": pass_num,
+                        "passName": pass_name,
+                        "result": full_output
+                    })
+                    await asyncio.sleep(0)
+                except Exception:
+                    break
+
+            # All passes done — build and save report
+            report = {
+                "id": str(uuid.uuid4()),
+                "generated_at": datetime.now().isoformat(),
+                "passes": [
+                    {"key": pd["key"], "name": pd["name"], "output": pass_outputs.get(pd["key"], "")}
+                    for pd in PASS_DEFINITIONS
+                ],
+                "synthesis": pass_outputs.get("synthesis", ""),
+            }
+
+            # Save to disk
+            try:
+                from routes.insights import save_report
+                save_report(report)
+            except Exception as e:
+                logger.error(f"Failed to save insights report: {e}")
+
+            # Send complete
+            try:
+                await websocket.send_json({
+                    "type": "complete",
+                    "report": report
+                })
+                await asyncio.sleep(0)
+            except Exception:
+                pass
+
+    except WebSocketDisconnect:
+        logger.info("Educator Insights WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Educator Insights WebSocket error: {e}")
 
 
 @app.get("/api/quiz-history")

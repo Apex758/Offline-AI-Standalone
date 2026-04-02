@@ -27,6 +27,7 @@ export interface TabColors {
   'presentation-builder': string;
   'achievements': string;
   'storybook': string;
+  'educator-insights': string;
 }
 
 export interface TutorialState {
@@ -57,6 +58,7 @@ export interface SidebarItemConfig {
 
 // Canonical list of reorderable sidebar items (excludes pinned: analytics at top, support+settings at bottom)
 export const DEFAULT_SIDEBAR_ORDER: SidebarItemConfig[] = [
+  { id: 'educator-insights', enabled: true },
   { id: 'brain-dump', enabled: true },
   { id: 'curriculum-tracker', enabled: true },
   { id: 'resource-manager', enabled: true },
@@ -161,6 +163,7 @@ export const DEFAULT_SETTINGS: Settings = {
     'presentation-builder': '#f97316',
     'achievements': '#f59e0b',
     'storybook': '#a855f7',
+    'educator-insights': '#d97706',
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',

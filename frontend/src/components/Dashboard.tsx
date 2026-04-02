@@ -39,6 +39,7 @@ import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Ico
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
 import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
+import Bulb01IconData from '@hugeicons/core-free-icons/Bulb01Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
@@ -88,6 +89,7 @@ const Speedometer: React.FC<{ className?: string; style?: React.CSSProperties }>
 const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
 const Trophy: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Trophy01IconData} {...p} />;
 const StoryBook: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StoryBookIconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Bulb01IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
@@ -115,6 +117,7 @@ const PerformanceMetrics = React.lazy(() => import('./PerformanceMetrics'));
 const PresentationBuilder = React.lazy(() => import('./PresentationBuilder'));
 const StoryBookCreator = React.lazy(() => import('./StoryBookCreator'));
 const Achievements = React.lazy(() => import('./Achievements'));
+const EducatorInsights = React.lazy(() => import('./EducatorInsights'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -155,6 +158,13 @@ const tools: Tool[] = [
     icon: 'LayoutDashboard',
     type: 'analytics',
     description: 'Teaching analytics and quick access'
+  },
+  {
+    id: 'educator-insights',
+    name: 'Educator Insights',
+    icon: 'Lightbulb',
+    type: 'educator-insights',
+    description: 'AI-powered teaching analysis and recommendations'
   },
   {
     id: 'brain-dump',
@@ -344,6 +354,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   Presentation,
   Trophy,
   StoryBook,
+  Lightbulb,
 };
 
 const WELCOME_TIPS = [
@@ -477,7 +488,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook', 'educator-insights']);
 const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook']);
 
 const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
@@ -912,7 +923,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool, initialData?: Record<string, any>) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -1875,6 +1886,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <Achievements tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'performance-metrics':
         return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
+      case 'educator-insights':
+        return <EducatorInsights tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'brain-dump':
         return (
           <BrainDump

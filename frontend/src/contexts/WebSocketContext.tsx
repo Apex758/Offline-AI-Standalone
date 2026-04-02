@@ -12,6 +12,7 @@ const TOOL_NAMES: Record<string, string> = {
   '/ws/worksheet': 'Worksheet',
   '/ws/brain-dump': 'Brain Dump',
   '/ws/storybook': 'Storybook',
+  '/ws/educator-insights': 'Educator Insights',
 };
 
 interface WebSocketConnection {
