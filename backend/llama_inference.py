@@ -11,6 +11,23 @@ import base64
 from typing import Optional, Dict, Any, List
 from llama_cpp import Llama
 
+def _optimal_thread_count() -> int:
+    """Return a sensible thread count for llama-cpp inference.
+
+    Uses physical core count (not logical/hyperthreaded) when possible,
+    capped to leave 1 core free for the OS/event-loop.
+    """
+    try:
+        physical = os.cpu_count()  # logical cores
+        # On most consumer CPUs, physical ~ logical/2 (hyperthreading).
+        # llama-cpp benefits more from physical cores than HT threads.
+        import psutil
+        physical = psutil.cpu_count(logical=False) or physical
+    except Exception:
+        physical = os.cpu_count() or 4
+    # Use all physical cores minus 1, minimum 2
+    return max(2, (physical or 4) - 1)
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +59,7 @@ def detect_gpu() -> dict:
     logger.info("🖥️ No GPU detected, using CPU-only mode")
     return {
         "n_gpu_layers": 0,
-        "n_batch": 256,
+        "n_batch": 512,
         "gpu_name": None,
         "vram_mb": 0,
     }
@@ -203,12 +220,13 @@ class LlamaInference:
                     logger.warning(f"⚠️ Could not load vision projector, continuing text-only: {ve}")
                     chat_handler = None
 
+            n_threads = _optimal_thread_count()
             with SilenceOutput():
                 self.model = Llama(
                     model_path=model_path,
                     n_ctx=n_ctx,
                     verbose=False,
-                    n_threads=4,
+                    n_threads=n_threads,
                     n_batch=self.gpu_info["n_batch"],
                     n_gpu_layers=self.gpu_info["n_gpu_layers"],
                     **({"chat_handler": chat_handler} if chat_handler else {}),
@@ -217,7 +235,7 @@ class LlamaInference:
             self.is_loaded = True
             gpu_status = f"GPU: {self.gpu_info['gpu_name']}" if self.gpu_info["gpu_name"] else "CPU-only"
             vision_status = " + Vision" if self.has_vision else ""
-            logger.info(f"✅ Local model loaded ({gpu_status}{vision_status}): {model_path}")
+            logger.info(f"✅ Local model loaded ({gpu_status}{vision_status}, threads={n_threads}): {model_path}")
         except Exception as e:
             logger.error(f"❌ Failed to load model: {e}")
             raise
@@ -231,6 +249,7 @@ class LlamaInference:
         temperature: float = 0.7,
         top_p: float = 0.9,
         stop: Optional[list] = None,
+        repeat_penalty: float = 1.1,
     ) -> Dict[str, Any]:
         """Generate complete response (non-streaming)."""
         if not self.is_loaded or not self.model:
@@ -256,6 +275,7 @@ class LlamaInference:
                         max_tokens=max_tokens,
                         temperature=temperature,
                         top_p=top_p,
+                        repeat_penalty=repeat_penalty,
                         stop=stop,
                         echo=False,
                     )
@@ -325,6 +345,7 @@ class LlamaInference:
         temperature: float = 0.7,
         top_p: float = 0.9,
         stop: Optional[list] = None,
+        repeat_penalty: float = 1.1,
     ):
         """
         TRUE REAL-TIME STREAMING!
@@ -370,6 +391,7 @@ class LlamaInference:
                             max_tokens=max_tokens,
                             temperature=temperature,
                             top_p=top_p,
+                            repeat_penalty=repeat_penalty,
                             stop=stop,
                             echo=False,
                             stream=True,

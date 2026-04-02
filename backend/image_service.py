@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 import base64
 from io import BytesIO
+import numpy as np
 from PIL import Image
 
 logger = logging.getLogger(__name__)
@@ -136,8 +137,11 @@ def _load_openvino(model_path: Path):
     from optimum.intel.openvino import OVStableDiffusionXLPipeline
     import openvino as ov
 
-    device = _detect_openvino_device()
-    pipe = OVStableDiffusionXLPipeline.from_pretrained(str(model_path), compile=False, device=device)
+    # INT8 quantized models produce NaN on GPU — force CPU for reliability
+    pipe = OVStableDiffusionXLPipeline.from_pretrained(
+        str(model_path), compile=False, device="CPU",
+        ov_config={"CACHE_DIR": ""},
+    )
 
     core = ov.Core()
 
@@ -484,11 +488,24 @@ class ImageService:
             if guidance_scale is None:
                 guidance_scale = self.model_info.get("guidance", 0.0)
 
+            # Clamp dimensions to model max (INT8 models have fixed shape limits)
+            max_w = self.model_info.get("max_width")
+            max_h = self.model_info.get("max_height")
+            if max_w and width > max_w:
+                logger.info(f"Clamping width {width} -> {max_w} (model limit)")
+                width = max_w
+            if max_h and height > max_h:
+                logger.info(f"Clamping height {height} -> {max_h} (model limit)")
+                height = max_h
+
             # Auto-inject LoRA negative trigger words (e.g. "wrong" for wrong_lora)
             extra_neg = _get_negative_trigger_words()
             if extra_neg and extra_neg not in negative_prompt:
                 negative_prompt = f"{negative_prompt}, {extra_neg}"
 
+            logger.info(f"[DEBUG] generate_image params: model={self.model_key}, backend={self.model_info.get('backend')}, "
+                       f"steps={num_inference_steps}, guidance={guidance_scale}, "
+                       f"width={width}, height={height}, has_init_image={init_image is not None}")
             logger.info(f"Generating image: {prompt[:50]}...")
 
             import torch
@@ -518,6 +535,7 @@ class ImageService:
                         image=init_pil, strength=strength,
                         num_inference_steps=img2img_steps,
                         guidance_scale=guidance_scale,
+                        output_type="np",
                     )
                 else:
                     result = self.pipeline(
@@ -525,6 +543,7 @@ class ImageService:
                         num_inference_steps=num_inference_steps,
                         guidance_scale=guidance_scale,
                         width=width, height=height,
+                        output_type="np",
                     )
 
             elif backend == "openvino_flux":
@@ -536,6 +555,7 @@ class ImageService:
                     num_inference_steps=num_inference_steps,
                     guidance_scale=guidance_scale,
                     height=height, width=width,
+                    output_type="np",
                 )
 
             elif backend == "sd_cpp_flux":
@@ -589,6 +609,14 @@ class ImageService:
                 logger.debug(f"Metrics recording skipped: {me}")
 
             image = result.images[0]
+
+            # Sanitize NaN/inf values from INT8 quantization artifacts
+            if isinstance(image, np.ndarray):
+                if np.any(~np.isfinite(image)):
+                    logger.warning("NaN/inf pixels detected in output — sanitizing")
+                    image = np.nan_to_num(image, nan=0.0, posinf=1.0, neginf=0.0)
+                image = np.clip(image, 0.0, 1.0)
+                image = Image.fromarray((image * 255).round().astype(np.uint8))
 
             buffer = BytesIO()
             image.save(buffer, format='PNG')

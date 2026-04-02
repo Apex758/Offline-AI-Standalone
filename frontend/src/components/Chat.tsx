@@ -28,6 +28,7 @@ import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Ico
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
 import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
 import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import EyeIconData from '@hugeicons/core-free-icons/EyeIcon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -63,6 +64,7 @@ const BookMarkIcon: React.FC<{ className?: string; style?: React.CSSProperties }
 const CheckListIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckListIconData} {...p} />;
 const SpreadsheetIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={FileSpreadsheetIconData} {...p} />;
 const GraduationIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={GraduationScrollIconData} {...p} />;
+const EyeIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={EyeIconData} {...p} />;
 import { Message, FileOperationPlan } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -70,6 +72,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
+import FilePreviewModal from './FilePreviewModal';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP, GRADE_LEVELS } from '../data/teacherConstants';
 import curriculumIndex from '../data/curriculumIndex.json';
@@ -219,6 +222,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [loadingFolder, setLoadingFolder] = useState<string | null>(null);
   const [refreshingFiles, setRefreshingFiles] = useState(false);
   const [attachingFile, setAttachingFile] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<{ path: string; name: string; extension: string } | null>(null);
   const fileSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Resizable right panel
@@ -2084,7 +2088,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                       <div
                         key={file.path}
                         onClick={() => !isLoading_ && toggleFileAttach(file.path, file.name, file.extension)}
-                        className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition ${
+                        className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer transition ${
                           isAttached ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'hover:bg-theme-subtle'
                         }`}
                         title={file.path}
@@ -2103,6 +2107,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                           <p className="text-sm text-theme-heading truncate">{file.name}</p>
                           <p className="text-xs text-theme-hint">{formatFileSize(file.size)}</p>
                         </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setPreviewFile({ path: file.path, name: file.name, extension: file.extension }); }}
+                          className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex-shrink-0 opacity-0 group-hover:opacity-100"
+                          title="Preview file"
+                        >
+                          <EyeIcon className="w-3.5 h-3.5 text-theme-muted" />
+                        </button>
                       </div>
                     );
                   })}
@@ -2215,7 +2226,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                                   <div
                                                     key={subFile.path}
                                                     onClick={() => !isLoading_ && toggleFileAttach(subFile.path, subFile.name, subFile.extension)}
-                                                    className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
+                                                    className={`group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
                                                       isAttached ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-theme-subtle'
                                                     }`}
                                                     title={`${subFile.name} — ${formatFileSize(subFile.size)}`}
@@ -2231,6 +2242,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                                     </div>
                                                     <FileIcon className={`w-3.5 h-3.5 flex-shrink-0 ${getFileTypeColor(subFile.extension)}`} />
                                                     <span className="text-xs text-theme-heading truncate flex-1">{subFile.name}</span>
+                                                    <button
+                                                      onClick={(e) => { e.stopPropagation(); setPreviewFile({ path: subFile.path, name: subFile.name, extension: subFile.extension }); }}
+                                                      className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex-shrink-0 opacity-0 group-hover:opacity-100"
+                                                      title="Preview file"
+                                                    >
+                                                      <EyeIcon className="w-3 h-3 text-theme-muted" />
+                                                    </button>
                                                   </div>
                                                 );
                                               })
@@ -2247,7 +2265,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                     <div
                                       key={item.path}
                                       onClick={() => !isLoading_ && toggleFileAttach(item.path, item.name, item.extension)}
-                                      className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
+                                      className={`group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
                                         isAttached ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-theme-subtle'
                                       }`}
                                       title={`${item.name} — ${formatFileSize(item.size)}`}
@@ -2266,6 +2284,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                         <p className="text-xs text-theme-heading truncate">{item.name}</p>
                                       </div>
                                       <span className="text-[10px] text-theme-hint flex-shrink-0">{getFileTypeLabel(item.extension)}</span>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); setPreviewFile({ path: item.path, name: item.name, extension: item.extension }); }}
+                                        className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex-shrink-0 opacity-0 group-hover:opacity-100"
+                                        title="Preview file"
+                                      >
+                                        <EyeIcon className="w-3 h-3 text-theme-muted" />
+                                      </button>
                                     </div>
                                   );
                                 })
@@ -2588,6 +2613,16 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           </div>
         )}
       </div>
+
+      {/* File preview modal */}
+      {previewFile && (
+        <FilePreviewModal
+          filePath={previewFile.path}
+          fileName={previewFile.name}
+          extension={previewFile.extension}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
 
       {/* Drag-and-drop overlay */}
       {isDragOver && (

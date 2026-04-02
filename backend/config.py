@@ -179,8 +179,10 @@ IMAGE_MODEL_REGISTRY = {
         "folder":      "sdxl-turbo-int8",
         "backend":     "openvino",
         "description": "SDXL-Turbo INT8 (OpenVINO) — faster, ~2 GB",
-        "steps":       2,
-        "guidance":    0.0,
+        "steps":       1,
+        "guidance":    1.0,
+        "max_width":   512,
+        "max_height":  512,
         "supports_negative_prompt": True,
         "supports_img2img":        True,
     },
@@ -629,13 +631,13 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     # Compute effective tier
     # The LLM tier is the base. Vision/OCR can bump 1→2, but only if the
     # LLM is actually multimodal (has a vision projector) OR OCR is enabled
-    # alongside a vision-capable model.  Diffusion can bump 2→3, but NOT
-    # 1→3 — a text-only LLM cannot leverage image generation features.
+    # alongside a vision-capable model. Diffusion bumps tier to 3 when enabled,
+    # allowing tier 1 + diffusion to unlock image generation.
     tier = llm_tier
     if has_vision:
         tier = max(tier, 2)
-    if has_diffusion and tier >= 2:
-        tier = 3
+    if has_diffusion:
+        tier = max(tier, 3)
 
     # Dual model info
     dual_model = tier_config.get("dual_model", DEFAULT_TIER_CONFIG["dual_model"])

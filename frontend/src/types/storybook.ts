@@ -98,6 +98,8 @@ export interface StorybookFormData {
   subject: string;
   pageCount: number;
   imageMode: ImageMode;
+  /** Number of unique backgrounds to generate, or 'auto' to let the AI decide */
+  backgroundCount: number | 'auto';
   speakerCount: 1 | 2 | 3;
   speakers: SpeakerConfig[];
   // Curriculum alignment

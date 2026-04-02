@@ -152,7 +152,7 @@ ${curriculumBlock ? curriculumBlock + '\n\n' : ''}WRITING RULES:
 ${speakerInstruction}
 
 SCENE GROUPING:
-- Identify 2-5 unique locations/settings in the story
+- ${typeof formData.backgroundCount === 'number' ? `Use EXACTLY ${formData.backgroundCount} unique scene${formData.backgroundCount === 1 ? '' : 's'}/background${formData.backgroundCount === 1 ? '' : 's'} across all pages` : 'Identify 2-5 unique locations/settings in the story'}
 - Assign each a short sceneId (e.g., "park", "home", "school")
 - Multiple pages that take place in the same location must share the same sceneId
 - Provide a brief "description" for each scene (15-20 words) that describes the setting visually

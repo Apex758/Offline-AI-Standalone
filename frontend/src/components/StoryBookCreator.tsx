@@ -49,7 +49,7 @@ import SmartTextArea from './SmartTextArea';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { buildStorybookPrompt, buildNarrativePrompt, buildStructurePromptTemplate } from '../utils/storybookPromptBuilder';
 import { BUNDLED_SCENES, findBestScene, getScenesByCategory, SCENE_CATEGORY_LABELS } from '../data/storybookScenes';
-import { compressTransparentImage } from '../utils/imageCompression';
+import { compressImage, compressTransparentImage } from '../utils/imageCompression';
 import {
   generateAllPageImages,
   generateCharacterImage,
@@ -102,6 +102,7 @@ const DEFAULT_FORM: StorybookFormData = {
   subject: '',
   pageCount: 8,
   imageMode: 'none',
+  backgroundCount: 'auto',
   speakerCount: 1,
   speakers: DEFAULT_SPEAKERS,
   useCurriculum: true,
@@ -152,15 +153,25 @@ function tryParsePartialPages(raw: string): StoryPage[] {
 
 function tryParseFullBook(raw: string): ParsedStorybook | null {
   try {
+    // Strip markdown fences if present (```json ... ``` or ``` ... ```)
+    let cleaned = raw;
+    const fenceMatch = cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+    if (fenceMatch) cleaned = fenceMatch[1];
+
     // Find JSON boundaries
-    const start = raw.indexOf('{');
-    const end = raw.lastIndexOf('}');
-    if (start === -1 || end === -1) return null;
-    const json = raw.substring(start, end + 1);
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start === -1 || end === -1) {
+      console.error('[StoryBook] tryParseFullBook: no JSON braces found. Content preview:', raw.substring(0, 200));
+      return null;
+    }
+    const json = cleaned.substring(start, end + 1);
     const parsed = JSON.parse(json);
     if (parsed.pages && Array.isArray(parsed.pages)) return parsed as ParsedStorybook;
+    console.error('[StoryBook] tryParseFullBook: parsed JSON has no pages array. Keys:', Object.keys(parsed));
     return null;
-  } catch {
+  } catch (e) {
+    console.error('[StoryBook] tryParseFullBook: JSON parse failed:', e, 'Content preview:', raw.substring(0, 300));
     return null;
   }
 }
@@ -834,6 +845,74 @@ interface StoryBookCreatorProps {
 
 type View = 'input' | 'streaming' | 'editor' | 'playing' | 'history';
 
+// ─── Resource Image Picker (for importing backgrounds) ─────────────────────
+
+function ResourceImagePicker({ onSelect, onClose, accentColor }: {
+  onSelect: (imageData: string) => void;
+  onClose: () => void;
+  accentColor: string;
+}) {
+  const [images, setImages] = useState<{ id: string; title: string; imageUrl: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/images-history')
+      .then(r => r.json())
+      .then((data: any[]) => {
+        setImages(data.filter(d => d.imageUrl).map(d => ({ id: d.id, title: d.title || 'Untitled', imageUrl: d.imageUrl })));
+      })
+      .catch(() => setImages([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
+      <div
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[70vh] flex flex-col"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-theme">
+          <h3 className="font-semibold text-theme-heading">Choose Background Image</h3>
+          <button onClick={onClose} className="p-1 rounded hover:bg-theme-hover">
+            <Icon icon={Cancel01IconData} className="w-5 text-theme-muted" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Icon icon={Loading03IconData} className="w-6 animate-spin" style={{ color: accentColor }} />
+            </div>
+          ) : images.length === 0 ? (
+            <div className="text-center py-12 text-theme-muted">
+              <Icon icon={Image01IconData} className="w-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">No saved images found.</p>
+              <p className="text-xs mt-1">Generate images in the Image Generator to see them here.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {images.map(img => (
+                <button
+                  key={img.id}
+                  onClick={() => onSelect(img.imageUrl)}
+                  className="rounded-lg overflow-hidden border-2 border-transparent hover:border-current transition-all group"
+                  style={{ color: accentColor }}
+                >
+                  <img
+                    src={img.imageUrl}
+                    alt={img.title}
+                    className="w-full h-20 object-cover group-hover:scale-105 transition-transform"
+                  />
+                  <p className="text-[10px] text-theme-muted truncate px-1 py-0.5">{img.title}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StoryBookCreator({ tabId, savedData, onDataChange }: StoryBookCreatorProps) {
   const { settings } = useSettings();
   const { hasDiffusion, hasVision, tier } = useCapabilities();
@@ -862,6 +941,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const [activeTab, setActiveTab] = useState<'story' | 'questions' | 'settings'>('story');
   const [showImageGuidance, setShowImageGuidance] = useState(false);
   const [generationPhase, setGenerationPhase] = useState<'idle' | 'writing_story' | 'formatting_pages'>('idle');
+  const [narrativePreview, setNarrativePreview] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<AnimatedHTMLProgress | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -887,6 +967,10 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const wsRef = useRef<WebSocket | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadPageIdxRef = useRef<number>(0);
+  const bgFileInputRef = useRef<HTMLInputElement>(null);
+  const bgUploadPageIdxRef = useRef<number>(0);
+  const [showBgImportMenu, setShowBgImportMenu] = useState<number | null>(null);
+  const [showResourcePicker, setShowResourcePicker] = useState(false);
 
   // ── Restore saved data ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -970,16 +1054,25 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     const ws = getConnection(tabId, WS_ENDPOINT);
     wsRef.current = ws;
 
-    const useTwoPass = tier === 1;
+    // Two-pass (narrative then JSON) only for larger models that can handle
+    // the extra inference time.  Tier 1 (small/CPU) models use single-pass
+    // to avoid doubling generation time.
+    const useTwoPass = tier !== undefined && tier > 1;
 
     if (useTwoPass) {
-      // Listen for two-pass status messages
+      // Listen for two-pass status messages and narrative preview tokens
+      setNarrativePreview('');
       const statusHandler = (event: MessageEvent) => {
         try {
           const msg = JSON.parse(event.data);
           if (msg.type === 'status') {
             if (msg.status === 'writing_story') setGenerationPhase('writing_story');
-            else if (msg.status === 'formatting_pages') setGenerationPhase('formatting_pages');
+            else if (msg.status === 'formatting_pages') {
+              setGenerationPhase('formatting_pages');
+              setNarrativePreview('');  // clear preview when moving to Pass 2
+            }
+          } else if (msg.type === 'narrative_token' && msg.content) {
+            setNarrativePreview(prev => prev + msg.content);
           }
         } catch { /* ignore non-JSON */ }
       };
@@ -1012,7 +1105,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     if (!isStreaming && streamingContent) {
       // Streaming finished — parse full book
       setGenerationPhase('idle');
+      console.log('[StoryBook] Streaming done. Content length:', streamingContent.length, 'Preview:', streamingContent.substring(0, 200));
       const full = tryParseFullBook(streamingContent);
+      console.log('[StoryBook] Parse result:', full ? `${full.pages.length} pages` : 'FAILED (null)');
       if (full && full.pages.length > 0) {
         // Auto-match bundled scenes
         const pages = full.pages.map(p => ({
@@ -1072,6 +1167,32 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     };
     reader.readAsDataURL(file);
     e.target.value = '';
+  };
+
+  // ── Background image upload ────────────────────────────────────────────────
+  const handleBgUpload = (pageIdx: number) => {
+    bgUploadPageIdxRef.current = pageIdx;
+    bgFileInputRef.current?.click();
+  };
+
+  const onBgFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUri = ev.target?.result as string;
+      const compressed = await compressImage(dataUri, { maxWidth: 1024, maxHeight: 576, format: 'webp' });
+      updatePage(bgUploadPageIdxRef.current, { backgroundImageData: compressed });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleResourceImageSelect = (imageData: string) => {
+    compressImage(imageData, { maxWidth: 1024, maxHeight: 576, format: 'webp' }).then(compressed => {
+      updatePage(currentPageIdx, { backgroundImageData: compressed });
+    });
+    setShowResourcePicker(false);
   };
 
   // ── AI Image Generation Pipeline ──────────────────────────────────────────
@@ -1566,6 +1687,74 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             />
           </div>
 
+          {/* Background Count — only when AI image mode */}
+          {formData.imageMode === 'ai' && (
+            <div>
+              <label className="block text-sm font-medium text-theme-label mb-2">
+                Backgrounds
+                <span className="ml-1.5 text-xs font-normal text-theme-muted">
+                  (suggested max: {Math.ceil(formData.pageCount / 2)})
+                </span>
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => updateForm('backgroundCount', 'auto')}
+                  className="px-3 py-1.5 rounded-lg text-sm border-2 transition-all"
+                  style={{
+                    borderColor: formData.backgroundCount === 'auto' ? accentColor : 'transparent',
+                    background: formData.backgroundCount === 'auto' ? `${accentColor}18` : 'var(--bg-secondary)',
+                    color: formData.backgroundCount === 'auto' ? accentColor : undefined,
+                  }}
+                >
+                  Auto
+                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      const current = typeof formData.backgroundCount === 'number' ? formData.backgroundCount : Math.ceil(formData.pageCount / 2);
+                      updateForm('backgroundCount', Math.max(1, current - 1));
+                    }}
+                    className="w-7 h-7 rounded-lg border border-theme-strong hover:bg-theme-secondary flex items-center justify-center text-theme-muted text-sm"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    max={formData.pageCount}
+                    value={typeof formData.backgroundCount === 'number' ? formData.backgroundCount : Math.ceil(formData.pageCount / 2)}
+                    onChange={e => {
+                      const v = Math.min(formData.pageCount, Math.max(1, Number(e.target.value) || 1));
+                      updateForm('backgroundCount', v);
+                    }}
+                    onFocus={() => {
+                      if (formData.backgroundCount === 'auto') updateForm('backgroundCount', Math.ceil(formData.pageCount / 2));
+                    }}
+                    className="w-12 text-center py-1 text-sm border border-theme-strong rounded-lg focus:ring-1 bg-theme"
+                    style={{
+                      '--tw-ring-color': accentColor,
+                      borderColor: typeof formData.backgroundCount === 'number' ? accentColor : undefined,
+                    } as React.CSSProperties}
+                  />
+                  <button
+                    onClick={() => {
+                      const current = typeof formData.backgroundCount === 'number' ? formData.backgroundCount : Math.ceil(formData.pageCount / 2);
+                      updateForm('backgroundCount', Math.min(formData.pageCount, current + 1));
+                    }}
+                    className="w-7 h-7 rounded-lg border border-theme-strong hover:bg-theme-secondary flex items-center justify-center text-theme-muted text-sm"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-theme-muted mt-1.5">
+                {formData.backgroundCount === 'auto'
+                  ? 'The AI will decide how many unique backgrounds to use.'
+                  : `The story will use exactly ${formData.backgroundCount} unique background${formData.backgroundCount === 1 ? '' : 's'}.`}
+              </p>
+            </div>
+          )}
+
           {/* Speakers */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-2">Narrators & Voices</label>
@@ -1678,9 +1867,16 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     return (
       <div className="h-full relative overflow-hidden">
         {isDark ? <KidsStorybookSkeletonNight /> : <KidsStorybookSkeletonDay />}
+        {/* Narrative preview overlay during Pass 1 */}
+        {generationPhase === 'writing_story' && narrativePreview && (
+          <div className="absolute inset-x-4 bottom-14 top-4 z-10 overflow-y-auto rounded-xl bg-black/40 backdrop-blur-md p-4 text-white/90 text-sm leading-relaxed whitespace-pre-wrap pointer-events-none">
+            <p className="text-xs uppercase tracking-wide text-white/50 mb-2">Writing the story&hellip;</p>
+            {narrativePreview}
+          </div>
+        )}
         {/* Cancel button overlaid on bottom-right */}
         <button
-          onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setView('input'); }}
+          onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setView('input'); setNarrativePreview(''); }}
           className="absolute bottom-4 right-4 z-10 text-sm px-3 py-1.5 rounded-lg bg-black/20 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/30 transition-colors"
         >
           Cancel
@@ -2020,6 +2216,40 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   Generate AI Background
                 </button>
               )}
+              {/* Import background */}
+              <div className="relative mt-2">
+                <button
+                  onClick={() => setShowBgImportMenu(prev => prev === currentPageIdx ? null : currentPageIdx)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-theme-strong hover:bg-theme-secondary text-sm text-theme-muted"
+                >
+                  <Icon icon={Upload01IconData} className="w-4" />
+                  Import Background
+                </button>
+                {showBgImportMenu === currentPageIdx && (
+                  <div className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-gray-900 rounded-xl border border-theme shadow-lg z-20">
+                    <button
+                      onClick={() => {
+                        setShowBgImportMenu(null);
+                        handleBgUpload(currentPageIdx);
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-theme-heading hover:bg-theme-secondary rounded-t-xl"
+                    >
+                      <Icon icon={Upload01IconData} className="w-4" />
+                      Upload from computer
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowBgImportMenu(null);
+                        setShowResourcePicker(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-theme-heading hover:bg-theme-secondary rounded-b-xl"
+                    >
+                      <Icon icon={Image01IconData} className="w-4" />
+                      Browse saved images
+                    </button>
+                  </div>
+                )}
+              </div>
               {currentPage.backgroundImageData && (
                 <div className="relative mt-2">
                   <img
@@ -2216,7 +2446,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         />
       )}
 
-      {/* Hidden file input */}
+      {/* Hidden file input (character) */}
       <input
         ref={fileInputRef}
         type="file"
@@ -2224,6 +2454,23 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         className="hidden"
         onChange={onFileSelected}
       />
+      {/* Hidden file input (background) */}
+      <input
+        ref={bgFileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={onBgFileSelected}
+      />
+
+      {/* Resource image picker modal */}
+      {showResourcePicker && (
+        <ResourceImagePicker
+          onSelect={handleResourceImageSelect}
+          onClose={() => setShowResourcePicker(false)}
+          accentColor={accentColor}
+        />
+      )}
 
       {/* Export settings modal */}
       {showExportSettings && (

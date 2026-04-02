@@ -37,7 +37,7 @@ from config import (
     LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR,
     MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE,
     IMAGE_MODELS_DIR, get_selected_diffusion_model, set_selected_diffusion_model,
-    get_diffusion_model_path, scan_diffusion_models, get_image_model_info,
+    get_diffusion_model_path, scan_diffusion_models, get_image_model_info, get_image_model_path,
     get_tier_config, set_tier_config, get_model_tier, compute_effective_tier,
     LAMA_MODEL_PATH,
 )
@@ -1097,6 +1097,7 @@ async def websocket_chat(websocket: WebSocket):
                             prompt_template=prompt,
                             max_tokens=_t1_params["max_tokens"] if _is_tier1 else LLAMA_PARAMS["max_tokens"],
                             temperature=_t1_params["temperature"] if _is_tier1 else LLAMA_PARAMS["temperature"],
+                            repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else LLAMA_PARAMS.get("repeat_penalty", 1.1),
                         )
                 elif image_files:
                     # Vision not available — tell the user
@@ -1120,6 +1121,7 @@ async def websocket_chat(websocket: WebSocket):
                         prompt_template=prompt,
                         max_tokens=effective_max_tokens,
                         temperature=_t1_params["temperature"] if _is_tier1 else LLAMA_PARAMS["temperature"],
+                        repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else LLAMA_PARAMS.get("repeat_penalty", 1.1),
                     )
 
                 async for chunk in stream_gen:
@@ -1542,7 +1544,8 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -1696,7 +1699,8 @@ async def quiz_websocket(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -1849,7 +1853,8 @@ async def rubric_websocket(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -1979,7 +1984,8 @@ async def kindergarten_websocket(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -2107,7 +2113,8 @@ async def multigrade_websocket(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     chunk_count += 1
                     if job_id in cancelled_job_ids:
@@ -2238,7 +2245,8 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -2398,7 +2406,8 @@ async def worksheet_websocket(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     chunk_count += 1
                     if chunk_count <= 5:  # Log first few chunks
@@ -2540,7 +2549,8 @@ async def presentation_websocket(websocket: WebSocket):
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=_t1_params.get("max_tokens", 4000) if _is_tier1 else 4000,
-                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
+                    repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -2608,8 +2618,9 @@ async def storybook_websocket(websocket: WebSocket):
 
     cancelled_job_ids = set()
 
-    async def _run_generation(inference, prompt_text, full_prompt_tpl, max_tok, temp, job_id, *, stream_tokens=True):
-        """Run a generation pass. If stream_tokens is False, collect internally and return the text."""
+    async def _run_generation(inference, prompt_text, full_prompt_tpl, max_tok, temp, job_id, *, stream_tokens=True, repeat_penalty=1.1, token_type="token"):
+        """Run a generation pass. If stream_tokens is False, collect internally and return the text.
+        token_type controls the WebSocket message type (e.g. 'narrative_token' for Pass 1 preview)."""
         collected = []
         token_buffer = []
         last_send = time.time()
@@ -2619,6 +2630,7 @@ async def storybook_websocket(websocket: WebSocket):
             prompt_template=full_prompt_tpl,
             max_tokens=max_tok,
             temperature=temp,
+            repeat_penalty=repeat_penalty,
         ):
             if job_id in cancelled_job_ids:
                 await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -2635,7 +2647,7 @@ async def storybook_websocket(websocket: WebSocket):
             if chunk.get("finished"):
                 if stream_tokens and token_buffer:
                     try:
-                        await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                        await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
                         await asyncio.sleep(0)
                     except Exception as e:
                         logger.error(f"Error sending final tokens: {e}")
@@ -2647,7 +2659,7 @@ async def storybook_websocket(websocket: WebSocket):
                     token_buffer.append(chunk["token"])
                     if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                         try:
-                            await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                            await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
                             token_buffer = []
                             last_send = time.time()
                             await asyncio.sleep(0)
@@ -2685,6 +2697,7 @@ async def storybook_websocket(websocket: WebSocket):
 
             max_tokens = _t1_params.get("max_tokens", 4000) if _is_tier1 else 4000
             temperature = _t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
+            repeat_penalty = _t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1
 
             slot_mode = None
             try:
@@ -2708,7 +2721,8 @@ async def storybook_websocket(websocket: WebSocket):
                     await websocket.send_json({"type": "status", "status": "writing_story", "jobId": job_id})
                     narrative_text = await _run_generation(
                         inference, narrative_prompt, narrative_full,
-                        max_tokens, temperature, job_id, stream_tokens=False,
+                        max_tokens, temperature, job_id, stream_tokens=True,
+                        repeat_penalty=repeat_penalty, token_type="narrative_token",
                     )
                     if narrative_text is None:
                         continue  # cancelled or errored
@@ -2730,6 +2744,7 @@ async def storybook_websocket(websocket: WebSocket):
                     result = await _run_generation(
                         inference, structure_prompt, structure_full,
                         max_tokens, temperature, job_id, stream_tokens=True,
+                        repeat_penalty=repeat_penalty,
                     )
                     if result is not None:
                         try:
@@ -2757,6 +2772,7 @@ async def storybook_websocket(websocket: WebSocket):
                     result = await _run_generation(
                         inference, prompt, full_prompt,
                         max_tokens, temperature, job_id, stream_tokens=True,
+                        repeat_penalty=repeat_penalty,
                     )
                     if result is not None:
                         try:
@@ -5911,7 +5927,7 @@ async def select_diffusion_model(request: Request):
             set_selected_diffusion_model('')
             return JSONResponse(content={"status": "ok", "message": "Diffusion model disabled"})
 
-        model_path = IMAGE_MODELS_DIR / model_name
+        model_path = get_image_model_path(model_name)
         if not model_path.exists():
             return JSONResponse(
                 status_code=404,
@@ -6007,15 +6023,29 @@ async def health():
         "chat_memory_db": os.path.exists(get_chat_memory().db_path)
     }
 
+@app.post("/api/restart")
+async def restart():
+    """Restart the backend by cleaning up processes and triggering uvicorn reload"""
+    cleanup_all_processes()
+
+    # Schedule a file touch to trigger uvicorn --reload after response is sent
+    async def _trigger_reload():
+        await asyncio.sleep(0.5)
+        Path(__file__).touch()
+
+    asyncio.create_task(_trigger_reload())
+
+    return {"status": "restarting"}
+
 @app.post("/api/shutdown")
 async def shutdown():
     """Gracefully shutdown the backend and cleanup all processes"""
     cleanup_all_processes()
-    
+
     # Schedule server shutdown after sending response
     import asyncio
     asyncio.create_task(_shutdown_server())
-    
+
     return {"status": "shutting down"}
 
 async def _shutdown_server():
@@ -6168,6 +6198,24 @@ async def search_files(query: str):
         if len(results) >= 200:
             break
     return JSONResponse(content={"items": results})
+
+@app.get("/api/file-explorer/preview-by-path")
+async def preview_by_path(filePath: str):
+    """Parse a local file by path and return preview content."""
+    if not os.path.isfile(filePath):
+        return JSONResponse(content={"error": "File not found"}, status_code=404)
+    max_size = 50 * 1024 * 1024
+    if os.path.getsize(filePath) > max_size:
+        return JSONResponse(content={"error": "File too large (max 50MB)"}, status_code=400)
+    try:
+        from file_parser import parse_file
+        with open(filePath, 'rb') as f:
+            content = f.read()
+        result = parse_file(content, os.path.basename(filePath))
+        return JSONResponse(content=result)
+    except Exception as e:
+        logging.error(f"Error previewing file by path: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 @app.get("/api/file-explorer/read-file")
 async def read_file_content(filePath: str):

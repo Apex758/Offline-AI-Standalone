@@ -466,12 +466,13 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     if (isElectron) {
       await (window as any).electronAPI.restartApp();
     } else {
+      // Browser mode: trigger backend reload via uvicorn --reload, then refresh page
       try {
-        await fetch('/api/shutdown', { method: 'POST' });
+        await fetch('/api/restart', { method: 'POST' });
       } catch (e) {
-        // Backend may already be down
+        // Backend may already be restarting
       }
-      setTimeout(() => window.location.reload(), 1000);
+      setTimeout(() => window.location.reload(), 2000);
     }
   };
 

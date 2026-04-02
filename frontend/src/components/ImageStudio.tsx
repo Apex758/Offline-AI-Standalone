@@ -419,7 +419,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [negativePrompt, setNegativePrompt] = useState('deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, bad anatomy, bad proportions, extra limbs, disfigured, fused fingers, too many fingers, six fingers, long neck, ugly, low quality, worst quality');
   const [width, setWidth] = useState(512);
   const [height, setHeight] = useState(512);
-  const [numInferenceSteps, setNumInferenceSteps] = useState(4);
+  const [numInferenceSteps, setNumInferenceSteps] = useState(2);
   const [numImages, setNumImages] = useState(1);
   const [referenceImage, setReferenceImage] = useState<string | null>(null); // img2img reference
   const [img2imgStrength, setImg2imgStrength] = useState(0.5); // 0 = keep original, 1 = fully new
@@ -2168,6 +2168,35 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       <option value={4}>4 Images</option>
                       <option value={5}>5 Images</option>
                     </select>
+                  </div>
+
+                  {/* Quality Preset */}
+                  <div>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Quality</label>
+                    <div className="flex gap-2">
+                      {([
+                        { label: 'Fast', steps: 2, hint: '~3s' },
+                        { label: 'Balanced', steps: 8, hint: '~10s' },
+                        { label: 'Quality', steps: 16, hint: '~25s' },
+                      ] as const).map(preset => {
+                        const active = numInferenceSteps === preset.steps;
+                        return (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => setNumInferenceSteps(preset.steps)}
+                            className={`flex-1 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                              active
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                : 'border-transparent bg-theme-secondary text-theme-label hover:bg-theme-hover'
+                            }`}
+                          >
+                            {preset.label}
+                            <span className="block text-[10px] font-normal text-theme-hint">{preset.hint}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Generate Button + Time Estimate */}
