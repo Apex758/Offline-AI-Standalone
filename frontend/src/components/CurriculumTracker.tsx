@@ -144,6 +144,25 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     incompleteElos: { eloId: string; elo: string; checked: number; total: number }[];
   } | null>(null);
 
+  // Completion history panel state
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [completedHistory, setCompletedHistory] = useState<Array<{ id: string; topic_title: string; grade: string; subject: string; completed_at: string }>>([]);
+
+  const loadCompletedHistory = async () => {
+    try {
+      const data = await milestoneApi.getCompleted(teacherId);
+      setCompletedHistory(data);
+    } catch (error) {
+      console.error('Failed to load completed milestones:', error);
+    }
+  };
+
+  const toggleHistoryPanel = () => {
+    const opening = !historyOpen;
+    setHistoryOpen(opening);
+    if (opening) loadCompletedHistory();
+  };
+
   // Draggable divider: right panel as fraction of total width (0.4 = 40%)
   const [rightPanelRatio, setRightPanelRatio] = useState(() => {
     const saved = localStorage.getItem('curriculum-tracker-divider');
@@ -467,7 +486,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       if (update.status === 'completed') {
         const milestone = milestones.find(m => m.id === milestoneId);
         if (milestone && milestone.checklist && milestone.checklist.length > 0) {
-          const allChecked = milestone.checklist.map(item => ({ ...item, checked: true }));
+          const nowISO = new Date().toISOString();
+          const allChecked = milestone.checklist.map(item => ({ ...item, checked: true, checked_at: item.checked_at || nowISO }));
           update = { ...update, checklist: allChecked, checklist_json: JSON.stringify(allChecked) };
         }
       }
@@ -475,7 +495,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       if (update.status === 'not_started') {
         const milestone = milestones.find(m => m.id === milestoneId);
         if (milestone && milestone.checklist && milestone.checklist.length > 0) {
-          const allUnchecked = milestone.checklist.map(item => ({ ...item, checked: false }));
+          const allUnchecked = milestone.checklist.map(item => ({ ...item, checked: false, checked_at: null }));
           update = { ...update, checklist: allUnchecked, checklist_json: JSON.stringify(allUnchecked) };
         }
       }
@@ -494,8 +514,9 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   };
 
   const handleChecklistToggle = async (milestone: Milestone, index: number) => {
+    const nowISO = new Date().toISOString();
     const updatedChecklist = milestone.checklist.map((item, i) =>
-      i === index ? { ...item, checked: !item.checked } : item
+      i === index ? { ...item, checked: !item.checked, checked_at: !item.checked ? nowISO : null } : item
     );
     const updates: Partial<Milestone> = { checklist: updatedChecklist };
     // Auto-switch to in_progress when first outcome is checked on a not_started milestone
@@ -691,6 +712,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                               {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
                               {item.text}
                             </span>
+                            {item.checked && item.checked_at && (
+                              <span className="ml-2 flex-shrink-0 text-[10px] text-theme-muted bg-theme-surface px-1.5 py-0.5 rounded">
+                                {new Date(item.checked_at).toLocaleDateString()}
+                              </span>
+                            )}
                           </label>
                         );
                       })}
@@ -748,6 +774,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                             {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
                             {item.text}
                           </span>
+                          {item.checked && item.checked_at && (
+                            <span className="ml-2 flex-shrink-0 text-[10px] text-theme-muted bg-theme-surface px-1.5 py-0.5 rounded">
+                              {new Date(item.checked_at).toLocaleDateString()}
+                            </span>
+                          )}
                         </label>
                       ))}
                     </div>
@@ -996,6 +1027,13 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           </div>
 
           <div className="flex items-center space-x-3">
+            <button
+              onClick={toggleHistoryPanel}
+              className={`p-2.5 rounded-lg transition-colors ${historyOpen ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'}`}
+              title="Completion History"
+            >
+              <Clock className="w-5 h-5" />
+            </button>
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2" data-tutorial="overall-progress">
               <div className="text-sm text-white/80">Overall Progress</div>
               <div className="text-2xl font-bold">
@@ -1257,8 +1295,9 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                           type="checkbox"
                           checked={item.checked}
                           onChange={() => {
+                            const nowISO = new Date().toISOString();
                             const updated = selectedMilestone.checklist.map((c, i) =>
-                              i === index ? { ...c, checked: !c.checked } : c
+                              i === index ? { ...c, checked: !c.checked, checked_at: !c.checked ? nowISO : null } : c
                             );
                             setSelectedMilestone({ ...selectedMilestone, checklist: updated });
                           }}
@@ -1269,6 +1308,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                           {item.key.match(/^\d/) && <span className="font-semibold mr-1">{item.key}</span>}
                           {item.text}
                         </span>
+                        {item.checked && item.checked_at && (
+                          <span className="ml-2 flex-shrink-0 text-[10px] text-theme-muted bg-theme-surface px-1.5 py-0.5 rounded">
+                            {new Date(item.checked_at).toLocaleDateString()}
+                          </span>
+                        )}
                       </label>
                     ))}
                   </div>
@@ -1365,6 +1409,74 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           </div>
         </div>
       )}
+
+      {/* Completion History Panel */}
+      <div
+        className={`fixed top-0 right-0 h-full z-40 border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
+          historyOpen ? 'w-80' : 'w-0'
+        }`}
+      >
+        {historyOpen && (
+          <div className="h-full flex flex-col p-4 w-80">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-theme-title flex items-center gap-2">
+                <Clock className="w-5 h-5" style={{ color: accentColor }} />
+                Completion History
+              </h3>
+              <button
+                onClick={() => setHistoryOpen(false)}
+                className="p-1 rounded hover:bg-theme-hover transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-theme-muted" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-1">
+              {completedHistory.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-theme-muted text-sm">No completed milestones yet</p>
+                </div>
+              ) : (
+                (() => {
+                  const grouped: Record<string, typeof completedHistory> = {};
+                  for (const m of completedHistory) {
+                    const dateKey = new Date(m.completed_at).toLocaleDateString(undefined, {
+                      year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                    if (!grouped[dateKey]) grouped[dateKey] = [];
+                    grouped[dateKey].push(m);
+                  }
+                  return Object.entries(grouped).map(([date, items]) => (
+                    <div key={date} className="mb-3">
+                      <div className="text-xs font-bold uppercase tracking-wider text-theme-muted px-2 py-1.5 sticky top-0 bg-theme-secondary">
+                        {date}
+                      </div>
+                      <div className="space-y-1">
+                        {items.map((m) => (
+                          <div
+                            key={m.id}
+                            className="px-3 py-2 rounded-lg bg-theme-tertiary hover:bg-theme-hover transition-colors"
+                          >
+                            <p className="text-sm font-medium text-theme-label line-clamp-2">{m.topic_title}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span
+                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                style={{ background: `${accentColor}15`, color: accentColor }}
+                              >
+                                {m.grade}
+                              </span>
+                              <span className="text-[10px] text-theme-muted">{m.subject}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ));
+                })()
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Tutorial Components */}
       <TutorialOverlay

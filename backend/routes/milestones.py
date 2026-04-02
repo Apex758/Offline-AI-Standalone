@@ -148,6 +148,13 @@ async def get_progress(teacher_id: str):
         "byGradeSubject": breakdown
     }
 
+@router.get("/{teacher_id}/completed")
+async def get_completed(teacher_id: str):
+    """Get all completed milestones with completion dates"""
+    db = get_milestone_db()
+    milestones = db.get_completed_milestones(teacher_id)
+    return {"milestones": milestones, "count": len(milestones)}
+
 @router.get("/{teacher_id}/upcoming")
 async def get_upcoming(teacher_id: str, days: int = 7):
     """Get upcoming milestones"""

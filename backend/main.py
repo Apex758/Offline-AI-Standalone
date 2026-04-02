@@ -3200,21 +3200,23 @@ async def educator_insights_websocket(websocket: WebSocket):
             generation_mode = data.get("generationMode", "queued")
             teacher_id = data.get("teacherId", "default_teacher")
             user_id = data.get("userId")
+            registration_date = data.get("registrationDate")
 
-            # Aggregate all data
             import insights_service
+
+            # Get date context FIRST (needed for date-filtered aggregation)
             try:
-                all_data = insights_service.aggregate_all(teacher_id, user_id)
+                date_context = insights_service.get_report_date_context(teacher_id, user_id, registration_date)
+            except Exception:
+                date_context = {"is_first_report": True, "from_date": datetime.now().strftime("%Y-%m-%d"), "to_date": datetime.now().strftime("%Y-%m-%d"), "previous_report": None, "previous_report_id": None, "report_count": 0}
+
+            # Aggregate all data with date range filtering
+            try:
+                all_data = insights_service.aggregate_all(teacher_id, user_id, date_context.get("from_date"), date_context.get("to_date"))
             except Exception as e:
                 logger.error(f"Insights data aggregation error: {e}")
                 await websocket.send_json({"type": "error", "message": f"Data aggregation failed: {e}"})
                 continue
-
-            # Get date context for interval-based generation
-            try:
-                date_context = insights_service.get_report_date_context(teacher_id, user_id)
-            except Exception:
-                date_context = {"is_first_report": True, "from_date": datetime.now().strftime("%Y-%m-%d"), "to_date": datetime.now().strftime("%Y-%m-%d"), "previous_report": None, "previous_report_id": None}
 
             prev_report = date_context.get("previous_report")
             prev_pass_outputs = {}
@@ -3323,6 +3325,16 @@ async def educator_insights_websocket(websocket: WebSocket):
                 else:
                     continue
 
+                # Apply tone/depth progression based on how many reports have been generated
+                report_count = date_context.get("report_count", 0)
+                if report_count <= 2:
+                    tone_prefix = "This is an early report for a new user. Use a warm, educational tone. Briefly explain what each metric means and why it matters. "
+                elif report_count <= 7:
+                    tone_prefix = "This teacher has a few reports under their belt. Be direct but provide some context. Focus on changes since last report. "
+                else:
+                    tone_prefix = "This is an experienced user. Be concise and data-driven. Skip explanations of metrics — focus on actionable deltas and trends. "
+                system_prompt = tone_prefix + system_prompt
+
                 user_prompt = "Analyze the data provided and generate your response."
                 full_prompt = build_prompt(system_prompt, user_prompt)
 
@@ -3427,6 +3439,7 @@ async def educator_insights_websocket(websocket: WebSocket):
                 "from_date": date_context.get("from_date"),
                 "to_date": date_context.get("to_date", datetime.now().strftime("%Y-%m-%d")),
                 "previous_report_id": date_context.get("previous_report_id"),
+                "report_number": date_context.get("report_count", 0) + 1,
                 "passes": [
                     {"key": pd["key"], "name": pd["name"], "output": pass_outputs.get(pd["key"], "")}
                     for pd in PASS_DEFINITIONS

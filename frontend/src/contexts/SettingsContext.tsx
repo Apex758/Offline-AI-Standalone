@@ -46,6 +46,7 @@ export interface UserProfile {
   school: string;
   gradeSubjects: GradeSubjectMapping;
   filterContentByProfile: boolean;
+  registrationDate?: string;
   // Legacy fields — kept for migration only
   gradeLevels?: string[];
   subjects?: string[];
@@ -342,6 +343,8 @@ const loadSettingsFromStorage = (): Settings => {
           ...DEFAULT_SETTINGS.profile,
           ...(parsed.profile || {}),
           gradeSubjects,
+          // Backfill registrationDate for existing users who already completed setup
+          registrationDate: (parsed.profile?.registrationDate) || (parsed.tutorials?.hasCompletedSetup ? new Date().toISOString() : undefined),
           // Clear legacy fields
           gradeLevels: undefined,
           subjects: undefined,
@@ -519,7 +522,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
           hasSeenWelcome: true,
           enabledModules: modules,
         },
-        profile: profile ? { ...prev.profile, ...profile } : prev.profile,
+        profile: profile
+          ? { ...prev.profile, ...profile, registrationDate: prev.profile.registrationDate || new Date().toISOString() }
+          : prev.profile,
         sidebarOrder: newSidebarOrder,
       };
     });

@@ -73,7 +73,7 @@ import { useAchievementContext } from '../contexts/AchievementContext';
 import MiniTrophyCard from './MiniTrophyCard';
 import TrophyDetailCard from './TrophyDetailCard';
 import { getTrophyType } from '../config/trophyMap';
-import { getTrophyImage, getTrophyImageForTier, type TrophyTier } from '../assets/trophyImages';
+import { getTrophyImageForTier, type TrophyTier } from '../assets/trophyImages';
 import type { NewlyEarnedAchievement } from '../types/achievement';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 
@@ -701,6 +701,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                                 icon_name: def.icon_name,
                                 rarity: def.rarity,
                                 points: def.points,
+                                tier: def.tier,
                               });
                             }
                           }}
@@ -760,7 +761,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Trophy Detail Modal */}
       {viewingTrophy && (() => {
         const tType = getTrophyType(viewingTrophy.achievement_id);
-        const tSrc = tType ? getTrophyImage(tType) : undefined;
+        const tSrc = tType ? getTrophyImageForTier(tType, (viewingTrophy.tier ?? 'gold') as TrophyTier) : undefined;
         return tSrc ? (
           <TrophyDetailCard
             achievement={viewingTrophy}

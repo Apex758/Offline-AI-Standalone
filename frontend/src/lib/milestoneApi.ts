@@ -43,6 +43,12 @@ export const milestoneApi = {
     return response.data;
   },
 
+  // Get completed milestones with completion dates
+  getCompleted: async (teacherId: string): Promise<Array<{ id: string; topic_title: string; grade: string; subject: string; completed_at: string }>> => {
+    const response = await axios.get(`${API_URL}/${teacherId}/completed`);
+    return response.data.milestones;
+  },
+
   // Get upcoming milestones
   getUpcoming: async (teacherId: string, days: number = 7) => {
     const response = await axios.get(`${API_URL}/${teacherId}/upcoming?days=${days}`);

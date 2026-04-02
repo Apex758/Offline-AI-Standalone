@@ -2,6 +2,7 @@ export interface ChecklistItem {
   key: string;
   text: string;
   checked: boolean;
+  checked_at: string | null;
 }
 
 export interface Milestone {

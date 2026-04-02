@@ -129,14 +129,14 @@ class MilestoneDB:
             elif not outcome.strip():
                 continue
             key, text = MilestoneDB._extract_key_and_text(outcome, i)
-            checklist.append({"key": key, "text": text, "checked": False})
+            checklist.append({"key": key, "text": text, "checked": False, "checked_at": None})
         return json.dumps(checklist)
 
     @staticmethod
     def _merge_checklists(existing_json: str, specific_outcomes: list) -> str:
         """Merge new curriculum outcomes with existing checked state."""
         existing = json.loads(existing_json) if existing_json else []
-        existing_map = {item['key']: item['checked'] for item in existing}
+        existing_map = {item['key']: {"checked": item['checked'], "checked_at": item.get('checked_at')} for item in existing}
 
         checklist = []
         for i, outcome in enumerate(specific_outcomes):
@@ -146,7 +146,8 @@ class MilestoneDB:
             elif not outcome.strip():
                 continue
             key, text = MilestoneDB._extract_key_and_text(outcome, i)
-            checklist.append({"key": key, "text": text, "checked": existing_map.get(key, False)})
+            prev = existing_map.get(key, {"checked": False, "checked_at": None})
+            checklist.append({"key": key, "text": text, "checked": prev["checked"], "checked_at": prev["checked_at"]})
         return json.dumps(checklist)
     
     def get_connection(self):
@@ -330,6 +331,20 @@ class MilestoneDB:
         finally:
             conn.close()
     
+    def get_completed_milestones(self, teacher_id: str) -> List[Dict[str, Any]]:
+        """Get all completed milestones ordered by completion date (most recent first)."""
+        conn = self.get_connection()
+        try:
+            rows = conn.execute("""
+                SELECT id, topic_title, grade, subject, completed_at
+                FROM milestones
+                WHERE teacher_id = ? AND status = 'completed' AND completed_at IS NOT NULL
+                ORDER BY completed_at DESC
+            """, (teacher_id,)).fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            conn.close()
+
     def get_upcoming_milestones(self, teacher_id: str, days_ahead: int = 7) -> List[Dict[str, Any]]:
         """Get milestones due in the next N days"""
         conn = self.get_connection()
@@ -371,6 +386,7 @@ class MilestoneDB:
                     checklist = json.loads(row['checklist_json'])
                     for item in checklist:
                         item['checked'] = False
+                        item['checked_at'] = None
                     conn.execute(
                         "UPDATE milestones SET checklist_json = ? WHERE id = ?",
                         (json.dumps(checklist), row['id'])

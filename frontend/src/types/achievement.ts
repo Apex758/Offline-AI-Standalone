@@ -40,6 +40,7 @@ export interface NewlyEarnedAchievement extends EarnedAchievement {
   icon_name: string;
   rarity: AchievementRarity;
   points: number;
+  tier?: AchievementTier;
 }
 
 export interface TeacherRank {

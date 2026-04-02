@@ -289,13 +289,18 @@ TIER1_PROMPTS = {
     ),
 
     "insights-recommendations": (
-        "You are an experienced teaching coach. Based on these data findings from a teacher's classroom, suggest practical improvements.\n"
-        "IMPORTANT: Output ONLY the numbered recommendations. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
+        "You are an experienced teaching coach. Based on these data findings, give the teacher exactly 3 specific, actionable recommendations.\n"
+        "IMPORTANT: Output ONLY the 3 recommendations. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
         "FINDINGS:\n{data}\n\n"
-        "Write exactly 4-6 specific, actionable recommendations. Each should be one clear sentence.\n"
-        "Number them 1-6. Focus on what the teacher should DO next.\n"
-        "Consider teaching strategies, assessment practices, student engagement, and curriculum pacing.\n"
-        "Output only the numbered list, nothing else."
+        "For each recommendation, use this exact format:\n"
+        "**1. [What to do]**\n"
+        "*Why it matters:* [One sentence referencing specific numbers from the data.]\n"
+        "*First step:* [One concrete action the teacher can take this week.]\n\n"
+        "Rules:\n"
+        "- Reference specific data points (e.g., 'Grade 3 Science is at 20%', 'attendance dropped to 85%').\n"
+        "- Each recommendation must be different in focus (e.g., curriculum, student support, content creation).\n"
+        "- Be direct and practical — tell the teacher exactly what to do, not vague suggestions.\n"
+        "Output exactly 3 recommendations, nothing else."
     ),
 
     "insights-synthesis": (

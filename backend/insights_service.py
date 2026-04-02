@@ -41,7 +41,7 @@ def get_first_activity_date(teacher_id: str = "default_teacher", user_id: str | 
         return None
 
 
-def get_report_date_context(teacher_id: str = "default_teacher", user_id: str | None = None) -> dict:
+def get_report_date_context(teacher_id: str = "default_teacher", user_id: str | None = None, registration_date: str | None = None) -> dict:
     """Build date context for interval-based insight generation.
 
     Returns:
@@ -50,6 +50,7 @@ def get_report_date_context(teacher_id: str = "default_teacher", user_id: str | 
         to_date: End of the analysis period (today)
         previous_report: The full previous report dict (or None)
         previous_report_id: ID of the previous report (or None)
+        report_count: Number of existing reports (0 for first)
     """
     today = datetime.now().strftime("%Y-%m-%d")
 
@@ -62,13 +63,15 @@ def get_report_date_context(teacher_id: str = "default_teacher", user_id: str | 
 
     if not reports:
         # First report ever — cover from first activity date to today
-        first_date = get_first_activity_date(teacher_id, user_id) or today
+        first_date = registration_date[:10] if registration_date else None
+        first_date = first_date or get_first_activity_date(teacher_id, user_id) or today
         return {
             "is_first_report": True,
             "from_date": first_date,
             "to_date": today,
             "previous_report": None,
             "previous_report_id": None,
+            "report_count": 0,
         }
 
     # Get the most recent report
@@ -82,6 +85,7 @@ def get_report_date_context(teacher_id: str = "default_teacher", user_id: str | 
         "to_date": today,
         "previous_report": latest,
         "previous_report_id": latest.get("id"),
+        "report_count": len(reports),
     }
 
 
@@ -125,8 +129,12 @@ def _load_json_file(filename: str) -> list:
 
 # ── Curriculum Coverage ──────────────────────────────────────────────────────
 
-def aggregate_curriculum_data(teacher_id: str = "default") -> dict:
-    """Analyze milestone completion rates by subject/grade."""
+def aggregate_curriculum_data(teacher_id: str = "default", from_date: str | None = None, to_date: str | None = None) -> dict:
+    """Analyze milestone completion rates by subject/grade.
+
+    When from_date/to_date are provided, shows both overall totals AND
+    milestones completed within the period (totals + delta approach).
+    """
     try:
         from milestones.milestone_db import get_milestone_db
         db = get_milestone_db()
@@ -144,6 +152,22 @@ def aggregate_curriculum_data(teacher_id: str = "default") -> dict:
 
     pct = round(completed / total * 100) if total else 0
 
+    # Count milestones completed in this period (if date range provided)
+    period_completed = 0
+    if from_date and to_date:
+        try:
+            conn = db.get_connection()
+            try:
+                row = conn.execute(
+                    "SELECT COUNT(*) as cnt FROM milestones WHERE teacher_id = ? AND status = 'completed' AND completed_at >= ? AND completed_at <= ?",
+                    (teacher_id, from_date, to_date + " 23:59:59")
+                ).fetchone()
+                period_completed = row["cnt"] if row else 0
+            finally:
+                conn.close()
+        except Exception:
+            pass
+
     # Identify gaps: subjects with < 20% completion
     gaps = []
     for b in breakdown:
@@ -155,12 +179,15 @@ def aggregate_curriculum_data(teacher_id: str = "default") -> dict:
     # Build compact LLM text
     lines = [
         f"Total milestones tracked: {total}",
-        f"Completed: {completed} ({pct}%)",
+        f"Overall completed: {completed} ({pct}%)",
         f"In progress: {in_progress}",
         f"Not started: {summary.get('not_started', 0)}",
-        "",
-        "Breakdown by grade/subject:"
     ]
+    if from_date and to_date:
+        lines.append(f"\nCompleted in this period ({from_date} to {to_date}): {period_completed}")
+
+    lines.append("")
+    lines.append("Breakdown by grade/subject:")
     for b in breakdown:
         b_total = b.get("total", 0)
         b_completed = b.get("completed", 0)
@@ -176,6 +203,7 @@ def aggregate_curriculum_data(teacher_id: str = "default") -> dict:
         "total": total,
         "completed": completed,
         "pct": pct,
+        "periodCompleted": period_completed,
         "gaps": gaps,
         "breakdown": [dict(b) for b in breakdown],
     }
@@ -183,8 +211,12 @@ def aggregate_curriculum_data(teacher_id: str = "default") -> dict:
 
 # ── Student Performance ─────────────────────────────────────────────────────
 
-def aggregate_student_performance() -> dict:
-    """Analyze quiz and worksheet grades across all students."""
+def aggregate_student_performance(from_date: str | None = None, to_date: str | None = None) -> dict:
+    """Analyze quiz and worksheet grades across all students.
+
+    When from_date/to_date are provided, shows overall averages plus
+    period-specific assessment counts and averages.
+    """
     try:
         conn = _get_students_conn()
     except Exception:
@@ -194,12 +226,12 @@ def aggregate_student_performance() -> dict:
         # Count students
         student_count = conn.execute("SELECT COUNT(*) as cnt FROM students").fetchone()["cnt"]
 
-        # All quiz grades
+        # All quiz grades (for overall totals)
         quiz_grades = conn.execute(
             "SELECT subject, percentage, letter_grade FROM quiz_grades"
         ).fetchall()
 
-        # All worksheet grades
+        # All worksheet grades (for overall totals)
         ws_grades = conn.execute(
             "SELECT subject, percentage, letter_grade FROM worksheet_grades"
         ).fetchall()
@@ -215,6 +247,23 @@ def aggregate_student_performance() -> dict:
 
         # Letter grade distribution
         distribution = Counter(g.get("letter_grade", "?") for g in all_grades)
+
+        # Period-specific grades (if date range provided)
+        period_grades = []
+        period_avg = 0
+        if from_date and to_date:
+            to_dt = to_date + " 23:59:59"
+            period_quiz = conn.execute(
+                "SELECT subject, percentage, letter_grade FROM quiz_grades WHERE graded_at >= ? AND graded_at <= ?",
+                (from_date, to_dt)
+            ).fetchall()
+            period_ws = conn.execute(
+                "SELECT subject, percentage, letter_grade FROM worksheet_grades WHERE graded_at >= ? AND graded_at <= ?",
+                (from_date, to_dt)
+            ).fetchall()
+            period_grades = [dict(g) for g in period_quiz] + [dict(g) for g in period_ws]
+            period_pcts = [g["percentage"] for g in period_grades if g.get("percentage") is not None]
+            period_avg = round(sum(period_pcts) / len(period_pcts), 1) if period_pcts else 0
 
         # Per-subject averages
         subject_scores = {}
@@ -234,10 +283,15 @@ def aggregate_student_performance() -> dict:
         # Build LLM text
         lines = [
             f"Total students: {student_count}",
-            f"Total assessments graded: {len(all_grades)} (quizzes: {len(quiz_grades)}, worksheets: {len(ws_grades)})",
+            f"Total assessments graded (all time): {len(all_grades)} (quizzes: {len(quiz_grades)}, worksheets: {len(ws_grades)})",
             f"Overall average score: {avg_score}%",
+        ]
+        if from_date and to_date:
+            lines.append(f"\nIn this period ({from_date} to {to_date}): {len(period_grades)} assessments graded, average: {period_avg}%")
+
+        lines.extend([
             "",
-            "Grade distribution:",
+            "Grade distribution (all time):",
             f"- A (90-100%): {distribution.get('A', 0)}",
             f"- B (80-89%): {distribution.get('B', 0)}",
             f"- C (70-79%): {distribution.get('C', 0)}",
@@ -245,7 +299,7 @@ def aggregate_student_performance() -> dict:
             f"- F (below 60%): {distribution.get('F', 0)}",
             "",
             "Average by subject:"
-        ]
+        ])
         for s in by_subject:
             lines.append(f"- {s['subject']}: {s['avg']}% ({s['count']} assessments)")
 
@@ -256,6 +310,8 @@ def aggregate_student_performance() -> dict:
             "totalStudents": student_count,
             "distribution": dict(distribution),
             "bySubject": by_subject,
+            "periodAssessments": len(period_grades),
+            "periodAvg": period_avg,
         }
     finally:
         conn.close()
@@ -263,8 +319,26 @@ def aggregate_student_performance() -> dict:
 
 # ── Content Creation Patterns ────────────────────────────────────────────────
 
-def aggregate_content_creation() -> dict:
-    """Analyze resource creation history across all content types."""
+def _parse_item_timestamp(item: dict) -> datetime | None:
+    """Extract and parse timestamp from a content history item."""
+    ts = item.get("timestamp") or item.get("createdAt") or item.get("created_at") or ""
+    if not ts:
+        return None
+    try:
+        created = datetime.fromisoformat(ts.replace("Z", "+00:00").replace("Z", ""))
+        if created.tzinfo:
+            created = created.replace(tzinfo=None)
+        return created
+    except (ValueError, TypeError):
+        return None
+
+
+def aggregate_content_creation(from_date: str | None = None, to_date: str | None = None) -> dict:
+    """Analyze resource creation history across all content types.
+
+    When from_date/to_date are provided, shows both overall totals AND
+    resources created within the period.
+    """
     history_files = {
         "Lesson Plans": "lesson_plan_history.json",
         "Quizzes": "quiz_history.json",
@@ -282,7 +356,13 @@ def aggregate_content_creation() -> dict:
     subject_counter = Counter()
     recent_7d = 0
     recent_30d = 0
+    period_count = 0
+    period_by_type = Counter()
     now = datetime.now()
+
+    # Parse date range boundaries
+    period_start = datetime.fromisoformat(from_date) if from_date else None
+    period_end = datetime.fromisoformat(to_date).replace(hour=23, minute=59, second=59) if to_date else None
 
     for label, filename in history_files.items():
         items = _load_json_file(filename)
@@ -298,21 +378,17 @@ def aggregate_content_creation() -> dict:
                 if subj:
                     subject_counter[subj] += 1
 
-            # Check recency
-            ts = item.get("timestamp") or item.get("createdAt") or item.get("created_at") or ""
-            if ts:
-                try:
-                    created = datetime.fromisoformat(ts.replace("Z", "+00:00").replace("Z", ""))
-                    # Make naive for comparison
-                    if created.tzinfo:
-                        created = created.replace(tzinfo=None)
-                    delta = (now - created).days
-                    if delta <= 7:
-                        recent_7d += 1
-                    if delta <= 30:
-                        recent_30d += 1
-                except (ValueError, TypeError):
-                    pass
+            # Check recency and period membership
+            created = _parse_item_timestamp(item)
+            if created:
+                delta = (now - created).days
+                if delta <= 7:
+                    recent_7d += 1
+                if delta <= 30:
+                    recent_30d += 1
+                if period_start and period_end and period_start <= created <= period_end:
+                    period_count += 1
+                    period_by_type[label] += 1
 
     if total == 0:
         return {"has_data": False, "llm_text": "", "totalResources": 0, "byType": {}, "topType": "", "subjectDistribution": {}}
@@ -323,12 +399,18 @@ def aggregate_content_creation() -> dict:
 
     # Build LLM text
     lines = [
-        f"Total resources created: {total}",
+        f"Total resources created (all time): {total}",
         f"Created in last 7 days: {recent_7d}",
         f"Created in last 30 days: {recent_30d}",
-        "",
-        "By type:"
     ]
+    if from_date and to_date:
+        lines.append(f"\nCreated in this period ({from_date} to {to_date}): {period_count}")
+        if period_by_type:
+            for label, cnt in period_by_type.most_common():
+                lines.append(f"  - {label}: {cnt}")
+
+    lines.append("")
+    lines.append("By type (all time):")
     for label, count in sorted(by_type.items(), key=lambda x: -x[1]):
         lines.append(f"- {label}: {count}")
 
@@ -349,20 +431,25 @@ def aggregate_content_creation() -> dict:
         "subjectDistribution": dict(subject_counter),
         "recent7d": recent_7d,
         "recent30d": recent_30d,
+        "periodCount": period_count,
     }
 
 
 # ── Attendance & Engagement ──────────────────────────────────────────────────
 
-def aggregate_attendance_engagement() -> dict:
-    """Analyze attendance rates and engagement levels."""
+def aggregate_attendance_engagement(from_date: str | None = None, to_date: str | None = None) -> dict:
+    """Analyze attendance rates and engagement levels.
+
+    When from_date/to_date are provided, shows both overall rates AND
+    period-specific attendance data.
+    """
     try:
         conn = _get_students_conn()
     except Exception:
         return {"has_data": False, "llm_text": "", "avgRate": 0, "atRiskCount": 0, "engagementDistribution": {}}
 
     try:
-        # All attendance records
+        # All attendance records (for overall totals)
         records = conn.execute(
             "SELECT student_id, class_name, date, status, engagement_level FROM attendance"
         ).fetchall()
@@ -372,13 +459,21 @@ def aggregate_attendance_engagement() -> dict:
 
         records = [dict(r) for r in records]
 
-        # Attendance rate
+        # Attendance rate (overall)
         present_count = sum(1 for r in records if r.get("status") in ("Present", "Late"))
         total_records = len(records)
         avg_rate = round(present_count / total_records * 100, 1) if total_records else 0
 
-        # Engagement distribution
+        # Engagement distribution (overall)
         engagement_counter = Counter(r.get("engagement_level", "Unknown") for r in records)
+
+        # Period-specific records
+        period_records = []
+        period_rate = 0
+        if from_date and to_date:
+            period_records = [r for r in records if from_date <= r.get("date", "") <= to_date]
+            period_present = sum(1 for r in period_records if r.get("status") in ("Present", "Late"))
+            period_rate = round(period_present / len(period_records) * 100, 1) if period_records else 0
 
         # At-risk students: > 3 absences in last 30 days
         cutoff = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
@@ -389,7 +484,7 @@ def aggregate_attendance_engagement() -> dict:
                 recent_absences[sid] = recent_absences.get(sid, 0) + 1
         at_risk = {sid: cnt for sid, cnt in recent_absences.items() if cnt > 3}
 
-        # Per-class rates
+        # Per-class rates (overall)
         class_records = {}
         for r in records:
             cls = r.get("class_name", "Unknown")
@@ -400,12 +495,14 @@ def aggregate_attendance_engagement() -> dict:
 
         # Build LLM text
         lines = [
-            f"Total attendance records: {total_records}",
+            f"Total attendance records (all time): {total_records}",
             f"Overall attendance rate: {avg_rate}%",
             f"Students at risk (>3 absences in 30 days): {len(at_risk)}",
-            "",
-            "Engagement levels:"
         ]
+        if from_date and to_date:
+            lines.append(f"\nIn this period ({from_date} to {to_date}): {len(period_records)} records, attendance rate: {period_rate}%")
+
+        lines.extend(["", "Engagement levels:"])
         for level, cnt in engagement_counter.most_common():
             pct = round(cnt / total_records * 100)
             lines.append(f"- {level}: {cnt} ({pct}%)")
@@ -423,6 +520,8 @@ def aggregate_attendance_engagement() -> dict:
             "atRiskCount": len(at_risk),
             "engagementDistribution": dict(engagement_counter),
             "byClass": {cls: round(d["present"] / d["total"] * 100, 1) if d["total"] else 0 for cls, d in class_records.items()},
+            "periodRecords": len(period_records),
+            "periodRate": period_rate,
         }
     finally:
         conn.close()
@@ -430,11 +529,13 @@ def aggregate_attendance_engagement() -> dict:
 
 # ── Achievements & Engagement ───────────────────────────────────────────────
 
-def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str | None = None) -> dict:
+def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str | None = None, from_date: str | None = None, to_date: str | None = None) -> dict:
     """Analyze achievement progress, rank, streaks, and platform engagement.
 
     Achievements may be stored under user_id (e.g. '1') rather than teacher_id
     (e.g. 'admin'), so we accept both and prefer user_id for achievement queries.
+    When from_date/to_date provided, shows achievements earned in that period
+    alongside overall totals.
     """
     ach_id = user_id or teacher_id
     try:
@@ -464,16 +565,36 @@ def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str
             "rank": rank, "streakDays": 0, "totalActiveDays": 0, "byCategory": by_category,
         }
 
+    # Count achievements earned in this period
+    period_earned = 0
+    if from_date and to_date:
+        try:
+            db_path = achievement_service._get_db_path()
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            try:
+                row = conn.execute(
+                    "SELECT COUNT(*) as cnt FROM earned_achievements WHERE teacher_id = ? AND earned_at >= ? AND earned_at <= ?",
+                    (ach_id, from_date, to_date + " 23:59:59")
+                ).fetchone()
+                period_earned = row["cnt"] if row else 0
+            finally:
+                conn.close()
+        except Exception:
+            pass
+
     # Build compact LLM text
     lines = [
-        f"Achievements earned: {total_earned}/{total_available}",
+        f"Achievements earned (all time): {total_earned}/{total_available}",
         f"Total points: {total_points}",
         f"Current rank: {rank.get('title', 'Unknown')} (level {rank.get('level', 0)})",
         f"Current streak: {streak_days} days",
         f"Total active days on platform: {total_active_days}",
-        "",
-        "Achievement progress by category:",
     ]
+    if from_date and to_date:
+        lines.append(f"\nAchievements earned in this period ({from_date} to {to_date}): {period_earned}")
+
+    lines.extend(["", "Achievement progress by category:"])
     for cat, counts in sorted(by_category.items()):
         earned = counts.get("earned", 0)
         total = counts.get("total", 0)
@@ -499,17 +620,22 @@ def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str
         "streakDays": streak_days,
         "totalActiveDays": total_active_days,
         "byCategory": by_category,
+        "periodEarned": period_earned,
     }
 
 
 # ── Combined Aggregation ────────────────────────────────────────────────────
 
-def aggregate_all(teacher_id: str = "default_teacher", user_id: str | None = None) -> dict:
-    """Aggregate all data sources. Returns both raw data and LLM text summaries."""
+def aggregate_all(teacher_id: str = "default_teacher", user_id: str | None = None, from_date: str | None = None, to_date: str | None = None) -> dict:
+    """Aggregate all data sources. Returns both raw data and LLM text summaries.
+
+    When from_date/to_date are provided, each aggregate function includes
+    both overall totals and period-specific deltas in its llm_text.
+    """
     return {
-        "curriculum": aggregate_curriculum_data(teacher_id),
-        "performance": aggregate_student_performance(),
-        "content": aggregate_content_creation(),
-        "attendance": aggregate_attendance_engagement(),
-        "achievements": aggregate_achievement_data(teacher_id, user_id),
+        "curriculum": aggregate_curriculum_data(teacher_id, from_date, to_date),
+        "performance": aggregate_student_performance(from_date, to_date),
+        "content": aggregate_content_creation(from_date, to_date),
+        "attendance": aggregate_attendance_engagement(from_date, to_date),
+        "achievements": aggregate_achievement_data(teacher_id, user_id, from_date, to_date),
     }

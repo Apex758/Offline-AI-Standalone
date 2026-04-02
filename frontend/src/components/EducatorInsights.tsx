@@ -144,7 +144,16 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     wsRef.current = ws;
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId, userId }));
+      // Include registrationDate for first-report date context
+      let registrationDate: string | null = null;
+      try {
+        const settingsRaw = localStorage.getItem('app-settings-main');
+        if (settingsRaw) {
+          const settingsParsed = JSON.parse(settingsRaw);
+          registrationDate = settingsParsed?.profile?.registrationDate || null;
+        }
+      } catch {}
+      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId, userId, registrationDate }));
     };
 
     ws.onmessage = (event) => {

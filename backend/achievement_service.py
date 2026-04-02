@@ -255,6 +255,8 @@ for defn in ACHIEVEMENT_DEFINITIONS:
     if tier_info:
         defn["tier_group"] = tier_info["tier_group"]
         defn["tier"] = tier_info["tier"]
+    else:
+        defn["tier"] = "gold"
 
 
 def get_definitions() -> List[Dict[str, Any]]:
