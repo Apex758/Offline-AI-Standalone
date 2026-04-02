@@ -921,6 +921,11 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
   const accentColor = (settings.tabColors as any)['storybook'] || '#a855f7';
 
+  // ── Preload LLM model in background when tab opens ─────────────────────────
+  useEffect(() => {
+    fetch('http://localhost:8000/api/model/preload', { method: 'POST' }).catch(() => {});
+  }, []);
+
   // ── Dark mode detection ───────────────────────────────────────────────────
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   useEffect(() => {
@@ -1091,7 +1096,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     const send = () => ws.send(JSON.stringify(payload));
     if (ws.readyState === WebSocket.OPEN) send();
     else ws.addEventListener('open', send, { once: true });
-  }, [formData, tabId, tier, getConnection, clearStreaming]);
+
+    // Preload diffusion pipeline during story generation so images are ready when needed
+    if (formData.imageMode !== 'none' && hasDiffusion) {
+      fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
+    }
+  }, [formData, tabId, tier, hasDiffusion, getConnection, clearStreaming]);
 
   // ── Watch streaming content ────────────────────────────────────────────────
   const isStreaming = getIsStreaming(tabId, WS_ENDPOINT);

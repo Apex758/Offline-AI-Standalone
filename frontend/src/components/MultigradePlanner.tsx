@@ -313,6 +313,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [displayStep, setDisplayStep] = useState(step);
   const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
 
+  // Preload LLM model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (flipPhase === 'idle') setDisplayStep(step);
   }, [step, flipPhase]);

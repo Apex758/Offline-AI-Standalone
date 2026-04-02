@@ -426,6 +426,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [generationState, setGenerationState] = useState<'input' | 'generating' | 'results'>('input');
   const setTabProcessingImg = useTabProcessing('image-generation');
   useEffect(() => { setTabProcessingImg(generationState === 'generating'); }, [generationState, setTabProcessingImg]);
+
+  // Preload diffusion pipeline in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/image-service/preload').catch(() => {});
+  }, []);
   const [imageSlots, setImageSlots] = useState<Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}>>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);

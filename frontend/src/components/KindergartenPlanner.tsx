@@ -476,6 +476,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
 
+  // Preload LLM model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
+  }, []);
+
   // ✅ ADDED: Restore state from localStorage when switching tabs
   useEffect(() => {
     const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;

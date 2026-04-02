@@ -39,7 +39,7 @@ import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Ico
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
 import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
-import Bulb01IconData from '@hugeicons/core-free-icons/Bulb01Icon';
+import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components

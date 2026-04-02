@@ -604,6 +604,11 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Preload LLM model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
+  }, []);
+
   // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {
     if (generatedPlan && !parsedPlan) {
