@@ -110,6 +110,7 @@ const SearchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> 
 const MessageIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
 const Sun02: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun02IconData} {...p} />;
 const Fire: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FireIconData} {...p} />;
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
 
 // Sidebar item metadata for Features section
 const SIDEBAR_ITEM_META: Record<string, { name: string; icon: React.FC<{ className?: string; style?: React.CSSProperties }>; description?: string; childCount?: number }> = {
@@ -213,7 +214,6 @@ import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
 import ArrowRight02IconData from '@hugeicons/core-free-icons/ArrowRight02Icon';
 import CircleArrowRight01IconData from '@hugeicons/core-free-icons/CircleArrowRight01Icon';
 
-const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
 const ArrowRightCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CircleArrowRight01IconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
 
