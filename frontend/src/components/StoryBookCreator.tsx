@@ -158,28 +158,37 @@ function tryParsePartialPages(raw: string): StoryPage[] {
 }
 
 function tryParseFullBook(raw: string): ParsedStorybook | null {
-  try {
-    // Strip markdown fences if present (```json ... ``` or ``` ... ```)
-    let cleaned = raw;
-    const fenceMatch = cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
-    if (fenceMatch) cleaned = fenceMatch[1];
+  // Strip markdown fences if present (```json ... ``` or ``` ... ```)
+  let cleaned = raw;
+  const fenceMatch = cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+  if (fenceMatch) cleaned = fenceMatch[1];
 
-    // Find JSON boundaries
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-    if (start === -1 || end === -1) {
-      console.error('[StoryBook] tryParseFullBook: no JSON braces found. Content preview:', raw.substring(0, 200));
-      return null;
-    }
-    const json = cleaned.substring(start, end + 1);
-    const parsed = JSON.parse(json);
-    if (parsed.pages && Array.isArray(parsed.pages)) return parsed as ParsedStorybook;
-    console.error('[StoryBook] tryParseFullBook: parsed JSON has no pages array. Keys:', Object.keys(parsed));
-    return null;
-  } catch (e) {
-    console.error('[StoryBook] tryParseFullBook: JSON parse failed:', e, 'Content preview:', raw.substring(0, 300));
+  const end = cleaned.lastIndexOf('}');
+  if (end === -1) {
+    console.error('[StoryBook] tryParseFullBook: no closing brace found. Content preview:', raw.substring(0, 200));
     return null;
   }
+
+  // Try parsing from each '{' position — the model sometimes echoes the prompt
+  // (which contains a JSON template), so the first '{' may not be the response.
+  let searchFrom = 0;
+  while (searchFrom < cleaned.length) {
+    const start = cleaned.indexOf('{', searchFrom);
+    if (start === -1 || start >= end) break;
+
+    try {
+      const json = cleaned.substring(start, end + 1);
+      const parsed = JSON.parse(json);
+      if (parsed.pages && Array.isArray(parsed.pages)) return parsed as ParsedStorybook;
+      console.error('[StoryBook] tryParseFullBook: parsed JSON has no pages array. Keys:', Object.keys(parsed));
+    } catch {
+      // This '{' didn't yield valid JSON — try the next one
+    }
+    searchFrom = start + 1;
+  }
+
+  console.error('[StoryBook] tryParseFullBook: no valid storybook JSON found. Content preview:', raw.substring(0, 300));
+  return null;
 }
 
 // ─── Speaker Validation ──────────────────────────────────────────────────────

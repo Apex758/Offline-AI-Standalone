@@ -2,6 +2,9 @@
   "permissions": {
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies"
+    ],
+    "allow": [
+      "Bash(grep -n \"def generate_stream\\\\|async def generate_stream\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)"
     ]
   }
 }

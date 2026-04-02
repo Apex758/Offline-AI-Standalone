@@ -1392,7 +1392,7 @@ async def delete_lesson_draft(draft_id: str):
 async def generate_lesson_plan(request: LessonPlanRequest):
     """Generate a lesson plan using the LLM (via process pool)"""
     try:
-        prompt_text = f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{request.prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+        prompt_text = build_prompt("You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans.", request.prompt)
 
         settings = {
             "model_path": get_model_path(),
@@ -1515,10 +1515,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
             elif curriculum_context:
                 system_prompt += "\n\nCurriculum Alignment Context:\n" + curriculum_context
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             # Send curriculum references to frontend before generation
             if curriculum_refs:
@@ -1682,10 +1679,7 @@ async def quiz_websocket(websocket: WebSocket):
                         if context_blocks:
                             system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             slot_mode = None
             try:
@@ -1834,10 +1828,7 @@ async def rubric_websocket(websocket: WebSocket):
                     if context_blocks:
                         system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             slot_mode = None
             try:
@@ -1967,10 +1958,7 @@ async def kindergarten_websocket(websocket: WebSocket):
             else:
                 system_prompt = "You are an expert early childhood educator specializing in kindergarten education. Create developmentally appropriate, engaging, and playful lesson plans that foster learning through exploration and hands-on activities."
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             slot_mode = None
             try:
@@ -2095,10 +2083,7 @@ async def multigrade_websocket(websocket: WebSocket):
             else:
                 system_prompt = "You are an expert educator specializing in multigrade and multi-age classroom instruction. Create comprehensive lesson plans that address multiple grade levels simultaneously with differentiated activities and flexible grouping strategies."
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             slot_mode = None
             try:
@@ -2228,10 +2213,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
             else:
                 system_prompt = "You are an expert educational consultant specializing in integrated and cross-curricular lesson planning. Create comprehensive lesson plans that meaningfully connect multiple subject areas and demonstrate authentic interdisciplinary learning."
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             slot_mode = None
             try:
@@ -2384,10 +2366,7 @@ async def worksheet_websocket(websocket: WebSocket):
                     if context_blocks:
                         system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             slot_mode = None
             try:
@@ -2533,10 +2512,7 @@ async def presentation_websocket(websocket: WebSocket):
                     "Each slide should have punchy headlines (max 7 words) and short bullet points (max 12 words each)."
                 )
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, prompt)
 
             slot_mode = None
             try:
@@ -2716,10 +2692,7 @@ async def storybook_websocket(websocket: WebSocket):
                         "You are a children's storybook author. Write engaging, age-appropriate stories "
                         "with clear characters and vivid descriptions. Write the story as plain text."
                     )
-                    narrative_full = "<|begin_of_text|>"
-                    narrative_full += f"<|start_header_id|>system<|end_header_id|>\n\n{narrative_system}<|eot_id|>"
-                    narrative_full += f"<|start_header_id|>user<|end_header_id|>\n\n{narrative_prompt}<|eot_id|>"
-                    narrative_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+                    narrative_full = build_prompt(narrative_system, narrative_prompt)
 
                     await websocket.send_json({"type": "status", "status": "writing_story", "jobId": job_id})
                     narrative_text = await _run_generation(
@@ -2738,10 +2711,7 @@ async def storybook_websocket(websocket: WebSocket):
                         "You are a JSON formatting assistant. Convert the provided story into the exact "
                         "JSON structure requested. Return ONLY valid JSON with no markdown fences or explanation."
                     )
-                    structure_full = "<|begin_of_text|>"
-                    structure_full += f"<|start_header_id|>system<|end_header_id|>\n\n{structure_system}<|eot_id|>"
-                    structure_full += f"<|start_header_id|>user<|end_header_id|>\n\n{structure_prompt}<|eot_id|>"
-                    structure_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+                    structure_full = build_prompt(structure_system, structure_prompt)
 
                     await websocket.send_json({"type": "status", "status": "formatting_pages", "jobId": job_id})
                     result = await _run_generation(
@@ -2767,10 +2737,7 @@ async def storybook_websocket(websocket: WebSocket):
                             "Return ONLY valid JSON with no markdown fences or explanation."
                         )
 
-                    full_prompt = "<|begin_of_text|>"
-                    full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-                    full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-                    full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+                    full_prompt = build_prompt(system_prompt, prompt)
 
                     result = await _run_generation(
                         inference, prompt, full_prompt,
@@ -3141,10 +3108,7 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
                 )
                 system_prompt = t1_prefix + "\n\n" + system_prompt
 
-            full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{text}<|eot_id|>"
-            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            full_prompt = build_prompt(system_prompt, text)
 
             slot_mode = None
             try:
