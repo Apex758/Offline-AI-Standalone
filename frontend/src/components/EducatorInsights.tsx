@@ -87,9 +87,13 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     });
   }, [onDataChange, insightsData, passResults, report, reportHistory]);
 
+  // Ref to prevent setState during render
+  const hasInitialized = useRef(false);
+
   // Load data summary on mount
   useEffect(() => {
-    if (!insightsData && !dataLoading) {
+    if (!insightsData && !dataLoading && !hasInitialized.current) {
+      hasInitialized.current = true;
       setDataLoading(true);
       axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
         .then(res => {
@@ -160,7 +164,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       try {
         const msg = JSON.parse(event.data);
 
-        if (msg.type === 'status') {
+        if (msg.type === 'status' && msg.pass !== undefined) {
           setCurrentPass(msg.pass);
           setTotalPasses(msg.total);
           setCurrentPassName(msg.passName);
