@@ -33,11 +33,23 @@ export interface AttendanceSummary {
   byClass?: Record<string, number>;
 }
 
+export interface AchievementSummary {
+  totalEarned: number;
+  totalAvailable: number;
+  totalPoints: number;
+  rank: { level: number; title: string; next_title?: string; achievements_for_next?: number } | null;
+  streakDays: number;
+  totalActiveDays: number;
+  has_data: boolean;
+  byCategory?: Record<string, { earned: number; total: number }>;
+}
+
 export interface InsightsData {
   curriculum: CurriculumSummary;
   performance: PerformanceSummary;
   content: ContentSummary;
   attendance: AttendanceSummary;
+  achievements: AchievementSummary;
 }
 
 export interface InsightsPassResult {

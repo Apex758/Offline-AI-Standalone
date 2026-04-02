@@ -28,11 +28,11 @@ def _save_reports(reports: list):
 
 
 @router.get("/data")
-async def get_insights_data(teacher_id: str = "default_teacher"):
+async def get_insights_data(teacher_id: str = "default_teacher", user_id: str | None = None):
     """Return aggregated data from all sources (no LLM). Fast endpoint for summary cards."""
     try:
         import insights_service
-        data = insights_service.aggregate_all(teacher_id)
+        data = insights_service.aggregate_all(teacher_id, user_id)
         return data
     except Exception as e:
         logger.error(f"Error aggregating insights data: {e}")

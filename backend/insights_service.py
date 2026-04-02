@@ -17,6 +17,74 @@ from datetime import datetime, timedelta
 from collections import Counter
 
 
+# ── Date context helpers for interval-based insights ─────────────────────────
+
+def get_first_activity_date(teacher_id: str = "default_teacher", user_id: str | None = None) -> str | None:
+    """Return the earliest activity date for this teacher from the achievement log."""
+    ach_id = user_id or teacher_id
+    try:
+        import achievement_service
+        db_path = achievement_service._get_db_path()
+        if not os.path.exists(db_path):
+            return None
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            row = conn.execute(
+                "SELECT MIN(activity_date) as first_date FROM achievement_activity_log WHERE teacher_id = ?",
+                (ach_id,)
+            ).fetchone()
+            return row["first_date"] if row and row["first_date"] else None
+        finally:
+            conn.close()
+    except Exception:
+        return None
+
+
+def get_report_date_context(teacher_id: str = "default_teacher", user_id: str | None = None) -> dict:
+    """Build date context for interval-based insight generation.
+
+    Returns:
+        is_first_report: True if no previous reports exist
+        from_date: Start of the analysis period
+        to_date: End of the analysis period (today)
+        previous_report: The full previous report dict (or None)
+        previous_report_id: ID of the previous report (or None)
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # Load existing reports
+    try:
+        from routes.insights import _load_reports
+        reports = _load_reports()
+    except Exception:
+        reports = []
+
+    if not reports:
+        # First report ever — cover from first activity date to today
+        first_date = get_first_activity_date(teacher_id, user_id) or today
+        return {
+            "is_first_report": True,
+            "from_date": first_date,
+            "to_date": today,
+            "previous_report": None,
+            "previous_report_id": None,
+        }
+
+    # Get the most recent report
+    latest = reports[-1]
+    # The new period starts from the previous report's to_date (or generated_at date)
+    prev_to = latest.get("to_date") or latest.get("generated_at", today)[:10]
+
+    return {
+        "is_first_report": False,
+        "from_date": prev_to,
+        "to_date": today,
+        "previous_report": latest,
+        "previous_report_id": latest.get("id"),
+    }
+
+
 # ── DB helpers (reuse patterns from student_service / milestone_db) ──────────
 
 def _get_students_db_path() -> str:
@@ -360,13 +428,88 @@ def aggregate_attendance_engagement() -> dict:
         conn.close()
 
 
+# ── Achievements & Engagement ───────────────────────────────────────────────
+
+def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str | None = None) -> dict:
+    """Analyze achievement progress, rank, streaks, and platform engagement.
+
+    Achievements may be stored under user_id (e.g. '1') rather than teacher_id
+    (e.g. 'admin'), so we accept both and prefer user_id for achievement queries.
+    """
+    ach_id = user_id or teacher_id
+    try:
+        import achievement_service
+        earned_data = achievement_service.get_earned_achievements(ach_id)
+        streak_data = achievement_service._get_streak_counts(ach_id)
+    except Exception:
+        return {
+            "has_data": False, "llm_text": "",
+            "totalEarned": 0, "totalAvailable": 0, "totalPoints": 0,
+            "rank": None, "streakDays": 0, "totalActiveDays": 0, "byCategory": {},
+        }
+
+    all_earned = earned_data.get("all_earned", [])
+    total_earned = len(all_earned)
+    total_available = earned_data.get("total_available", 0)
+    total_points = earned_data.get("total_points", 0)
+    rank = earned_data.get("rank", {})
+    by_category = earned_data.get("by_category", {})
+    streak_days = streak_data.get("streak_days", 0)
+    total_active_days = streak_data.get("total_active_days", 0)
+
+    if total_earned == 0 and total_active_days == 0:
+        return {
+            "has_data": False, "llm_text": "",
+            "totalEarned": 0, "totalAvailable": total_available, "totalPoints": 0,
+            "rank": rank, "streakDays": 0, "totalActiveDays": 0, "byCategory": by_category,
+        }
+
+    # Build compact LLM text
+    lines = [
+        f"Achievements earned: {total_earned}/{total_available}",
+        f"Total points: {total_points}",
+        f"Current rank: {rank.get('title', 'Unknown')} (level {rank.get('level', 0)})",
+        f"Current streak: {streak_days} days",
+        f"Total active days on platform: {total_active_days}",
+        "",
+        "Achievement progress by category:",
+    ]
+    for cat, counts in sorted(by_category.items()):
+        earned = counts.get("earned", 0)
+        total = counts.get("total", 0)
+        pct = round(earned / total * 100) if total else 0
+        lines.append(f"- {cat}: {earned}/{total} ({pct}%)")
+
+    # Highlight strongest and weakest categories
+    if by_category:
+        sorted_cats = sorted(by_category.items(), key=lambda x: x[1].get("earned", 0) / max(x[1].get("total", 1), 1), reverse=True)
+        strongest = sorted_cats[0][0] if sorted_cats else ""
+        weakest = sorted_cats[-1][0] if sorted_cats else ""
+        if strongest != weakest:
+            lines.append(f"\nStrongest area: {strongest}")
+            lines.append(f"Least explored: {weakest}")
+
+    return {
+        "has_data": True,
+        "llm_text": "\n".join(lines),
+        "totalEarned": total_earned,
+        "totalAvailable": total_available,
+        "totalPoints": total_points,
+        "rank": rank,
+        "streakDays": streak_days,
+        "totalActiveDays": total_active_days,
+        "byCategory": by_category,
+    }
+
+
 # ── Combined Aggregation ────────────────────────────────────────────────────
 
-def aggregate_all(teacher_id: str = "default") -> dict:
+def aggregate_all(teacher_id: str = "default_teacher", user_id: str | None = None) -> dict:
     """Aggregate all data sources. Returns both raw data and LLM text summaries."""
     return {
         "curriculum": aggregate_curriculum_data(teacher_id),
         "performance": aggregate_student_performance(),
         "content": aggregate_content_creation(),
         "attendance": aggregate_attendance_engagement(),
+        "achievements": aggregate_achievement_data(teacher_id, user_id),
     }

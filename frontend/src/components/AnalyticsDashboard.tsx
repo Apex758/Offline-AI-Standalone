@@ -73,7 +73,7 @@ import { useAchievementContext } from '../contexts/AchievementContext';
 import MiniTrophyCard from './MiniTrophyCard';
 import TrophyDetailCard from './TrophyDetailCard';
 import { getTrophyType } from '../config/trophyMap';
-import TROPHY_IMAGES from '../assets/trophyImages';
+import { getTrophyImage, getTrophyImageForTier, type TrophyTier } from '../assets/trophyImages';
 import type { NewlyEarnedAchievement } from '../types/achievement';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 
@@ -690,7 +690,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                           earnedAt={earnedEntry?.earned_at}
                           onClick={() => {
                             const tType = getTrophyType(id);
-                            const tSrc = tType ? TROPHY_IMAGES[tType] : undefined;
+                            const tSrc = tType ? getTrophyImageForTier(tType, (def.tier ?? 'gold') as TrophyTier) : undefined;
                             if (tSrc) {
                               setViewingTrophy({
                                 achievement_id: def.id,
@@ -760,7 +760,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Trophy Detail Modal */}
       {viewingTrophy && (() => {
         const tType = getTrophyType(viewingTrophy.achievement_id);
-        const tSrc = tType ? TROPHY_IMAGES[tType] : undefined;
+        const tSrc = tType ? getTrophyImage(tType) : undefined;
         return tSrc ? (
           <TrophyDetailCard
             achievement={viewingTrophy}

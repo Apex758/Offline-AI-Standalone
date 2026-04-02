@@ -24,7 +24,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import TrophyDetailCard from './TrophyDetailCard';
-import TROPHY_IMAGES from '../assets/trophyImages';
+import { getTrophyImage } from '../assets/trophyImages';
 import { getTrophyType } from '../config/trophyMap';
 import LevelJourneyPath from './LevelJourneyPath';
 import type { AchievementDefinition, AchievementCategory, AchievementRarity, AchievementTier, NewlyEarnedAchievement } from '../types/achievement';
@@ -496,6 +496,87 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
         <div className="flex gap-5 items-start">
           {/* Cards — 65% */}
           <div className="min-w-0" style={{ flex: '0 0 65%' }}>
+            {/* === TEMPORARY: Full trophy preview grid (comment out to restore original) === */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 relative" style={{ isolation: 'isolate' }}>
+              {sortedDefinitions.map((defn) => {
+                const tType = getTrophyType(defn.id);
+                const tSrc = tType ? getTrophyImage(tType) : undefined;
+                const rTheme = {
+                  common:    { primary: '#9ca3af', accent: '#d1d5db', glow: 'rgba(156,163,175,0.35)', label: 'Common' },
+                  uncommon:  { primary: '#22c55e', accent: '#4ade80', glow: 'rgba(34,197,94,0.35)',  label: 'Uncommon' },
+                  rare:      { primary: '#3b82f6', accent: '#60a5fa', glow: 'rgba(59,130,246,0.35)', label: 'Rare' },
+                  epic:      { primary: '#a855f7', accent: '#c084fc', glow: 'rgba(139,92,246,0.35)', label: 'Epic' },
+                  legendary: { primary: '#f59e0b', accent: '#fde68a', glow: 'rgba(236,168,48,0.35)', label: 'Legendary' },
+                }[defn.rarity];
+                const words = defn.name.split(' ');
+                const mid = Math.ceil(words.length / 2);
+                const l1 = words.slice(0, mid).join(' ');
+                const l2 = words.slice(mid).join(' ');
+                const isUnlocked = earnedIds.has(defn.id);
+                return (
+                  <div
+                    key={defn.id}
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: 'rgba(255,255,255,0.04)',
+                      backdropFilter: 'blur(24px) saturate(180%)',
+                      border: `1px solid ${isUnlocked ? `${rTheme.primary}30` : 'rgba(255,255,255,0.08)'}`,
+                      borderRadius: 24,
+                      overflow: 'visible',
+                      padding: '16px 0 10px',
+                      height: 320,
+                      boxShadow: `0 0 0 1px rgba(255,255,255,0.05) inset, 0 20px 50px rgba(0,0,0,0.4), 0 0 40px ${rTheme.glow.replace('0.35', '0.08')}`,
+                      filter: isUnlocked ? 'none' : 'grayscale(0.6) brightness(0.55)',
+                    }}
+                  >
+                    {/* Shine */}
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '45%', background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%)', borderRadius: '24px 24px 0 0', pointerEvents: 'none' }} />
+                    {/* Glow orb */}
+                    <div style={{ position: 'absolute', width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle, ${rTheme.glow.replace('0.35', '0.18')} 0%, transparent 70%)`, top: -60, right: -40, pointerEvents: 'none' }} />
+
+                    {/* Text content */}
+                    <div style={{ flex: '1 1 0', minWidth: 0, zIndex: 4, padding: '0 20px 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {/* Rarity badge */}
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${rTheme.primary}20`, border: `1px solid ${rTheme.primary}40`, borderRadius: 100, padding: '4px 12px', alignSelf: 'flex-start' }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: rTheme.primary }} />
+                        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 10, fontWeight: 600, color: rTheme.primary, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>{rTheme.label}</span>
+                      </div>
+                      {/* Title */}
+                      <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1.12, letterSpacing: '-0.02em' }}>
+                        {l1}<br />
+                        <span style={{ background: `linear-gradient(135deg, ${rTheme.primary} 0%, ${rTheme.accent} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{l2}</span>
+                      </div>
+                      {/* Description */}
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+                        {defn.description}
+                      </div>
+                      {/* Points */}
+                      <div style={{ fontSize: 13, fontWeight: 700, fontFamily: "'Syne', sans-serif", color: rTheme.accent }}>
+                        +{defn.points} pts
+                      </div>
+                    </div>
+
+                    {/* Trophy image */}
+                    {tSrc && (
+                      <div style={{ position: 'relative', width: 280, minWidth: 280, height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible', zIndex: 2, marginRight: -20 }}>
+                        <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${rTheme.glow.replace('0.35', '0.35')} 0%, transparent 70%)`, zIndex: 1 }} />
+                        <img
+                          src={tSrc}
+                          alt={defn.name}
+                          draggable={false}
+                          style={{ position: 'relative', width: 300, minWidth: 300, height: 'auto', zIndex: 3, filter: `drop-shadow(0 12px 24px ${rTheme.glow.replace('0.35', '0.35')})`, marginTop: -40, marginBottom: -40 }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {/* === END TEMPORARY === */}
+
+            {/* === ORIGINAL CARD GRID (uncomment to restore) ===
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 relative" style={{ isolation: 'isolate' }}>
               {sortedDefinitions.map((defn, i) => (
                 <AchievementCard
@@ -522,6 +603,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
                 />
               ))}
             </div>
+            === END ORIGINAL === */}
 
             {/* Hidden achievements hint */}
             {hiddenCount > 0 && (
@@ -550,7 +632,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
         {/* View achievement detail — use TrophyDetailCard when image available, else fallback */}
         {viewingAchievement && (() => {
           const tType = getTrophyType(viewingAchievement.achievement_id);
-          const tSrc = tType ? TROPHY_IMAGES[tType] : undefined;
+          const tSrc = tType ? getTrophyImage(tType) : undefined;
           return tSrc ? (
             <TrophyDetailCard
               achievement={viewingAchievement}

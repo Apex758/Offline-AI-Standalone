@@ -11,6 +11,7 @@ import logging
 import time
 import platform
 import os
+import subprocess
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from pathlib import Path
@@ -60,6 +61,69 @@ def _get_os_name() -> str:
     return f"{platform.system()} {platform.release()}"
 
 
+def _detect_gpu() -> Optional[Dict[str, Any]]:
+    """Detect NVIDIA GPU via nvidia-smi. Returns None if no GPU found."""
+    try:
+        flags = 0x08000000 if os.name == "nt" else 0  # CREATE_NO_WINDOW on Windows
+        result = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-gpu=name,memory.total,driver_version,gpu_uuid",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True, text=True, timeout=5,
+            creationflags=flags,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            line = result.stdout.strip().splitlines()[0]
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) >= 3:
+                return {
+                    "name": parts[0],
+                    "vram_total_mb": int(float(parts[1])),
+                    "driver_version": parts[2],
+                }
+    except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+        pass
+    return None
+
+
+def _get_gpu_live_stats() -> Optional[Dict[str, Any]]:
+    """Get real-time GPU utilization and VRAM usage via nvidia-smi."""
+    try:
+        flags = 0x08000000 if os.name == "nt" else 0
+        result = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True, text=True, timeout=5,
+            creationflags=flags,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            line = result.stdout.strip().splitlines()[0]
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) >= 4:
+                stats: Dict[str, Any] = {
+                    "gpu_utilization": float(parts[0]),
+                    "vram_used_mb": int(float(parts[1])),
+                    "vram_total_mb": int(float(parts[2])),
+                    "vram_percent": round(float(parts[1]) / float(parts[2]) * 100, 1) if float(parts[2]) > 0 else 0,
+                    "temperature_c": int(float(parts[3])),
+                }
+                # power.draw may return [N/A] on some GPUs
+                if len(parts) >= 5:
+                    try:
+                        stats["power_watts"] = round(float(parts[4]), 1)
+                    except (ValueError, TypeError):
+                        stats["power_watts"] = None
+                return stats
+    except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+        pass
+    return None
+
+
 def _get_system_specs() -> Dict[str, Any]:
     """Collect system hardware/software specs (cached after first call)."""
     specs = {
@@ -78,6 +142,14 @@ def _get_system_specs() -> Dict[str, Any]:
         specs["ram_available_gb"] = round(mem.available / (1024 ** 3), 2)
     except ImportError:
         pass
+
+    # GPU detection (graceful — None if no NVIDIA GPU)
+    gpu = _detect_gpu()
+    if gpu:
+        specs["gpu_name"] = gpu["name"]
+        specs["gpu_vram_total_mb"] = gpu["vram_total_mb"]
+        specs["gpu_driver_version"] = gpu["driver_version"]
+    specs["has_gpu"] = gpu is not None
 
     return specs
 
@@ -164,6 +236,7 @@ class MetricsCollector:
             "ram_percent": 0.0,
             "app_cpu_percent": 0.0,
             "app_ram_mb": 0.0,
+            "gpu": None,
         }
         try:
             import psutil
@@ -181,6 +254,9 @@ class MetricsCollector:
             stats["app_ram_mb"] = round(proc.memory_info().rss / (1024 * 1024), 2)
         except ImportError:
             pass
+        # GPU stats (None if no NVIDIA GPU detected)
+        if self._system_specs.get("has_gpu"):
+            stats["gpu"] = _get_gpu_live_stats()
         return stats
 
     def _get_resource_snapshot(self) -> Dict[str, float]:

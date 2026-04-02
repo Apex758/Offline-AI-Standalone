@@ -51,6 +51,7 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   trailblazer: 'compass',
   cross_curricular: 'compass',
   multigrade_5: 'compass',
+  resource_saver_10: 'compass',
   resource_saver_25: 'compass',
 
   // Flame — Streaks & Daily Use

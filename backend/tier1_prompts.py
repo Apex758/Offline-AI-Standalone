@@ -54,6 +54,7 @@ TIER1_MAX_TOKENS = {
     "insights-performance": 500,
     "insights-content": 500,
     "insights-attendance": 500,
+    "insights-achievements": 500,
     "insights-recommendations": 600,
     "insights-synthesis": 1500,
 }
@@ -276,6 +277,17 @@ TIER1_PROMPTS = {
         "Keep each bullet under 30 words. Start each with \"- \". Output only the bullets, nothing else."
     ),
 
+    "insights-achievements": (
+        "You are an educational data analyst. Review the teacher's achievement and platform engagement data below and write a brief analysis.\n"
+        "IMPORTANT: Output ONLY the bullet points. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
+        "DATA:\n{data}\n\n"
+        "Write exactly 3-5 bullet points about:\n"
+        "- The teacher's engagement level based on streak days and total active days\n"
+        "- Which areas of the platform they use most vs least (based on achievement categories)\n"
+        "- Their progression trajectory and what milestones or rank they are close to reaching\n\n"
+        "Keep each bullet under 30 words. Start each with \"- \". Output only the bullets, nothing else."
+    ),
+
     "insights-recommendations": (
         "You are an experienced teaching coach. Based on these data findings from a teacher's classroom, suggest practical improvements.\n"
         "IMPORTANT: Output ONLY the numbered recommendations. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
@@ -293,6 +305,7 @@ TIER1_PROMPTS = {
         "STUDENT PERFORMANCE:\n{performance}\n\n"
         "CONTENT CREATION:\n{content}\n\n"
         "ATTENDANCE & ENGAGEMENT:\n{attendance}\n\n"
+        "ACHIEVEMENTS & PLATFORM ENGAGEMENT:\n{achievements}\n\n"
         "RECOMMENDATIONS:\n{recommendations}\n\n"
         "Write this report using exactly this format:\n\n"
         "## Executive Summary\n"

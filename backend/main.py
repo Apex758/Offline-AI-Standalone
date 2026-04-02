@@ -3185,6 +3185,7 @@ async def educator_insights_websocket(websocket: WebSocket):
         {"key": "performance", "name": "Student Performance", "task": "insights-performance"},
         {"key": "content", "name": "Content Creation", "task": "insights-content"},
         {"key": "attendance", "name": "Attendance & Engagement", "task": "insights-attendance"},
+        {"key": "achievements", "name": "Achievements & Engagement", "task": "insights-achievements"},
         {"key": "recommendations", "name": "Teaching Recommendations", "task": "insights-recommendations"},
         {"key": "synthesis", "name": "Final Synthesis", "task": "insights-synthesis"},
     ]
@@ -3198,15 +3199,28 @@ async def educator_insights_websocket(websocket: WebSocket):
 
             generation_mode = data.get("generationMode", "queued")
             teacher_id = data.get("teacherId", "default_teacher")
+            user_id = data.get("userId")
 
             # Aggregate all data
             import insights_service
             try:
-                all_data = insights_service.aggregate_all(teacher_id)
+                all_data = insights_service.aggregate_all(teacher_id, user_id)
             except Exception as e:
                 logger.error(f"Insights data aggregation error: {e}")
                 await websocket.send_json({"type": "error", "message": f"Data aggregation failed: {e}"})
                 continue
+
+            # Get date context for interval-based generation
+            try:
+                date_context = insights_service.get_report_date_context(teacher_id, user_id)
+            except Exception:
+                date_context = {"is_first_report": True, "from_date": datetime.now().strftime("%Y-%m-%d"), "to_date": datetime.now().strftime("%Y-%m-%d"), "previous_report": None, "previous_report_id": None}
+
+            prev_report = date_context.get("previous_report")
+            prev_pass_outputs = {}
+            if prev_report:
+                for p in prev_report.get("passes", []):
+                    prev_pass_outputs[p["key"]] = p.get("output", "")
 
             # Determine which passes have data
             pass_outputs = {}
@@ -3235,7 +3249,7 @@ async def educator_insights_websocket(websocket: WebSocket):
                     break
 
                 # Build the prompt data for this pass
-                if pass_key in ("curriculum", "performance", "content", "attendance"):
+                if pass_key in ("curriculum", "performance", "content", "attendance", "achievements"):
                     dimension_data = all_data.get(pass_key, {})
                     if not dimension_data.get("has_data"):
                         # Skip this pass — no data
@@ -3257,16 +3271,33 @@ async def educator_insights_websocket(websocket: WebSocket):
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Analyze the data and provide bullet points.")
                     system_prompt = system_prompt_template.replace("{data}", llm_input)
 
+                    # Inject progression context if we have a previous report
+                    prev_output = prev_pass_outputs.get(pass_key, "")
+                    if prev_output and not date_context.get("is_first_report"):
+                        prev_date = date_context.get("from_date", "unknown")
+                        system_prompt += (
+                            f"\n\nPREVIOUS ANALYSIS (from {prev_date}):\n{prev_output[:300]}\n\n"
+                            "Also note any changes, improvements, or regressions compared to the previous analysis period."
+                        )
+
                 elif pass_key == "recommendations":
-                    # Combine outputs from passes 1-4
+                    # Combine outputs from passes 1-5
                     combined = []
-                    for key in ("curriculum", "performance", "content", "attendance"):
+                    for key in ("curriculum", "performance", "content", "attendance", "achievements"):
                         output = pass_outputs.get(key, "")
                         if output:
                             combined.append(f"[{key.upper()}]\n{output}")
                     combined_text = "\n\n".join(combined) if combined else "No analysis data available."
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Provide teaching recommendations.")
                     system_prompt = system_prompt_template.replace("{data}", combined_text)
+
+                    # Add previous recommendations for comparison
+                    prev_recs = prev_pass_outputs.get("recommendations", "")
+                    if prev_recs and not date_context.get("is_first_report"):
+                        system_prompt += (
+                            f"\n\nPREVIOUS RECOMMENDATIONS:\n{prev_recs[:300]}\n\n"
+                            "Prioritize new recommendations that address recent changes. Note which prior recommendations have been addressed."
+                        )
 
                 elif pass_key == "synthesis":
                     # Combine all prior outputs
@@ -3276,7 +3307,19 @@ async def educator_insights_websocket(websocket: WebSocket):
                     system_prompt = system_prompt.replace("{performance}", pass_outputs.get("performance", "No data"))
                     system_prompt = system_prompt.replace("{content}", pass_outputs.get("content", "No data"))
                     system_prompt = system_prompt.replace("{attendance}", pass_outputs.get("attendance", "No data"))
+                    system_prompt = system_prompt.replace("{achievements}", pass_outputs.get("achievements", "No data"))
                     system_prompt = system_prompt.replace("{recommendations}", pass_outputs.get("recommendations", "No data"))
+
+                    # Add previous synthesis for progression narrative
+                    prev_synthesis = prev_pass_outputs.get("synthesis", "")
+                    if prev_synthesis and not date_context.get("is_first_report"):
+                        from_date = date_context.get("from_date", "unknown")
+                        to_date = date_context.get("to_date", "today")
+                        system_prompt += (
+                            f"\n\nPREVIOUS EXECUTIVE SUMMARY (from {from_date}):\n{prev_synthesis[:400]}\n\n"
+                            f"This report covers {from_date} to {to_date}. "
+                            "Highlight what has changed since the previous report — improvements, regressions, and areas that stayed the same."
+                        )
                 else:
                     continue
 
@@ -3381,6 +3424,9 @@ async def educator_insights_websocket(websocket: WebSocket):
             report = {
                 "id": str(uuid.uuid4()),
                 "generated_at": datetime.now().isoformat(),
+                "from_date": date_context.get("from_date"),
+                "to_date": date_context.get("to_date", datetime.now().strftime("%Y-%m-%d")),
+                "previous_report_id": date_context.get("previous_report_id"),
                 "passes": [
                     {"key": pd["key"], "name": pd["name"], "output": pass_outputs.get(pd["key"], "")}
                     for pd in PASS_DEFINITIONS
