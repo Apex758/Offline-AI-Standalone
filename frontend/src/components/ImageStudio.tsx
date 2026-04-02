@@ -62,6 +62,7 @@ import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
 import { useNotification } from '../contexts/NotificationContext';
 import { useTabProcessing } from '../contexts/TabBusyContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 
@@ -405,6 +406,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const triggerCheck = useAchievementTrigger();
   const { notify } = useNotification();
   const { hasDiffusion, hasLama } = useCapabilities();
+  const { guardOffline } = useOfflineGuard();
 
   const IMAGE_STORAGE_KEY = `image-studio-${tabId}`;
 
@@ -825,6 +827,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // GENERATOR: Generate Images (Batch)
   // ========================================
   const handleGenerate = async () => {
+    if (guardOffline()) return;
     if (!prompt.trim()) {
       setValidationErrors({ prompt: true });
       setTimeout(() => {
@@ -899,7 +902,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       await Promise.allSettled(generationPromises);
 
       setGenerationState('results');
-      notify('Image generation complete!', 'success');
+      notify('Image generation complete!', 'success', tabId);
 
       // Process queued generations
       processQueue();
@@ -907,7 +910,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       console.error('Generation error:', err);
       setError(err.response?.data?.error || err.message || 'Failed to generate images');
       setGenerationState('input');
-      notify('Image generation failed', 'error');
+      notify('Image generation failed', 'error', tabId);
     }
   };
 
@@ -1049,7 +1052,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     ));
 
     const completedCount = results.filter(r => r.status === 'completed').length;
-    notify(`Queue item done: ${completedCount}/${waitingItem.numImages} images generated`, 'success');
+    notify(`Queue item done: ${completedCount}/${waitingItem.numImages} images generated`, 'success', tabId);
 
     isProcessingQueueRef.current = false;
 
@@ -1068,6 +1071,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // COMIC: Generate Comic Page
   // ========================================
   const handleComicGenerate = async () => {
+    if (guardOffline()) return;
     if (!comicDescription.trim()) {
       setComicError('Please enter a story description');
       return;
@@ -1154,11 +1158,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       }
 
       setComicState('done');
-      notify('Comic page generation complete!', 'success');
+      notify('Comic page generation complete!', 'success', tabId);
     } catch (err: any) {
       console.error('Comic generation error:', err);
       setComicError(err.response?.data?.error || err.message || 'Failed to generate comic');
-      notify('Comic page generation failed', 'error');
+      notify('Comic page generation failed', 'error', tabId);
       setComicState('input');
     }
   };

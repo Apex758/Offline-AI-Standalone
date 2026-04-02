@@ -40,6 +40,7 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useTTS, useSTT } from '../hooks/useVoice';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import ImageModeSelector from './ui/ImageModeSelector';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import KidsStorybookSkeletonDay from './KidsStorybookSkeletonDay';
@@ -53,6 +54,7 @@ import { compressImage, compressTransparentImage } from '../utils/imageCompressi
 import {
   generateAllPageImages,
   generateCharacterImage,
+  generateCharacterFromReference,
   removeCharacterBg,
   generateBackgroundImage,
 } from '../utils/storyImagePipeline';
@@ -73,13 +75,16 @@ import {
 import type {
   StorybookFormData, ParsedStorybook, StoryPage, SpeakerConfig,
   VoiceName, SpeakerRole, ComprehensionQuestion, BundledScene,
-  SavedStorybook, StorybookExportSettings,
+  SavedStorybook, StorybookExportSettings, CoverPage,
 } from '../types/storybook';
 import type { ImageMode } from '../types';
 import {
   getSavedStorybooks, saveStorybook, deleteSavedStorybook,
   getExportSettings, setExportSettings, DEFAULT_EXPORT_SETTINGS,
 } from '../utils/storybookStorage';
+import {
+  buildSpeechBubbleSVG, shouldUseBubble, getTailDirection,
+} from '../utils/speechBubble';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -100,6 +105,7 @@ const DEFAULT_FORM: StorybookFormData = {
   description: '',
   gradeLevel: 'K',
   subject: '',
+  authorName: '',
   pageCount: 8,
   imageMode: 'none',
   backgroundCount: 'auto',
@@ -540,6 +546,72 @@ function SceneCategoryIcon({ category, className }: { category: string; classNam
 
 // ─── Playback View ────────────────────────────────────────────────────────────
 
+function FlashcardSlide({
+  question,
+  showAnswer,
+  questionNumber,
+  totalQuestions,
+  accentColor,
+}: {
+  question: ComprehensionQuestion;
+  showAnswer: boolean;
+  questionNumber: number;
+  totalQuestions: number;
+  accentColor: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full w-full px-8" style={{ perspective: '1200px' }}>
+      <div className="text-white/40 text-sm mb-4 font-sans">
+        Question {questionNumber} of {totalQuestions}
+      </div>
+      <div
+        className="relative w-full max-w-xl"
+        style={{
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.6s ease',
+          transform: showAnswer ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        }}
+      >
+        {/* Front — Question */}
+        <div
+          className="rounded-2xl p-10 text-center"
+          style={{
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div className="text-sm font-sans font-semibold mb-4" style={{ color: accentColor }}>QUESTION</div>
+          <p className="text-2xl text-white leading-relaxed">{question.question}</p>
+          <div className="mt-6 text-white/30 text-sm font-sans">Press → to reveal answer</div>
+        </div>
+        {/* Back — Answer */}
+        <div
+          className="absolute inset-0 rounded-2xl p-10 text-center"
+          style={{
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            background: 'rgba(255,255,255,0.12)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div className="text-white/40 text-sm font-sans mb-2">{question.question}</div>
+          <div className="mx-auto my-4" style={{ width: 60, height: 2, background: accentColor }} />
+          <div className="text-sm font-sans font-semibold mb-3" style={{ color: accentColor }}>ANSWER</div>
+          <p className="text-xl text-white leading-relaxed">{question.answer}</p>
+          {question.outcomeRef && (
+            <div className="mt-4 text-white/25 text-xs font-sans">Outcome: {question.outcomeRef}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PlaybackView({
   book,
   onClose,
@@ -559,8 +631,18 @@ function PlaybackView({
   const phaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cachedAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const page = book.pages[pageIdx];
   const totalPages = book.pages.length;
+  const questions = book.comprehensionQuestions ?? [];
+  const questionSlideCount = questions.length * 2;
+  const totalSlides = totalPages + questionSlideCount;
+
+  // Derived: is this a question slide?
+  const isQuestionSlide = pageIdx >= totalPages;
+  const questionDataIdx = isQuestionSlide ? Math.floor((pageIdx - totalPages) / 2) : -1;
+  const isAnswerFace = isQuestionSlide ? (pageIdx - totalPages) % 2 === 1 : false;
+  const currentQuestion = isQuestionSlide ? questions[questionDataIdx] : null;
+
+  const page = isQuestionSlide ? null : book.pages[pageIdx];
 
   const clearTimer = () => {
     if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
@@ -618,7 +700,15 @@ function PlaybackView({
   }, [stop]);
 
   // Animate phases: bg → char (500ms) → text (800ms) → TTS
+  // Skip phase animation for question slides
   useEffect(() => {
+    if (isQuestionSlide) {
+      setPhase('done');
+      setSegmentIdx(0);
+      stopAll();
+      clearTimer();
+      return;
+    }
     setPhase('bg');
     setSegmentIdx(0);
     stopAll();
@@ -628,6 +718,7 @@ function PlaybackView({
   }, [pageIdx]);
 
   useEffect(() => {
+    if (isQuestionSlide) return;
     if (phase === 'char') {
       phaseTimerRef.current = setTimeout(() => setPhase('text'), 600);
     } else if (phase === 'text') {
@@ -641,8 +732,8 @@ function PlaybackView({
 
   const nextPage = useCallback(() => {
     stopAll();
-    if (pageIdx < totalPages - 1) setPageIdx(p => p + 1);
-  }, [pageIdx, totalPages, stopAll]);
+    if (pageIdx < totalSlides - 1) setPageIdx(p => p + 1);
+  }, [pageIdx, totalSlides, stopAll]);
 
   const prevPage = useCallback(() => {
     stopAll();
@@ -650,15 +741,21 @@ function PlaybackView({
   }, [stopAll]);
 
   // Auto-advance after TTS finishes on last segment
+  // Do NOT auto-advance on question slides — teacher controls the pace
   useEffect(() => {
-    if (phase === 'done' && autoPlay && pageIdx < totalPages - 1) {
+    if (phase === 'done' && autoPlay && !isQuestionSlide && pageIdx < totalSlides - 1) {
       phaseTimerRef.current = setTimeout(nextPage, 1500);
     }
     return clearTimer;
-  }, [phase, autoPlay, pageIdx, totalPages, nextPage]);
+  }, [phase, autoPlay, pageIdx, totalSlides, nextPage, isQuestionSlide]);
 
   const charAnim = page?.characterAnimation || 'fadeIn';
   const hasChar = page && (page.characterImageData || page.characterScene) && page.imagePlacement !== 'none';
+
+  // Page label
+  const pageLabel = isQuestionSlide
+    ? `Question ${questionDataIdx + 1} of ${questions.length}${isAnswerFace ? ' (Answer)' : ''}`
+    : `${pageIdx + 1} / ${totalPages}`;
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col" style={{ fontFamily: 'Georgia, serif' }}>
@@ -667,8 +764,10 @@ function PlaybackView({
         <button onClick={() => { stopAll(); onClose(); }} className="text-white/70 hover:text-white flex items-center gap-1 text-sm">
           <Icon icon={Cancel01IconData} className="w-4" /> Exit
         </button>
-        <div className="text-white/60 text-sm">{pageIdx + 1} / {totalPages}</div>
+        <div className="text-white/60 text-sm">{pageLabel}</div>
         <div className="flex items-center gap-3">
+          {!isQuestionSlide && (
+          <>
           <button
             onClick={() => setAutoPlay(a => !a)}
             className="text-white/60 hover:text-white text-xs flex items-center gap-1"
@@ -679,6 +778,8 @@ function PlaybackView({
           <button onClick={() => { stopAll(); speakSegment(0); }} className="text-white/60 hover:text-white">
             <Icon icon={RefreshIconData} className="w-4" />
           </button>
+          </>
+          )}
         </div>
       </div>
 
@@ -686,25 +787,38 @@ function PlaybackView({
       <div className="flex-1 relative overflow-hidden flex items-center justify-center">
         {/* Background */}
         <div
-          className={`absolute inset-0 transition-opacity duration-500 ${phase !== 'bg' ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 transition-opacity duration-500 ${phase !== 'bg' || isQuestionSlide ? 'opacity-100' : 'opacity-0'}`}
           style={{
-            background: page?.bundledSceneId
-              ? `${SCENE_BG_COLORS[(BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)?.category) || 'outdoors']}cc`
-              : '#1a1a2e',
+            background: isQuestionSlide
+              ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+              : page?.bundledSceneId
+                ? `${SCENE_BG_COLORS[(BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)?.category) || 'outdoors']}cc`
+                : '#1a1a2e',
           }}
         >
-          {page?.backgroundImageData && (
+          {!isQuestionSlide && page?.backgroundImageData && (
             <img src={page.backgroundImageData} alt="" className="w-full h-full object-cover" />
           )}
         </div>
 
         {/* Page content */}
+        {isQuestionSlide && currentQuestion ? (
+          <div className="relative z-10 w-full h-full flex items-center justify-center">
+            <FlashcardSlide
+              question={currentQuestion}
+              showAnswer={isAnswerFace}
+              questionNumber={questionDataIdx + 1}
+              totalQuestions={questions.length}
+              accentColor={accentColor}
+            />
+          </div>
+        ) : (
         <div className="relative z-10 w-full max-w-4xl mx-auto px-8 py-6 flex items-center gap-8 min-h-[60vh]">
           {/* Character */}
-          {hasChar && page.imagePlacement === 'left' && (
+          {hasChar && page!.imagePlacement === 'left' && (
             <div className={`flex-shrink-0 w-48 animate__animated animate__${charAnim} ${phase === 'char' || phase === 'text' || phase === 'done' ? '' : 'invisible'}`}>
-              {page.characterImageData
-                ? <img src={page.characterImageData} alt="character" className="w-full drop-shadow-2xl" />
+              {page!.characterImageData
+                ? <img src={page!.characterImageData} alt="character" className="w-full drop-shadow-2xl" />
                 : <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center"><Icon icon={UserIconData} className="w-16" style={{ color: 'rgba(255,255,255,0.5)' }} /></div>
               }
             </div>
@@ -728,15 +842,16 @@ function PlaybackView({
           </div>
 
           {/* Character right */}
-          {hasChar && page.imagePlacement === 'right' && (
+          {hasChar && page!.imagePlacement === 'right' && (
             <div className={`flex-shrink-0 w-48 animate__animated animate__${charAnim} ${phase === 'char' || phase === 'text' || phase === 'done' ? '' : 'invisible'}`}>
-              {page.characterImageData
-                ? <img src={page.characterImageData} alt="character" className="w-full drop-shadow-2xl" />
+              {page!.characterImageData
+                ? <img src={page!.characterImageData} alt="character" className="w-full drop-shadow-2xl" />
                 : <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center"><Icon icon={UserIconData} className="w-16" style={{ color: 'rgba(255,255,255,0.5)' }} /></div>
               }
             </div>
           )}
         </div>
+        )}
 
         {/* Nav arrows */}
         <button
@@ -748,7 +863,7 @@ function PlaybackView({
         </button>
         <button
           onClick={nextPage}
-          disabled={pageIdx === totalPages - 1}
+          disabled={pageIdx === totalSlides - 1}
           className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white disabled:opacity-20 transition-opacity"
         >
           <Icon icon={ArrowRight01IconData} className="w-8" />
@@ -757,14 +872,181 @@ function PlaybackView({
 
       {/* Page dots */}
       <div className="flex justify-center gap-1.5 py-3">
-        {book.pages.map((_, i) => (
-          <button
+        {Array.from({ length: totalSlides }, (_, i) => {
+          const isQDot = i >= totalPages;
+          return (
+            <button
+              key={i}
+              onClick={() => { stopAll(); setPageIdx(i); }}
+              className={`w-2 h-2 transition-all ${isQDot ? 'rounded-sm' : 'rounded-full'}`}
+              style={{ background: i === pageIdx ? accentColor : isQDot ? 'rgba(255,200,100,0.25)' : 'rgba(255,255,255,0.3)' }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Streaming Page Preview (real-time text streaming in editor) ─────────────
+
+function StreamingPagePreview({
+  page,
+  accentColor,
+}: {
+  page: StoryPage;
+  accentColor: string;
+}) {
+  const bgScene = page.bundledSceneId
+    ? BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)
+    : null;
+  const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
+
+  return (
+    <div
+      className="relative rounded-xl overflow-hidden border border-theme shadow-sm"
+      style={{ background: bgColor, aspectRatio: '297 / 210', fontFamily: 'Georgia, serif' }}
+    >
+      <div className="relative z-10 p-6">
+        <div className="space-y-2">
+          {page.textSegments.map((seg, i) => (
+            <p
+              key={i}
+              className={`leading-relaxed text-gray-800 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'}`}
+              style={{
+                animation: 'streamFadeIn 0.3s ease both',
+                animationDelay: `${i * 0.05}s`,
+              }}
+            >
+              {seg.speaker !== 'narrator' && (
+                <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
+              )}
+              {seg.speaker !== 'narrator' ? `"${seg.text}"` : seg.text}
+            </p>
+          ))}
+          {/* Typing indicator */}
+          <div className="flex items-center gap-1.5 pt-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse" style={{ animationDelay: '0s' }} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse" style={{ animationDelay: '0.4s' }} />
+          </div>
+        </div>
+      </div>
+      {/* Writing badge */}
+      <div className="absolute bottom-2 right-2 text-xs bg-black/20 text-white px-2 py-0.5 rounded-full flex items-center gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+        Writing…
+      </div>
+      <style>{`
+        @keyframes streamFadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Skeleton Page Placeholder (ungenerated pages in editor) ─────────────────
+
+function SkeletonPagePreview() {
+  return (
+    <div
+      className="relative rounded-xl overflow-hidden border border-theme shadow-sm"
+      style={{ background: '#f3f4f6', aspectRatio: '297 / 210' }}
+    >
+      <div className="relative z-10 p-6 space-y-4">
+        {/* Skeleton text lines */}
+        {[85, 100, 92, 70, 100, 55].map((w, i) => (
+          <div
             key={i}
-            onClick={() => { stopAll(); setPageIdx(i); }}
-            className="w-2 h-2 rounded-full transition-all"
-            style={{ background: i === pageIdx ? accentColor : 'rgba(255,255,255,0.3)' }}
+            className="rounded"
+            style={{
+              width: `${w}%`,
+              height: i === 0 ? 14 : 10,
+              background: 'linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 40%, #fafafa 50%, #f3f4f6 60%, #e5e7eb 100%)',
+              backgroundSize: '400px 100%',
+              animation: 'skeletonShimmer 1.8s ease-in-out infinite',
+            }}
           />
         ))}
+      </div>
+      <div className="absolute bottom-2 right-2 text-xs text-gray-400 px-2 py-0.5">
+        Waiting…
+      </div>
+      <style>{`
+        @keyframes skeletonShimmer {
+          0% { background-position: -200px 0; }
+          100% { background-position: 200px 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Cover Page Preview ──────────────────────────────────────────────────────
+
+function CoverPagePreview({
+  coverPage,
+  accentColor,
+}: {
+  coverPage: CoverPage;
+  accentColor: string;
+}) {
+  return (
+    <div
+      className="relative rounded-xl overflow-hidden border border-theme shadow-sm flex flex-col items-center justify-center text-center"
+      style={{
+        aspectRatio: '297 / 210',
+        background: coverPage.coverImageData
+          ? undefined
+          : `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
+        fontFamily: 'Georgia, serif',
+      }}
+    >
+      {/* Cover image as background */}
+      {coverPage.coverImageData && (
+        <>
+          <img
+            src={coverPage.coverImageData}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+        </>
+      )}
+      <div className="relative z-10 flex flex-col items-center justify-center gap-3 p-8 max-w-md">
+        {/* Book icon */}
+        {!coverPage.coverImageData && (
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2"
+            style={{ background: `${accentColor}22` }}
+          >
+            <Icon icon={BookOpen01IconData} className="w-7" style={{ color: accentColor }} />
+          </div>
+        )}
+        <h1
+          className="text-2xl font-bold leading-tight"
+          style={{ color: coverPage.coverImageData ? '#fff' : '#1f2937' }}
+        >
+          {coverPage.title || 'Untitled Story'}
+        </h1>
+        {coverPage.subtitle && (
+          <p
+            className="text-sm"
+            style={{ color: coverPage.coverImageData ? 'rgba(255,255,255,0.7)' : '#6b7280' }}
+          >
+            {coverPage.subtitle}
+          </p>
+        )}
+        {coverPage.authorName && (
+          <p
+            className="text-sm mt-1"
+            style={{ color: coverPage.coverImageData ? 'rgba(255,255,255,0.8)' : accentColor }}
+          >
+            by {coverPage.authorName}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -786,6 +1068,13 @@ function PagePreview({
 
   const hasChar = page.characterImageData && page.imagePlacement !== 'none';
 
+  // Separate narrator vs character segments for bubble rendering
+  const narratorSegments = page.textSegments.filter(seg => !shouldUseBubble(seg, page));
+  const characterSegments = page.textSegments.filter(seg => shouldUseBubble(seg, page));
+  // Show the last character speech bubble (static preview shows most recent)
+  const activeBubbleSeg = characterSegments.length > 0 ? characterSegments[characterSegments.length - 1] : null;
+  const tailDir = getTailDirection(page);
+
   return (
     <div
       className="relative rounded-xl overflow-hidden border border-theme shadow-sm"
@@ -795,30 +1084,51 @@ function PagePreview({
         <img src={page.backgroundImageData} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
       )}
       <div className="relative z-10 p-6">
-        {/* Character + text layout using CSS float */}
-        {hasChar && page.imagePlacement === 'left' && (
-          <img
-            src={page.characterImageData!}
-            alt="character"
-            className="float-left mr-4 mb-2 rounded-lg shadow-md"
-            style={{ width: 120, shapeOutside: `url(${page.characterImageData})`, shapeMargin: '12px' }}
-          />
-        )}
-        {hasChar && page.imagePlacement === 'right' && (
-          <img
-            src={page.characterImageData!}
-            alt="character"
-            className="float-right ml-4 mb-2 rounded-lg shadow-md"
-            style={{ width: 120, shapeOutside: `url(${page.characterImageData})`, shapeMargin: '12px' }}
-          />
+        {/* Character + speech bubble layout */}
+        {hasChar && (
+          <div
+            className={`${page.imagePlacement === 'left' ? 'float-left mr-4' : 'float-right ml-4'} mb-2`}
+            style={{ position: 'relative', width: 120 }}
+          >
+            <img
+              src={page.characterImageData!}
+              alt="character"
+              className="rounded-lg shadow-md"
+              style={{ width: 120, shapeOutside: `url(${page.characterImageData})`, shapeMargin: '12px' }}
+            />
+            {activeBubbleSeg && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -8,
+                  [page.imagePlacement === 'left' ? 'left' : 'right']: '100%',
+                  marginLeft: page.imagePlacement === 'left' ? 4 : undefined,
+                  marginRight: page.imagePlacement === 'right' ? 4 : undefined,
+                  zIndex: 20,
+                  filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))',
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: buildSpeechBubbleSVG({
+                    text: activeBubbleSeg.text,
+                    tailDirection: tailDir,
+                    context: 'editor',
+                  }),
+                }}
+              />
+            )}
+          </div>
         )}
         <div className="space-y-2">
-          {page.textSegments.map((seg, i) => (
-            <p key={i} className={`leading-relaxed text-gray-800 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'}`}>
-              {seg.speaker !== 'narrator' && (
-                <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
-              )}
-              {seg.speaker !== 'narrator' ? `"${seg.text}"` : seg.text}
+          {narratorSegments.map((seg, i) => (
+            <p key={i} className="leading-relaxed text-gray-800 italic text-base">
+              {seg.text}
+            </p>
+          ))}
+          {/* Fallback: character dialogue without image rendered as text */}
+          {!hasChar && page.textSegments.filter(s => s.speaker !== 'narrator').map((seg, i) => (
+            <p key={`char-${i}`} className="leading-relaxed text-gray-800 font-semibold text-base">
+              <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
+              {`"${seg.text}"`}
             </p>
           ))}
         </div>
@@ -918,6 +1228,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const { hasDiffusion, hasVision, tier } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { speak, stop: stopTTS, isSpeaking } = useTTS();
+  const { guardOffline } = useOfflineGuard();
 
   const accentColor = (settings.tabColors as any)['storybook'] || '#a855f7';
 
@@ -980,9 +1291,23 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   // ── Restore saved data ─────────────────────────────────────────────────────
   useEffect(() => {
     if (savedData) {
-      if (savedData.formData) setFormData({ ...DEFAULT_FORM, ...savedData.formData });
+      const fd = savedData.formData ? { ...DEFAULT_FORM, ...savedData.formData } : DEFAULT_FORM;
+      if (savedData.formData) setFormData(fd);
       if (savedData.parsedBook) {
-        setParsedBook(savedData.parsedBook);
+        let book = savedData.parsedBook as ParsedStorybook;
+        // Backward compat: build coverPage if missing
+        if (!book.coverPage) {
+          const gl = fd.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${fd.gradeLevel}`;
+          book = {
+            ...book,
+            coverPage: {
+              title: book.title,
+              subtitle: `${gl}${fd.subject ? ' • ' + fd.subject : ''}`,
+              authorName: fd.authorName || undefined,
+            },
+          };
+        }
+        setParsedBook(book);
         setView('editor');
       }
     }
@@ -1050,6 +1375,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   };
 
   const handleGenerate = useCallback(() => {
+    if (guardOffline()) return;
     if (!validate()) return;
     clearStreaming(tabId, WS_ENDPOINT);
     setLivePages([]);
@@ -1059,10 +1385,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     const ws = getConnection(tabId, WS_ENDPOINT);
     wsRef.current = ws;
 
-    // Two-pass (narrative then JSON) only for larger models that can handle
-    // the extra inference time.  Tier 1 (small/CPU) models use single-pass
-    // to avoid doubling generation time.
-    const useTwoPass = tier !== undefined && tier > 1;
+    // Single-pass for all tiers — the single-pass prompt already produces the
+    // full JSON structure.  Two-pass doubled generation time with no quality gain.
+    const useTwoPass = false;
 
     if (useTwoPass) {
       // Listen for two-pass status messages and narrative preview tokens
@@ -1101,20 +1426,88 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     if (formData.imageMode !== 'none' && hasDiffusion) {
       fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
     }
-  }, [formData, tabId, tier, hasDiffusion, getConnection, clearStreaming]);
+  }, [guardOffline, formData, tabId, tier, hasDiffusion, getConnection, clearStreaming]);
 
   // ── Watch streaming content ────────────────────────────────────────────────
   const isStreaming = getIsStreaming(tabId, WS_ENDPOINT);
   const streamingContent = getStreamingContent(tabId, WS_ENDPOINT);
 
+  // Track which page the AI is currently streaming (for auto-advance in editor)
+  const prevLivePagesCountRef = useRef(0);
+
   useEffect(() => {
     if (!streamingContent) return;
     const partial = tryParsePartialPages(streamingContent);
-    if (partial.length > 0) setLivePages(partial);
+    if (partial.length > 0) {
+      setLivePages(partial);
+
+      // Transition from skeleton to editor as soon as first page arrives
+      if (view === 'streaming' && partial.length >= 1) {
+        // Build a temporary parsedBook with completed pages + placeholders for remaining
+        const completedPages: StoryPage[] = partial.map(p => ({
+          ...p,
+          bundledSceneId: findBestScene(p.sceneId).id,
+        }));
+        // Create placeholder pages for ones not yet generated
+        const totalExpected = formData.pageCount;
+        const placeholders: StoryPage[] = [];
+        for (let i = completedPages.length; i < totalExpected; i++) {
+          placeholders.push({
+            pageNumber: i + 1,
+            textSegments: [],
+            sceneId: 'default',
+            imagePlacement: 'none',
+            characterAnimation: 'fadeIn',
+            textAnimation: 'fadeIn',
+          });
+        }
+        const allPages = [...completedPages, ...placeholders];
+        setParsedBook(prev => {
+          // Preserve any top-level fields if we already have a partial book
+          const base = prev || { title: formData.title || 'Generating...', gradeLevel: formData.gradeLevel, pages: [], scenes: [], styleSuffix: '' };
+          // Build cover page if not already present
+          const gl = formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`;
+          const coverPage = base.coverPage || {
+            title: formData.title || 'Generating...',
+            subtitle: `${gl}${formData.subject ? ' • ' + formData.subject : ''}`,
+            authorName: formData.authorName || undefined,
+          };
+          return { ...base, pages: allPages, coverPage };
+        });
+        setCurrentPageIdx(0);
+        setView('editor');
+      } else if (view === 'editor' && isStreaming) {
+        // Update in-progress pages in the editor as more content streams in
+        setParsedBook(prev => {
+          if (!prev) return prev;
+          const updatedPages = [...prev.pages];
+          for (const lp of partial) {
+            const idx = lp.pageNumber - 1;
+            if (idx >= 0 && idx < updatedPages.length) {
+              updatedPages[idx] = {
+                ...updatedPages[idx],
+                ...lp,
+                bundledSceneId: updatedPages[idx].bundledSceneId || findBestScene(lp.sceneId).id,
+              };
+            }
+          }
+          return { ...prev, pages: updatedPages };
+        });
+
+        // Auto-advance to the page currently being written
+        if (partial.length > prevLivePagesCountRef.current) {
+          // A new page just started — navigate to it
+          setCurrentPageIdx(partial.length - 1);
+        }
+      }
+      prevLivePagesCountRef.current = partial.length;
+    }
 
     if (!isStreaming && streamingContent) {
       // Streaming finished — parse full book
       setGenerationPhase('idle');
+      setLivePages([]);
+      prevLivePagesCountRef.current = 0;
       console.log('[StoryBook] Streaming done. Content length:', streamingContent.length, 'Preview:', streamingContent.substring(0, 200));
       const full = tryParseFullBook(streamingContent);
       console.log('[StoryBook] Parse result:', full ? `${full.pages.length} pages` : 'FAILED (null)');
@@ -1126,8 +1519,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         }));
         // Validate speakers match form config
         const validated = validateSpeakers({ ...full, pages }, formData);
-        setParsedBook(validated);
-        setCurrentPageIdx(0);
+        // Build cover page
+        const gradeLabel = formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`;
+        const coverPage: CoverPage = {
+          title: validated.title || formData.title,
+          subtitle: `${gradeLabel}${formData.subject ? ' • ' + formData.subject : ''}`,
+          authorName: formData.authorName || undefined,
+        };
+        setParsedBook({ ...validated, coverPage });
+        setCurrentPageIdx(-1);
         setView('editor');
         // Auto-save completed storybook
         const saved = saveStorybook(formData, validated, currentDraftId || undefined);
@@ -1209,6 +1609,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
   /** Generate all images for the current book (backgrounds + characters). */
   const handleGenerateAllImages = useCallback(async (book?: ParsedStorybook) => {
+    if (guardOffline()) return;
     const target = book || parsedBook;
     if (!target || isGeneratingImages) return;
 
@@ -1217,44 +1618,63 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     setIsGeneratingImages(true);
     setImageGenProgress(null);
 
+    // Detect narrator-only: speakerCount === 1 means no character speakers
+    const isNarratorOnly = formData.speakerCount === 1;
+
     try {
       const result = await generateAllPageImages(target, {
         onProgress: (current, total, stage) => {
           setImageGenProgress({ current, total, stage });
         },
+        // Incremental rendering: apply each image as soon as it's ready
+        onPageResult: (pageResult) => {
+          setParsedBook(prev => {
+            if (!prev) return prev;
+            const page = prev.pages[pageResult.pageIndex];
+            if (!page) return prev;
+            const updatedPages = [...prev.pages];
+            updatedPages[pageResult.pageIndex] = {
+              ...page,
+              ...(pageResult.characterImageData && { characterImageData: pageResult.characterImageData }),
+              ...(pageResult.characterSeed != null && { characterSeed: pageResult.characterSeed }),
+              ...(pageResult.backgroundImageData && { backgroundImageData: pageResult.backgroundImageData }),
+            };
+            return { ...prev, pages: updatedPages };
+          });
+        },
+        onError: (msg) => {
+          setSaveToast(msg);
+          setTimeout(() => setSaveToast(null), 3000);
+        },
+        characterSeed: target.pages.find(p => p.characterSeed)?.characterSeed,
+        characterReferenceImages: target.characterReferenceImages,
+        narratorOnly: isNarratorOnly,
         signal: abort.signal,
       });
 
-      // Apply results to pages
-      setParsedBook(prev => {
-        if (!prev) return prev;
-        const updatedPages = [...prev.pages];
-        for (const r of result.pages) {
-          const page = updatedPages[r.pageIndex];
-          if (!page) continue;
-          updatedPages[r.pageIndex] = {
-            ...page,
-            // Don't overwrite images the user already generated individually
-            ...(r.characterImageData && !page.characterImageData && { characterImageData: r.characterImageData }),
-            ...(r.characterSeed != null && !page.characterSeed && { characterSeed: r.characterSeed }),
-            ...(r.backgroundImageData && !page.backgroundImageData && { backgroundImageData: r.backgroundImageData }),
-          };
-        }
-        return { ...prev, pages: updatedPages };
-      });
+      // Store character reference images for future regeneration
+      if (result.characterReferenceImages && Object.keys(result.characterReferenceImages).length > 0) {
+        setParsedBook(prev => {
+          if (!prev) return prev;
+          return { ...prev, characterReferenceImages: result.characterReferenceImages };
+        });
+      }
     } catch (e: any) {
       if (e.name !== 'AbortError') {
         console.error('[StoryBook] Image generation pipeline failed:', e);
+        setSaveToast('Image generation failed — check console');
+        setTimeout(() => setSaveToast(null), 3000);
       }
     } finally {
       setIsGeneratingImages(false);
       setImageGenProgress(null);
       imageGenAbortRef.current = null;
     }
-  }, [parsedBook, isGeneratingImages]);
+  }, [guardOffline, parsedBook, isGeneratingImages, formData.speakerCount]);
 
   /** Generate a single page's character image. */
   const handleGeneratePageImage = useCallback(async (pageIdx: number) => {
+    if (guardOffline()) return;
     if (!parsedBook) return;
     const page = parsedBook.pages[pageIdx];
     if (!page?.characterScene) return;
@@ -1264,13 +1684,39 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     const styleSuffix = parsedBook.styleSuffix || "flat vector illustration, children's book style, bold outlines, pastel colors, bright and cheerful, simple shapes, no text";
     const charDescs = parsedBook.characterDescriptions || {};
 
-    // Try to reuse seed from another page for consistency
+    // Try to reuse seed and reference image from prior generation for consistency
     const existingSeed = parsedBook.pages.find(p => p.characterSeed)?.characterSeed;
+    const existingRef = parsedBook.characterReferenceImages
+      ? Object.values(parsedBook.characterReferenceImages)[0]
+      : undefined;
 
     try {
-      const { imageData: rawChar, seed } = await generateCharacterImage(
-        charDescs, page.characterScene, styleSuffix, existingSeed,
-      );
+      let rawChar: string;
+      let seed: number;
+
+      if (existingRef && existingSeed != null) {
+        // Use img2img from reference for consistent character with new pose
+        const result = await generateCharacterFromReference(
+          charDescs, page.characterScene, styleSuffix, existingSeed, existingRef, 0.55,
+        );
+        rawChar = result.imageData;
+        seed = result.seed;
+      } else {
+        // First character generation — create fresh and save as reference
+        const result = await generateCharacterImage(
+          charDescs, page.characterScene, styleSuffix, existingSeed,
+        );
+        rawChar = result.imageData;
+        seed = result.seed;
+
+        // Store as reference for future generations
+        const charName = Object.keys(charDescs)[0] || 'default';
+        setParsedBook(prev => {
+          if (!prev) return prev;
+          return { ...prev, characterReferenceImages: { ...prev.characterReferenceImages, [charName]: rawChar } };
+        });
+      }
+
       let finalChar: string;
       try {
         finalChar = await removeCharacterBg(rawChar);
@@ -1284,10 +1730,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       });
     } catch (e) {
       console.error(`[StoryBook] Failed to generate image for page ${pageIdx + 1}:`, e);
+      setSaveToast(`Character image failed for page ${pageIdx + 1}`);
+      setTimeout(() => setSaveToast(null), 3000);
     } finally {
       setIsRemovingBg(null);
     }
-  }, [parsedBook]);
+  }, [guardOffline, parsedBook]);
 
   /** Generate a single page's background image. */
   const handleGeneratePageBackground = useCallback(async (pageIdx: number) => {
@@ -1300,8 +1748,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     const styleSuffix = parsedBook.styleSuffix || "flat vector illustration, children's book style, bold outlines, pastel colors, bright and cheerful, simple shapes, no text";
 
+    // Narrator-only: fold character/subject descriptions into the background
+    const isNarratorOnly = formData.speakerCount === 1;
+    const subjectDescs = isNarratorOnly ? (parsedBook.characterDescriptions || undefined) : undefined;
+
     try {
-      const imgData = await generateBackgroundImage(scene.description, styleSuffix);
+      const imgData = await generateBackgroundImage(scene.description, styleSuffix, subjectDescs);
       // Apply to ALL pages sharing the same sceneId
       const targetSceneId = page.sceneId;
       setParsedBook(prev => {
@@ -1421,7 +1873,20 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     setFormData({ ...DEFAULT_FORM, ...saved.formData });
     setCurrentDraftId(saved.id);
     if (saved.parsedBook && saved.parsedBook.pages.length > 0) {
-      setParsedBook(saved.parsedBook);
+      // Backward compatibility: build coverPage if missing
+      let book = saved.parsedBook;
+      if (!book.coverPage) {
+        const gl = saved.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${saved.formData.gradeLevel}`;
+        book = {
+          ...book,
+          coverPage: {
+            title: book.title,
+            subtitle: `${gl}${saved.formData.subject ? ' • ' + saved.formData.subject : ''}`,
+            authorName: saved.formData.authorName || undefined,
+          },
+        };
+      }
+      setParsedBook(book);
       setView('editor');
 
       // Restore images from IndexedDB if available
@@ -1432,8 +1897,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           if (imageMap.size > 0) {
             setParsedBook(prev => {
               if (!prev) return prev;
+              // Restore cover image
+              const coverImageData = imageMap.get(`-1:cover`);
+              const coverPage = prev.coverPage
+                ? { ...prev.coverPage, coverImageData: coverImageData ?? prev.coverPage.coverImageData }
+                : prev.coverPage;
               return {
                 ...prev,
+                coverPage,
                 pages: prev.pages.map((p, i) => ({
                   ...p,
                   characterImageData: imageMap.get(`${i}:character`) ?? p.characterImageData,
@@ -1524,6 +1995,20 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               onChange={v => updateForm('title', v)}
               placeholder="e.g. Max and the Magic Seed"
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.title ? 'border-red-500' : 'border-theme-strong'}`}
+              style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
+            />
+          </div>
+
+          {/* Author Name */}
+          <div>
+            <label className="block text-sm font-medium text-theme-label mb-1.5">
+              Author Name
+            </label>
+            <SmartInput
+              value={formData.authorName}
+              onChange={v => updateForm('authorName', v)}
+              placeholder="e.g. Ms. Johnson"
+              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             />
           </div>
@@ -1876,17 +2361,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     return (
       <div className="h-full relative overflow-hidden">
-        {isDark ? <KidsStorybookSkeletonNight /> : <KidsStorybookSkeletonDay />}
-        {/* Narrative preview overlay during Pass 1 */}
-        {generationPhase === 'writing_story' && narrativePreview && (
-          <div className="absolute inset-x-4 bottom-14 top-4 z-10 overflow-y-auto rounded-xl bg-black/40 backdrop-blur-md p-4 text-white/90 text-sm leading-relaxed whitespace-pre-wrap pointer-events-none">
-            <p className="text-xs uppercase tracking-wide text-white/50 mb-2">Writing the story&hellip;</p>
-            {narrativePreview}
-          </div>
-        )}
+        {isDark
+          ? <KidsStorybookSkeletonNight livePages={[]} />
+          : <KidsStorybookSkeletonDay livePages={[]} />}
         {/* Cancel button overlaid on bottom-right */}
         <button
-          onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setView('input'); setNarrativePreview(''); }}
+          onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setView('input'); setNarrativePreview(''); setLivePages([]); }}
           className="absolute bottom-4 right-4 z-10 text-sm px-3 py-1.5 rounded-lg bg-black/20 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/30 transition-colors"
         >
           Cancel
@@ -1910,7 +2390,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   // ─── Render: Editor view ───────────────────────────────────────────────────
   if (!parsedBook) return null;
 
-  const currentPage = parsedBook.pages[currentPageIdx];
+  const isCoverSelected = currentPageIdx === -1;
+  const currentPage = isCoverSelected ? null : parsedBook.pages[currentPageIdx];
 
   return (
     <div className="flex h-full">
@@ -1926,30 +2407,48 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         <div className="flex-1 text-center">
           <h2 className="font-semibold text-theme-heading text-sm truncate">{parsedBook.title}</h2>
           <p className="text-xs text-theme-muted">
-            {parsedBook.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${parsedBook.gradeLevel}`}
-            {formData.subject && ` • ${formData.subject}`}
-            {' • '}{parsedBook.pages.length} pages
+            {isStreaming ? (
+              <>
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse mr-1 align-middle" />
+                Writing page {livePages.length} of {formData.pageCount}…
+              </>
+            ) : (
+              <>
+                {parsedBook.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${parsedBook.gradeLevel}`}
+                {formData.subject && ` • ${formData.subject}`}
+                {' • '}{parsedBook.pages.length} pages
+              </>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Cancel streaming */}
+          {isStreaming && (
+            <button
+              onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setLivePages([]); setView('input'); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              Cancel
+            </button>
+          )}
           {/* Save */}
-          <button
+          {!isStreaming && <button
             onClick={handleSaveDraft}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
             title="Save storybook"
           >
             <Icon icon={FloppyDiskIconData} className="w-4" />
-          </button>
+          </button>}
           {/* History */}
-          <button
+          {!isStreaming && <button
             onClick={() => setShowHistory(prev => !prev)}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
             title="Storybook history"
           >
             <Icon icon={Clock01IconData} className="w-4" />
-          </button>
+          </button>}
           {/* Generate All Images */}
-          {hasDiffusion && formData.imageMode === 'ai' && (
+          {!isStreaming && hasDiffusion && formData.imageMode === 'ai' && (
             isGeneratingImages ? (
               <button
                 onClick={handleCancelImageGen}
@@ -1970,6 +2469,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               </button>
             )
           )}
+          {!isStreaming && (
+          <>
           <button
             onClick={() => {
               if (parsedBook) {
@@ -2025,10 +2526,38 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
       </div>
 
       {/* Image generation progress bar */}
+      {/* Streaming progress bar */}
+      {isStreaming && (
+        <div className="shrink-0 px-4 py-2 bg-theme-secondary border-b border-theme">
+          <div className="flex items-center gap-3">
+            <Icon icon={Loading03IconData} className="w-4 animate-spin" style={{ color: accentColor }} />
+            <div className="flex-1">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-theme-heading font-medium">Writing story…</span>
+                <span className="text-theme-muted">
+                  {livePages.length} / {formData.pageCount} pages
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${(livePages.length / formData.pageCount) * 100}%`,
+                    background: accentColor,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isGeneratingImages && imageGenProgress && (
         <div className="shrink-0 px-4 py-2 bg-theme-secondary border-b border-theme">
           <div className="flex items-center gap-3">
@@ -2062,7 +2591,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         </div>
       )}
 
-      {/* Editor tabs (Story / Questions / Export) */}
+      {/* Editor tabs (Story / Questions / Export) — hidden during streaming */}
+      {!isStreaming && (
       <div className="shrink-0 flex border-b border-theme px-4">
         {(['story', 'questions'] as const).map(tab => (
           <button
@@ -2078,6 +2608,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           </button>
         ))}
       </div>
+      )}
 
       {activeTab === 'questions' ? (
         // ── Comprehension Questions Panel ──────────────────────────────────
@@ -2128,12 +2659,52 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         // ── Story Pages Editor ──────────────────────────────────────────────
         <div className="flex-1 flex overflow-hidden">
           {/* Left: Thumbnail strip */}
-          <div className="w-28 shrink-0 border-r border-theme overflow-y-auto p-2 space-y-2 bg-theme-secondary">
+          <div className="w-32 shrink-0 border-r border-theme overflow-y-auto p-2 space-y-2 bg-theme-secondary">
+            {/* Cover page thumbnail */}
+            {parsedBook.coverPage && (
+              <button
+                onClick={() => setCurrentPageIdx(-1)}
+                className="w-full rounded-lg overflow-hidden border-2 transition-all text-left"
+                style={{ borderColor: isCoverSelected ? accentColor : 'transparent' }}
+              >
+                <div
+                  className="relative overflow-hidden flex items-center justify-center"
+                  style={{
+                    aspectRatio: '297 / 210',
+                    background: parsedBook.coverPage.coverImageData
+                      ? undefined
+                      : `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
+                  }}
+                >
+                  {parsedBook.coverPage.coverImageData ? (
+                    <>
+                      <img src={parsedBook.coverPage.coverImageData} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/30" />
+                    </>
+                  ) : null}
+                  <div className="relative z-10 text-center p-1">
+                    <p className="text-[6px] font-bold leading-tight truncate" style={{ color: parsedBook.coverPage.coverImageData ? '#fff' : '#1f2937' }}>
+                      {parsedBook.coverPage.title || 'Cover'}
+                    </p>
+                  </div>
+                </div>
+                <div className="px-1.5 py-0.5" style={{ background: isCoverSelected ? `${accentColor}10` : undefined }}>
+                  <p className="text-[10px] font-semibold" style={{ color: isCoverSelected ? accentColor : undefined }}>
+                    Cover
+                  </p>
+                </div>
+              </button>
+            )}
             {parsedBook.pages.map((page, i) => {
               const isActive = i === currentPageIdx;
+              const isPageEmpty = page.textSegments.length === 0;
+              const completedCount = livePages.length;
+              const isThumbStreaming = isStreaming && i === completedCount - 1 && !isPageEmpty;
+              const isThumbSkeleton = isStreaming && isPageEmpty;
               const bgScene = page.bundledSceneId
                 ? BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)
                 : null;
+              const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
               return (
                 <button
                   key={i}
@@ -2141,21 +2712,66 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   className="w-full rounded-lg overflow-hidden border-2 transition-all text-left"
                   style={{ borderColor: isActive ? accentColor : 'transparent' }}
                 >
+                  {/* Mini page preview */}
                   <div
-                    className="h-14 flex items-center justify-center text-xl"
-                    style={{ background: bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6' }}
+                    className="relative overflow-hidden"
+                    style={{
+                      aspectRatio: '297 / 210',
+                      background: isThumbSkeleton
+                        ? 'linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%)'
+                        : bgColor,
+                      ...(isThumbSkeleton ? { backgroundSize: '400px 100%', animation: 'skeletonShimmer 1.8s ease-in-out infinite' } : {}),
+                    }}
                   >
-                    <Icon icon={Image01IconData} className="w-4 opacity-40" />
-                    {page.characterImageData && (
-                      <img src={page.characterImageData} alt="" className="h-10 absolute" style={{ opacity: 0.7 }} />
+                    {/* Background image */}
+                    {!isThumbSkeleton && page.backgroundImageData && (
+                      <img src={page.backgroundImageData} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+                    )}
+                    {/* Mini content */}
+                    {isThumbStreaming ? (
+                      <div className="relative z-10 p-1.5 h-full flex flex-col justify-center">
+                        {page.textSegments.slice(0, 3).map((seg, j) => (
+                          <p key={j} className="text-[5px] leading-[7px] text-gray-700 truncate" style={{ opacity: 0.8 }}>
+                            {seg.speaker !== 'narrator' ? `${seg.speaker}: ` : ''}{seg.text}
+                          </p>
+                        ))}
+                        <div className="flex items-center gap-0.5 mt-0.5">
+                          <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+                          <span className="text-[5px] text-green-600">Writing…</span>
+                        </div>
+                      </div>
+                    ) : isThumbSkeleton ? (
+                      <div className="relative z-10 p-1.5 h-full flex flex-col justify-center gap-1">
+                        {[70, 90, 60].map((w, j) => (
+                          <div key={j} className="rounded-sm" style={{ width: `${w}%`, height: 3, background: 'rgba(0,0,0,0.08)' }} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="relative z-10 p-1.5 h-full flex">
+                        {/* Character image mini */}
+                        {page.characterImageData && page.imagePlacement !== 'none' && (
+                          <img
+                            src={page.characterImageData}
+                            alt=""
+                            className="h-full max-w-[35%] object-contain flex-shrink-0"
+                            style={{ opacity: 0.8, [page.imagePlacement === 'right' ? 'order' : 'order']: page.imagePlacement === 'right' ? 1 : 0 }}
+                          />
+                        )}
+                        {/* Text content mini */}
+                        <div className="flex-1 flex flex-col justify-center overflow-hidden" style={{ padding: '0 2px' }}>
+                          {page.textSegments.slice(0, 4).map((seg, j) => (
+                            <p key={j} className="text-[5px] leading-[7px] text-gray-700 truncate" style={{ opacity: 0.7 }}>
+                              {seg.speaker !== 'narrator' ? `${seg.speaker}: ` : ''}{seg.text}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <div className="px-1.5 py-1">
+                  {/* Page label */}
+                  <div className="px-1.5 py-0.5" style={{ background: isActive ? `${accentColor}10` : undefined }}>
                     <p className="text-[10px] font-semibold" style={{ color: isActive ? accentColor : undefined }}>
                       P{page.pageNumber}
-                    </p>
-                    <p className="text-[9px] text-theme-muted truncate leading-tight">
-                      {page.textSegments[0]?.text}
                     </p>
                   </div>
                 </button>
@@ -2169,14 +2785,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               {/* Page nav */}
               <div className="flex items-center justify-between">
                 <button
-                  disabled={currentPageIdx === 0}
-                  onClick={() => setCurrentPageIdx(p => p - 1)}
+                  disabled={isCoverSelected ? !parsedBook.coverPage : currentPageIdx === 0}
+                  onClick={() => setCurrentPageIdx(p => p === 0 && parsedBook.coverPage ? -1 : p - 1)}
                   className="text-theme-muted hover:text-theme-heading disabled:opacity-30"
                 >
                   <Icon icon={ArrowLeft01IconData} className="w-5" />
                 </button>
                 <span className="text-sm text-theme-muted">
-                  Page {currentPageIdx + 1} of {parsedBook.pages.length}
+                  {isCoverSelected ? 'Cover Page' : `Page ${currentPageIdx + 1} of ${parsedBook.pages.length}`}
                 </span>
                 <button
                   disabled={currentPageIdx === parsedBook.pages.length - 1}
@@ -2187,10 +2803,25 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 </button>
               </div>
 
-              <PagePreview page={currentPage} accentColor={accentColor} />
+              {isCoverSelected && parsedBook.coverPage ? (
+                <CoverPagePreview coverPage={parsedBook.coverPage} accentColor={accentColor} />
+              ) : currentPage ? (() => {
+                const isPageEmpty = currentPage.textSegments.length === 0;
+                const completedCount = livePages.length;
+                const isCurrentlyStreaming = isStreaming && currentPageIdx === completedCount - 1 && !isPageEmpty;
+                const isSkeletonPage = isStreaming && isPageEmpty;
+
+                if (isSkeletonPage) {
+                  return <SkeletonPagePreview />;
+                } else if (isCurrentlyStreaming) {
+                  return <StreamingPagePreview page={currentPage} accentColor={accentColor} />;
+                } else {
+                  return <PagePreview page={currentPage} accentColor={accentColor} />;
+                }
+              })() : null}
 
               {/* Image guidance note (suggested mode) */}
-              {formData.imageMode === 'suggested' && currentPage.characterScene && (
+              {!isCoverSelected && currentPage && formData.imageMode === 'suggested' && currentPage.characterScene && (
                 <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
                   <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-0.5">Image Guidance</p>
                   <p className="text-sm text-blue-800 dark:text-blue-200">{currentPage.characterScene}</p>
@@ -2199,8 +2830,108 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             </div>
           </div>
 
-          {/* Right: Edit panel */}
-          <div className="w-72 shrink-0 border-l border-theme overflow-y-auto p-4 space-y-5">
+          {/* Right: Edit panel (hidden during streaming) */}
+          <div className={`w-72 shrink-0 border-l border-theme overflow-y-auto p-4 space-y-5 ${isStreaming ? 'hidden' : ''}`}>
+            {isCoverSelected && parsedBook.coverPage ? (
+              /* ── Cover Page Edit Panel ─────────────────────────────── */
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Cover Title</label>
+                  <input
+                    value={parsedBook.coverPage.title}
+                    onChange={e => setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, title: e.target.value } } : prev)}
+                    className="w-full px-3 py-2 text-sm border border-theme-strong rounded-lg bg-theme"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Subtitle</label>
+                  <input
+                    value={parsedBook.coverPage.subtitle || ''}
+                    onChange={e => setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, subtitle: e.target.value } } : prev)}
+                    className="w-full px-3 py-2 text-sm border border-theme-strong rounded-lg bg-theme"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Author Name</label>
+                  <input
+                    value={parsedBook.coverPage.authorName || ''}
+                    onChange={e => setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, authorName: e.target.value } } : prev)}
+                    className="w-full px-3 py-2 text-sm border border-theme-strong rounded-lg bg-theme"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Cover Image</label>
+                  <div className="space-y-2">
+                    {parsedBook.coverPage.coverImageData && (
+                      <div className="relative">
+                        <img
+                          src={parsedBook.coverPage.coverImageData}
+                          alt="cover"
+                          className="w-full h-32 object-cover rounded-lg border border-theme"
+                        />
+                        <button
+                          onClick={() => setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, coverImageData: undefined } } : prev)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                        >
+                          <Icon icon={Cancel01IconData} className="w-3" />
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = async () => {
+                          const file = input.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const dataUrl = reader.result as string;
+                            setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, coverImageData: dataUrl } } : prev);
+                          };
+                          reader.readAsDataURL(file);
+                        };
+                        input.click();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-theme-strong hover:bg-theme-secondary text-sm text-theme-muted"
+                    >
+                      <Icon icon={Upload01IconData} className="w-4" />
+                      Upload cover image
+                    </button>
+                    {hasDiffusion && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const prompt = `Children's book cover illustration for "${parsedBook.title}", ${parsedBook.styleSuffix || 'colorful cartoon style, vibrant and playful'}`;
+                            const res = await fetch('http://localhost:8000/api/generate-image', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ prompt, width: 768, height: 512 }),
+                            });
+                            if (!res.ok) throw new Error('Failed');
+                            const data = await res.json();
+                            if (data.image) {
+                              const imageData = data.image.startsWith('data:') ? data.image : `data:image/png;base64,${data.image}`;
+                              setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, coverImageData: imageData } } : prev);
+                            }
+                          } catch (e) {
+                            console.error('[StoryBook] Cover image generation failed:', e);
+                          }
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm"
+                        style={{ color: accentColor }}
+                      >
+                        <Icon icon={Image01IconData} className="w-4" />
+                        Generate AI Cover
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : currentPage ? (
+              /* ── Content Page Edit Panel ────────────────────────────── */
+              <>
             {/* Scene picker */}
             <div>
               <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Background Scene</label>
@@ -2401,7 +3132,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 <button
                   onClick={() => {
                     updatePage(currentPageIdx, {
-                      textSegments: [...currentPage.textSegments, { speaker: 'narrator', text: '' }],
+                      textSegments: [...currentPage!.textSegments, { speaker: 'narrator', text: '' }],
                     });
                   }}
                   className="w-full flex items-center gap-1 px-2 py-1.5 text-xs text-theme-muted hover:text-theme-heading border border-dashed border-theme-strong rounded-lg"
@@ -2439,6 +3170,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 }
               </button>
             </div>
+              </>
+            ) : null}
           </div>
         </div>
       )}

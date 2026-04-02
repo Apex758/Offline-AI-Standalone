@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+
+/* ── Streaming text types ───────────────────────────── */
+interface TextSegment { speaker: string; text: string; }
+interface LivePage { textSegments: TextSegment[]; [key: string]: unknown; }
+
+const LINES_PER_PAGE = 4;
+const MAX_LINE_CHARS = 65;
 
 /* ── Layout pool & caption pool ──────────────────────── */
 const LAYOUT_POOL = [
@@ -276,19 +283,56 @@ const SceneSplitPage = () => (
   </div>
 );
 
+/* ── Streaming text page ────────────────────────────── */
+const StreamingPageNight = ({ lines, fillerCount }: { lines: string[]; fillerCount: number }) => (
+  <div style={{ display: "flex", height: "100%", flexDirection: "column", justifyContent: "center", gap: 10, padding: "8px 14px" }}>
+    {lines.map((line, i) => (
+      <p key={i} style={{
+        margin: 0, fontSize: 11, lineHeight: 1.55,
+        color: "#c4b8e8", fontWeight: line.includes(":") ? 500 : 400,
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        animation: "fadeInLineNight 0.35s ease both",
+        animationDelay: `${i * 0.08}s`,
+      }}>
+        {line}
+      </p>
+    ))}
+    {Array.from({ length: fillerCount }).map((_, i) => (
+      <Bone key={`f${i}`} w={`${60 + ((i * 17) % 35)}%`} h={10} />
+    ))}
+  </div>
+);
+
 const PAGE_MAP: Record<string, React.FC> = {
   cover: CoverPage, scene1: Scene1Page, scene2: Scene2Page,
   scene3: Scene3Page, scene4: Scene4Page,
   sceneCards: SceneCardsPage, sceneSplit: SceneSplitPage,
 };
 
-export default function KidsStorybookSkeletonNight() {
+export default function KidsStorybookSkeletonNight({ livePages = [] }: { livePages?: LivePage[] }) {
   const [pages, setPages] = useState(() => [nextPage(), nextPage(), nextPage()]);
   const [flipping, setFlipping] = useState(false);
   const [flipProgress, setFlipProgress] = useState(0);
   const [caption, setCaption] = useState(() => pages[1]?.caption || "");
   const animRef = useRef<number | null>(null);
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevTextPageRef = useRef(0);
+
+  /* ── Flatten livePages into display lines ── */
+  const allLines = useMemo(() => {
+    const out: string[] = [];
+    for (const p of livePages) {
+      for (const seg of (p.textSegments || [])) {
+        const prefix = seg.speaker && seg.speaker !== 'narrator' ? `${seg.speaker}: ` : '';
+        const full = prefix + seg.text;
+        out.push(full.length > MAX_LINE_CHARS ? full.slice(0, MAX_LINE_CHARS - 1) + '…' : full);
+      }
+    }
+    return out;
+  }, [livePages]);
+
+  const hasStreaming = allLines.length > 0;
+  const textPageIndex = Math.max(0, Math.ceil(allLines.length / LINES_PER_PAGE) - 1);
 
   const doFlip = useCallback(() => {
     if (flipping) return;
@@ -323,10 +367,24 @@ export default function KidsStorybookSkeletonNight() {
     return () => { if (autoRef.current) clearTimeout(autoRef.current); };
   }, [pages, doFlip]);
 
+  /* ── Flip when a new text page fills up ── */
+  useEffect(() => {
+    if (hasStreaming && textPageIndex > prevTextPageRef.current) {
+      prevTextPageRef.current = textPageIndex;
+      doFlip();
+    }
+  }, [textPageIndex, hasStreaming, doFlip]);
+
   useEffect(() => () => {
     if (animRef.current) cancelAnimationFrame(animRef.current);
     if (autoRef.current) clearTimeout(autoRef.current);
   }, []);
+
+  /* ── Current text slice for the visible page ── */
+  const currentTextLines = hasStreaming
+    ? allLines.slice(textPageIndex * LINES_PER_PAGE, (textPageIndex + 1) * LINES_PER_PAGE)
+    : [];
+  const fillerCount = hasStreaming ? Math.max(0, LINES_PER_PAGE - currentTextLines.length) : 0;
 
   const fs = flipping ? getFlipState(flipProgress) : null;
 
@@ -477,6 +535,10 @@ export default function KidsStorybookSkeletonNight() {
           0%, 80%, 100% { transform: scale(0.8); opacity: 0.35; }
           40% { transform: scale(1.4); opacity: 1; }
         }
+        @keyframes fadeInLineNight {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
 
       {/* Moon */}
@@ -585,7 +647,7 @@ export default function KidsStorybookSkeletonNight() {
 
           {/* Current page (flips) */}
           {pages[1] && (() => {
-            const Content = PAGE_MAP[pages[1].layout];
+            const BoneContent = PAGE_MAP[pages[1].layout];
             let cardStyle: React.CSSProperties;
             let shadowEl: React.ReactNode = null;
 
@@ -626,7 +688,9 @@ export default function KidsStorybookSkeletonNight() {
             return (
               <div className="page-card-night" style={cardStyle}>
                 <div className="page-side-night page-front-night">
-                  <Content />
+                  {hasStreaming
+                    ? <StreamingPageNight lines={currentTextLines} fillerCount={fillerCount} />
+                    : <BoneContent />}
                   {shadowEl}
                 </div>
                 <div className="page-side-night page-back-night">
@@ -645,7 +709,9 @@ export default function KidsStorybookSkeletonNight() {
         </div>
       </div>
 
-      <div className="story-caption-night" key={caption}>{caption}</div>
+      <div className="story-caption-night" key={hasStreaming ? `p${textPageIndex}` : caption}>
+        {hasStreaming ? `Writing page ${textPageIndex + 1}…` : caption}
+      </div>
 
       <div className="loading-dots-night">
         <div className="loading-dot-night" style={{ animationDelay: "0s" }} />

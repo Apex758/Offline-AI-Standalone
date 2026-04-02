@@ -49,6 +49,9 @@ export interface InsightsPassResult {
 export interface InsightsReport {
   id: string;
   generated_at: string;
+  from_date?: string;
+  to_date?: string;
+  previous_report_id?: string;
   passes: InsightsPassResult[];
   synthesis: string;
 }

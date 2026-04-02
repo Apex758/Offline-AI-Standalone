@@ -25,6 +25,7 @@ import { imageApi } from '../lib/imageApi';
 import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson } from '../utils/presentationPromptBuilder';
 import type { PresentationFormData, ParsedLessonInput } from '../utils/presentationPromptBuilder';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import axios from 'axios';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 import { useCapabilities } from '../contexts/CapabilitiesContext';
@@ -1583,6 +1584,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const ENDPOINT = '/ws/presentation';
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
+  const { guardOffline } = useOfflineGuard();
 
   const theme = deriveTheme(primaryColor, bgColor);
 
@@ -1829,6 +1831,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   };
 
   const handleGenerate = async () => {
+    if (guardOffline()) return;
     setError(null);
     setLoading(true);
     setGenerationPhase('idle');
@@ -1976,6 +1979,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   // Image generation for a slide
   const generateSlideImage = async (slideIdx: number) => {
+    if (guardOffline()) return;
     const s = slides[slideIdx];
     if (!s) return;
     setImageLoading(prev => ({ ...prev, [slideIdx]: true }));
@@ -2006,6 +2010,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   // Batch image generation — only for slides with imageScene descriptions
   const generateAllImages = async () => {
+    if (guardOffline()) return;
     // Determine which slides need images:
     // 1. Slides with imageScene (LLM followed the prompt)
     // 2. Fallback: slides with imagePlacement set and not 'none' (LLM set placement but not scene)

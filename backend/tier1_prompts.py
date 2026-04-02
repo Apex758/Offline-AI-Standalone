@@ -233,55 +233,62 @@ TIER1_PROMPTS = {
     # ── Educator Insights — multi-pass analysis prompts ──────────────────────
 
     "insights-curriculum": (
-        "You are an educational data analyst. Review the curriculum milestone data below and write a brief analysis.\n\n"
+        "You are an educational data analyst. Review the curriculum milestone data below and write a brief analysis.\n"
+        "IMPORTANT: Output ONLY the bullet points. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
         "DATA:\n{data}\n\n"
         "Write exactly 3-5 bullet points about:\n"
         "- Overall completion rate and what it means for the school year\n"
         "- Which subjects or grades are ahead or behind schedule\n"
         "- One specific gap the teacher should address next\n\n"
-        "Keep each bullet under 30 words. Start each with \"- \"."
+        "Keep each bullet under 30 words. Start each with \"- \". Output only the bullets, nothing else."
     ),
 
     "insights-performance": (
-        "You are an educational data analyst. Review the student grade data below and write a brief analysis.\n\n"
+        "You are an educational data analyst. Review the student grade data below and write a brief analysis.\n"
+        "IMPORTANT: Output ONLY the bullet points. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
         "DATA:\n{data}\n\n"
         "Write exactly 3-5 bullet points about:\n"
         "- Overall class performance and average scores\n"
         "- Subjects where students struggle most\n"
         "- Any notable patterns in the grade distribution\n\n"
-        "Keep each bullet under 30 words. Start each with \"- \"."
+        "Keep each bullet under 30 words. Start each with \"- \". Output only the bullets, nothing else."
     ),
 
     "insights-content": (
-        "You are an educational data analyst. Review the content creation data below and write a brief analysis.\n\n"
+        "You are an educational data analyst. Review the content creation data below and write a brief analysis.\n"
+        "IMPORTANT: Output ONLY the bullet points. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
         "DATA:\n{data}\n\n"
         "Write exactly 3-5 bullet points about:\n"
         "- Most and least used content types\n"
         "- Subject coverage in the created content\n"
         "- Suggestions for improving content variety\n\n"
-        "Keep each bullet under 30 words. Start each with \"- \"."
+        "Keep each bullet under 30 words. Start each with \"- \". Output only the bullets, nothing else."
     ),
 
     "insights-attendance": (
-        "You are an educational data analyst. Review the attendance and engagement data below and write a brief analysis.\n\n"
+        "You are an educational data analyst. Review the attendance and engagement data below and write a brief analysis.\n"
+        "IMPORTANT: Output ONLY the bullet points. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
         "DATA:\n{data}\n\n"
         "Write exactly 3-5 bullet points about:\n"
         "- Overall attendance rate and trends\n"
         "- Engagement level patterns across classes\n"
         "- Students or classes needing immediate attention\n\n"
-        "Keep each bullet under 30 words. Start each with \"- \"."
+        "Keep each bullet under 30 words. Start each with \"- \". Output only the bullets, nothing else."
     ),
 
     "insights-recommendations": (
-        "You are an experienced teaching coach. Based on these data findings from a teacher's classroom, suggest practical improvements.\n\n"
+        "You are an experienced teaching coach. Based on these data findings from a teacher's classroom, suggest practical improvements.\n"
+        "IMPORTANT: Output ONLY the numbered recommendations. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
         "FINDINGS:\n{data}\n\n"
         "Write exactly 4-6 specific, actionable recommendations. Each should be one clear sentence.\n"
         "Number them 1-6. Focus on what the teacher should DO next.\n"
-        "Consider teaching strategies, assessment practices, student engagement, and curriculum pacing."
+        "Consider teaching strategies, assessment practices, student engagement, and curriculum pacing.\n"
+        "Output only the numbered list, nothing else."
     ),
 
     "insights-synthesis": (
-        "You are a teaching advisor writing a brief report for a teacher. Combine these analysis sections into a clear summary report.\n\n"
+        "You are a teaching advisor writing a brief report for a teacher. Combine these analysis sections into a clear summary report.\n"
+        "IMPORTANT: Output ONLY the report in the format below. Do NOT include any thinking, reasoning, planning, or analysis process.\n\n"
         "CURRICULUM ANALYSIS:\n{curriculum}\n\n"
         "STUDENT PERFORMANCE:\n{performance}\n\n"
         "CONTENT CREATION:\n{content}\n\n"
@@ -297,7 +304,8 @@ TIER1_PROMPTS = {
         "## Questions for You\n"
         "1. [question about what area the teacher wants to focus on]\n"
         "2. [question about a specific challenge noticed in the data]\n"
-        "3. [question to help refine future advice]"
+        "3. [question to help refine future advice]\n\n"
+        "Output only the report, nothing else."
     ),
 }
 

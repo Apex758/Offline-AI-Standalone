@@ -58,6 +58,7 @@ import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 
 interface LessonPlannerProps {
   tabId: string;
@@ -275,6 +276,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
+  const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -686,6 +688,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   }, [streamingPlan, curriculumReferences, isStreaming, tabId, ENDPOINT, clearStreaming, formData]);
 
   const generateLessonPlan = () => {
+    if (guardOffline()) return;
     const refs = useCurriculum ? curriculumMatches : [];
     setCurriculumReferences(refs);
     const prompt = buildLessonPrompt(formData, refs);

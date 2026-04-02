@@ -3197,11 +3197,12 @@ async def educator_insights_websocket(websocket: WebSocket):
                 continue
 
             generation_mode = data.get("generationMode", "queued")
+            teacher_id = data.get("teacherId", "default_teacher")
 
             # Aggregate all data
             import insights_service
             try:
-                all_data = insights_service.aggregate_all()
+                all_data = insights_service.aggregate_all(teacher_id)
             except Exception as e:
                 logger.error(f"Insights data aggregation error: {e}")
                 await websocket.send_json({"type": "error", "message": f"Data aggregation failed: {e}"})
@@ -3356,8 +3357,12 @@ async def educator_insights_websocket(websocket: WebSocket):
                     except Exception:
                         pass
 
-                # Store pass output
+                # Store pass output — strip <think>…</think> reasoning blocks
                 full_output = "".join(accumulated_text)
+                import re as _re
+                full_output = _re.sub(r'<think>[\s\S]*?</think>\s*', '', full_output).strip()
+                # Also strip unclosed <think> blocks (model didn't close the tag)
+                full_output = _re.sub(r'<think>[\s\S]*$', '', full_output).strip()
                 pass_outputs[pass_key] = full_output
 
                 # Send pass_complete

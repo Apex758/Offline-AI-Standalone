@@ -46,6 +46,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface KindergartenPlannerProps {
@@ -422,6 +423,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
+  const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -878,6 +880,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   };
 
   const generatePlan = () => {
+    if (guardOffline()) return;
     if (!validateForm()) {
       return;
     }

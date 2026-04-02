@@ -62,6 +62,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useQueue } from '../contexts/QueueContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType, BrainDumpSuggestion } from '../types/brainDump';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
@@ -758,6 +759,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const { tier } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
+  const { guardOffline } = useOfflineGuard();
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   const WS_ENDPOINT = '/ws/brain-dump';
   useQueueCancellation(tabId, WS_ENDPOINT, setLocalLoadingMap);
@@ -1095,6 +1097,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
 
   // Analyze brain dump via WebSocket
   const handleAnalyze = useCallback(() => {
+    if (guardOffline()) return;
     const text = getPlainText();
     if (!text || loading) return;
 
@@ -1261,10 +1264,11 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     } else {
       ws.addEventListener('open', sendPayload, { once: true });
     }
-  }, [getPlainText, loading, tabId, getConnection, parseActions, queueEnabled, enqueue, settings.generationMode, tier]);
+  }, [guardOffline, getPlainText, loading, tabId, getConnection, parseActions, queueEnabled, enqueue, settings.generationMode, tier]);
 
   // ── Generate all task sets sequentially (Tier 1) ──
   const handleGenerateAllSets = useCallback(() => {
+    if (guardOffline()) return;
     setShowReviewSets(false);
     setActions([]);
     setSuggestions([]);
@@ -1368,7 +1372,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     } else {
       ws.addEventListener('open', () => sendSet(0), { once: true });
     }
-  }, [taskSets, queueEnabled, enqueue, tabId, settings.generationMode, getConnection, parseActions, setResults]);
+  }, [guardOffline, taskSets, queueEnabled, enqueue, tabId, settings.generationMode, getConnection, parseActions, setResults]);
 
   // Accept an action
   const handleAccept = useCallback((actionId: string) => {

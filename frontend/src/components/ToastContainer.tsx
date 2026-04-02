@@ -92,21 +92,34 @@ const borderMap = {
   info: 'border-blue-500',
 };
 
-function ToastItem({ toast, onDismiss }: { toast: any; onDismiss: (id: string) => void }) {
+function ToastItem({ toast, onDismiss, onNavigate }: { toast: any; onDismiss: (id: string) => void; onNavigate?: (tabId: string) => void }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
   }, []);
 
+  const handleClick = () => {
+    if (toast.tabId && onNavigate) {
+      onNavigate(toast.tabId);
+      onDismiss(toast.id);
+    }
+  };
+
   return (
     <div
-      className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg min-w-[260px] max-w-[360px] border-l-4 bg-white dark:bg-gray-800 ${borderMap[toast.type as keyof typeof borderMap]} transition-all duration-200 ${visible ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-[60px] scale-95'}`}
+      className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg min-w-[260px] max-w-[360px] border-l-4 bg-white dark:bg-gray-800 ${borderMap[toast.type as keyof typeof borderMap]} transition-all duration-200 ${visible ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-[60px] scale-95'} ${toast.tabId ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-110' : ''}`}
+      onClick={handleClick}
     >
       {iconMap[toast.type as keyof typeof iconMap]}
-      <span className="text-sm text-gray-800 dark:text-gray-200 flex-1">{toast.message}</span>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm text-gray-800 dark:text-gray-200">{toast.message}</span>
+        {toast.tabId && (
+          <p className="text-xs text-blue-500 mt-0.5 font-medium">Click to view</p>
+        )}
+      </div>
       <button
-        onClick={() => onDismiss(toast.id)}
+        onClick={(e) => { e.stopPropagation(); onDismiss(toast.id); }}
         className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0 ml-1"
       >
         <X size={16} />
@@ -116,13 +129,13 @@ function ToastItem({ toast, onDismiss }: { toast: any; onDismiss: (id: string) =
 }
 
 const ToastContainer: React.FC = () => {
-  const { toasts, dismiss } = useNotification();
+  const { toasts, dismiss, navigateToTab } = useNotification();
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none">
       <UpdateBanner key="update-banner" />
       {toasts.map(toast => (
-        <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />
+        <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} onNavigate={toast.tabId ? navigateToTab : undefined} />
       ))}
     </div>
   );

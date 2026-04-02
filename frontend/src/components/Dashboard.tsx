@@ -509,7 +509,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
   const { closeConnection, getIsTabBusy, getActiveStreams } = useWebSocket();
-  const { unreadCount } = useNotification();
+  const { unreadCount, registerNavigator } = useNotification();
   const { queue } = useQueue();
   const { isTabHttpBusy } = useTabBusy();
   const { openNoteIds, fabPanelOpen, setFabPanelOpen } = useStickyNotes();
@@ -565,6 +565,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       });
     }
   }, [activeTabId, completedTabIds]);
+
+  // Register tab navigator so notifications can navigate to the source tab
+  useEffect(() => {
+    registerNavigator((tabId: string) => {
+      setActiveTabId(tabId);
+    });
+  }, [registerNavigator]);
 
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);

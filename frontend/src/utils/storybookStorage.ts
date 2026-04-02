@@ -40,7 +40,7 @@ export function saveStorybook(
   const lightBook = parsedBook ? stripImageData(parsedBook) : null;
 
   // Check if any images exist to save
-  const anyImages = parsedBook?.pages.some(p => p.characterImageData || p.backgroundImageData) ?? false;
+  const anyImages = (parsedBook?.pages.some(p => p.characterImageData || p.backgroundImageData) || !!parsedBook?.coverPage?.coverImageData) ?? false;
   const hasImages = includeImages && anyImages;
 
   if (existingId) {
@@ -58,7 +58,7 @@ export function saveStorybook(
       persist(items);
       // Save images to IndexedDB (async, fire-and-forget for the sync return)
       if (hasImages && parsedBook) {
-        saveStorybookImages(existingId, parsedBook.pages).catch(e =>
+        saveStorybookImages(existingId, parsedBook.pages, parsedBook.coverPage).catch(e =>
           console.error('[StorybookStorage] Failed to save images to IndexedDB:', e)
         );
       }
@@ -90,7 +90,7 @@ export function saveStorybook(
 
   // Save images to IndexedDB
   if (hasImages && parsedBook) {
-    saveStorybookImages(entry.id, parsedBook.pages).catch(e =>
+    saveStorybookImages(entry.id, parsedBook.pages, parsedBook.coverPage).catch(e =>
       console.error('[StorybookStorage] Failed to save images to IndexedDB:', e)
     );
   }
@@ -120,6 +120,7 @@ function stripImageData(book: ParsedStorybook): ParsedStorybook {
       characterImageData: undefined,
       backgroundImageData: undefined,
     })),
+    coverPage: book.coverPage ? { ...book.coverPage, coverImageData: undefined } : undefined,
   };
 }
 

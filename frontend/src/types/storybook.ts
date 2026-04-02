@@ -77,6 +77,26 @@ export interface ParsedStorybook {
   comprehensionQuestions?: ComprehensionQuestion[];
   /** One-sentence summary of the curriculum learning objective embedded in the story */
   learningObjectiveSummary?: string;
+  /**
+   * Reference images per character for img2img consistency.
+   * Key = character name (or 'default'), value = base64 image data.
+   * Generated on first character image, reused as init_image for subsequent pages.
+   */
+  characterReferenceImages?: Record<string, string>;
+  /** Optional cover page data (title, author, cover image) */
+  coverPage?: CoverPage;
+}
+
+// ─── Cover Page ─────────────────────────────────────────────────────────────
+
+export interface CoverPage {
+  title: string;
+  subtitle?: string;
+  authorName?: string;
+  /** base64 image data for the cover illustration */
+  coverImageData?: string;
+  /** Accent color override for the cover (defaults to tab accent) */
+  accentColor?: string;
 }
 
 // ─── Comprehension ───────────────────────────────────────────────────────────
@@ -96,6 +116,8 @@ export interface StorybookFormData {
   description: string;
   gradeLevel: 'K' | '1' | '2';
   subject: string;
+  /** Optional author/teacher name displayed on the cover page */
+  authorName: string;
   pageCount: number;
   imageMode: ImageMode;
   /** Number of unique backgrounds to generate, or 'auto' to let the AI decide */

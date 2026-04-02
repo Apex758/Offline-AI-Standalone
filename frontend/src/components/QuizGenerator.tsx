@@ -68,6 +68,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface QuizGeneratorProps {
@@ -313,6 +314,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
+  const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || contextLoading;
 
   // Computed values for class quiz display
@@ -648,6 +650,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const generateQuiz = () => {
+    if (guardOffline()) return;
     if (!validateForm()) {
       const firstError = document.querySelector('[data-validation-error="true"]');
       firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });

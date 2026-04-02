@@ -4,8 +4,11 @@
  * Strategy:
  *  - Backgrounds: one AI image per unique sceneId (deduped across pages), landscape 1024×576.
  *  - Characters:  one AI image per page, 512×512 on white bg, then auto-remove background.
- *    The first character image captures a seed that is reused for all subsequent pages
- *    so the character looks visually consistent.
+ *    The first character image is saved as a "reference" and reused as an init_image
+ *    (img2img) for all subsequent pages so the character looks visually consistent
+ *    while allowing pose/action changes.
+ *  - Narrator-only: no character overlays — subject descriptions are folded into
+ *    background prompts so the subject appears naturally in the scene.
  */
 
 import { imageApi } from '../lib/imageApi';
@@ -14,14 +17,22 @@ import type { ParsedStorybook, StoryPage } from '../types/storybook';
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface ImagePipelineOptions {
-  /** Called after each image completes */
+  /** Called after each image completes (for progress bar) */
   onProgress?: (current: number, total: number, stage: 'character' | 'background') => void;
+  /** Called after each page's images are ready — use for incremental rendering */
+  onPageResult?: (result: PageImageResult) => void;
+  /** Called when an individual image fails (for error toasts) */
+  onError?: (message: string) => void;
   /** Re-use a previously captured character seed for consistency */
   characterSeed?: number;
+  /** Pre-existing character reference images (from a prior run) */
+  characterReferenceImages?: Record<string, string>;
   /** Skip background generation (e.g. when regenerating characters only) */
   skipBackgrounds?: boolean;
   /** Skip character generation (e.g. when regenerating backgrounds only) */
   skipCharacters?: boolean;
+  /** Narrator-only mode: fold character descriptions into backgrounds, skip character overlays */
+  narratorOnly?: boolean;
   /** AbortSignal to cancel mid-pipeline */
   signal?: AbortSignal;
 }
@@ -37,6 +48,8 @@ export interface PipelineResult {
   pages: PageImageResult[];
   /** The character seed that was used (useful to persist for later regeneration) */
   characterSeed?: number;
+  /** Reference images generated per character (reuse for future regeneration) */
+  characterReferenceImages?: Record<string, string>;
 }
 
 // ─── Prompt builders ────────────────────────────────────────────────────────
@@ -53,13 +66,19 @@ function buildCharacterPrompt(
   // Combine all character descriptions (usually 1-2 characters per story)
   const descParts = Object.values(characterDescriptions);
   const descBlock = descParts.length > 0 ? descParts.join(', ') + ', ' : '';
-  return `${descBlock}${characterScene}, ${styleSuffix}, white background, centered, single character`;
+  return `${descBlock}${characterScene}, ${styleSuffix}, white background, centered`;
 }
 
 function buildBackgroundPrompt(
   sceneDescription: string,
   styleSuffix: string,
+  /** For narrator-only mode: fold character/subject descriptions into the scene */
+  subjectDescriptions?: Record<string, string>,
 ): string {
+  if (subjectDescriptions && Object.keys(subjectDescriptions).length > 0) {
+    const subjectBlock = Object.values(subjectDescriptions).join(', ');
+    return `${sceneDescription}, featuring ${subjectBlock}, ${styleSuffix}, wide landscape scene, no text`;
+  }
   return `${sceneDescription}, ${styleSuffix}, wide landscape scene, no characters, no people, no text`;
 }
 
@@ -98,12 +117,39 @@ export async function generateCharacterImage(
   return { imageData: img.imageData, seed: img.seed };
 }
 
+/**
+ * Generate a character image using a reference image (img2img).
+ * Preserves the character's look from the reference while adapting
+ * to the new scene/pose described in characterScene.
+ */
+export async function generateCharacterFromReference(
+  characterDescriptions: Record<string, string>,
+  characterScene: string,
+  styleSuffix: string,
+  seed: number,
+  referenceImage: string,
+  strength: number = 0.55,
+): Promise<{ imageData: string; seed: number }> {
+  const prompt = buildCharacterPrompt(characterDescriptions, characterScene, styleSuffix);
+  const res = await imageApi.generateImageFromSeed({
+    prompt,
+    negativePrompt: DEFAULT_NEGATIVE,
+    width: 512,
+    height: 512,
+    seed,
+    initImage: referenceImage,
+    strength,
+  });
+  return { imageData: res.imageData, seed: res.seed };
+}
+
 /** Generate a single background image for a scene. */
 export async function generateBackgroundImage(
   sceneDescription: string,
   styleSuffix: string,
+  subjectDescriptions?: Record<string, string>,
 ): Promise<string> {
-  const prompt = buildBackgroundPrompt(sceneDescription, styleSuffix);
+  const prompt = buildBackgroundPrompt(sceneDescription, styleSuffix, subjectDescriptions);
   const res = await imageApi.generateImageBase64({
     prompt,
     negativePrompt: DEFAULT_NEGATIVE,
@@ -133,10 +179,14 @@ export async function removeCharacterBg(imageData: string): Promise<string> {
  *
  * Flow:
  *  1. Dedupe scenes → generate one background per unique sceneId
- *  2. For each page with imagePlacement !== 'none':
- *     a. Generate character image (seed-pinned after first)
- *     b. Auto-remove background
- *  3. Return per-page results
+ *     - Narrator-only: fold character/subject descriptions into background prompts
+ *     - Emit results incrementally via onPageResult after each background
+ *  2. For each page with imagePlacement !== 'none' (skipped in narrator-only mode):
+ *     a. First page: generate character image → save as reference
+ *     b. Subsequent pages: img2img from reference for pose variation
+ *     c. Auto-remove background
+ *     d. Emit result incrementally via onPageResult
+ *  3. Return aggregated results + reference images for future use
  */
 export async function generateAllPageImages(
   book: ParsedStorybook,
@@ -144,9 +194,13 @@ export async function generateAllPageImages(
 ): Promise<PipelineResult> {
   const {
     onProgress,
+    onPageResult,
+    onError,
     characterSeed: initialSeed,
+    characterReferenceImages: existingRefs,
     skipBackgrounds = false,
     skipCharacters = false,
+    narratorOnly = false,
     signal,
   } = options;
 
@@ -174,21 +228,47 @@ export async function generateAllPageImages(
       if (!desc) continue;
 
       try {
-        const imgData = await generateBackgroundImage(desc, styleSuffix);
+        // Narrator-only: include subject/character in the background itself
+        const subjectDescs = narratorOnly ? charDescs : undefined;
+        const imgData = await generateBackgroundImage(desc, styleSuffix, subjectDescs);
         bgCache.set(sceneId, imgData);
       } catch (e) {
         console.error(`[StoryImagePipeline] Failed to generate background for scene "${sceneId}":`, e);
+        onError?.(`Background failed for scene "${sceneId}"`);
         // Continue — page will fall back to bundled SVG
       }
 
       bgDone++;
       onProgress?.(bgDone, bgTotal, 'background');
+
+      // ── Incremental: emit background results for all pages sharing this scene ──
+      if (bgCache.has(sceneId)) {
+        for (let i = 0; i < book.pages.length; i++) {
+          if (book.pages[i].sceneId === sceneId) {
+            onPageResult?.({ pageIndex: i, backgroundImageData: bgCache.get(sceneId) });
+          }
+        }
+      }
     }
   }
 
   // ── Step 2: Character images (per page) ────────────────────────────────────
   const results: PageImageResult[] = [];
   let currentSeed = initialSeed;
+  let referenceImage: string | undefined = existingRefs ? Object.values(existingRefs)[0] : undefined;
+  const charRefs: Record<string, string> = { ...(existingRefs || {}) };
+
+  // In narrator-only mode, skip all character generation — backgrounds already include the subject
+  if (narratorOnly) {
+    // Collect background-only results
+    for (let i = 0; i < book.pages.length; i++) {
+      const bg = bgCache.get(book.pages[i].sceneId);
+      if (bg) {
+        results.push({ pageIndex: i, backgroundImageData: bg });
+      }
+    }
+    return { pages: results, characterSeed: currentSeed, characterReferenceImages: charRefs };
+  }
 
   // Pages that need character generation
   const charPages = skipCharacters
@@ -204,16 +284,38 @@ export async function generateAllPageImages(
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
     try {
-      // Generate character
-      const { imageData: rawChar, seed } = await generateCharacterImage(
-        charDescs,
-        page.characterScene!,
-        styleSuffix,
-        currentSeed,
-      );
+      let rawChar: string;
+      let seed: number;
 
-      // Pin seed after first successful generation
-      if (currentSeed == null) currentSeed = seed;
+      if (referenceImage && currentSeed != null) {
+        // ── Subsequent pages: img2img from reference for pose variation ──
+        const result = await generateCharacterFromReference(
+          charDescs,
+          page.characterScene!,
+          styleSuffix,
+          currentSeed,
+          referenceImage,
+          0.55,
+        );
+        rawChar = result.imageData;
+        seed = result.seed;
+      } else {
+        // ── First character: generate fresh, capture as reference ──
+        const result = await generateCharacterImage(
+          charDescs,
+          page.characterScene!,
+          styleSuffix,
+          currentSeed,
+        );
+        rawChar = result.imageData;
+        seed = result.seed;
+
+        // Pin seed and save reference for subsequent pages
+        currentSeed = seed;
+        referenceImage = rawChar;
+        const charName = Object.keys(charDescs)[0] || 'default';
+        charRefs[charName] = rawChar;
+      }
 
       // Remove background
       let finalChar: string;
@@ -224,19 +326,24 @@ export async function generateAllPageImages(
         finalChar = rawChar;
       }
 
-      results.push({
+      const pageResult: PageImageResult = {
         pageIndex: index,
         characterImageData: finalChar,
         characterSeed: seed,
         backgroundImageData: bgCache.get(page.sceneId),
-      });
+      };
+      results.push(pageResult);
+      onPageResult?.(pageResult);
     } catch (e) {
       console.error(`[StoryImagePipeline] Failed to generate character for page ${index + 1}:`, e);
+      onError?.(`Character image failed for page ${index + 1}`);
       // Still attach background if available
-      results.push({
+      const pageResult: PageImageResult = {
         pageIndex: index,
         backgroundImageData: bgCache.get(page.sceneId),
-      });
+      };
+      results.push(pageResult);
+      onPageResult?.(pageResult);
     }
 
     charDone++;
@@ -256,5 +363,5 @@ export async function generateAllPageImages(
     }
   }
 
-  return { pages: results, characterSeed: currentSeed };
+  return { pages: results, characterSeed: currentSeed, characterReferenceImages: charRefs };
 }

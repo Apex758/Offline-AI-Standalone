@@ -40,7 +40,7 @@ interface NotificationPanelProps {
 type PanelTab = 'notifications' | 'queue';
 
 const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) => {
-  const { history, unreadCount, markAllRead, clearHistory } = useNotification();
+  const { history, unreadCount, markAllRead, clearHistory, navigateToTab } = useNotification();
   const { queue, removeFromQueue, reorderQueue, clearCompleted, queueEnabled } = useQueue();
   const { getActiveStreams } = useWebSocket();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -201,10 +201,16 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                   history.map(item => (
                     <div
                       key={item.id}
-                      className="flex items-start gap-3 px-4 py-3 last:border-0"
+                      className={`flex items-start gap-3 px-4 py-3 last:border-0 transition-colors ${item.tabId ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-110' : ''}`}
                       style={{
                         borderBottom: '1px solid var(--notif-divider)',
                         backgroundColor: !item.read ? 'var(--notif-unread-bg)' : 'transparent',
+                      }}
+                      onClick={() => {
+                        if (item.tabId) {
+                          navigateToTab(item.tabId);
+                          onClose();
+                        }
                       }}
                     >
                       {item.type === 'success' ? (
@@ -214,9 +220,14 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>{item.message}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
-                          {formatDistanceToNow(item.timestamp, { addSuffix: true })}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-xs" style={{ color: 'var(--notif-text-muted)' }}>
+                            {formatDistanceToNow(item.timestamp, { addSuffix: true })}
+                          </p>
+                          {item.tabId && (
+                            <span className="text-xs text-blue-500 font-medium">View</span>
+                          )}
+                        </div>
                       </div>
                       {!item.read && (
                         <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-1.5" />

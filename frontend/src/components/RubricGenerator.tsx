@@ -47,6 +47,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 const ENDPOINT = '/ws/rubric';
@@ -486,6 +487,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const contextLoading = getIsStreaming(tabId, ENDPOINT);
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
+  const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || contextLoading;
   
   const [showTutorial, setShowTutorial] = useState(false);
@@ -844,6 +846,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   const generateRubric = () => {
+    if (guardOffline()) return;
     if (!validateForm()) {
       const firstError = document.querySelector('[data-validation-error="true"]');
       firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });

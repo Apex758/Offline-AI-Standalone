@@ -193,6 +193,36 @@ def _get_negative_trigger_words() -> str:
     return ", ".join(triggers)
 
 
+def _truncate_to_clip_tokens(prompt: str, max_tokens: int = 75) -> str:
+    """Truncate a prompt to fit within CLIP's token limit.
+
+    CLIP uses a simple whitespace/punctuation tokenizer where each word is
+    roughly one token.  We approximate by splitting on whitespace and commas,
+    keeping at most *max_tokens* pieces, then re-joining.  This avoids pulling
+    in the full CLIP tokenizer as a dependency while preventing the noisy
+    truncation warnings from diffusers.
+    """
+    # Split on comma-separated phrases first to keep logical groups together
+    import re
+    parts = [p.strip() for p in re.split(r',\s*', prompt) if p.strip()]
+    result_parts: list[str] = []
+    token_count = 0
+    for part in parts:
+        words = part.split()
+        if token_count + len(words) > max_tokens:
+            # Try to fit as many words from this part as possible
+            remaining = max_tokens - token_count
+            if remaining > 0:
+                result_parts.append(' '.join(words[:remaining]))
+            break
+        result_parts.append(part)
+        token_count += len(words)
+    truncated = ', '.join(result_parts)
+    if len(truncated) < len(prompt):
+        logger.debug(f"Prompt truncated from ~{len(prompt.split())} to ~{max_tokens} tokens for CLIP")
+    return truncated
+
+
 def _load_flux_schnell_ov(model_path: Path):
     """Load FLUX.1 Schnell INT4 via OpenVINO.
 
@@ -515,6 +545,9 @@ class ImageService:
                 if "close-up" not in prompt.lower() and "closeup" not in prompt.lower():
                     if "mid-distance" not in prompt.lower() and "wide shot" not in prompt.lower():
                         prompt = f"{prompt}, mid-distance shot, well-proportioned"
+
+            # Truncate prompt to CLIP's 77-token limit to avoid silent truncation
+            prompt = _truncate_to_clip_tokens(prompt, max_tokens=75)
 
             logger.info(f"[DEBUG] generate_image params: model={self.model_key}, backend={self.model_info.get('backend')}, "
                        f"steps={num_inference_steps}, guidance={guidance_scale}, "

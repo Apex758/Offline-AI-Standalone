@@ -9,6 +9,7 @@
 
 import type { ParsedStorybook, StoryPage, StorybookFormData } from '../types/storybook';
 import { BUNDLED_SCENES } from '../data/storybookScenes';
+import { buildSpeechBubbleSVGText, shouldUseBubble, getTailDirection } from './speechBubble';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -33,15 +34,33 @@ function getPageBgColor(page: StoryPage): string {
 
 function buildPageHtml(page: StoryPage, accentColor = '#a855f7'): string {
   const bgColor = getPageBgColor(page);
+  const hasChar = page.characterImageData && page.imagePlacement !== 'none';
 
   const charSide = page.imagePlacement === 'left' ? 'float:left;margin-right:16px;' :
                    page.imagePlacement === 'right' ? 'float:right;margin-left:16px;' : '';
-  const charHtml = (page.characterImageData && page.imagePlacement !== 'none')
-    ? `<img src="${page.characterImageData}" style="width:140px;${charSide}shape-outside:url(${page.characterImageData});shape-margin:12px;border-radius:8px;" />`
-    : '';
 
+  // Build character image + speech bubble as a positioned block
+  let charHtml = '';
+  if (hasChar) {
+    const tailDir = getTailDirection(page);
+    // Find last character dialogue for the static PDF bubble
+    const charSegs = page.textSegments.filter(s => shouldUseBubble(s, page));
+    const bubbleSeg = charSegs.length > 0 ? charSegs[charSegs.length - 1] : null;
+    const bubbleSvg = bubbleSeg
+      ? `<div style="margin-bottom:4px;">${buildSpeechBubbleSVGText({ text: bubbleSeg.text, tailDirection: tailDir, context: 'pdf' })}</div>`
+      : '';
+    charHtml = `<div style="${charSide}width:180px;">
+      ${bubbleSvg}
+      <img src="${page.characterImageData}" style="width:140px;border-radius:8px;" />
+    </div>`;
+  }
+
+  // Narrator text (and fallback character text when no image)
   const textHtml = page.textSegments.map(seg => {
     const isNarrator = seg.speaker === 'narrator';
+    const isBubbled = shouldUseBubble(seg, page);
+    // Skip character segments that are rendered as bubbles
+    if (isBubbled) return '';
     return `<p style="font-family:Georgia,serif;font-size:14pt;line-height:1.7;margin:0 0 8px 0;${isNarrator ? 'font-style:italic;' : 'font-weight:600;'}">
       ${isNarrator ? '' : `<span style="display:block;font-size:9pt;font-weight:bold;color:${accentColor};font-style:normal;">${seg.speaker}:</span>`}
       ${isNarrator ? seg.text : `&ldquo;${seg.text}&rdquo;`}
@@ -74,13 +93,30 @@ export async function exportStorybookPDF(
   const gradeLabel = formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`;
   const subjectLine = formData.subject ? ` • ${formData.subject}` : '';
 
+  const cover = book.coverPage;
+  const coverTitle = cover?.title || book.title;
+  const coverSubtitle = cover?.subtitle || `${gradeLabel}${subjectLine}`;
+  const coverAuthor = cover?.authorName ? `<p style="font-family:Georgia,serif;font-size:13pt;color:${cover.coverImageData ? 'rgba(255,255,255,0.85)' : accentColor};margin:12px 0 0 0;">by ${cover.authorName}</p>` : '';
+  const coverBgStyle = cover?.coverImageData
+    ? `background-image:url(${cover.coverImageData});background-size:cover;background-position:center;`
+    : `background:linear-gradient(135deg,${accentColor}22,${accentColor}08);`;
+  const coverOverlay = cover?.coverImageData
+    ? `<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.65),rgba(0,0,0,0.2));"></div>`
+    : '';
+  const coverTextColor = cover?.coverImageData ? '#ffffff' : '#1f2937';
+  const coverSubColor = cover?.coverImageData ? 'rgba(255,255,255,0.7)' : '#6b7280';
+
   const coverHtml = `
-    <div style="page-break-after:always;min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,${accentColor}22,${accentColor}08);padding:60px 40px;text-align:center;">
-      <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:16px;background:${accentColor}22;display:flex;align-items:center;justify-content:center;">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <div style="page-break-after:always;min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;${coverBgStyle}padding:60px 40px;text-align:center;position:relative;">
+      ${coverOverlay}
+      <div style="position:relative;z-index:1;">
+        ${!cover?.coverImageData ? `<div style="width:64px;height:64px;margin:0 auto 16px;border-radius:16px;background:${accentColor}22;display:flex;align-items:center;justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>` : ''}
+        <h1 style="font-family:Georgia,serif;font-size:28pt;font-weight:bold;color:${coverTextColor};margin:0 0 8px 0;">${coverTitle}</h1>
+        <p style="font-family:sans-serif;font-size:11pt;color:${coverSubColor};margin:0;">${coverSubtitle}</p>
+        ${coverAuthor}
       </div>
-      <h1 style="font-family:Georgia,serif;font-size:28pt;font-weight:bold;color:#1f2937;margin:0 0 8px 0;">${book.title}</h1>
-      <p style="font-family:sans-serif;font-size:11pt;color:#6b7280;margin:0;">${gradeLabel}${subjectLine}</p>
     </div>`;
 
   const pagesHtml = book.pages.map(p => buildPageHtml(p, accentColor)).join('');
@@ -138,19 +174,35 @@ export async function exportStorybookPPTX(
   const hexColor = accentColor.replace('#', '');
 
   // Cover slide
-  const cover = pptx.addSlide();
-  cover.background = { color: 'F9F5FF' };
-  cover.addText(book.title, {
-    x: 1, y: 2, w: '80%', h: 1.2,
+  const coverSlide = pptx.addSlide();
+  const coverData = book.coverPage;
+  if (coverData?.coverImageData) {
+    coverSlide.addImage({ data: coverData.coverImageData, x: 0, y: 0, w: '100%', h: '100%' });
+    // Dark overlay for text readability
+    coverSlide.addShape('rect' as any, { x: 0, y: 0, w: '100%', h: '100%', fill: { color: '000000', transparency: 50 } });
+  } else {
+    coverSlide.background = { color: 'F9F5FF' };
+  }
+  const coverTitleColor = coverData?.coverImageData ? 'FFFFFF' : hexColor;
+  const coverSubColor = coverData?.coverImageData ? 'CCCCCC' : '6B7280';
+  coverSlide.addText(coverData?.title || book.title, {
+    x: 1, y: 1.8, w: '80%', h: 1.2,
     fontSize: 32, bold: true, align: 'center',
     fontFace: 'Georgia',
-    color: hexColor,
+    color: coverTitleColor,
   });
   const gradeLabel = formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`;
-  cover.addText(gradeLabel + (formData.subject ? ` • ${formData.subject}` : ''), {
-    x: 1, y: 3.4, w: '80%', h: 0.5,
-    fontSize: 14, align: 'center', color: '6B7280',
+  coverSlide.addText(coverData?.subtitle || (gradeLabel + (formData.subject ? ` • ${formData.subject}` : '')), {
+    x: 1, y: 3.2, w: '80%', h: 0.5,
+    fontSize: 14, align: 'center', color: coverSubColor,
   });
+  if (coverData?.authorName) {
+    coverSlide.addText(`by ${coverData.authorName}`, {
+      x: 1, y: 3.8, w: '80%', h: 0.5,
+      fontSize: 13, align: 'center', color: coverData.coverImageData ? 'DDDDDD' : hexColor,
+      fontFace: 'Georgia', italic: true,
+    });
+  }
 
   // Story slides
   for (const page of book.pages) {
@@ -165,29 +217,55 @@ export async function exportStorybookPPTX(
       slide.addImage({ data: page.backgroundImageData, x: 0, y: 0, w: '100%', h: '100%', transparency: 50 });
     }
 
-    // Character image
-    if (page.characterImageData && page.imagePlacement !== 'none') {
+    // Character image + speech bubble
+    const hasCharPptx = page.characterImageData && page.imagePlacement !== 'none';
+    if (hasCharPptx) {
       const imgX = page.imagePlacement === 'right' ? 7.2 : 0.2;
       slide.addImage({ data: page.characterImageData, x: imgX, y: 0.5, w: 2.2, h: 3.5 });
+
+      // Speech bubble for last character dialogue
+      const charSegsPptx = page.textSegments.filter(s => shouldUseBubble(s, page));
+      if (charSegsPptx.length > 0) {
+        const bubbleSeg = charSegsPptx[charSegsPptx.length - 1];
+        const bubbleX = page.imagePlacement === 'left' ? 2.5 : 4.5;
+        const bubbleW = 3.2;
+        const bubbleH = Math.min(1.8, 0.5 + bubbleSeg.text.length * 0.012);
+        slide.addShape('roundRect' as any, {
+          x: bubbleX, y: 0.3, w: bubbleW, h: bubbleH,
+          fill: { color: 'FFFFFF' },
+          line: { color: 'D1D5DB', width: 1 },
+          rectRadius: 0.15,
+          shadow: { type: 'outer', blur: 6, offset: 2, color: '000000', opacity: 0.15 },
+        });
+        slide.addText(bubbleSeg.text, {
+          x: bubbleX + 0.15, y: 0.4, w: bubbleW - 0.3, h: bubbleH - 0.2,
+          fontSize: 13, fontFace: 'Georgia',
+          color: '1F2937', wrap: true, valign: 'middle',
+        });
+      }
     }
 
-    // Text
-    const textX = page.characterImageData && page.imagePlacement === 'left' ? 2.8 : 0.4;
-    const textW = page.characterImageData && page.imagePlacement !== 'none' ? 6.4 : 9.2;
+    // Text — narrator segments + fallback character text (when no char image)
+    const textX = hasCharPptx && page.imagePlacement === 'left' ? 2.8 : 0.4;
+    const textW = hasCharPptx ? 6.4 : 9.2;
 
-    const textContent = page.textSegments.map(seg => {
-      const isNarrator = seg.speaker === 'narrator';
-      return isNarrator ? seg.text : `${seg.speaker}: "${seg.text}"`;
-    }).join('\n\n');
+    const textContent = page.textSegments
+      .filter(seg => !shouldUseBubble(seg, page))
+      .map(seg => {
+        const isNarrator = seg.speaker === 'narrator';
+        return isNarrator ? seg.text : `${seg.speaker}: "${seg.text}"`;
+      }).join('\n\n');
 
-    slide.addText(textContent, {
-      x: textX, y: 0.6, w: textW, h: 4,
-      fontSize: 18, fontFace: 'Georgia',
-      italic: page.textSegments[0]?.speaker === 'narrator',
-      valign: 'middle',
-      color: '1F2937',
-      wrap: true,
-    });
+    if (textContent.trim()) {
+      slide.addText(textContent, {
+        x: textX, y: 0.6, w: textW, h: 4,
+        fontSize: 18, fontFace: 'Georgia',
+        italic: page.textSegments.filter(s => !shouldUseBubble(s, page))[0]?.speaker === 'narrator',
+        valign: 'middle',
+        color: '1F2937',
+        wrap: true,
+      });
+    }
 
     // Page number
     slide.addText(`${page.pageNumber}`, {
@@ -316,8 +394,11 @@ body { font-family: Georgia, serif; background: #111; color: #fff; overflow: hid
 #bg { position: absolute; inset: 0; transition: opacity 0.6s; }
 #bg img { width: 100%; height: 100%; object-fit: cover; }
 #content { position: relative; z-index: 1; width: 100%; max-width: 900px; padding: 32px 48px; display: flex; align-items: center; gap: 32px; min-height: 60vh; }
-#char-wrap { flex-shrink: 0; width: 180px; }
+#char-wrap { flex-shrink: 0; width: 180px; position: relative; }
 #char-wrap img { width: 100%; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+#bubble-wrap { position: absolute; top: -10px; z-index: 5; pointer-events: none; transition: opacity 0.3s; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+#bubble-wrap.bubble-left { left: 100%; margin-left: 8px; }
+#bubble-wrap.bubble-right { right: 100%; margin-right: 8px; }
 #text-wrap { flex: 1; }
 .seg { font-size: 20px; line-height: 1.7; margin-bottom: 12px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.8); transition: opacity 0.4s; }
 .seg.dim { opacity: 0.3; }
@@ -330,6 +411,14 @@ body { font-family: Georgia, serif; background: #111; color: #fff; overflow: hid
 #dots { display: flex; justify-content: center; gap: 6px; padding: 12px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); border: none; cursor: pointer; transition: background 0.3s; }
 .dot.active { background: ${accentColor}; }
+.dot.q-dot { border-radius: 2px; background: rgba(255,200,100,0.25); }
+.dot.q-dot.active { background: ${accentColor}; }
+.flashcard { perspective: 1200px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; padding: 32px; }
+.flashcard-inner { position: relative; width: 100%; max-width: 560px; transition: transform 0.6s ease; transform-style: preserve-3d; }
+.flashcard-inner.flipped { transform: rotateY(180deg); }
+.flashcard-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; padding: 48px 32px; text-align: center; }
+.flashcard-front { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.flashcard-back { position: absolute; inset: 0; transform: rotateY(180deg); background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
 #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; font-family: sans-serif; }
 #overlay h1 { font-family: Georgia, serif; font-size: 36px; color: #fff; margin-bottom: 8px; text-align: center; }
 #overlay p { color: rgba(255,255,255,0.6); margin-bottom: 32px; }
@@ -338,10 +427,14 @@ body { font-family: Georgia, serif; background: #111; color: #fff; overflow: hid
 </style>
 </head>
 <body>
-<div id="overlay">
-  <h1>${book.title}</h1>
-  <p>${gradeLabel}${formData.subject ? ' • ' + formData.subject : ''} • ${book.pages.length} pages</p>
-  <button id="play-btn" onclick="startStory()">▶ Read Story</button>
+<div id="overlay"${book.coverPage?.coverImageData ? ` style="background-image:url(${book.coverPage.coverImageData});background-size:cover;background-position:center;"` : ''}>
+  ${book.coverPage?.coverImageData ? '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);"></div>' : ''}
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <h1>${book.coverPage?.title || book.title}</h1>
+    <p>${book.coverPage?.subtitle || (gradeLabel + (formData.subject ? ' • ' + formData.subject : ''))} • ${book.pages.length} pages${(book.comprehensionQuestions?.length || 0) > 0 ? ` + ${book.comprehensionQuestions!.length} questions` : ''}</p>
+    ${book.coverPage?.authorName ? `<p style="color:rgba(255,255,255,0.7);margin-bottom:24px;font-size:15px;font-family:Georgia,serif;font-style:italic;">by ${book.coverPage.authorName}</p>` : ''}
+    <button id="play-btn" onclick="startStory()">▶ Read Story</button>
+  </div>
 </div>
 <div id="player" style="display:none">
   <div id="top-bar">
@@ -352,7 +445,9 @@ body { font-family: Georgia, serif; background: #111; color: #fff; overflow: hid
   <div id="stage">
     <div id="bg"></div>
     <div id="content">
-      <div id="char-wrap" style="display:none"></div>
+      <div id="char-wrap" style="display:none">
+        <div id="bubble-wrap" style="display:none"></div>
+      </div>
       <div id="text-wrap"></div>
     </div>
     <button id="nav-left" onclick="prevPage()">&#8592;</button>
@@ -361,8 +456,31 @@ body { font-family: Georgia, serif; background: #111; color: #fff; overflow: hid
   <div id="dots"></div>
 </div>
 <script>
-const PAGES = ${JSON.stringify(pagesData)};
+const STORY_PAGES = ${JSON.stringify(pagesData)};
+const QUESTIONS = ${JSON.stringify((book.comprehensionQuestions ?? []).map(q => ({ question: q.question, answer: q.answer, outcomeRef: q.outcomeRef || null })))};
+const PAGES = [...STORY_PAGES];
+QUESTIONS.forEach((q, i) => {
+  PAGES.push({ type: 'question', questionIdx: i, face: 'front', data: q });
+  PAGES.push({ type: 'question', questionIdx: i, face: 'back', data: q });
+});
+const STORY_COUNT = STORY_PAGES.length;
 let pageIdx = 0, segIdx = 0, autoPlay = true, currentAudio = null, done = false;
+
+function escXml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function wrapLines(t,mc){var w=t.split(/\\s+/),l=[],c='';for(var i=0;i<w.length;i++){if(c&&(c.length+1+w[i].length)>mc){l.push(c);c=w[i];}else{c=c?c+' '+w[i]:w[i];}}if(c)l.push(c);return l;}
+function buildBubble(text,tailDir){
+  var fs=18,mw=280,ml=5,cpl=22,px=18,py=14,lh=1.5,tw=16,br=14;
+  var lines=wrapLines(text,cpl);
+  if(lines.length>ml){fs=Math.max(fs-2,12);lines=wrapLines(text,cpl+3);}
+  if(lines.length>ml){lines=lines.slice(0,ml);lines[ml-1]=lines[ml-1].slice(0,-3)+'\\u2026';}
+  var th=lines.length*fs*lh, bw=mw, bh=th+py*2, ttY=bh*0.3, tbY=ttY+tw;
+  var tp,bx;
+  if(tailDir==='left'){bx=tw;tp=bx+','+ttY+' 0,'+(ttY+tw*0.4)+' '+bx+','+tbY;}
+  else{bx=0;tp=bw+','+ttY+' '+(bw+tw)+','+(ttY+tw*0.4)+' '+bw+','+tbY;}
+  var cx=bx+(tailDir==='left'?0:bw-8);
+  var fo='<foreignObject x=\"'+(bx+px)+'\" y=\"'+py+'\" width=\"'+(bw-px*2)+'\" height=\"'+(bh-py*2)+'\"><div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family:Georgia,serif;font-size:'+fs+'px;line-height:'+lh+';color:#1f2937;overflow:hidden;\">'+escXml(lines.join(' '))+'</div></foreignObject>';
+  return '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"'+(bw+tw)+'\" height=\"'+bh+'\" viewBox=\"0 0 '+(bw+tw)+' '+bh+'\" style=\"overflow:visible;\"><rect x=\"'+bx+'\" y=\"0\" width=\"'+bw+'\" height=\"'+bh+'\" rx=\"'+br+'\" ry=\"'+br+'\" fill=\"white\" stroke=\"#d1d5db\" stroke-width=\"1.5\"/><polygon points=\"'+tp+'\" fill=\"white\" stroke=\"#d1d5db\" stroke-width=\"1.5\"/><rect x=\"'+cx+'\" y=\"'+(ttY-1)+'\" width=\"10\" height=\"'+(tbY-ttY+2)+'\" fill=\"white\"/>'+fo+'</svg>';
+}
 
 function startStory() {
   document.getElementById('overlay').style.display = 'none';
@@ -373,7 +491,10 @@ function startStory() {
 
 function buildDots() {
   const d = document.getElementById('dots');
-  d.innerHTML = PAGES.map((_, i) => \`<button class="dot\${i===0?' active':''}" onclick="goPage(\${i})"></button>\`).join('');
+  d.innerHTML = PAGES.map((p, i) => {
+    const isQ = !!p.type;
+    return \`<button class="dot\${i===0?' active':''}\${isQ?' q-dot':''}" onclick="goPage(\${i})"></button>\`;
+  }).join('');
 }
 
 function updateDots() {
@@ -387,11 +508,18 @@ function stopAudio() {
 function showPage(idx) {
   stopAudio();
   pageIdx = idx; segIdx = 0; done = false;
-  const page = PAGES[idx];
-  document.getElementById('page-label').textContent = \`\${idx+1} / \${PAGES.length}\`;
+  const item = PAGES[idx];
   document.getElementById('nav-left').disabled = idx === 0;
   document.getElementById('nav-right').disabled = idx === PAGES.length-1;
   updateDots();
+
+  if (item.type === 'question') {
+    showQuestionSlide(item);
+    return;
+  }
+
+  const page = item;
+  document.getElementById('page-label').textContent = \`\${idx+1} / \${STORY_COUNT}\`;
 
   // Background
   const bg = document.getElementById('bg');
@@ -401,24 +529,80 @@ function showPage(idx) {
 
   // Character
   const cw = document.getElementById('char-wrap');
+  const bw = document.getElementById('bubble-wrap');
   if (page.charImage && page.charSide !== 'none') {
     cw.style.display = 'block';
     cw.style.order = page.charSide === 'right' ? '2' : '0';
-    cw.innerHTML = \`<img class="animate__animated animate__\${page.charAnim}" src="\${page.charImage}">\`;
+    cw.innerHTML = \`<img class="animate__animated animate__\${page.charAnim}" src="\${page.charImage}"><div id="bubble-wrap" style="display:none"></div>\`;
+    // Position bubble on opposite side of character
+    const bw2 = document.getElementById('bubble-wrap');
+    if (bw2) {
+      bw2.className = page.charSide === 'left' ? 'bubble-left' : 'bubble-right';
+      bw2.style.position = 'absolute';
+      bw2.style.top = '-10px';
+      bw2.style.zIndex = '5';
+      bw2.style.pointerEvents = 'none';
+      bw2.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))';
+    }
   } else {
     cw.style.display = 'none';
-    cw.innerHTML = '';
+    cw.innerHTML = '<div id="bubble-wrap" style="display:none"></div>';
   }
 
-  // Text
+  // Determine tail direction (tail points toward character)
+  const tailDir = page.charSide === 'right' ? 'right' : 'left';
+  window._bubbleTailDir = tailDir;
+  window._hasCharBubble = !!(page.charImage && page.charSide !== 'none');
+
+  // Text — narrator segments always in text-wrap, character segments only as fallback when no char image
   const tw = document.getElementById('text-wrap');
   tw.innerHTML = page.segments.map((s,i) => \`
-    <div class="seg \${s.isNarrator?'narrator':''} \${i>0?'dim':''}" id="seg-\${i}">
+    <div class="seg \${s.isNarrator?'narrator':''} \${i>0?'dim':''}" id="seg-\${i}" data-is-narrator="\${s.isNarrator}" data-text="\${escXml(s.text)}" data-speaker="\${escXml(s.speaker)}">
       \${!s.isNarrator?'<span class=\\"seg-speaker\\">'+s.speaker+'</span>':''}
       \${s.isNarrator ? s.text : '&ldquo;'+s.text+'&rdquo;'}
     </div>\`).join('');
 
   playSegment(0);
+}
+
+function showQuestionSlide(item) {
+  const q = item.data;
+  const qNum = item.questionIdx + 1;
+  const isBack = item.face === 'back';
+  document.getElementById('page-label').textContent = 'Question ' + qNum + ' of ' + QUESTIONS.length + (isBack ? ' (Answer)' : '');
+
+  // Dark gradient background
+  const bg = document.getElementById('bg');
+  bg.innerHTML = '<div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e)"></div>';
+
+  // Hide character
+  const cw = document.getElementById('char-wrap');
+  cw.style.display = 'none';
+  cw.innerHTML = '';
+
+  // Flashcard content
+  const tw = document.getElementById('text-wrap');
+  tw.innerHTML = \`
+    <div class="flashcard">
+      <div style="color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:16px;font-family:sans-serif;">
+        Question \${qNum} of \${QUESTIONS.length}
+      </div>
+      <div class="flashcard-inner\${isBack ? ' flipped' : ''}">
+        <div class="flashcard-face flashcard-front">
+          <div style="font-size:14px;color:${accentColor};margin-bottom:16px;font-family:sans-serif;font-weight:600;">QUESTION</div>
+          <div style="font-size:24px;line-height:1.5;color:#fff;">\${q.question}</div>
+          <div style="margin-top:24px;font-size:13px;color:rgba(255,255,255,0.3);font-family:sans-serif;">Press → to reveal answer</div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div style="color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:8px;font-family:sans-serif;">\${q.question}</div>
+          <div style="width:60px;height:2px;background:${accentColor};margin:16px auto;"></div>
+          <div style="font-size:14px;color:${accentColor};margin-bottom:12px;font-family:sans-serif;font-weight:600;">ANSWER</div>
+          <div style="font-size:22px;line-height:1.5;color:#fff;">\${q.answer}</div>
+          \${q.outcomeRef ? '<div style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.25);font-family:sans-serif;">Outcome: '+q.outcomeRef+'</div>' : ''}
+        </div>
+      </div>
+    </div>\`;
+  done = true; // No auto-advance on question slides
 }
 
 function playSegment(i) {
@@ -429,8 +613,32 @@ function playSegment(i) {
     const el = document.getElementById('seg-'+j);
     if (el) el.classList.toggle('dim', j > i);
   });
-  if (i >= page.segments.length) { done = true; if (autoPlay && pageIdx < PAGES.length-1) setTimeout(() => showPage(pageIdx+1), 1800); return; }
+  if (i >= page.segments.length) {
+    // Hide bubble when page finishes
+    const bw = document.getElementById('bubble-wrap');
+    if (bw) { bw.style.display = 'none'; bw.innerHTML = ''; }
+    done = true; if (autoPlay && pageIdx < PAGES.length-1) setTimeout(() => showPage(pageIdx+1), 1800); return;
+  }
   const seg = page.segments[i];
+
+  // Speech bubble: show for character segments, hide for narrator
+  const bw = document.getElementById('bubble-wrap');
+  if (bw && window._hasCharBubble) {
+    if (!seg.isNarrator) {
+      bw.style.display = 'block';
+      bw.style.opacity = '0';
+      bw.innerHTML = buildBubble(seg.text, window._bubbleTailDir);
+      // Trigger fade-in
+      requestAnimationFrame(() => { bw.style.transition = 'opacity 0.3s'; bw.style.opacity = '1'; });
+      // Dim the text-wrap version for character segments
+      const segEl = document.getElementById('seg-'+i);
+      if (segEl) segEl.style.opacity = '0.3';
+    } else {
+      bw.style.opacity = '0';
+      setTimeout(() => { bw.style.display = 'none'; bw.innerHTML = ''; }, 300);
+    }
+  }
+
   if (seg.audio) {
     const a = new Audio('data:audio/wav;base64,' + seg.audio);
     currentAudio = a;
@@ -452,7 +660,11 @@ function toggleAuto() {
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') nextPage();
   else if (e.key === 'ArrowLeft') prevPage();
-  else if (e.key === ' ') { e.preventDefault(); stopAudio(); playSegment(segIdx); }
+  else if (e.key === ' ') {
+    e.preventDefault();
+    if (PAGES[pageIdx] && PAGES[pageIdx].type === 'question') { nextPage(); }
+    else { stopAudio(); playSegment(segIdx); }
+  }
 });
 </script>
 </body>

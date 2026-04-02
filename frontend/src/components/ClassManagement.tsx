@@ -59,6 +59,7 @@ const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading03IconData} {...p} />;
 const Printer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PrinterIconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { getTeacherSubjects } from '../data/teacherConstants';
 import SmartInput from './SmartInput';
 
@@ -179,6 +180,7 @@ interface ClassManagementProps {
 
 const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onDataChange, isActive = true }) => {
   const { settings } = useSettings();
+  const { guardOffline } = useOfflineGuard();
   const triggerCheck = useAchievementTrigger();
   const accentColor = settings.tabColors['class-management'] ?? '#f97316';
 
@@ -790,6 +792,7 @@ ${tabScript}
   };
 
   const generateReportCard = async (student: Student) => {
+    if (guardOffline()) return;
     setGeneratingReport(true);
     try {
       // Fetch full student data with grades
@@ -822,6 +825,7 @@ ${tabScript}
   };
 
   const generateBulkReportCards = async (classStudents: Student[]) => {
+    if (guardOffline()) return;
     setGeneratingBulkReport(true);
     try {
       for (const student of classStudents) {

@@ -51,6 +51,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 // Curriculum data is loaded on demand by MultigradeAlignmentFields
 
 interface MultigradePlannerProps {
@@ -299,6 +300,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
+  const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -764,6 +766,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   const generatePlan = () => {
+    if (guardOffline()) return;
     if (!validateStep()) return;
     // Transform FormData to MultigradeFormData format
     const multigradeFormData = {

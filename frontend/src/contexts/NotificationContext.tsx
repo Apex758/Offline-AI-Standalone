@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 export type NotificationType = 'success' | 'error' | 'info';
 
@@ -6,6 +6,7 @@ export interface Toast {
   id: string;
   message: string;
   type: NotificationType;
+  tabId?: string;
 }
 
 export interface HistoryItem {
@@ -14,17 +15,20 @@ export interface HistoryItem {
   type: NotificationType;
   timestamp: Date;
   read: boolean;
+  tabId?: string;
 }
 
 interface NotificationContextValue {
   toasts: Toast[];
   history: HistoryItem[];
   unreadCount: number;
-  notify: (message: string, type?: NotificationType) => void;
+  notify: (message: string, type?: NotificationType, tabId?: string) => void;
   toastOnly: (message: string, type?: NotificationType, duration?: number) => void;
   dismiss: (id: string) => void;
   markAllRead: () => void;
   clearHistory: () => void;
+  navigateToTab: (tabId: string) => void;
+  registerNavigator: (fn: (tabId: string) => void) => void;
 }
 
 const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
@@ -32,16 +36,25 @@ const NotificationContext = createContext<NotificationContextValue | undefined>(
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const navigatorRef = useRef<((tabId: string) => void) | null>(null);
 
-  const notify = useCallback((message: string, type: NotificationType = 'success') => {
+  const registerNavigator = useCallback((fn: (tabId: string) => void) => {
+    navigatorRef.current = fn;
+  }, []);
+
+  const navigateToTab = useCallback((tabId: string) => {
+    if (navigatorRef.current) navigatorRef.current(tabId);
+  }, []);
+
+  const notify = useCallback((message: string, type: NotificationType = 'success', tabId?: string) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts(prev => [...prev, { id, message, type, tabId }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
 
-    setHistory(prev => [{ id, message, type, timestamp: new Date(), read: false }, ...prev]);
+    setHistory(prev => [{ id, message, type, timestamp: new Date(), read: false, tabId }, ...prev]);
   }, []);
 
   const toastOnly = useCallback((message: string, type: NotificationType = 'info', duration = 4000) => {
@@ -67,7 +80,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const unreadCount = history.filter(item => !item.read).length;
 
   return (
-    <NotificationContext.Provider value={{ toasts, history, unreadCount, notify, toastOnly, dismiss, markAllRead, clearHistory }}>
+    <NotificationContext.Provider value={{ toasts, history, unreadCount, notify, toastOnly, dismiss, markAllRead, clearHistory, navigateToTab, registerNavigator }}>
       {children}
     </NotificationContext.Provider>
   );

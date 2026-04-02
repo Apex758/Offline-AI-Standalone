@@ -51,6 +51,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface CrossCurricularPlannerProps {
@@ -527,6 +528,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
+  const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -977,6 +979,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   };
 
   const generatePlan = () => {
+    if (guardOffline()) return;
     if (!validateStep()) return;
     // Map formData to match the prompt builder's expected interface
     const mappedData = {

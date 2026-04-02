@@ -5,7 +5,7 @@
  * base64 images and WAV audio blobs that would exceed localStorage quotas.
  */
 
-import type { StoryPage } from '../types/storybook';
+import type { StoryPage, CoverPage } from '../types/storybook';
 
 const DB_NAME = 'StorybookAssetsDB';
 const DB_VERSION = 1;
@@ -62,10 +62,20 @@ function blobToDataURI(blob: Blob): Promise<string> {
 
 // ─── Images ─────────────────────────────────────────────────────────────────
 
-export async function saveStorybookImages(storybookId: string, pages: StoryPage[]): Promise<void> {
+export async function saveStorybookImages(storybookId: string, pages: StoryPage[], coverPage?: CoverPage): Promise<void> {
   const db = await openDB();
   const tx = db.transaction(IMAGES_STORE, 'readwrite');
   const store = tx.objectStore(IMAGES_STORE);
+
+  // Save cover image at pageIndex -1
+  if (coverPage?.coverImageData) {
+    store.put({
+      storybookId,
+      pageIndex: -1,
+      type: 'cover',
+      blob: dataURItoBlob(coverPage.coverImageData),
+    });
+  }
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];

@@ -16,6 +16,7 @@ import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { useDisplayFilters } from './hooks/useDisplayFilters';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
+import { EngineStatusProvider } from './contexts/EngineStatusContext';
 
 const SetupWizard = lazy(() => import('./components/SetupWizard/SetupWizard'));
 function AppContent() {
@@ -27,6 +28,7 @@ function AppContent() {
   // Apply theme & display filters (brightness / warm tone)
   useTheme();
   useDisplayFilters();
+  // Engine status polling is now handled by EngineStatusProvider
 
   // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally
   const { settings, hasCompletedSetup } = useSettings();
@@ -78,6 +80,7 @@ function App() {
         <SettingsProvider>
           <CapabilitiesProvider>
             <NotificationProvider>
+              <EngineStatusProvider>
               <WebSocketProvider>
                 <QueueProvider>
                   <TabBusyProvider>
@@ -88,6 +91,7 @@ function App() {
                   </TabBusyProvider>
                 </QueueProvider>
               </WebSocketProvider>
+              </EngineStatusProvider>
             </NotificationProvider>
           </CapabilitiesProvider>
         </SettingsProvider>

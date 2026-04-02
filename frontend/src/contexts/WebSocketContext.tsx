@@ -126,7 +126,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           conn.listeners.forEach(listener => listener());
           forceUpdate({});
           const toolName = TOOL_NAMES[endpoint];
-          if (toolName) notifyRef.current(`${toolName} generated!`);
+          const [connTabId] = key.split('::');
+          if (toolName) notifyRef.current(`${toolName} generated!`, 'success', connTabId);
         } else if (data.type === 'curriculum_refs') {
           conn.customData.curriculumRefs = data.references || [];
           conn.listeners.forEach(listener => listener());
@@ -137,7 +138,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           conn.listeners.forEach(listener => listener());
           forceUpdate({});
           const toolName = TOOL_NAMES[endpoint];
-          if (toolName) notifyRef.current(`${toolName} generation failed`, 'error');
+          const [errTabId] = key.split('::');
+          if (toolName) notifyRef.current(`${toolName} generation failed`, 'error', errTabId);
         }
       };
 

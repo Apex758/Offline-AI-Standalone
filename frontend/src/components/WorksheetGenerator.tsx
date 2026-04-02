@@ -77,6 +77,7 @@ import WorksheetGrader from './WorksheetGrader';
 import ScheduleTestModal from './ScheduleTestModal';
 import SmartTextArea from './SmartTextArea';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import SmartInput from './SmartInput';
 import { useSettings } from '../contexts/SettingsContext';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
@@ -310,6 +311,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId || '', ENDPOINT, setLocalLoadingMap);
+  const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId || ''] || contextLoading;
 
   // ✅ Finalization logic - when streaming completes, update generatedWorksheet
@@ -665,6 +667,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   const handleGenerate = async () => {
     console.log('handleGenerate called');
+    if (guardOffline()) return;
 
     if (!validateForm()) {
       const firstError = document.querySelector('[data-validation-error="true"]');
@@ -1205,6 +1208,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   // Scene-based image generation handler
   const handleGenerateSceneImage = async () => {
+    if (guardOffline()) return;
     if (!selectedPreset) {
       setImageError("Please select an image preset");
       return null;

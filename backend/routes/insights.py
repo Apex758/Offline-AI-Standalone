@@ -22,17 +22,17 @@ def _save_reports(reports: list):
     """Save insight reports (keep last 10)."""
     try:
         from main import save_json_data
-        save_json_data("insights_reports.json", reports[-10:])
+        save_json_data("insights_reports.json", reports[-50:])
     except Exception as e:
         logger.error(f"Failed to save insights reports: {e}")
 
 
 @router.get("/data")
-async def get_insights_data():
+async def get_insights_data(teacher_id: str = "default_teacher"):
     """Return aggregated data from all sources (no LLM). Fast endpoint for summary cards."""
     try:
         import insights_service
-        data = insights_service.aggregate_all()
+        data = insights_service.aggregate_all(teacher_id)
         return data
     except Exception as e:
         logger.error(f"Error aggregating insights data: {e}")

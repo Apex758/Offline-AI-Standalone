@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import Bulb01IconData from '@hugeicons/core-free-icons/Bulb01Icon';
+import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import UserIconData from '@hugeicons/core-free-icons/UserIcon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
@@ -14,6 +14,7 @@ import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import axios from 'axios';
 import type { InsightsData, InsightsReport, InsightsPassResult } from '../types/insights';
+import { useOfflineGuard } from '../hooks/useOfflineGuard';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -38,6 +39,16 @@ const PASS_NAMES = [
 ];
 
 const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+  const { guardOffline } = useOfflineGuard();
+
+  // Resolve teacher ID (same pattern as CurriculumTracker)
+  const teacherId = (() => {
+    try {
+      const user = localStorage.getItem('user');
+      if (user) return JSON.parse(user).username || 'default_teacher';
+    } catch {}
+    return 'default_teacher';
+  })();
   // State
   const [insightsData, setInsightsData] = useState<InsightsData | null>(savedData?.insightsData || null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -72,7 +83,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   useEffect(() => {
     if (!insightsData && !dataLoading) {
       setDataLoading(true);
-      axios.get('/api/insights/data')
+      axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}`)
         .then(res => {
           setInsightsData(res.data);
           persistState({ insightsData: res.data });
@@ -109,6 +120,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
   // Generate insights via WebSocket
   const handleGenerate = useCallback(() => {
+    if (guardOffline()) return;
     if (isGenerating) return;
 
     setIsGenerating(true);
@@ -124,7 +136,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     wsRef.current = ws;
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued' }));
+      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId }));
     };
 
     ws.onmessage = (event) => {
@@ -194,7 +206,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       setIsGenerating(false);
       wsRef.current = null;
     };
-  }, [isGenerating, persistState]);
+  }, [guardOffline, isGenerating, persistState]);
 
   // Delete a report from history
   const handleDeleteReport = useCallback((reportId: string) => {
@@ -521,7 +533,7 @@ const InsightSection: React.FC<InsightSectionProps> = ({
   icon, name, content, streaming, isActive, isPending, isSkipped, color, prominent
 }) => {
   const colors = SECTION_COLORS[color] || SECTION_COLORS.blue;
-  const displayText = content || streaming;
+  const displayText = stripThinkTags(content || streaming);
 
   if (isPending) {
     return (
@@ -573,7 +585,35 @@ const InsightSection: React.FC<InsightSectionProps> = ({
 
 // ── Simple markdown renderer ──────────────────────────────────────────────────
 
+function stripThinkTags(text: string): string {
+  // Remove <think>...</think> blocks (including multiline)
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>\s*/g, '');
+  // Remove unclosed <think> blocks (model didn't close the tag)
+  cleaned = cleaned.replace(/<think>[\s\S]*$/g, '');
+  return cleaned.trim();
+}
+
+function renderInlineMarkdown(text: string): React.ReactNode {
+  // Handle **bold** syntax
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  if (parts.length === 1) return text;
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i} className="font-semibold text-theme-primary">{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      })}
+    </>
+  );
+}
+
 function renderMarkdown(text: string): React.ReactNode {
+  if (!text) return null;
+
+  // Strip any <think> blocks that made it through
+  text = stripThinkTags(text);
   if (!text) return null;
 
   const lines = text.split('\n');
@@ -586,7 +626,7 @@ function renderMarkdown(text: string): React.ReactNode {
     if (line.startsWith('## ')) {
       elements.push(
         <h3 key={i} className="text-base font-semibold text-theme-primary mt-3 mb-1">
-          {line.replace('## ', '')}
+          {renderInlineMarkdown(line.replace('## ', ''))}
         </h3>
       );
       continue;
@@ -598,7 +638,7 @@ function renderMarkdown(text: string): React.ReactNode {
       elements.push(
         <div key={i} className="flex gap-2 ml-1 my-0.5">
           <span className="text-theme-muted font-medium flex-none">{numMatch[1]}.</span>
-          <span>{numMatch[2]}</span>
+          <span>{renderInlineMarkdown(numMatch[2])}</span>
         </div>
       );
       continue;
@@ -611,7 +651,7 @@ function renderMarkdown(text: string): React.ReactNode {
           <span className="text-theme-muted flex-none mt-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-current" />
           </span>
-          <span>{line.replace('- ', '')}</span>
+          <span>{renderInlineMarkdown(line.replace('- ', ''))}</span>
         </div>
       );
       continue;
@@ -624,7 +664,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
 
     // Regular text
-    elements.push(<p key={i} className="my-0.5">{line}</p>);
+    elements.push(<p key={i} className="my-0.5">{renderInlineMarkdown(line)}</p>);
   }
 
   return <>{elements}</>;
