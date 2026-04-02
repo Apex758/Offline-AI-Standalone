@@ -166,8 +166,11 @@ def _load_openvino_img2img(model_path: Path):
     from optimum.intel.openvino import OVStableDiffusionXLImg2ImgPipeline
     import openvino as ov
 
-    device = _detect_openvino_device()
-    pipe = OVStableDiffusionXLImg2ImgPipeline.from_pretrained(str(model_path), compile=False, device=device)
+    # INT8 quantized models produce NaN on GPU — force CPU for reliability (same as txt2img)
+    pipe = OVStableDiffusionXLImg2ImgPipeline.from_pretrained(
+        str(model_path), compile=False, device="CPU",
+        ov_config={"CACHE_DIR": ""},
+    )
 
     core = ov.Core()
 
@@ -503,6 +506,16 @@ class ImageService:
             if extra_neg and extra_neg not in negative_prompt:
                 negative_prompt = f"{negative_prompt}, {extra_neg}"
 
+            # SDXL-Turbo anatomy fix: inject negative prompt and prompt tweaks
+            if self.model_key and self.model_key.startswith("sdxl-turbo"):
+                anatomy_neg = "deformed fingers, extra fingers, fused fingers, bad hands, malformed hands, bad eyes, crossed eyes, deformed face, extra limbs, mutated hands, poorly drawn hands, poorly drawn face, disfigured, ugly"
+                if anatomy_neg not in negative_prompt:
+                    negative_prompt = f"{negative_prompt}, {anatomy_neg}"
+                # Avoid close-up anatomy issues — nudge toward mid-distance framing
+                if "close-up" not in prompt.lower() and "closeup" not in prompt.lower():
+                    if "mid-distance" not in prompt.lower() and "wide shot" not in prompt.lower():
+                        prompt = f"{prompt}, mid-distance shot, well-proportioned"
+
             logger.info(f"[DEBUG] generate_image params: model={self.model_key}, backend={self.model_info.get('backend')}, "
                        f"steps={num_inference_steps}, guidance={guidance_scale}, "
                        f"width={width}, height={height}, has_init_image={init_image is not None}")
@@ -521,22 +534,40 @@ class ImageService:
             if backend in ("openvino",):
                 # OpenVINO SDXL-Turbo pipeline
                 if init_image is not None:
-                    import io
-                    init_pil = Image.open(io.BytesIO(init_image)).convert("RGB")
-                    # Lazy-load img2img pipeline
-                    if self.img2img_pipeline is None:
-                        logger.info("Loading OpenVINO img2img pipeline...")
-                        self.img2img_pipeline = _load_openvino_img2img(self.model_path)
-                        logger.info("OpenVINO img2img pipeline loaded.")
-                    # For SDXL-Turbo img2img: ensure steps * strength >= 1
-                    img2img_steps = max(num_inference_steps, int(1 / max(strength, 0.1)))
-                    result = self.img2img_pipeline(
-                        prompt=prompt, negative_prompt=negative_prompt,
-                        image=init_pil, strength=strength,
-                        num_inference_steps=img2img_steps,
-                        guidance_scale=guidance_scale,
-                        output_type="np",
-                    )
+                    try:
+                        import io as _io
+                        init_pil = Image.open(_io.BytesIO(init_image)).convert("RGB")
+                        # Resize init image to fit model constraints (INT8 models have fixed compiled shapes)
+                        target_w = max_w or width
+                        target_h = max_h or height
+                        if init_pil.width != target_w or init_pil.height != target_h:
+                            logger.info(f"Resizing init image {init_pil.width}x{init_pil.height} -> {target_w}x{target_h}")
+                            init_pil = init_pil.resize((target_w, target_h), Image.LANCZOS)
+                        # Lazy-load img2img pipeline
+                        if self.img2img_pipeline is None:
+                            logger.info("Loading OpenVINO img2img pipeline...")
+                            self.img2img_pipeline = _load_openvino_img2img(self.model_path)
+                            logger.info("OpenVINO img2img pipeline loaded.")
+                        # For SDXL-Turbo img2img: ensure at least 2 actual denoising steps
+                        import math
+                        img2img_steps = max(num_inference_steps, math.ceil(2 / max(strength, 0.1)))
+                        result = self.img2img_pipeline(
+                            prompt=prompt, negative_prompt=negative_prompt,
+                            image=init_pil, strength=strength,
+                            num_inference_steps=img2img_steps,
+                            guidance_scale=guidance_scale,
+                            output_type="np",
+                        )
+                    except Exception as img2img_err:
+                        logger.warning(f"img2img failed, falling back to txt2img: {img2img_err}")
+                        # Fallback: regenerate with txt2img using same prompt
+                        result = self.pipeline(
+                            prompt=prompt, negative_prompt=negative_prompt,
+                            num_inference_steps=num_inference_steps,
+                            guidance_scale=guidance_scale,
+                            width=width, height=height,
+                            output_type="np",
+                        )
                 else:
                     result = self.pipeline(
                         prompt=prompt, negative_prompt=negative_prompt,

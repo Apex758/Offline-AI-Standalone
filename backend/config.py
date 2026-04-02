@@ -179,7 +179,7 @@ IMAGE_MODEL_REGISTRY = {
         "folder":      "sdxl-turbo-int8",
         "backend":     "openvino",
         "description": "SDXL-Turbo INT8 (OpenVINO) — faster, ~2 GB",
-        "steps":       1,
+        "steps":       2,
         "guidance":    1.0,
         "max_width":   512,
         "max_height":  512,

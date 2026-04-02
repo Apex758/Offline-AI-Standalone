@@ -24,6 +24,7 @@ import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import RefreshIconData from '@hugeicons/core-free-icons/RefreshIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -54,6 +55,7 @@ const Pencil: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FolderOpenIconData} {...p} />;
 const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const RefreshCw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RefreshIconData} {...p} />;
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
@@ -450,6 +452,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     supports_negative_prompt: boolean;
     supports_img2img: boolean;
   }>({ supports_negative_prompt: true, supports_img2img: true });
+  const [activeModelName, setActiveModelName] = useState<string>('');
 
   // ========================================
   // Editor States
@@ -636,6 +639,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           supports_img2img: data.supports_img2img ?? true,
         };
         setModelCapabilities(caps);
+        setActiveModelName(data.modelName || '');
+        // Lock SDXL Turbo to 2 inference steps
+        if ((data.modelName || '').startsWith('sdxl-turbo')) {
+          setNumInferenceSteps(2);
+        }
         // Clear reference images if model doesn't support img2img
         if (!caps.supports_img2img) {
           setReferenceImage(null);
@@ -908,6 +916,47 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setSelectedImage(null);
     setError(null);
     setImageSlots([]);
+  };
+
+  // Refine: feed the generated image back through img2img with optional user guidance
+  const [refineText, setRefineText] = useState('');
+  const [refineTarget, setRefineTarget] = useState<string | null>(null); // image data of slot being refined
+
+  const handleRefine = async (imageData: string) => {
+    if (!prompt.trim()) return;
+
+    setRefineTarget(null);
+    setGenerationState('generating');
+    setError(null);
+    setImageSlots([{ imageData: null, seed: null, status: 'generating' }]);
+
+    try {
+      const basePrompt = buildStyledPrompt(prompt, selectedStyle);
+      const finalPrompt = refineText.trim()
+        ? `${basePrompt}, ${refineText.trim()}`
+        : basePrompt;
+      setRefineText('');
+      const response = await imageApi.generateImageBase64({
+        prompt: finalPrompt,
+        ...(modelCapabilities.supports_negative_prompt && { negativePrompt }),
+        width,
+        height,
+        numInferenceSteps,
+        initImage: imageData,
+        strength: 0.5,
+      });
+
+      if (response.success && response.imageData) {
+        setImageSlots([{ imageData: response.imageData, seed: Math.floor(Math.random() * 1000000), status: 'completed' }]);
+      } else {
+        setImageSlots([{ imageData: null, seed: null, status: 'error' }]);
+      }
+      setGenerationState('results');
+    } catch (err: any) {
+      console.error('Refine error:', err);
+      setError(err.response?.data?.error || err.message || 'Failed to refine image');
+      setGenerationState('input');
+    }
   };
 
   // ========================================
@@ -2175,7 +2224,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </select>
                   </div>
 
-                  {/* Quality Preset */}
+                  {/* Quality Preset — only shown for non-Turbo models (hidden until model detected) */}
+                  {activeModelName && !activeModelName.startsWith('sdxl-turbo') && (
                   <div>
                     <label className="block text-sm font-medium text-theme-label mb-2">Quality</label>
                     <div className="flex gap-2">
@@ -2203,6 +2253,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       })}
                     </div>
                   </div>
+                  )}
 
                   {/* Generate Button + Time Estimate */}
                   <button
@@ -2283,6 +2334,43 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 <Pencil className="w-4 h-4 mr-1" />
                                 Edit
                               </button>
+                              {modelCapabilities.supports_img2img && (
+                                refineTarget === slot.imageData ? (
+                                  <div className="flex-1 flex gap-1">
+                                    <input
+                                      type="text"
+                                      value={refineText}
+                                      onChange={(e) => setRefineText(e.target.value)}
+                                      onKeyDown={(e) => { if (e.key === 'Enter') handleRefine(slot.imageData!); if (e.key === 'Escape') setRefineTarget(null); }}
+                                      placeholder="e.g. fix the eyes, sharper hands"
+                                      className="flex-1 px-2 py-1.5 text-sm rounded-lg border border-theme bg-theme-secondary text-theme-label placeholder:text-theme-hint focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                      autoFocus
+                                    />
+                                    <button
+                                      onClick={() => handleRefine(slot.imageData!)}
+                                      className="px-2 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm"
+                                      title="Run refinement"
+                                    >
+                                      <RefreshCw className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => { setRefineTarget(null); setRefineText(''); }}
+                                      className="px-2 py-1.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-sm"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setRefineTarget(slot.imageData!)}
+                                    className="flex-1 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center justify-center text-sm"
+                                    title="Refine this image with optional guidance"
+                                  >
+                                    <RefreshCw className="w-4 h-4 mr-1" />
+                                    Refine
+                                  </button>
+                                )
+                              )}
                             </div>
                           </>
                         ) : slot.status === 'generating' ? (
@@ -2410,6 +2498,43 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 <Pencil className="w-4 h-4 mr-1" />
                                 Edit
                               </button>
+                              {modelCapabilities.supports_img2img && (
+                                refineTarget === slot.imageData ? (
+                                  <div className="flex-1 flex gap-1">
+                                    <input
+                                      type="text"
+                                      value={refineText}
+                                      onChange={(e) => setRefineText(e.target.value)}
+                                      onKeyDown={(e) => { if (e.key === 'Enter') handleRefine(slot.imageData!); if (e.key === 'Escape') setRefineTarget(null); }}
+                                      placeholder="e.g. fix the eyes, sharper hands"
+                                      className="flex-1 px-2 py-1.5 text-sm rounded-lg border border-theme bg-theme-secondary text-theme-label placeholder:text-theme-hint focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                      autoFocus
+                                    />
+                                    <button
+                                      onClick={() => handleRefine(slot.imageData!)}
+                                      className="px-2 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm"
+                                      title="Run refinement"
+                                    >
+                                      <RefreshCw className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => { setRefineTarget(null); setRefineText(''); }}
+                                      className="px-2 py-1.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-sm"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setRefineTarget(slot.imageData!)}
+                                    className="flex-1 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center justify-center text-sm"
+                                    title="Refine this image with optional guidance"
+                                  >
+                                    <RefreshCw className="w-4 h-4 mr-1" />
+                                    Refine
+                                  </button>
+                                )
+                              )}
                             </div>
                           </>
                         ) : slot.status === 'generating' ? (
@@ -3235,8 +3360,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                 </div>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {resourceImages.map((img) => (
-                    <button key={img.id} onClick={() => loadResourceImage(img)}
+                  {resourceImages.map((img, index) => (
+                    <button key={img.id || `resource-${index}`} onClick={() => loadResourceImage(img)}
                       className="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-purple-500 transition-all bg-gray-100 dark:bg-gray-800">
                       <img loading="lazy" src={img.imageUrl} alt={img.title || 'Saved image'}
                         className="w-full h-full object-cover" />
