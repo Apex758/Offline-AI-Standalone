@@ -40,6 +40,8 @@ import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
 import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
 import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
+import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
@@ -90,6 +92,8 @@ const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }
 const Trophy: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Trophy01IconData} {...p} />;
 const StoryBook: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StoryBookIconData} {...p} />;
 const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Bulb01IconData} {...p} />;
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
+const Paintbrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
@@ -171,21 +175,24 @@ const tools: Tool[] = [
     name: 'Brain Dump',
     icon: 'Brain',
     type: 'brain-dump',
-    description: 'Dump your thoughts and turn them into actions'
+    description: 'Dump your thoughts and turn them into actions',
+    group: 'planning-prep'
   },
   {
     id: 'curriculum-tracker',
     name: 'Progress Tracker',
     icon: 'TrendingUp',
     type: 'curriculum-tracker',
-    description: 'Monitor your curriculum progress'
+    description: 'Monitor your curriculum progress',
+    group: 'my-classroom'
   },
   {
     id: 'resource-manager',
     name: 'My Resources',
     icon: 'FolderOpen',
     type: 'resource-manager',
-    description: 'View, edit, and manage all your saved resources'
+    description: 'View, edit, and manage all your saved resources',
+    group: 'planning-prep'
   },
   {
     id: 'chat',
@@ -207,7 +214,7 @@ const tools: Tool[] = [
     icon: 'PenTool',
     type: 'quiz-generator',
     description: 'Quizzes aligned to your curriculum',
-    group: 'tools'
+    group: 'assessment-tools'
   },
   {
     id: 'rubric-generator',
@@ -215,7 +222,7 @@ const tools: Tool[] = [
     icon: 'ClipboardList',
     type: 'rubric-generator',
     description: 'Grading criteria for assignments',
-    group: 'tools'
+    group: 'assessment-tools'
   },
   {
     id: 'class-management',
@@ -223,7 +230,7 @@ const tools: Tool[] = [
     icon: 'UsersRound',
     type: 'class-management',
     description: 'Manage students, classes, and quiz grades',
-    group: 'tools'
+    group: 'my-classroom'
   },
   // Lesson Planner Group
   {
@@ -263,7 +270,8 @@ const tools: Tool[] = [
     name: 'Achievements',
     icon: 'Trophy',
     type: 'achievements',
-    description: 'Track your teaching milestones and earn rewards'
+    description: 'Track your teaching milestones and earn rewards',
+    group: 'my-classroom'
   },
   {
     id: 'performance-metrics',
@@ -720,6 +728,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [lessonPlannerExpanded, setLessonPlannerExpanded] = useState(false);
   const [visualStudioExpanded, setVisualStudioExpanded] = useState(false);
+  const [planningPrepExpanded, setPlanningPrepExpanded] = useState(false);
+  const [assessmentToolsExpanded, setAssessmentToolsExpanded] = useState(false);
+  const [myClassroomExpanded, setMyClassroomExpanded] = useState(false);
   const [showFirstTimeTutorial, setShowFirstTimeTutorial] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
@@ -2084,6 +2095,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Group tools by category (static — tools array never changes)
   const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners'), []);
   const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
+  const planningPrepTools = useMemo(() => tools.filter(t => t.group === 'planning-prep'), []);
+  const assessmentToolsList = useMemo(() => tools.filter(t => t.group === 'assessment-tools'), []);
+  const myClassroomTools = useMemo(() => tools.filter(t => t.group === 'my-classroom'), []);
 
   // Small component to evaluate nudges when active tab changes
   const NudgeEvaluator: React.FC = () => {
@@ -2227,7 +2241,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             style={{
               color: 'var(--sidebar-text-faint)',
               textAlign: sidebarOpen ? 'left' : 'center',
-              padding: sidebarOpen ? `${lessonPlannerExpanded || visualStudioExpanded ? '10px' : '36px'} 12px 6px` : '36px 0 6px',
+              padding: sidebarOpen ? `${lessonPlannerExpanded || visualStudioExpanded || planningPrepExpanded || assessmentToolsExpanded || myClassroomExpanded ? '10px' : '36px'} 12px 6px` : '36px 0 6px',
               transition: 'padding 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
@@ -2328,20 +2342,28 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             // Render sidebar items
             const elements: React.ReactNode[] = [];
 
-            // 1. Pinned top: analytics
+            // 1. Pinned top: analytics + educator insights
             const analyticsTool = toolById('analytics');
             if (analyticsTool) elements.push(renderToolButton(analyticsTool, 'tool-analytics'));
+            const insightsTool = toolById('educator-insights');
+            if (insightsTool) elements.push(renderToolButton(insightsTool));
 
             // 2. Reorderable middle from sidebarOrder
             for (const item of settings.sidebarOrder) {
               if (!item.enabled) continue;
               // Skip pinned items (they're rendered separately)
-              if (item.id === 'analytics' || item.id === 'support' || item.id === 'settings') continue;
+              if (item.id === 'analytics' || item.id === 'educator-insights' || item.id === 'performance-metrics' || item.id === 'support' || item.id === 'settings') continue;
 
-              if (item.id === 'lesson-planners') {
+              if (item.id === 'planning-prep') {
+                elements.push(renderGroup('planning-prep', 'Planning & Prep', planningPrepTools, planningPrepExpanded, setPlanningPrepExpanded, Compass));
+              } else if (item.id === 'lesson-planners') {
                 elements.push(renderGroup('lesson-planners', 'Lesson Planners', lessonPlannerTools, lessonPlannerExpanded, setLessonPlannerExpanded, BookOpen));
+              } else if (item.id === 'assessment-tools') {
+                elements.push(renderGroup('assessment-tools', 'Assessment Tools', assessmentToolsList, assessmentToolsExpanded, setAssessmentToolsExpanded, Target));
+              } else if (item.id === 'my-classroom') {
+                elements.push(renderGroup('my-classroom', 'My Classroom', myClassroomTools, myClassroomExpanded, setMyClassroomExpanded, School));
               } else if (item.id === 'visual-studio') {
-                elements.push(renderGroup('visual-studio', 'Visual Studio', visualStudioTools, visualStudioExpanded, setVisualStudioExpanded, Palette));
+                elements.push(renderGroup('visual-studio', 'Visual Studio', visualStudioTools, visualStudioExpanded, setVisualStudioExpanded, Paintbrush));
               } else {
                 const tool = toolById(item.id);
                 if (tool) elements.push(renderToolButton(tool, tutorialMap[item.id]));
@@ -2351,7 +2373,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             // 3. Divider before bottom pinned items
             elements.push(<div key="bottom-divider" className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />);
 
-            // 4. Pinned bottom: support (if enabled) + settings
+            // 4. Pinned bottom: performance (if enabled) + support (if enabled) + settings
+            const perfItem = settings.sidebarOrder.find(i => i.id === 'performance-metrics');
+            if (perfItem?.enabled) {
+              const perfTool = toolById('performance-metrics');
+              if (perfTool) elements.push(<div key="perf-wrapper" className="mt-2">{renderToolButton(perfTool)}</div>);
+            }
             const supportItem = settings.sidebarOrder.find(i => i.id === 'support');
             if (supportItem?.enabled !== false) {
               const st = toolById('support');

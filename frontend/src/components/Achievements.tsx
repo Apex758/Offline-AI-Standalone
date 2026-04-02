@@ -94,6 +94,7 @@ const IMPACT_LABELS: Record<string, (n: number) => string> = {
   kindergarten_plans: (n) => `${n} early childhood plan${n !== 1 ? 's' : ''}`,
   multigrade_plans: (n) => `${n} multigrade plan${n !== 1 ? 's' : ''}`,
   cross_curricular_plans: (n) => `${n} integrated plan${n !== 1 ? 's' : ''}`,
+  hidden_achievements_earned: (n) => `${n} secret${n !== 1 ? 's' : ''} found`,
 };
 
 const CATEGORY_LABELS: Record<AchievementCategory, string> = {

@@ -205,19 +205,12 @@ const ENDPOINT = '/ws/worksheet';
 
 const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   const triggerCheck = useAchievementTrigger();
-  const { hasDiffusion } = useCapabilities();
+  const { hasDiffusion, hasVision } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   // Curriculum data is loaded per grade+subject via CurriculumAlignmentFields
   const { settings } = useSettings();
   const LOCAL_STORAGE_KEY = `worksheet_state_${tabId}`;
-
-  // Profile-based filtering for subject/grade dropdowns
-  const gradeMapping = settings.profile.gradeSubjects || {};
-  const filterOn = settings.profile.filterContentByProfile;
-  const grades = filterGrades(allGradesWS, gradeMapping, filterOn);
-  const selectedGradeKey = formData.gradeLevel?.toLowerCase() || '';
-  const subjects = filterSubjects(allSubjectsWS, gradeMapping, filterOn, selectedGradeKey || undefined);
 
   const getDefaultFormData = (): WorksheetFormData => ({
     subject: '',
@@ -268,6 +261,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
     return getDefaultFormData();
   });
+
+  // Profile-based filtering for subject/grade dropdowns
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
+  const grades = filterGrades(allGradesWS, gradeMapping, filterOn);
+  const selectedGradeKey = formData.gradeLevel?.toLowerCase() || '';
+  const subjects = filterSubjects(allSubjectsWS, gradeMapping, filterOn, selectedGradeKey || undefined);
 
   const [generatedWorksheet, setGeneratedWorksheet] = useState<string>(() => {
     if (savedData?.generatedWorksheet) {

@@ -14,7 +14,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
     name: 'Curriculum & Resources',
     description: 'Browse the OECS curriculum, track progress, and manage your saved resources.',
     icon: 'Search',
-    sidebarItems: ['curriculum', 'curriculum-tracker', 'resource-manager'],
+    sidebarItems: ['curriculum', 'my-classroom', 'planning-prep'],
     tools: ['Curriculum Browser', 'Progress Tracker', 'My Resources'],
   },
   {
@@ -22,7 +22,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
     name: 'Assessment & Grading',
     description: 'Build quizzes and rubrics aligned to curriculum standards.',
     icon: 'PenTool',
-    sidebarItems: ['quiz-generator', 'rubric-generator'],
+    sidebarItems: ['assessment-tools'],
     tools: ['Quiz Builder', 'Rubric Builder'],
   },
   {
@@ -30,7 +30,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
     name: 'Student Management',
     description: 'Manage classes, student profiles, and track quiz grades.',
     icon: 'UsersRound',
-    sidebarItems: ['class-management'],
+    sidebarItems: ['my-classroom'],
     tools: ['My Classes'],
   },
   {
@@ -38,7 +38,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
     name: 'AI Assistant & Tools',
     description: 'Chat with PEARL for ideas, and use Brain Dump to turn thoughts into actions.',
     icon: 'Brain',
-    sidebarItems: ['chat', 'brain-dump'],
+    sidebarItems: ['chat', 'planning-prep'],
     tools: ['Ask PEARL', 'Brain Dump'],
   },
   {
@@ -88,8 +88,8 @@ export function getEnabledSidebarItems(enabledModules: FeatureModuleId[]): Set<s
       }
     }
   }
-  // Always keep achievements enabled (not gated)
-  items.add('achievements');
+  // Always keep these enabled (not gated by modules)
+  items.add('educator-insights');
   return items;
 }
 
@@ -114,14 +114,16 @@ export function getModuleForTabType(tabType: string): FeatureModuleId | null {
     'worksheet-generator': 'visual-studio',
     'image-studio': 'visual-studio',
     'presentation-builder': 'visual-studio',
-    'quiz-generator': 'quiz-generator',
-    'rubric-generator': 'rubric-generator',
-    'class-management': 'class-management',
+    'storybook': 'visual-studio',
+    'quiz-generator': 'assessment-tools',
+    'rubric-generator': 'assessment-tools',
+    'class-management': 'my-classroom',
+    'curriculum-tracker': 'my-classroom',
+    'achievements': 'my-classroom',
     'curriculum': 'curriculum',
-    'curriculum-tracker': 'curriculum-tracker',
-    'resource-manager': 'resource-manager',
+    'resource-manager': 'planning-prep',
+    'brain-dump': 'planning-prep',
     'chat': 'chat',
-    'brain-dump': 'brain-dump',
   };
   const sidebarId = TAB_TO_SIDEBAR[tabType];
   if (!sidebarId) return null;

@@ -11,18 +11,23 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   rubric_first: 'scroll',
   presentation_first: 'scroll',
   lesson_veteran: 'scroll',
+  lesson_master: 'scroll',
+  lesson_legend: 'scroll',
   quiz_prolific: 'scroll',
   content_50: 'scroll',
   content_100: 'scroll',
 
   // Quill & Inkwell — Quiz/Writing
   quiz_creator: 'quill',
+  quiz_expert: 'quill',
+  quiz_empire: 'quill',
   answer_key_master: 'quill',
 
   // Mortarboard — Student Management
   first_student: 'mortarboard',
   class_builder: 'mortarboard',
   full_house: 'mortarboard',
+  school_wide: 'mortarboard',
   multi_class: 'mortarboard',
 
   // Scale — Assessment & Grading
@@ -42,6 +47,7 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   first_milestone: 'milestone',
   milestone_10: 'milestone',
   milestone_50: 'milestone',
+  milestone_master: 'milestone',
   subject_mastery: 'milestone',
 
   // Compass — Exploration (images not yet available)
@@ -58,8 +64,11 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   streak_3: 'flame',
   streak_7: 'flame',
   streak_30: 'flame',
+  streak_90: 'flame',
   active_days_50: 'flame',
   active_days_100: 'flame',
+  active_days_200: 'flame',
+  active_days_365: 'flame',
 
   // Chat Bubble — Ask PEARL (images not yet available)
   first_chat: 'chat-bubble',
@@ -76,6 +85,7 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   first_analytics: 'bar-chart',
   analytics_100: 'bar-chart',
   analytics_500: 'bar-chart',
+  analytics_1500: 'bar-chart',
   image_gen_first: 'bar-chart',
   image_creator: 'bar-chart',
   image_gen_25: 'bar-chart',
@@ -90,6 +100,7 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   perfectionist: 'lightning',
   century: 'lightning',
   half_thousand: 'lightning',
+  secret_hunter: 'lightning',
 };
 
 /**

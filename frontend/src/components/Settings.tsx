@@ -32,6 +32,8 @@ import ShuffleIconData from '@hugeicons/core-free-icons/ShuffleIcon';
 import MinusSignIconData from '@hugeicons/core-free-icons/MinusSignIcon';
 import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
 import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import SchoolIconData from '@hugeicons/core-free-icons/SchoolIcon';
 import DropletIconData from '@hugeicons/core-free-icons/DropletIcon';
 import BlendIconData from '@hugeicons/core-free-icons/BlendIcon';
 import ComputerSettingsIconData from '@hugeicons/core-free-icons/ComputerSettingsIcon';
@@ -93,6 +95,8 @@ const Shuffle: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const Minus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MinusSignIconData} {...p} />;
 const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIconData} {...p} />;
 const Paintbrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const SchoolIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SchoolIconData} {...p} />;
 const Droplets: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DropletIconData} {...p} />;
 const Blend: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BlendIconData} {...p} />;
 const ComputerSettings: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ComputerSettingsIconData} {...p} />;
@@ -110,23 +114,21 @@ const Fire: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 // Sidebar item metadata for Features section
 const SIDEBAR_ITEM_META: Record<string, { name: string; icon: React.FC<{ className?: string; style?: React.CSSProperties }>; description?: string; childCount?: number }> = {
   'analytics': { name: 'My Overview', icon: LayoutDashboardIcon },
-  'brain-dump': { name: 'Brain Dump', icon: BrainIcon },
-  'curriculum-tracker': { name: 'Progress Tracker', icon: (p) => <Icon icon={Layers01IconData} {...p} /> },
-  'resource-manager': { name: 'My Resources', icon: FolderOpen },
+  'educator-insights': { name: 'Educator Insights', icon: (p) => <Icon icon={Search01IconData} {...p} /> },
   'chat': { name: 'Ask PEARL', icon: MessageIcon },
   'curriculum': { name: 'Curriculum Browser', icon: SearchIcon },
-  'quiz-generator': { name: 'Quiz Builder', icon: PenTool },
-  'rubric-generator': { name: 'Rubric Builder', icon: (p) => <Icon icon={BookOpen01IconData} {...p} /> },
-  'class-management': { name: 'My Classes', icon: User },
+  'planning-prep': { name: 'Planning & Prep', icon: Compass, childCount: 2 },
   'lesson-planners': { name: 'Lesson Planners', icon: (p) => <Icon icon={BookOpen01IconData} {...p} />, childCount: 4 },
-  'visual-studio': { name: 'Visual Studio', icon: PenTool, childCount: 3 },
+  'assessment-tools': { name: 'Assessment Tools', icon: Target, childCount: 2 },
+  'my-classroom': { name: 'My Classroom', icon: SchoolIcon, childCount: 3 },
+  'visual-studio': { name: 'Visual Studio', icon: Paintbrush, childCount: 4 },
   'performance-metrics': { name: 'Performance Metrics', icon: Cpu },
   'support': { name: 'Support & Reporting', icon: (p) => <Icon icon={AlertCircleIconData} {...p} /> },
   'settings': { name: 'Settings', icon: SettingsIcon },
 };
 
-const PINNED_TOP = ['analytics'];
-const PINNED_BOTTOM = ['support', 'settings'];
+const PINNED_TOP = ['analytics', 'educator-insights'];
+const PINNED_BOTTOM = ['performance-metrics', 'support', 'settings'];
 const NON_TOGGLEABLE = new Set(['analytics', 'settings']);
 
 // Sortable sidebar item component
@@ -765,17 +767,21 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
   // Tab types and their default colors (matching sidebar order)
   const tabTypes = [
-    // Regular tools
+    // Standalone tools
     { type: 'analytics', label: 'My Overview', defaultColor: '#3b82f6' },
-    { type: 'brain-dump', label: 'Brain Dump', defaultColor: '#a855f7' },
-    { type: 'curriculum-tracker', label: 'Progress Tracker', defaultColor: '#10b981' },
-    { type: 'resource-manager', label: 'My Resources', defaultColor: '#84cc16' },
+    { type: 'educator-insights', label: 'Educator Insights', defaultColor: '#d97706' },
     { type: 'chat', label: 'Ask PEARL', defaultColor: '#3b82f6' },
     { type: 'curriculum', label: 'Curriculum Browser', defaultColor: '#8b5cf6' },
-    // Tools group
+    // Planning & Prep group
+    { type: 'brain-dump', label: 'Brain Dump', defaultColor: '#a855f7' },
+    { type: 'resource-manager', label: 'My Resources', defaultColor: '#84cc16' },
+    // Assessment Tools group
     { type: 'quiz-generator', label: 'Quiz Builder', defaultColor: '#14b8a6' },
     { type: 'rubric-generator', label: 'Rubric Builder', defaultColor: '#f97316' },
+    // My Classroom group
     { type: 'class-management', label: 'My Classes', defaultColor: '#f97316' },
+    { type: 'curriculum-tracker', label: 'Progress Tracker', defaultColor: '#10b981' },
+    { type: 'achievements', label: 'Achievements', defaultColor: '#f59e0b' },
     // Lesson planners group
     { type: 'lesson-planner', label: 'Lesson Plan', defaultColor: '#f59e0b' },
     { type: 'kindergarten-planner', label: 'Early Childhood', defaultColor: '#ec4899' },
@@ -792,8 +798,6 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     ...(settings.sidebarOrder.find(i => i.id === 'performance-metrics')?.enabled ? [
       { type: 'performance-metrics', label: 'Performance', defaultColor: '#10b981' },
     ] : []),
-    // Achievements
-    { type: 'achievements', label: 'Achievements', defaultColor: '#f59e0b' },
     // Bottom tools
     { type: 'support', label: 'Support & Reporting', defaultColor: '#3b82f6' },
     { type: 'settings', label: 'Settings', defaultColor: '#6b7280' },

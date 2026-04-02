@@ -59,18 +59,15 @@ export interface SidebarItemConfig {
 
 // Canonical list of reorderable sidebar items (excludes pinned: analytics at top, support+settings at bottom)
 export const DEFAULT_SIDEBAR_ORDER: SidebarItemConfig[] = [
-  { id: 'educator-insights', enabled: true },
-  { id: 'brain-dump', enabled: true },
-  { id: 'curriculum-tracker', enabled: true },
-  { id: 'resource-manager', enabled: true },
   { id: 'chat', enabled: true },
   { id: 'curriculum', enabled: true },
-  { id: 'quiz-generator', enabled: true },
-  { id: 'rubric-generator', enabled: true },
-  { id: 'class-management', enabled: true },
+  { id: 'planning-prep', enabled: true },
   { id: 'lesson-planners', enabled: true },
+  { id: 'assessment-tools', enabled: true },
+  { id: 'my-classroom', enabled: true },
   { id: 'visual-studio', enabled: false },
-  { id: 'achievements', enabled: true },
+  // Pinned items still tracked here for enabled/disabled state
+  { id: 'educator-insights', enabled: true },
   { id: 'performance-metrics', enabled: false },
 ];
 
@@ -242,15 +239,50 @@ const migrateTutorialData = (): Partial<TutorialState> => {
   return migrated;
 };
 
+// Old individual IDs that have been merged into groups
+const MIGRATED_TO_GROUP: Record<string, string> = {
+  'brain-dump': 'planning-prep',
+  'resource-manager': 'planning-prep',
+  'quiz-generator': 'assessment-tools',
+  'rubric-generator': 'assessment-tools',
+  'class-management': 'my-classroom',
+  'curriculum-tracker': 'my-classroom',
+  'achievements': 'my-classroom',
+};
+
+// Old IDs that are now pinned (kept in order for enabled state but not reorderable)
+const NOW_PINNED = new Set(['educator-insights', 'performance-metrics']);
+
 // Migrate old visualStudioEnabled / performanceMetricsEnabled into sidebarOrder
 const migrateSidebarOrder = (parsed: any): SidebarItemConfig[] => {
   // If sidebarOrder already exists, validate and fill in missing items
   if (Array.isArray(parsed.sidebarOrder) && parsed.sidebarOrder.length > 0) {
     const existingIds = new Set(parsed.sidebarOrder.map((i: any) => i.id));
-    const order = [...parsed.sidebarOrder];
+
+    // Migrate old individual IDs to new group IDs
+    let order: SidebarItemConfig[] = [];
+    const addedGroups = new Set<string>();
+    for (const item of parsed.sidebarOrder) {
+      const groupId = MIGRATED_TO_GROUP[item.id];
+      if (groupId) {
+        // Replace old individual item with its group (only once, preserve enabled if any member was enabled)
+        if (!addedGroups.has(groupId)) {
+          addedGroups.add(groupId);
+          // Enable the group if any of its old members were enabled
+          const groupEnabled = parsed.sidebarOrder
+            .filter((i: any) => MIGRATED_TO_GROUP[i.id] === groupId)
+            .some((i: any) => i.enabled);
+          order.push({ id: groupId, enabled: groupEnabled });
+        }
+      } else if (!MIGRATED_TO_GROUP[item.id]) {
+        order.push(item);
+      }
+    }
+
+    const newExistingIds = new Set(order.map((i: any) => i.id));
     // Append any new canonical IDs that weren't in the saved order
     for (const item of DEFAULT_SIDEBAR_ORDER) {
-      if (!existingIds.has(item.id)) {
+      if (!newExistingIds.has(item.id)) {
         order.push({ ...item });
       }
     }

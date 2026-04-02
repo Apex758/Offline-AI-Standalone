@@ -85,8 +85,12 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     # ── Content Creation ──
     {"id": "first_lesson",        "name": "First Steps",              "description": "Create your first lesson plan",              "category": "content-creation",    "icon_name": "Notebook",            "rarity": "common",    "check_key": "lesson_plans",           "check_value": 1},
     {"id": "lesson_veteran",      "name": "Lesson Architect",         "description": "Create 10 lesson plans",                     "category": "content-creation",    "icon_name": "NoteEdit",            "rarity": "uncommon",  "check_key": "lesson_plans",           "check_value": 10},
+    {"id": "lesson_master",       "name": "Lesson Master",            "description": "Create 50 lesson plans",                     "category": "content-creation",    "icon_name": "NoteEdit",            "rarity": "rare",      "check_key": "lesson_plans",           "check_value": 50},
+    {"id": "lesson_legend",       "name": "Lesson Legend",            "description": "Create 100 lesson plans",                    "category": "content-creation",    "icon_name": "NoteEdit",            "rarity": "epic",      "check_key": "lesson_plans",           "check_value": 100},
     {"id": "quiz_creator",        "name": "Quiz Master",              "description": "Create your first quiz",                     "category": "content-creation",    "icon_name": "QuizQuestion",        "rarity": "common",    "check_key": "quizzes",                "check_value": 1},
     {"id": "quiz_prolific",       "name": "Quiz Factory",             "description": "Create 10 quizzes",                          "category": "content-creation",    "icon_name": "QuizQuestion",        "rarity": "uncommon",  "check_key": "quizzes",                "check_value": 10},
+    {"id": "quiz_expert",         "name": "Quiz Mastermind",          "description": "Create 30 quizzes",                          "category": "content-creation",    "icon_name": "QuizQuestion",        "rarity": "rare",      "check_key": "quizzes",                "check_value": 30},
+    {"id": "quiz_empire",         "name": "Quiz Empire",              "description": "Create 75 quizzes",                          "category": "content-creation",    "icon_name": "QuizQuestion",        "rarity": "epic",      "check_key": "quizzes",                "check_value": 75},
     {"id": "worksheet_first",     "name": "Sheet Starter",            "description": "Create your first worksheet",                "category": "content-creation",    "icon_name": "FileEdit",            "rarity": "common",    "check_key": "worksheets",             "check_value": 1},
     {"id": "rubric_first",        "name": "Fair Judge",               "description": "Create your first rubric",                   "category": "content-creation",    "icon_name": "TickDouble",          "rarity": "common",    "check_key": "rubrics",                "check_value": 1},
     {"id": "presentation_first",  "name": "Slide Debut",              "description": "Build your first presentation",              "category": "content-creation",    "icon_name": "PresentationBarChart","rarity": "common",    "check_key": "presentations",          "check_value": 1},
@@ -95,6 +99,7 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "first_student",       "name": "Roll Call",                "description": "Add your first student",                     "category": "student-management",  "icon_name": "UserAdd",             "rarity": "common",    "check_key": "students",               "check_value": 1},
     {"id": "class_builder",       "name": "Class Builder",            "description": "Add 10 students",                            "category": "student-management",  "icon_name": "UserGroup",           "rarity": "uncommon",  "check_key": "students",               "check_value": 10},
     {"id": "full_house",          "name": "Full House",               "description": "Add 30 students",                            "category": "student-management",  "icon_name": "UserMultiple",        "rarity": "rare",      "check_key": "students",               "check_value": 30},
+    {"id": "school_wide",         "name": "School-Wide Impact",       "description": "Add 90 students across your classes",         "category": "student-management",  "icon_name": "UserMultiple",        "rarity": "epic",      "check_key": "students",               "check_value": 90},
     {"id": "multi_class",         "name": "Multi-Class Manager",      "description": "Have students in 3+ different classes",       "category": "student-management",  "icon_name": "SchoolBell",          "rarity": "rare",      "check_key": "distinct_classes",       "check_value": 3},
 
     # ── Assessment ──
@@ -113,6 +118,7 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "first_milestone",     "name": "On Track",                 "description": "Complete your first curriculum milestone",    "category": "curriculum",          "icon_name": "Flag",                "rarity": "common",    "check_key": "milestones_completed",   "check_value": 1},
     {"id": "milestone_10",        "name": "Making Progress",          "description": "Complete 10 milestones",                     "category": "curriculum",          "icon_name": "Route",               "rarity": "uncommon",  "check_key": "milestones_completed",   "check_value": 10},
     {"id": "milestone_50",        "name": "Halfway Hero",             "description": "Complete 50 milestones",                     "category": "curriculum",          "icon_name": "Medal",               "rarity": "rare",      "check_key": "milestones_completed",   "check_value": 50},
+    {"id": "milestone_master",    "name": "Milestone Master",         "description": "Complete 150 milestones",                    "category": "curriculum",          "icon_name": "Medal",               "rarity": "epic",      "check_key": "milestones_completed",   "check_value": 150},
     {"id": "subject_mastery",     "name": "Subject Master",           "description": "Complete all milestones for one subject in one grade", "category": "curriculum", "icon_name": "Crown",               "rarity": "legendary", "check_key": "subject_mastery",        "check_value": 1},
 
     # ── Exploration ──
@@ -153,13 +159,17 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "streak_3",            "name": "Getting Started",          "description": "Use the app 3 days in a row",                 "category": "power-user",          "icon_name": "Fire",                "rarity": "common",    "check_key": "streak_days",            "check_value": 3},
     {"id": "streak_7",            "name": "Weekly Warrior",           "description": "Use the app 7 days in a row",                 "category": "power-user",          "icon_name": "Fire",                "rarity": "uncommon",  "check_key": "streak_days",            "check_value": 7},
     {"id": "streak_30",           "name": "Monthly Marathoner",       "description": "Use the app 30 days in a row",                "category": "power-user",          "icon_name": "Fire",                "rarity": "epic",      "check_key": "streak_days",            "check_value": 30},
+    {"id": "streak_90",           "name": "Unstoppable Streak",       "description": "Use the app 90 days in a row",                "category": "power-user",          "icon_name": "Fire",                "rarity": "legendary", "check_key": "streak_days",            "check_value": 90},
     {"id": "active_days_50",      "name": "Dedicated Educator",       "description": "Use the app on 50 different days",            "category": "power-user",          "icon_name": "Calendar",            "rarity": "rare",      "check_key": "total_active_days",      "check_value": 50},
     {"id": "active_days_100",     "name": "Unstoppable",              "description": "Use the app on 100 different days",            "category": "power-user",          "icon_name": "Calendar",            "rarity": "legendary", "check_key": "total_active_days",      "check_value": 100},
+    {"id": "active_days_200",     "name": "Year-Round Educator",      "description": "Use the app on 200 different days",            "category": "power-user",          "icon_name": "Calendar",            "rarity": "legendary", "check_key": "total_active_days",      "check_value": 200},
+    {"id": "active_days_365",     "name": "Lifelong Learner",         "description": "Use the app on 365 different days",            "category": "power-user",          "icon_name": "Calendar",            "rarity": "legendary", "check_key": "total_active_days",      "check_value": 365},
 
     # ── Analytics ──
     {"id": "first_analytics",     "name": "Data Curious",             "description": "Generate your first AI response (tracked by metrics)", "category": "analytics",   "icon_name": "Chart",               "rarity": "common",    "check_key": "total_generations",      "check_value": 1},
     {"id": "analytics_100",       "name": "Power Generator",          "description": "Generate 100 AI responses",                   "category": "analytics",           "icon_name": "Chart",               "rarity": "uncommon",  "check_key": "total_generations",      "check_value": 100},
     {"id": "analytics_500",       "name": "AI Powerhouse",            "description": "Generate 500 AI responses",                   "category": "analytics",           "icon_name": "Chart",               "rarity": "rare",      "check_key": "total_generations",      "check_value": 500},
+    {"id": "analytics_1500",      "name": "AI Architect",             "description": "Generate 1,500 AI responses",                 "category": "analytics",           "icon_name": "Chart",               "rarity": "epic",      "check_key": "total_generations",      "check_value": 1500},
     {"id": "image_gen_first",     "name": "First Pixel",              "description": "Generate your first AI image",                "category": "analytics",           "icon_name": "Image",               "rarity": "common",    "check_key": "total_image_generations","check_value": 1},
     {"id": "image_gen_25",        "name": "Visual Virtuoso",          "description": "Generate 25 AI images",                       "category": "analytics",           "icon_name": "Image",               "rarity": "rare",      "check_key": "total_image_generations","check_value": 25},
 
@@ -171,6 +181,7 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "perfectionist",       "name": "Perfectionist",           "description": "Edit a lesson plan 5 or more times",          "category": "content-creation",    "icon_name": "Edit",                "rarity": "uncommon",  "check_key": "lesson_edits_max",       "check_value": 5, "hidden": True},
     {"id": "century",             "name": "The Century",              "description": "Earn 100 total achievement points",           "category": "power-user",          "icon_name": "Diamond",             "rarity": "rare",      "check_key": "total_achievement_pts",  "check_value": 100, "hidden": True},
     {"id": "half_thousand",       "name": "Half a Thousand",          "description": "Earn 500 total achievement points",           "category": "power-user",          "icon_name": "Diamond",             "rarity": "epic",      "check_key": "total_achievement_pts",  "check_value": 500, "hidden": True},
+    {"id": "secret_hunter",       "name": "Secret Hunter",            "description": "Earn all 7 secret achievements",              "category": "power-user",          "icon_name": "Diamond",             "rarity": "legendary", "check_key": "hidden_achievements_earned", "check_value": 7, "hidden": True},
 ]
 
 # ── Achievement Collections (sets of related achievements) ──
@@ -180,7 +191,7 @@ ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
         "name": "Content Master",
         "description": "Earn all Content Creation achievements",
         "category": "content-creation",
-        "achievement_ids": ["first_lesson", "lesson_veteran", "quiz_creator", "quiz_prolific", "worksheet_first", "rubric_first", "presentation_first"],
+        "achievement_ids": ["first_lesson", "lesson_veteran", "lesson_master", "lesson_legend", "quiz_creator", "quiz_prolific", "quiz_expert", "quiz_empire", "worksheet_first", "rubric_first", "presentation_first"],
     },
     {
         "id": "assessment_guru",
@@ -194,7 +205,7 @@ ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
         "name": "Student Champion",
         "description": "Earn all Student Management achievements",
         "category": "student-management",
-        "achievement_ids": ["first_student", "class_builder", "full_house", "multi_class"],
+        "achievement_ids": ["first_student", "class_builder", "full_house", "school_wide", "multi_class"],
     },
     {
         "id": "attendance_pro",
@@ -208,7 +219,7 @@ ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
         "name": "Curriculum Scholar",
         "description": "Earn all Curriculum achievements",
         "category": "curriculum",
-        "achievement_ids": ["first_milestone", "milestone_10", "milestone_50", "subject_mastery"],
+        "achievement_ids": ["first_milestone", "milestone_10", "milestone_50", "milestone_master", "subject_mastery"],
     },
     {
         "id": "pearl_companion",
@@ -228,16 +239,16 @@ ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
 
 # ── Tier groups for visual tiering ──
 TIER_GROUPS: Dict[str, List[Dict[str, Any]]] = {
-    "lesson_plans":     [{"id": "first_lesson",    "tier": "bronze"}, {"id": "lesson_veteran",  "tier": "silver"}],
-    "quizzes":          [{"id": "quiz_creator",     "tier": "bronze"}, {"id": "quiz_prolific",   "tier": "silver"}],
-    "students":         [{"id": "first_student",    "tier": "bronze"}, {"id": "class_builder",   "tier": "silver"}, {"id": "full_house",       "tier": "gold"}],
-    "milestones":       [{"id": "first_milestone",  "tier": "bronze"}, {"id": "milestone_10",    "tier": "silver"}, {"id": "milestone_50",     "tier": "gold"}],
+    "lesson_plans":     [{"id": "first_lesson",    "tier": "bronze"}, {"id": "lesson_veteran",  "tier": "silver"}, {"id": "lesson_master",    "tier": "gold"}, {"id": "lesson_legend",      "tier": "diamond"}],
+    "quizzes":          [{"id": "quiz_creator",     "tier": "bronze"}, {"id": "quiz_prolific",   "tier": "silver"}, {"id": "quiz_expert",      "tier": "gold"}, {"id": "quiz_empire",        "tier": "diamond"}],
+    "students":         [{"id": "first_student",    "tier": "bronze"}, {"id": "class_builder",   "tier": "silver"}, {"id": "full_house",       "tier": "gold"}, {"id": "school_wide",        "tier": "diamond"}],
+    "milestones":       [{"id": "first_milestone",  "tier": "bronze"}, {"id": "milestone_10",    "tier": "silver"}, {"id": "milestone_50",     "tier": "gold"}, {"id": "milestone_master",   "tier": "diamond"}],
     "attendance":       [{"id": "first_attendance", "tier": "bronze"}, {"id": "attendance_week",  "tier": "silver"}, {"id": "attendance_month", "tier": "gold"}, {"id": "engagement_tracker", "tier": "diamond"}],
     "resources":        [{"id": "resource_saver_10","tier": "bronze"}, {"id": "resource_saver_25","tier": "silver"}, {"id": "content_50",       "tier": "gold"}, {"id": "content_100",        "tier": "diamond"}],
     "chat":             [{"id": "first_chat",       "tier": "bronze"}, {"id": "chat_regular",     "tier": "silver"}, {"id": "chat_messages_50", "tier": "gold"}, {"id": "chat_messages_200",  "tier": "diamond"}],
-    "streak":           [{"id": "streak_3",         "tier": "bronze"}, {"id": "streak_7",         "tier": "silver"}, {"id": "streak_30",        "tier": "gold"}],
-    "active_days":      [{"id": "active_days_50",   "tier": "bronze"}, {"id": "active_days_100",  "tier": "silver"}],
-    "generations":      [{"id": "first_analytics",  "tier": "bronze"}, {"id": "analytics_100",    "tier": "silver"}, {"id": "analytics_500",    "tier": "gold"}],
+    "streak":           [{"id": "streak_3",         "tier": "bronze"}, {"id": "streak_7",         "tier": "silver"}, {"id": "streak_30",        "tier": "gold"}, {"id": "streak_90",          "tier": "diamond"}],
+    "active_days":      [{"id": "active_days_50",   "tier": "bronze"}, {"id": "active_days_100",  "tier": "silver"}, {"id": "active_days_200",  "tier": "gold"}, {"id": "active_days_365",    "tier": "diamond"}],
+    "generations":      [{"id": "first_analytics",  "tier": "bronze"}, {"id": "analytics_100",    "tier": "silver"}, {"id": "analytics_500",    "tier": "gold"}, {"id": "analytics_1500",     "tier": "diamond"}],
 }
 
 # Build lookup maps: achievement_id -> tier_group, tier
@@ -686,11 +697,14 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
 
         # After first pass, update total_achievement_pts and re-check point-based hidden achievements
         counts["total_achievement_pts"] = total_points
+        # Count how many hidden achievements (excluding secret_hunter itself) are earned
+        _hidden_ids = [d["id"] for d in ACHIEVEMENT_DEFINITIONS if d.get("hidden") and d["id"] != "secret_hunter"]
+        counts["hidden_achievements_earned"] = sum(1 for hid in _hidden_ids if hid in already_earned)
         for defn in ACHIEVEMENT_DEFINITIONS:
             if defn["id"] in already_earned:
                 continue
-            if defn.get("check_key") == "total_achievement_pts":
-                if total_points >= defn["check_value"]:
+            if defn.get("check_key") in ("total_achievement_pts", "hidden_achievements_earned"):
+                if counts.get(defn["check_key"], 0) >= defn["check_value"]:
                     now = datetime.now().isoformat()
                     conn.execute(
                         "INSERT OR IGNORE INTO earned_achievements (teacher_id, achievement_id, earned_at) VALUES (?, ?, ?)",
