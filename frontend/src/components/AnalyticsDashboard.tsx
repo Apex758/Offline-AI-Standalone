@@ -32,6 +32,7 @@ import type { MilestoneStats, Milestone } from '../types/milestone';
 import type { Task } from '../types/task';
 import type { Timeframe, CurriculumView } from '../types/analytics';
 import type { Tab } from '../types';
+import type { InsightsReport } from '../types/insights';
 
 
 // ── Module-level API response cache (survives unmount/remount) ──
@@ -126,6 +127,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [showShowcase, setShowShowcase] = useState(settings.showTrophiesByDefault);
   const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  const [latestInsightsReport, setLatestInsightsReport] = useState<InsightsReport | null>(null);
 
   useEffect(() => {
     setShowShowcase(settings.showTrophiesByDefault);
@@ -195,6 +197,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       }
     };
     loadReminders();
+  }, []);
+
+  // Load latest insights report for calendar flip card
+  useEffect(() => {
+    axios.get('/api/insights/reports')
+      .then(res => {
+        const reports: InsightsReport[] = res.data;
+        if (reports.length > 0) setLatestInsightsReport(reports[reports.length - 1]);
+      })
+      .catch(() => {});
   }, []);
 
   // Save tasks to file storage
@@ -812,6 +824,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               tasksByDate={tasksByDate}
               resourcesByDate={resourcesByDate}
               onExpandClick={() => setShowCalendarModal(true)}
+              insightsReport={latestInsightsReport}
+              onViewFullReport={() => onCreateTab?.('educator-insights')}
+              onRegenerateInsights={() => onCreateTab?.('educator-insights')}
             />
 
             {/* Upcoming Quizzes */}

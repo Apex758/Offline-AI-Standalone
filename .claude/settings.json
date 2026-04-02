@@ -1,10 +1,17 @@
 {
   "permissions": {
-    "additionalDirectories": [
-      "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies"
-    ],
     "allow": [
-      "Bash(grep -n \"def generate_stream\\\\|async def generate_stream\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)"
+      "Bash(grep -n \"def generate_stream\\\\|async def generate_stream\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)",
+      "Read(//c/Users/LG/.claude/**)",
+      "Bash(\"/c/Users/LG/AppData/Local/Programs/Python/Python311/python.exe\" -m pip install apscheduler --quiet)",
+      "Bash(\"/c/Users/LG/AppData/Local/Programs/Python/Python311/python.exe\" -c \"from apscheduler.schedulers.asyncio import AsyncIOScheduler; print\\('OK'\\)\")",
+      "Bash(./venv/Scripts/python.exe -m pip install apscheduler --quiet)",
+      "Bash(./venv/Scripts/python.exe -c \"from apscheduler.schedulers.asyncio import AsyncIOScheduler; print\\('OK'\\)\")",
+      "Bash(./venv/Scripts/python.exe -m pip show apscheduler)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
+      "C:\\Users\\LG\\.claude"
     ]
   }
 }

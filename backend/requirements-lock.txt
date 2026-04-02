@@ -9,6 +9,7 @@ pydantic==2.12.5
 pydantic-core==2.41.5
 python-multipart==0.0.21
 aiohttp==3.13.3
+apscheduler==3.11.2
 httptools==0.7.1
 python-dotenv==1.2.1
 watchfiles==1.1.1

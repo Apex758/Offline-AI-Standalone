@@ -44,6 +44,9 @@ from config import (
 from pathlib import Path
 from datetime import datetime
 from routes import milestones, achievements, insights
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+_scheduler: AsyncIOScheduler | None = None
 import student_service
 from llama_inference import LlamaInference
 from process_pool import submit_task, shutdown_executor
@@ -204,6 +207,17 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app):
+    global _scheduler
+    # Start APScheduler
+    _scheduler = AsyncIOScheduler()
+    _scheduler.start()
+    # Re-apply any saved insights schedule
+    try:
+        from routes.insights import _load_schedule, _apply_schedule
+        _apply_schedule(_load_schedule())
+    except Exception as e:
+        logger.error(f"Failed to restore insights schedule: {e}")
+
     # Startup logic
     logger.info("Checking for required files...")
     if not os.path.exists(get_model_path()):
@@ -289,6 +303,8 @@ async def lifespan(app):
         
     cleanup_all_processes()
     shutdown_executor()
+    if _scheduler and _scheduler.running:
+        _scheduler.shutdown(wait=False)
 
 app = FastAPI(lifespan=lifespan)
 

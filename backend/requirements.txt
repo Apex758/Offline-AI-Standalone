@@ -8,6 +8,7 @@ uvicorn[standard]>=0.24.0
 pydantic>=2.5.0
 python-multipart>=0.0.6
 aiohttp>=3.9.0
+apscheduler>=3.10.0
 
 # --- LLMs ---
 llama-cpp-python>=0.2.0
