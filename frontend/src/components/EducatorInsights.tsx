@@ -436,22 +436,26 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             <InsightSection
               icon={Bulb01IconData}
               name="Executive Summary"
-              content={passResults.synthesis.output}
-              streaming={passResults.synthesis.streaming}
+              content={stripSynthesisHeader(passResults.synthesis.output)}
+              streaming={stripSynthesisHeader(passResults.synthesis.streaming)}
               isActive={streamingPassRef.current === 'synthesis'}
               color="amber"
               prominent
             />
           )}
 
-          {/* Progressive insight sections */}
+          {/* Progressive insight sections - always show all passes during/after generation */}
           {PASS_NAMES.slice(0, 6).map((pass, idx) => {
             const result = passResults[pass.key];
             const isCurrentlyStreaming = isGenerating && streamingPassRef.current === pass.key;
+            // Pass numbers from backend are 1-indexed, array is 0-indexed
+            // isPending if: generating AND no result yet AND this pass hasn't been reached yet
             const isPending = isGenerating && !result && currentPass <= idx;
             const isSkipped = result?.skipped;
 
-            if (!result && !isGenerating && !report) return null;
+            // Show section if: has result OR is generating (even without result) OR has report
+            const shouldShow = result || isGenerating || report;
+            if (!shouldShow) return null;
 
             return (
               <InsightSection
@@ -474,7 +478,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               icon={Bulb01IconData}
               name="Executive Summary"
               content=""
-              streaming={passResults.synthesis.streaming}
+              streaming={stripSynthesisHeader(passResults.synthesis.streaming)}
               isActive={true}
               color="amber"
               prominent
@@ -687,6 +691,11 @@ function stripThinkTags(text: string): string {
   // Remove unclosed <think> blocks (model didn't close the tag)
   cleaned = cleaned.replace(/<think>[\s\S]*$/g, '');
   return cleaned.trim();
+}
+
+function stripSynthesisHeader(text: string): string {
+  // Remove leading "## Executive Summary" or similar headers that would duplicate the section title
+  return text.replace(/^#+\s*(Executive Summary|Insights Summary|Summary)[\s\n]*/i, '').trim();
 }
 
 function renderInlineMarkdown(text: string): React.ReactNode {
