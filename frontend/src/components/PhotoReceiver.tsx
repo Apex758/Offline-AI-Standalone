@@ -87,21 +87,6 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       .catch(() => {});
   }, []);
 
-  // ── Auto-enable HTTPS on mount (for iOS) ──
-  useEffect(() => {
-    if (!httpsEnabled) {
-      fetch(`${BASE}/api/photo-transfer/enable-https`, { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-          if (data.ok) {
-            setHttpsEnabled(true);
-            refreshNetworkInfo();
-          }
-        })
-        .catch(() => {});
-    }
-  }, []);
-
   // ── Hotspot controls ──
   const toggleHotspot = async () => {
     setHotspotLoading(true);

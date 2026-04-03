@@ -324,11 +324,9 @@ async def network_info():
     all_ips = _get_all_local_ips()
     ssl = get_ssl_status()
 
-    # Prefer HTTPS URL if SSL is running (iOS Safari needs it for camera)
-    if ssl["enabled"] and ssl["port"]:
-        phone_url = f"https://{ip}:{ssl['port']}/phone"
-    else:
-        phone_url = f"http://{ip}:8000/phone"
+    # Always use HTTP as primary — <input type="file" capture> works over HTTP
+    # on local network. HTTPS with self-signed certs shows scary warnings.
+    phone_url = f"http://{ip}:8000/phone"
 
     return {
         "ip": ip,

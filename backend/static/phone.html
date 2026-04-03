@@ -328,8 +328,6 @@
   const BASE_URL = window.location.origin;
 
   // ── Connection check on load ──
-  // Verify we can reach the PC backend. If on HTTPS with a self-signed cert
-  // the browser will have already shown a warning — if the user got here, we're good.
   (async function checkConnection() {
     try {
       const res = await fetch(BASE_URL + '/api/photo-transfer/network-info');
@@ -337,22 +335,7 @@
         document.getElementById('session-label').textContent = 'Connected to PC';
       }
     } catch (e) {
-      // If HTTP and HTTPS is available, try redirecting to HTTPS
-      if (window.location.protocol === 'http:') {
-        try {
-          const res = await fetch(BASE_URL + '/api/photo-transfer/network-info');
-          const info = await res.json();
-          if (info.ssl_enabled && info.phone_url_https) {
-            // HTTPS available — suggest it for iOS camera access
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (isIOS) {
-              // Auto-redirect iOS to HTTPS for camera access
-              window.location.href = info.phone_url_https;
-              return;
-            }
-          }
-        } catch {}
-      }
+      document.getElementById('session-label').textContent = 'Cannot reach PC';
     }
   })();
 

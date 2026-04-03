@@ -208,19 +208,36 @@ async function setupImageGenerationModels() {
 function checkPort(port) {
   return new Promise((resolve) => {
     const net = require('net');
+    // Try 0.0.0.0 first (catches backends bound to all interfaces),
+    // then fall back to 127.0.0.1
     const tester = net.createServer()
-      .once('error', () => resolve(false))
+      .once('error', () => {
+        // Port in use on 0.0.0.0 — try 127.0.0.1
+        const tester2 = net.createServer()
+          .once('error', () => resolve(false))
+          .once('listening', () => {
+            tester2.once('close', () => resolve(true)).close();
+          })
+          .listen(port, '127.0.0.1');
+      })
       .once('listening', () => {
         tester.once('close', () => resolve(true)).close();
       })
-      .listen(port, '127.0.0.1');
+      .listen(port, '0.0.0.0');
   });
 }
 
 // Function to start the backend server
 async function startBackend() {
   log.info('Starting backend server...');
-  
+
+  // In development, concurrently already starts the backend via `npm run backend`.
+  // Skip launching a second instance to avoid conflicts with python-embed.
+  if (isDev) {
+    log.info('Development mode — backend is managed by concurrently, skipping Electron launch');
+    return;
+  }
+
   // Check if port is available
   const portAvailable = await checkPort(BACKEND_PORT);
   if (!portAvailable) {
