@@ -34,6 +34,7 @@ import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
 import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
 import CircleIconData from '@hugeicons/core-free-icons/CircleIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; size?: number }> = ({ icon, className = '', style, size: sizeProp }) => {
   if (sizeProp) return <HugeiconsIcon icon={icon} size={sizeProp} className={className} style={style} />;
@@ -60,6 +61,7 @@ const Plus: React.FC<{ className?: string; style?: React.CSSProperties; size?: n
 const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={CheckmarkCircle01IconData} {...p} />;
 const Circle: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={CircleIconData} {...p} />;
 const Clock: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={Clock01IconData} {...p} />;
+const Bulb: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={BulbIconData} {...p} />;
 
 
 interface Resource {
@@ -87,6 +89,7 @@ interface CalendarModalProps {
   onTaskAdd?: () => void;
   onTaskEdit?: (task: any) => void;
   onTaskToggle?: (taskId: string) => void;
+  insightsReminders?: { dimension: string; issue: string; streak_count: number; suggestion: string }[];
 }
 
 const CalendarModal: React.FC<CalendarModalProps> = ({
@@ -99,7 +102,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   onDateSelect: onDateSelectCallback,
   onTaskAdd,
   onTaskEdit,
-  onTaskToggle
+  onTaskToggle,
+  insightsReminders = [],
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate || new Date());
@@ -706,6 +710,28 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                               {milestone.strand && (
                                 <p className="cal-milestone-strand">{milestone.strand}</p>
                               )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Insight Reminders */}
+                  {insightsReminders.length > 0 && (
+                    <div className="cal-section">
+                      <h4 className="cal-section-title">
+                        <Bulb className="w-4 h-4" />
+                        Insight Reminders
+                      </h4>
+                      <div className="cal-section-list">
+                        {insightsReminders.map((reminder, idx) => (
+                          <div key={idx} className="cal-milestone-card" style={{ borderLeft: '3px solid #f59e0b' }}>
+                            <div className="cal-milestone-info">
+                              <p className="cal-milestone-title">{reminder.dimension}</p>
+                              <p className="cal-milestone-strand">{reminder.suggestion}</p>
+                              <p className="cal-milestone-strand" style={{ fontSize: '0.65rem', opacity: 0.6, marginTop: 2 }}>
+                                {reminder.streak_count} consecutive reports
+                              </p>
                             </div>
                           </div>
                         ))}

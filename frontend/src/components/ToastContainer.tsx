@@ -1,26 +1,222 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { HugeiconsIcon } from '@hugeicons/react';
-import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
-import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
-import InformationCircleIconData from '@hugeicons/core-free-icons/InformationCircleIcon';
-import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
-import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNotification, NotificationType } from '../contexts/NotificationContext';
 
-const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; size?: number }> = ({ icon, className = '', style, size: sizeProp }) => {
-  if (sizeProp) return <HugeiconsIcon icon={icon} size={sizeProp} className={className} style={style} />;
-  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
-  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
-  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+// ─── Icons ───────────────────────────────────────────────────────────────────
+const ICONS: Record<string, React.ReactNode> = {
+  success: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M5 8.2l2 2 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  error: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  warning: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 2L14.5 13H1.5L8 2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <path d="M8 6.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <circle cx="8" cy="11" r="0.6" fill="currentColor"/>
+    </svg>
+  ),
+  info: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M8 7v4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <circle cx="8" cy="4.5" r="0.7" fill="currentColor"/>
+    </svg>
+  ),
 };
 
-const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
-const XCircle: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
-const Info: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={InformationCircleIconData} {...p} />;
-const Download: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Download01IconData} {...p} />;
-const X: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
-import { useNotification } from '../contexts/NotificationContext';
+// ─── Variants ─────────────────────────────────────────────────────────────────
+const VARIANTS = {
+  light: {
+    success: { color: "#16a34a", bg: "rgba(240,253,244,0.78)", border: "rgba(187,247,208,0.65)", glow: "rgba(22,163,74,0.10)",  msg: "#6b7280", close: "#9ca3af" },
+    error:   { color: "#dc2626", bg: "rgba(254,242,242,0.78)", border: "rgba(254,202,202,0.65)", glow: "rgba(220,38,38,0.10)",  msg: "#6b7280", close: "#9ca3af" },
+    warning: { color: "#d97706", bg: "rgba(255,251,235,0.78)", border: "rgba(253,230,138,0.65)", glow: "rgba(217,119,6,0.10)",  msg: "#6b7280", close: "#9ca3af" },
+    info:    { color: "#2563eb", bg: "rgba(239,246,255,0.78)", border: "rgba(191,219,254,0.65)", glow: "rgba(37,99,235,0.10)",  msg: "#6b7280", close: "#9ca3af" },
+  },
+  dark: {
+    success: { color: "#4ade80", bg: "rgba(5,46,22,0.72)",    border: "rgba(22,101,52,0.55)",  glow: "rgba(74,222,128,0.10)",  msg: "#9ca3af", close: "#6b7280" },
+    error:   { color: "#f87171", bg: "rgba(45,10,10,0.72)",   border: "rgba(127,29,29,0.55)",  glow: "rgba(248,113,113,0.10)", msg: "#9ca3af", close: "#6b7280" },
+    warning: { color: "#fbbf24", bg: "rgba(28,18,8,0.72)",    border: "rgba(133,77,14,0.55)",  glow: "rgba(251,191,36,0.10)",  msg: "#9ca3af", close: "#6b7280" },
+    info:    { color: "#60a5fa", bg: "rgba(10,22,40,0.72)",   border: "rgba(30,58,138,0.55)",  glow: "rgba(96,165,250,0.10)",  msg: "#9ca3af", close: "#6b7280" },
+  },
+};
 
-function UpdateBanner() {
+// ─── Keyframes ────────────────────────────────────────────────────────────────
+const toastStyles = `
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(calc(100% + 24px)); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateX(0); max-height: 100px; margin-bottom: 10px; }
+    to   { opacity: 0; transform: translateX(calc(100% + 24px)); max-height: 0; margin-bottom: 0; }
+  }
+  @keyframes toast-progress {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+  .toast-enter { animation: toast-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .toast-exit  { animation: toast-out 0.28s cubic-bezier(0.4, 0, 1, 1) forwards; }
+`;
+
+// ─── Toast item ───────────────────────────────────────────────────────────────
+interface ToastItemProps {
+  toast: {
+    id: string;
+    message: string;
+    type: NotificationType;
+    tabId?: string;
+    duration?: number;
+  };
+  onDismiss: (id: string) => void;
+  onNavigate?: (tabId: string) => void;
+  isDark: boolean;
+}
+
+function ToastItem({ toast, onDismiss, onNavigate, isDark }: ToastItemProps) {
+  const [exiting, setExiting] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startRef = useRef(Date.now());
+  const remainRef = useRef(toast.duration ?? 4000);
+  const duration = toast.duration ?? 4000;
+
+  const dismiss = useCallback(() => {
+    setExiting(true);
+    setTimeout(() => onDismiss(toast.id), 280);
+  }, [toast.id, onDismiss]);
+
+  useEffect(() => {
+    if (!duration) return;
+    timerRef.current = setTimeout(dismiss, remainRef.current);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [dismiss, duration]);
+
+  const pause = () => {
+    if (!duration) return;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    remainRef.current -= Date.now() - startRef.current;
+    setPaused(true);
+  };
+
+  const resume = () => {
+    if (!duration) return;
+    startRef.current = Date.now();
+    timerRef.current = setTimeout(dismiss, remainRef.current);
+    setPaused(false);
+  };
+
+  const handleClick = () => {
+    if (toast.tabId && onNavigate) {
+      onNavigate(toast.tabId);
+      onDismiss(toast.id);
+    }
+  };
+
+  const theme = isDark ? 'dark' : 'light';
+  const v = VARIANTS[theme][toast.type] ?? VARIANTS[theme].info;
+
+  return (
+    <div
+      className={exiting ? 'toast-exit' : 'toast-enter'}
+      onMouseEnter={pause}
+      onMouseLeave={resume}
+      onClick={handleClick}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '10px',
+        width: '340px',
+        padding: '14px 16px',
+        background: v.bg,
+        backdropFilter: 'blur(18px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+        border: `1px solid ${v.border}`,
+        borderRadius: '14px',
+        boxShadow: `0 8px 32px ${v.glow}, 0 2px 8px rgba(0,0,0,0.07), 0 0 0 0.5px ${v.border}`,
+        cursor: toast.tabId ? 'pointer' : 'default',
+        overflow: 'hidden',
+        marginBottom: '10px',
+        transition: 'background 0.3s, border-color 0.3s, box-shadow 0.3s',
+      }}
+    >
+      <span style={{ color: v.color, flexShrink: 0, marginTop: '1px' }}>
+        {ICONS[toast.type] ?? ICONS.info}
+      </span>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          margin: 0,
+          fontSize: '13.5px',
+          fontWeight: 500,
+          lineHeight: 1.4,
+          color: v.color,
+          letterSpacing: '-0.01em',
+        }}>
+          {toast.message}
+        </p>
+        {toast.tabId && (
+          <p style={{
+            margin: '2px 0 0',
+            fontSize: '12px',
+            lineHeight: 1.5,
+            color: v.msg,
+            fontWeight: 500,
+          }}>
+            Click to view
+          </p>
+        )}
+      </div>
+
+      <button
+        onClick={(e) => { e.stopPropagation(); dismiss(); }}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '2px',
+          color: v.close,
+          display: 'flex',
+          alignItems: 'center',
+          borderRadius: '4px',
+          flexShrink: 0,
+          transition: 'color 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = v.color; }}
+        onMouseLeave={e => { e.currentTarget.style.color = v.close; }}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+        </svg>
+      </button>
+
+      {duration > 0 && (
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          height: '2px',
+          width: '100%',
+          background: v.color,
+          transformOrigin: 'left',
+          opacity: 0.45,
+          animation: `toast-progress ${duration}ms linear forwards`,
+          animationPlayState: paused ? 'paused' : 'running',
+        }}/>
+      )}
+    </div>
+  );
+}
+
+// ─── Update Banner ────────────────────────────────────────────────────────────
+function UpdateBanner({ isDark }: { isDark: boolean }) {
   const { notify } = useNotification();
   const [updateReady, setUpdateReady] = useState(false);
   const [updateVersion, setUpdateVersion] = useState('');
@@ -49,95 +245,124 @@ function UpdateBanner() {
 
   if (!updateReady || dismissed) return null;
 
+  const v = isDark ? VARIANTS.dark.info : VARIANTS.light.info;
+
   return (
     <div
-      className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-lg shadow-xl min-w-[300px] max-w-[400px] bg-white dark:bg-gray-800 border-l-4 border-blue-500 transition-all duration-250 ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-95'}`}
+      style={{
+        pointerEvents: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '14px 16px',
+        width: '340px',
+        background: v.bg,
+        backdropFilter: 'blur(18px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+        border: `1px solid ${v.border}`,
+        borderRadius: '14px',
+        boxShadow: `0 8px 32px ${v.glow}, 0 2px 8px rgba(0,0,0,0.07), 0 0 0 0.5px ${v.border}`,
+        marginBottom: '10px',
+        transition: 'all 0.25s',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateX(0) scale(1)' : 'translateX(60px) scale(0.95)',
+      }}
     >
-      <Download className="text-blue-500 shrink-0" size={22} />
-      <div className="flex-1">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+      <span style={{ color: v.color, flexShrink: 0 }}>
+        {ICONS.info}
+      </span>
+      <div style={{ flex: 1 }}>
+        <p style={{ margin: '0 0 2px', fontSize: '13.5px', fontWeight: 600, color: v.color }}>
           Update v{updateVersion} ready
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p style={{ margin: 0, fontSize: '12px', color: v.msg }}>
           Restart now to apply the update
         </p>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
         <button
           onClick={() => window.electronAPI?.installUpdate?.()}
-          className="px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+          style={{
+            padding: '6px 12px',
+            fontSize: '12px',
+            fontWeight: 500,
+            background: v.color,
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
+          onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
         >
           Restart
         </button>
         <button
           onClick={() => setDismissed(true)}
-          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '2px',
+            color: v.close,
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = v.color; }}
+          onMouseLeave={e => { e.currentTarget.style.color = v.close; }}
         >
-          <X size={14} />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
         </button>
       </div>
     </div>
   );
 }
 
-const iconMap = {
-  success: <CheckCircle2 className="text-green-500 shrink-0" size={20} />,
-  error: <XCircle className="text-red-500 shrink-0" size={20} />,
-  info: <Info className="text-blue-500 shrink-0" size={20} />,
-};
-
-const borderMap = {
-  success: 'border-green-500',
-  error: 'border-red-500',
-  info: 'border-blue-500',
-};
-
-function ToastItem({ toast, onDismiss, onNavigate }: { toast: any; onDismiss: (id: string) => void; onNavigate?: (tabId: string) => void }) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
-  }, []);
-
-  const handleClick = () => {
-    if (toast.tabId && onNavigate) {
-      onNavigate(toast.tabId);
-      onDismiss(toast.id);
-    }
-  };
-
-  return (
-    <div
-      className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg min-w-[260px] max-w-[360px] border-l-4 bg-white dark:bg-gray-800 ${borderMap[toast.type as keyof typeof borderMap]} transition-all duration-200 ${visible ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-[60px] scale-95'} ${toast.tabId ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-110' : ''}`}
-      onClick={handleClick}
-    >
-      {iconMap[toast.type as keyof typeof iconMap]}
-      <div className="flex-1 min-w-0">
-        <span className="text-sm text-gray-800 dark:text-gray-200">{toast.message}</span>
-        {toast.tabId && (
-          <p className="text-xs text-blue-500 mt-0.5 font-medium">Click to view</p>
-        )}
-      </div>
-      <button
-        onClick={(e) => { e.stopPropagation(); onDismiss(toast.id); }}
-        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0 ml-1"
-      >
-        <X size={16} />
-      </button>
-    </div>
-  );
-}
-
+// ─── Container ────────────────────────────────────────────────────────────────
 const ToastContainer: React.FC = () => {
   const { toasts, dismiss, navigateToTab } = useNotification();
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none">
-      <UpdateBanner key="update-banner" />
-      {toasts.map(toast => (
-        <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} onNavigate={toast.tabId ? navigateToTab : undefined} />
-      ))}
-    </div>
+    <>
+      <style>{toastStyles}</style>
+      <div style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column-reverse',
+        alignItems: 'flex-end',
+        pointerEvents: 'none',
+      }}>
+        <div style={{ pointerEvents: 'auto' }}>
+          <UpdateBanner isDark={isDark} />
+        </div>
+        {toasts.map(toast => (
+          <div key={toast.id} style={{ pointerEvents: 'auto' }}>
+            <ToastItem
+              toast={toast}
+              onDismiss={dismiss}
+              onNavigate={toast.tabId ? navigateToTab : undefined}
+              isDark={isDark}
+            />
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 

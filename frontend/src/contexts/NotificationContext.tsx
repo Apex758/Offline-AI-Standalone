@@ -7,6 +7,7 @@ export interface Toast {
   message: string;
   type: NotificationType;
   tabId?: string;
+  duration?: number;
 }
 
 export interface HistoryItem {
@@ -59,10 +60,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const toastOnly = useCallback((message: string, type: NotificationType = 'info', duration = 4000) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, duration);
+    setToasts(prev => [...prev, { id, message, type, duration }]);
+    if (duration > 0) {
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, duration);
+    }
   }, []);
 
   const dismiss = useCallback((id: string) => {

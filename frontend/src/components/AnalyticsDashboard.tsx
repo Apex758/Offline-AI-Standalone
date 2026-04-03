@@ -24,6 +24,7 @@ const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 import { useSettings } from '../contexts/SettingsContext';
 import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, getTeacherGrades, getTeacherSubjects, GradeSubjectMapping } from '../data/teacherConstants';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
+import { useNotification } from '../contexts/NotificationContext';
 import axios from 'axios';
 import { format } from 'date-fns';
 import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
@@ -100,6 +101,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   // Achievement data
   const { earned, totalAvailable, showcase, definitions } = useAchievementContext();
   const { settings } = useSettings();
+  const { notify } = useNotification();
   // State management
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
@@ -204,7 +206,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     axios.get('/api/insights/reports')
       .then(res => {
         const reports: InsightsReport[] = res.data;
-        if (reports.length > 0) setLatestInsightsReport(reports[reports.length - 1]);
+        if (reports.length > 0) {
+          const latest = reports[reports.length - 1];
+          setLatestInsightsReport(latest);
+
+          // Fire notifications for insight reminders on dashboard load
+          const reminders = latest.reminders || [];
+          if (reminders.length === 1) {
+            notify(`Insight reminder: ${reminders[0].suggestion}`, 'info');
+          } else if (reminders.length > 1) {
+            notify(`${reminders.length} areas need attention in your latest insights report`, 'info');
+          }
+        }
       })
       .catch(() => {});
   }, []);
@@ -931,6 +944,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           onTaskAdd={handleAddTask}
           onTaskEdit={handleEditTask}
           onTaskToggle={handleToggleTask}
+          insightsReminders={latestInsightsReport?.reminders || []}
         />
       )}
 

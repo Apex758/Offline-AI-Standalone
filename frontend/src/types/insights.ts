@@ -58,6 +58,13 @@ export interface InsightsPassResult {
   output: string;
 }
 
+export interface InsightsReminder {
+  dimension: string;
+  issue: string;
+  streak_count: number;
+  suggestion: string;
+}
+
 export interface InsightsReport {
   id: string;
   generated_at: string;
@@ -66,4 +73,5 @@ export interface InsightsReport {
   previous_report_id?: string;
   passes: InsightsPassResult[];
   synthesis: string;
+  reminders?: InsightsReminder[];
 }

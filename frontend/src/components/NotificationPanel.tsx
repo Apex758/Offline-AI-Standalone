@@ -1,37 +1,140 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { HugeiconsIcon } from '@hugeicons/react';
-import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
-import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
-import Notification01IconData from '@hugeicons/core-free-icons/Notification01Icon';
-import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
-import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
-import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
-import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
-import DragDropVerticalIconData from '@hugeicons/core-free-icons/DragDropVerticalIcon';
-import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
-
-const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; size?: number }> = ({ icon, className = '', style, size: sizeProp }) => {
-  if (sizeProp) return <HugeiconsIcon icon={icon} size={sizeProp} className={className} style={style} />;
-  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
-  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
-  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
-};
-
-const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
-const XCircle: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
-const Bell: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Notification01IconData} {...p} />;
-const Trash2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Delete02IconData} {...p} />;
-const ListOrdered: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CheckListIconData} {...p} />;
-const Loader2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Loading02IconData} {...p} />;
-const Clock: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Clock01IconData} {...p} />;
-const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={DragDropVerticalIconData} {...p} />;
-const X: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 import { formatDistanceToNow } from 'date-fns';
 import { useNotification } from '../contexts/NotificationContext';
 import { useQueue, QueueItem } from '../contexts/QueueContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
 
+// ─── Inline SVG Icons ─────────────────────────────────────────────────────────
+const BellIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M4 6a4 4 0 018 0c0 2.5 1 4 1.5 4.5H2.5C3 10 4 8.5 4 6z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+    <path d="M6 12a2 2 0 004 0" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+  </svg>
+);
+
+const QueueIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M2 4h12M2 8h9M2 12h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+    <path d="M2 4h10M5 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M4 6v5.5a1 1 0 001 1h4a1 1 0 001-1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const GripIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <circle cx="5" cy="3.5" r="1" fill="currentColor"/><circle cx="9" cy="3.5" r="1" fill="currentColor"/>
+    <circle cx="5" cy="7" r="1" fill="currentColor"/><circle cx="9" cy="7" r="1" fill="currentColor"/>
+    <circle cx="5" cy="10.5" r="1" fill="currentColor"/><circle cx="9" cy="10.5" r="1" fill="currentColor"/>
+  </svg>
+);
+
+const CloseIcon = ({ size = 14 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+    <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>
+);
+
+const StatusIcons = {
+  success: (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M5 8.2l2 2 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  error: (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  info: (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M8 7v4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <circle cx="8" cy="4.5" r="0.7" fill="currentColor"/>
+    </svg>
+  ),
+  waiting: (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M8 4.5V8l2.5 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  generating: (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ animation: 'spin 1s linear infinite' }}>
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" strokeDasharray="30 14" strokeLinecap="round"/>
+    </svg>
+  ),
+};
+
+// ─── Theme helpers ────────────────────────────────────────────────────────────
+function useIsDark() {
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
+const palette = {
+  light: {
+    bg: 'rgba(255,255,255,0.72)',
+    border: 'rgba(229,231,235,0.65)',
+    divider: 'rgba(0,0,0,0.06)',
+    text: '#111827',
+    muted: '#6b7280',
+    faint: '#9ca3af',
+    unreadBg: 'rgba(239,246,255,0.50)',
+    hoverBg: 'rgba(0,0,0,0.03)',
+    success: '#16a34a',
+    error: '#dc2626',
+    info: '#2563eb',
+    warning: '#d97706',
+    accent: '#2563eb',
+    tabActiveBg: 'rgba(0,0,0,0.04)',
+    badgeBg: '#2563eb',
+    queueBadge: '#d97706',
+    glow: 'rgba(0,0,0,0.08)',
+  },
+  dark: {
+    bg: 'rgba(17,24,39,0.72)',
+    border: 'rgba(75,85,99,0.45)',
+    divider: 'rgba(255,255,255,0.06)',
+    text: '#f3f4f6',
+    muted: '#9ca3af',
+    faint: '#6b7280',
+    unreadBg: 'rgba(96,165,250,0.08)',
+    hoverBg: 'rgba(255,255,255,0.04)',
+    success: '#4ade80',
+    error: '#f87171',
+    info: '#60a5fa',
+    warning: '#fbbf24',
+    accent: '#60a5fa',
+    tabActiveBg: 'rgba(255,255,255,0.06)',
+    badgeBg: '#3b82f6',
+    queueBadge: '#f59e0b',
+    glow: 'rgba(0,0,0,0.40)',
+  },
+};
+
+// ─── Panel styles ─────────────────────────────────────────────────────────────
+const panelKeyframes = `
+  @keyframes notif-panel-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+`;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 interface NotificationPanelProps {
   open: boolean;
   onClose: () => void;
@@ -45,23 +148,20 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
   const { getActiveStreams } = useWebSocket();
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<PanelTab>('notifications');
+  const isDark = useIsDark();
+  const c = isDark ? palette.dark : palette.light;
 
-  // Drag state for reordering
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  // Mark all as read when the panel is opened
   useEffect(() => {
     if (open && unreadCount > 0) markAllRead();
   }, [open]);
 
-  // Close when clicking outside
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onClose();
-      }
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
     };
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
@@ -69,27 +169,27 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
 
   const waitingItems = queue.filter(item => item.status === 'waiting');
   const activeStreams = getActiveStreams();
-  // Filter out streams that are already tracked by the queue to avoid duplicates
   const queuedTabEndpoints = new Set(
     queue.filter(item => item.status === 'generating').map(item => `${item.tabId}::${item.endpoint}`)
   );
   const directStreams = activeStreams.filter(s => !queuedTabEndpoints.has(`${s.tabId}::${s.endpoint}`));
   const queueCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length + directStreams.length;
 
-  const getStatusIcon = (status: QueueItem['status']) => {
+  const statusColor = (status: QueueItem['status']) => {
     switch (status) {
-      case 'waiting':
-        return <Clock size={15} className="text-yellow-500 shrink-0 mt-0.5" />;
-      case 'generating':
-        return <Loader2 size={15} className="text-blue-500 shrink-0 mt-0.5 animate-spin" />;
-      case 'completed':
-        return <CheckCircle2 size={15} className="text-green-500 shrink-0 mt-0.5" />;
-      case 'error':
-        return <XCircle size={15} className="text-red-500 shrink-0 mt-0.5" />;
+      case 'waiting': return c.warning;
+      case 'generating': return c.info;
+      case 'completed': return c.success;
+      case 'error': return c.error;
     }
   };
 
-  const getStatusLabel = (status: QueueItem['status']) => {
+  const statusIcon = (status: QueueItem['status']) => {
+    const key = status === 'completed' ? 'success' : status;
+    return <span style={{ color: statusColor(status), flexShrink: 0, marginTop: '2px' }}>{StatusIcons[key as keyof typeof StatusIcons] ?? StatusIcons.info}</span>;
+  };
+
+  const statusLabel = (status: QueueItem['status']) => {
     switch (status) {
       case 'waiting': return 'Waiting';
       case 'generating': return 'Generating...';
@@ -98,139 +198,228 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    setDragIndex(index);
-    e.dataTransfer.effectAllowed = 'move';
-    // Make the drag image slightly transparent
-    if (e.currentTarget instanceof HTMLElement) {
-      e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
+  const typeColor = (type: string) => {
+    switch (type) {
+      case 'success': return c.success;
+      case 'error': return c.error;
+      default: return c.info;
     }
   };
 
+  const typeIcon = (type: string) => {
+    const key = type as keyof typeof StatusIcons;
+    return StatusIcons[key] ?? StatusIcons.info;
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    if (e.currentTarget instanceof HTMLElement) e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
+  };
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDragOverIndex(index);
   };
-
   const handleDrop = (e: React.DragEvent, toIndex: number) => {
     e.preventDefault();
-    if (dragIndex !== null && dragIndex !== toIndex) {
-      reorderQueue(dragIndex, toIndex);
-    }
+    if (dragIndex !== null && dragIndex !== toIndex) reorderQueue(dragIndex, toIndex);
     setDragIndex(null);
     setDragOverIndex(null);
   };
+  const handleDragEnd = () => { setDragIndex(null); setDragOverIndex(null); };
 
-  const handleDragEnd = () => {
-    setDragIndex(null);
-    setDragOverIndex(null);
-  };
+  // ─── Shared row style ────────────────────────────────────────────────
+  const rowStyle = (highlight = false): React.CSSProperties => ({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+    padding: '12px 16px',
+    borderBottom: `1px solid ${c.divider}`,
+    background: highlight ? c.unreadBg : 'transparent',
+    transition: 'background 0.15s',
+  });
 
   return createPortal(
     <>
+      <style>{panelKeyframes}</style>
       {open && (
         <div
           ref={panelRef}
-          className="fixed top-11 right-2 w-96 rounded-xl shadow-2xl overflow-hidden z-[99999] animate-[fadeSlideDown_0.15s_ease-out]"
           style={{
-            backgroundColor: 'var(--notif-bg)',
-            border: '1px solid var(--notif-border)',
+            position: 'fixed',
+            top: '44px',
+            right: '8px',
+            width: '380px',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            zIndex: 99999,
+            background: c.bg,
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+            border: `1px solid ${c.border}`,
+            boxShadow: `0 16px 48px ${c.glow}, 0 4px 16px rgba(0,0,0,0.06), 0 0 0 0.5px ${c.border}`,
+            animation: 'notif-panel-in 0.2s cubic-bezier(0.16,1,0.3,1) forwards',
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
           }}
         >
-          {/* Tab Header */}
-          <div className="flex" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors relative"
-              style={{
-                color: activeTab === 'notifications' ? 'var(--notif-text)' : 'var(--notif-text-muted)',
-                backgroundColor: activeTab === 'notifications' ? 'var(--notif-unread-bg)' : 'transparent',
-              }}
-            >
-              <Bell size={14} />
-              Notifications
-              {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 text-xs rounded-full bg-blue-500 text-white leading-none">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('queue')}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors relative"
-              style={{
-                color: activeTab === 'queue' ? 'var(--notif-text)' : 'var(--notif-text-muted)',
-                backgroundColor: activeTab === 'queue' ? 'var(--notif-unread-bg)' : 'transparent',
-              }}
-            >
-              <ListOrdered size={14} />
-              Queue
-              {queueCount > 0 && (
-                <span className="px-1.5 py-0.5 text-xs rounded-full bg-amber-500 text-white leading-none">
-                  {queueCount}
-                </span>
-              )}
-            </button>
+          {/* ─── Tab Header ─────────────────────────────────────────── */}
+          <div style={{ display: 'flex', borderBottom: `1px solid ${c.divider}` }}>
+            {([
+              { key: 'notifications' as PanelTab, icon: <BellIcon />, label: 'Notifications', badge: unreadCount, badgeColor: c.badgeBg },
+              { key: 'queue' as PanelTab, icon: <QueueIcon />, label: 'Queue', badge: queueCount, badgeColor: c.queueBadge },
+            ]).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '7px',
+                  padding: '10px 16px',
+                  fontSize: '13px',
+                  fontWeight: activeTab === tab.key ? 600 : 500,
+                  color: activeTab === tab.key ? c.text : c.muted,
+                  background: activeTab === tab.key ? c.tabActiveBg : 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  letterSpacing: '-0.01em',
+                  position: 'relative',
+                }}
+                onMouseEnter={e => { if (activeTab !== tab.key) e.currentTarget.style.background = c.hoverBg; }}
+                onMouseLeave={e => { if (activeTab !== tab.key) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center' }}>{tab.icon}</span>
+                {tab.label}
+                {tab.badge > 0 && (
+                  <span style={{
+                    padding: '1px 6px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    borderRadius: '10px',
+                    background: tab.badgeColor,
+                    color: '#fff',
+                    lineHeight: '16px',
+                    letterSpacing: '0',
+                  }}>
+                    {tab.badge}
+                  </span>
+                )}
+                {/* Active indicator bar */}
+                {activeTab === tab.key && (
+                  <span style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '20%',
+                    width: '60%',
+                    height: '2px',
+                    borderRadius: '2px',
+                    background: c.accent,
+                    opacity: 0.7,
+                  }} />
+                )}
+              </button>
+            ))}
           </div>
 
-          {/* Notifications Tab */}
+          {/* ─── Notifications Tab ──────────────────────────────────── */}
           {activeTab === 'notifications' && (
             <>
-              {/* Clear all button */}
               {history.length > 0 && (
-                <div className="flex justify-end px-4 py-2" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  padding: '8px 16px',
+                  borderBottom: `1px solid ${c.divider}`,
+                }}>
                   <button
                     onClick={clearHistory}
-                    className="flex items-center gap-1 text-xs hover:text-red-400 transition"
-                    style={{ color: 'var(--notif-text-muted)' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: c.muted,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '2px 4px',
+                      borderRadius: '6px',
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = c.error; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = c.muted; }}
                   >
-                    <Trash2 size={12} />
+                    <TrashIcon />
                     Clear all
                   </button>
                 </div>
               )}
 
-              <div className="max-h-72 overflow-y-auto">
+              <div style={{ maxHeight: '288px', overflowY: 'auto' }}>
                 {history.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 gap-2" style={{ color: 'var(--notif-text-faint)' }}>
-                    <Bell size={26} className="opacity-25" />
-                    <span className="text-sm">No notifications yet</span>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '40px 0',
+                    gap: '8px',
+                    color: c.faint,
+                  }}>
+                    <span style={{ opacity: 0.3 }}><BellIcon /></span>
+                    <span style={{ fontSize: '13px' }}>No notifications yet</span>
                   </div>
                 ) : (
                   history.map(item => (
                     <div
                       key={item.id}
-                      className={`flex items-start gap-3 px-4 py-3 last:border-0 transition-colors ${item.tabId ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-110' : ''}`}
-                      style={{
-                        borderBottom: '1px solid var(--notif-divider)',
-                        backgroundColor: !item.read ? 'var(--notif-unread-bg)' : 'transparent',
-                      }}
                       onClick={() => {
-                        if (item.tabId) {
-                          navigateToTab(item.tabId);
-                          onClose();
-                        }
+                        if (item.tabId) { navigateToTab(item.tabId); onClose(); }
                       }}
+                      style={{
+                        ...rowStyle(!item.read),
+                        cursor: item.tabId ? 'pointer' : 'default',
+                      }}
+                      onMouseEnter={e => { if (item.tabId) e.currentTarget.style.background = c.hoverBg; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = !item.read ? c.unreadBg : 'transparent'; }}
                     >
-                      {item.type === 'success' ? (
-                        <CheckCircle2 size={15} className="text-green-500 shrink-0 mt-0.5" />
-                      ) : (
-                        <XCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>{item.message}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <p className="text-xs" style={{ color: 'var(--notif-text-muted)' }}>
+                      <span style={{ color: typeColor(item.type), flexShrink: 0, marginTop: '2px' }}>
+                        {typeIcon(item.type)}
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          margin: 0,
+                          fontSize: '13px',
+                          fontWeight: 500,
+                          lineHeight: 1.45,
+                          color: c.text,
+                          letterSpacing: '-0.01em',
+                        }}>
+                          {item.message}
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
+                          <span style={{ fontSize: '11.5px', color: c.muted }}>
                             {formatDistanceToNow(item.timestamp, { addSuffix: true })}
-                          </p>
+                          </span>
                           {item.tabId && (
-                            <span className="text-xs text-blue-500 font-medium">View</span>
+                            <span style={{ fontSize: '11.5px', color: c.accent, fontWeight: 500 }}>View</span>
                           )}
                         </div>
                       </div>
                       {!item.read && (
-                        <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-1.5" />
+                        <span style={{
+                          width: '7px',
+                          height: '7px',
+                          borderRadius: '50%',
+                          background: c.accent,
+                          flexShrink: 0,
+                          marginTop: '6px',
+                          boxShadow: `0 0 6px ${c.accent}60`,
+                        }} />
                       )}
                     </div>
                   ))
@@ -239,120 +428,146 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
             </>
           )}
 
-          {/* Queue Tab */}
+          {/* ─── Queue Tab ──────────────────────────────────────────── */}
           {activeTab === 'queue' && (
             <>
-              {/* Queue actions bar */}
               {(queue.length > 0 || directStreams.length > 0) && (
-                <div className="flex justify-between items-center px-4 py-2" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
-                  <span className="text-xs" style={{ color: 'var(--notif-text-muted)' }}>
-                    {queueCount} active
-                  </span>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 16px',
+                  borderBottom: `1px solid ${c.divider}`,
+                }}>
+                  <span style={{ fontSize: '12px', color: c.muted }}>{queueCount} active</span>
                   <button
                     onClick={clearCompleted}
-                    className="flex items-center gap-1 text-xs hover:text-red-400 transition"
-                    style={{ color: 'var(--notif-text-muted)' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: c.muted,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '2px 4px',
+                      borderRadius: '6px',
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = c.error; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = c.muted; }}
                   >
-                    <Trash2 size={12} />
+                    <TrashIcon />
                     Clear finished
                   </button>
                 </div>
               )}
 
-              <div className="max-h-80 overflow-y-auto">
+              <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
                 {queue.length === 0 && directStreams.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 gap-2" style={{ color: 'var(--notif-text-faint)' }}>
-                    <ListOrdered size={26} className="opacity-25" />
-                    <span className="text-sm">No active generations</span>
-                    <span className="text-xs opacity-75">Active generations will appear here</span>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '40px 0',
+                    gap: '8px',
+                    color: c.faint,
+                  }}>
+                    <span style={{ opacity: 0.3 }}><QueueIcon /></span>
+                    <span style={{ fontSize: '13px' }}>No active generations</span>
+                    <span style={{ fontSize: '11.5px', opacity: 0.7 }}>Active generations will appear here</span>
                   </div>
                 ) : (
                   <>
-                    {/* Direct (non-queued) active generations */}
+                    {/* Direct active streams */}
                     {directStreams.map(stream => (
-                      <div
-                        key={`${stream.tabId}::${stream.endpoint}`}
-                        className="flex items-start gap-3 px-4 py-3"
-                        style={{
-                          borderBottom: '1px solid var(--notif-divider)',
-                          backgroundColor: 'var(--notif-unread-bg)',
-                        }}
-                      >
-                        <Loader2 size={15} className="text-blue-500 shrink-0 mt-0.5 animate-spin" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium leading-snug" style={{ color: 'var(--notif-text)' }}>
+                      <div key={`${stream.tabId}::${stream.endpoint}`} style={{ ...rowStyle(true) }}>
+                        <span style={{ color: c.info, flexShrink: 0, marginTop: '2px' }}>{StatusIcons.generating}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: c.text, lineHeight: 1.45 }}>
                             {stream.toolName}
                           </p>
-                          <p className="text-xs mt-0.5 text-blue-500 font-medium">
+                          <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: c.info, fontWeight: 500 }}>
                             Generating...
                           </p>
                         </div>
                       </div>
                     ))}
 
-                    {/* Queued - currently generating */}
+                    {/* Generating queue items */}
                     {queue.filter(item => item.status === 'generating').map(item => (
-                      <div
-                        key={item.id}
-                        className="flex items-start gap-3 px-4 py-3"
-                        style={{
-                          borderBottom: '1px solid var(--notif-divider)',
-                          backgroundColor: 'var(--notif-unread-bg)',
-                        }}
-                      >
-                        {getStatusIcon(item.status)}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium leading-snug" style={{ color: 'var(--notif-text)' }}>
+                      <div key={item.id} style={{ ...rowStyle(true) }}>
+                        {statusIcon(item.status)}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: c.text, lineHeight: 1.45 }}>
                             {item.label}
                           </p>
-                          <p className="text-xs mt-0.5 text-blue-500 font-medium">
-                            {getStatusLabel(item.status)}
+                          <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: c.info, fontWeight: 500 }}>
+                            {statusLabel(item.status)}
                           </p>
                         </div>
                       </div>
                     ))}
 
-                    {/* Waiting items - draggable */}
+                    {/* Waiting items (draggable) */}
                     {waitingItems.length > 0 && (
                       <div>
                         {waitingItems.length > 1 && (
-                          <div className="px-4 py-1.5" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
-                            <p className="text-xs" style={{ color: 'var(--notif-text-muted)' }}>
-                              Drag to reorder waiting tasks
-                            </p>
+                          <div style={{ padding: '6px 16px', borderBottom: `1px solid ${c.divider}` }}>
+                            <p style={{ margin: 0, fontSize: '11.5px', color: c.muted }}>Drag to reorder waiting tasks</p>
                           </div>
                         )}
                         {waitingItems.map((item, index) => (
                           <div
                             key={item.id}
                             draggable
-                            onDragStart={(e) => handleDragStart(e, index)}
-                            onDragOver={(e) => handleDragOver(e, index)}
-                            onDrop={(e) => handleDrop(e, index)}
+                            onDragStart={e => handleDragStart(e, index)}
+                            onDragOver={e => handleDragOver(e, index)}
+                            onDrop={e => handleDrop(e, index)}
                             onDragEnd={handleDragEnd}
-                            className="flex items-start gap-2 px-4 py-3 cursor-grab active:cursor-grabbing transition-colors"
                             style={{
-                              borderBottom: '1px solid var(--notif-divider)',
-                              backgroundColor: dragOverIndex === index ? 'var(--notif-unread-bg)' : 'transparent',
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '6px',
+                              padding: '12px 16px',
+                              borderBottom: `1px solid ${c.divider}`,
+                              background: dragOverIndex === index ? c.unreadBg : 'transparent',
                               opacity: dragIndex === index ? 0.5 : 1,
+                              cursor: 'grab',
+                              transition: 'background 0.15s, opacity 0.15s',
                             }}
                           >
-                            <GripVertical size={14} className="shrink-0 mt-0.5 opacity-40" style={{ color: 'var(--notif-text-muted)' }} />
-                            {getStatusIcon(item.status)}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>
+                            <span style={{ color: c.faint, flexShrink: 0, marginTop: '2px', opacity: 0.5 }}><GripIcon /></span>
+                            {statusIcon(item.status)}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ margin: 0, fontSize: '13px', color: c.text, lineHeight: 1.45 }}>
                                 {item.label}
                               </p>
-                              <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
+                              <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: c.muted }}>
                                 #{index + 1} in queue &middot; {formatDistanceToNow(item.addedAt, { addSuffix: true })}
                               </p>
                             </div>
                             <button
                               onClick={() => removeFromQueue(item.id)}
-                              className="shrink-0 p-1.5 rounded hover:bg-red-500/20 transition"
                               title="Remove from queue"
+                              style={{
+                                flexShrink: 0,
+                                padding: '4px',
+                                background: 'none',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                color: c.faint,
+                                display: 'flex',
+                                alignItems: 'center',
+                                transition: 'color 0.15s, background 0.15s',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.color = c.error; e.currentTarget.style.background = `${c.error}18`; }}
+                              onMouseLeave={e => { e.currentTarget.style.color = c.faint; e.currentTarget.style.background = 'transparent'; }}
                             >
-                              <X size={18} className="text-red-400" />
+                              <CloseIcon size={16} />
                             </button>
                           </div>
                         ))}
@@ -361,20 +576,14 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
 
                     {/* Completed / Error items */}
                     {queue.filter(item => item.status === 'completed' || item.status === 'error').map(item => (
-                      <div
-                        key={item.id}
-                        className="flex items-start gap-3 px-4 py-3 opacity-60"
-                        style={{
-                          borderBottom: '1px solid var(--notif-divider)',
-                        }}
-                      >
-                        {getStatusIcon(item.status)}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>
+                      <div key={item.id} style={{ ...rowStyle(false), opacity: 0.55 }}>
+                        {statusIcon(item.status)}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: '13px', color: c.text, lineHeight: 1.45 }}>
                             {item.label}
                           </p>
-                          <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
-                            {getStatusLabel(item.status)}
+                          <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: c.muted }}>
+                            {statusLabel(item.status)}
                             {item.completedAt && ` · ${formatDistanceToNow(item.completedAt, { addSuffix: true })}`}
                           </p>
                         </div>

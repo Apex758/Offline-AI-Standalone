@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>OECS Photo Transfer</title>
+<style>
+  :root {
+    --blue: #2563eb;
+    --blue-dark: #1d4ed8;
+    --green: #16a34a;
+    --green-dark: #15803d;
+    --red: #dc2626;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--blue);
+    color: white;
+    padding: 16px 20px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+  /* ── Status bar ── */
+  .status-bar {
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .status-dot.connected { background: var(--green); }
+  .status-dot.disconnected { background: var(--red); }
+  .photo-count {
+    background: var(--blue);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  /* ── Main content ── */
+  .content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card h2 {
+    font-size: 15px;
+    color: var(--gray-700);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  /* ── Form inputs ── */
+  .input-group { margin-bottom: 12px; }
+  .input-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 4px;
+  }
+  input[type="text"], select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 16px; /* Prevents iOS zoom */
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: var(--blue);
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; pointer-events: none; }
+
+  .btn-blue { background: var(--blue); color: white; }
+  .btn-blue:hover { background: var(--blue-dark); }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: var(--green-dark); }
+  .btn-outline {
+    background: transparent;
+    color: var(--blue);
+    border: 2px solid var(--blue);
+  }
+
+  /* ── Capture button (big and prominent) ── */
+  .capture-btn {
+    width: 100%;
+    padding: 24px;
+    font-size: 20px;
+    border-radius: 16px;
+    min-height: 80px;
+  }
+
+  /* ── Hidden file input ── */
+  #camera-input { display: none; }
+
+  /* ── Toast notification ── */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--gray-900);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 100;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.error { background: var(--red); }
+
+  /* ── Preview thumbnail ── */
+  .preview-area {
+    display: none;
+    margin-top: 12px;
+    text-align: center;
+  }
+  .preview-area img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 2px solid var(--gray-200);
+  }
+  .preview-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .preview-actions .btn { flex: 1; padding: 12px; font-size: 14px; }
+
+  /* ── Upload progress ── */
+  .upload-indicator {
+    display: none;
+    text-align: center;
+    padding: 16px;
+    color: var(--gray-500);
+    font-size: 14px;
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Screens ── */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; flex: 1; }
+
+  /* ── Recent uploads list ── */
+  .recent-list { list-style: none; }
+  .recent-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .recent-list li:last-child { border-bottom: none; }
+  .recent-name { font-weight: 600; color: var(--gray-900); }
+  .recent-time { color: var(--gray-500); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>OECS Photo Transfer</h1>
+  <div class="subtitle" id="session-label">Not connected</div>
+</div>
+
+<!-- ═══ Screen 1: Session Setup ═══ -->
+<div class="screen active" id="screen-setup">
+  <div class="content">
+    <div class="card">
+      <h2>Start a Session</h2>
+      <div class="input-group">
+        <label for="class-name">Class Name</label>
+        <input type="text" id="class-name" placeholder="e.g. Math Grade 5" autocomplete="off">
+      </div>
+      <button class="btn btn-blue" id="btn-start-session">Start Capturing</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Screen 2: Capture ═══ -->
+<div class="screen" id="screen-capture">
+  <div class="status-bar">
+    <div>
+      <span class="status-dot connected" id="status-dot"></span>
+      <span id="status-text">Connected</span>
+    </div>
+    <span class="photo-count" id="photo-count">0 photos</span>
+  </div>
+
+  <div class="content">
+    <!-- Student name (optional) -->
+    <div class="card">
+      <div class="input-group" style="margin-bottom:8px">
+        <label for="student-name">Student Name (optional)</label>
+        <input type="text" id="student-name" placeholder="e.g. Jane Smith" autocomplete="off">
+      </div>
+      <!-- Quick send toggle -->
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-700);cursor:pointer">
+        <input type="checkbox" id="quick-send" style="width:18px;height:18px;accent-color:var(--blue)">
+        <span>Quick Send <span style="color:var(--gray-500);font-size:11px">(skip preview, send immediately)</span></span>
+      </label>
+    </div>
+
+    <!-- Capture button -->
+    <button class="btn btn-green capture-btn" id="btn-capture">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      Take Photo
+    </button>
+
+    <input type="file" id="camera-input" accept="image/*" capture="environment">
+
+    <!-- Preview area -->
+    <div class="preview-area" id="preview-area">
+      <img id="preview-img" alt="Preview">
+      <div class="preview-actions">
+        <button class="btn btn-outline" id="btn-retake">Retake</button>
+        <button class="btn btn-blue" id="btn-send">Send</button>
+      </div>
+    </div>
+
+    <!-- Upload indicator -->
+    <div class="upload-indicator" id="upload-indicator">
+      <div class="spinner"></div>
+      Sending photo...
+    </div>
+
+    <!-- Recent uploads -->
+    <div class="card" id="recent-card" style="display:none">
+      <h2>Recent Uploads</h2>
+      <ul class="recent-list" id="recent-list"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  // ── State ──
+  let sessionId = null;
+  let photoCount = 0;
+  let currentFile = null;
+  const BASE_URL = window.location.origin;
+
+  // ── Connection check on load ──
+  // Verify we can reach the PC backend. If on HTTPS with a self-signed cert
+  // the browser will have already shown a warning — if the user got here, we're good.
+  (async function checkConnection() {
+    try {
+      const res = await fetch(BASE_URL + '/api/photo-transfer/network-info');
+      if (res.ok) {
+        document.getElementById('session-label').textContent = 'Connected to PC';
+      }
+    } catch (e) {
+      // If HTTP and HTTPS is available, try redirecting to HTTPS
+      if (window.location.protocol === 'http:') {
+        try {
+          const res = await fetch(BASE_URL + '/api/photo-transfer/network-info');
+          const info = await res.json();
+          if (info.ssl_enabled && info.phone_url_https) {
+            // HTTPS available — suggest it for iOS camera access
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            if (isIOS) {
+              // Auto-redirect iOS to HTTPS for camera access
+              window.location.href = info.phone_url_https;
+              return;
+            }
+          }
+        } catch {}
+      }
+    }
+  })();
+
+  // ── DOM refs ──
+  const $setup     = document.getElementById('screen-setup');
+  const $capture   = document.getElementById('screen-capture');
+  const $className = document.getElementById('class-name');
+  const $studentName = document.getElementById('student-name');
+  const $btnStart  = document.getElementById('btn-start-session');
+  const $btnCapture = document.getElementById('btn-capture');
+  const $cameraInput = document.getElementById('camera-input');
+  const $previewArea = document.getElementById('preview-area');
+  const $previewImg  = document.getElementById('preview-img');
+  const $btnRetake  = document.getElementById('btn-retake');
+  const $btnSend    = document.getElementById('btn-send');
+  const $uploadInd  = document.getElementById('upload-indicator');
+  const $photoCount = document.getElementById('photo-count');
+  const $sessionLabel = document.getElementById('session-label');
+  const $recentCard = document.getElementById('recent-card');
+  const $recentList = document.getElementById('recent-list');
+
+  // ── Screens ──
+  function showScreen(screen) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    screen.classList.add('active');
+  }
+
+  // ── Toast ──
+  function toast(msg, type) {
+    const $t = document.getElementById('toast');
+    $t.textContent = msg;
+    $t.className = 'toast show ' + (type || '');
+    setTimeout(() => { $t.className = 'toast'; }, 2500);
+  }
+
+  // ── Start Session ──
+  $btnStart.addEventListener('click', async () => {
+    const className = $className.value.trim() || 'Unnamed Class';
+    $btnStart.disabled = true;
+    $btnStart.textContent = 'Starting...';
+
+    try {
+      const res = await fetch(BASE_URL + '/api/photo-transfer/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ class_name: className }),
+      });
+      const data = await res.json();
+      sessionId = data.id;
+      $sessionLabel.textContent = className + ' — ' + data.date;
+      showScreen($capture);
+      toast('Session started!', 'success');
+    } catch (e) {
+      toast('Could not connect to PC', 'error');
+      $btnStart.disabled = false;
+      $btnStart.textContent = 'Start Capturing';
+    }
+  });
+
+  // ── Capture ──
+  $btnCapture.addEventListener('click', () => {
+    $cameraInput.value = '';
+    $cameraInput.click();
+  });
+
+  $cameraInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    currentFile = file;
+
+    // Quick Send mode: skip preview, upload immediately
+    if (document.getElementById('quick-send').checked) {
+      sendPhoto(file);
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      $previewImg.src = ev.target.result;
+      $previewArea.style.display = 'block';
+      $btnCapture.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── Retake ──
+  $btnRetake.addEventListener('click', () => {
+    currentFile = null;
+    $previewArea.style.display = 'none';
+    $btnCapture.style.display = 'flex';
+  });
+
+  // ── Send (shared by preview Send button and Quick Send) ──
+  async function sendPhoto(file) {
+    if (!file || !sessionId) return;
+
+    $previewArea.style.display = 'none';
+    $uploadInd.style.display = 'block';
+    $btnCapture.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('session_id', sessionId);
+    formData.append('student_name', $studentName.value.trim());
+
+    try {
+      const res = await fetch(BASE_URL + '/api/photo-transfer/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+
+      photoCount = data.total_count;
+      $photoCount.textContent = photoCount + ' photo' + (photoCount !== 1 ? 's' : '');
+
+      // Add to recent list
+      addRecent(data.photo.filename, $studentName.value.trim());
+
+      // Clear student name for next photo
+      $studentName.value = '';
+      currentFile = null;
+
+      toast('Photo sent!', 'success');
+    } catch (e) {
+      toast('Upload failed — check connection', 'error');
+    }
+
+    $uploadInd.style.display = 'none';
+    $btnCapture.style.display = 'flex';
+  }
+
+  $btnSend.addEventListener('click', () => sendPhoto(currentFile));
+
+  function addRecent(filename, studentName) {
+    $recentCard.style.display = 'block';
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="recent-name">' +
+      (studentName || filename) +
+      '</span><span class="recent-time">just now</span>';
+    $recentList.insertBefore(li, $recentList.firstChild);
+    // Keep only last 10
+    while ($recentList.children.length > 10) {
+      $recentList.removeChild($recentList.lastChild);
+    }
+  }
+
+  // ── Auto-focus class name on load ──
+  setTimeout(() => $className.focus(), 300);
+
+})();
+</script>
+</body>
+</html>

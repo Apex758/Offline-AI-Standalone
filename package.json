@@ -11,8 +11,8 @@
   "private": true,
   "scripts": {
     "dev": "cd frontend && npm run dev",
-    "backend": "cd backend && python -m uvicorn main:app --reload --port 8000",
-    "electron:dev": "concurrently \"npm run backend\" \"wait-on http://localhost:8000 && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "backend": "cd backend && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "electron:dev": "concurrently \"npm run backend\" \"wait-on http-get://localhost:8000/api/health && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "echo Backend packaging skipped - already done manually",
     "build": "npm run build:frontend && npm run build:backend",

@@ -16,7 +16,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, File, UploadFile, Form
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from image_service import get_image_service
 import base64
@@ -309,13 +309,12 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 
 # Add CORS middleware FIRST, before routers
+# allow_origins=["*"] is needed so phones on the local network (e.g.
+# http://192.168.x.x:8000) can hit the API for Photo Transfer.
+# This is safe because the server is only reachable on the LAN.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -339,6 +338,20 @@ app.include_router(insights.router)
 # Include scene-based image generation routes
 from scene_api_endpoints import router as scene_router
 app.include_router(scene_router)
+
+# Include photo transfer routes (phone-to-PC via local WiFi)
+from routes.photo_transfer import router as photo_transfer_router
+app.include_router(photo_transfer_router)
+
+
+# ── Serve the phone PWA page at /phone ──────────────────────────────────────
+@app.get("/phone", response_class=HTMLResponse)
+async def serve_phone_page():
+    """Serve the phone camera/upload page (teachers scan QR to reach this)."""
+    phone_html = Path(BASE_DIR) / "static" / "phone.html"
+    if phone_html.exists():
+        return HTMLResponse(phone_html.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Phone page not found</h1>", status_code=404)
 
 # Suppress noisy polling endpoints from uvicorn access logs
 class _QuietPollFilter(logging.Filter):
@@ -3198,6 +3211,33 @@ async def educator_insights_websocket(websocket: WebSocket):
                 await websocket.send_json({"type": "error", "message": f"Data aggregation failed: {e}"})
                 continue
 
+            # Debug: send aggregation summary to frontend console
+            try:
+                agg_summary = {}
+                for _dk, _dv in all_data.items():
+                    agg_summary[_dk] = {
+                        "has_data": _dv.get("has_data"),
+                        "llm_text_length": len(_dv.get("llm_text", "")),
+                        "periodCompleted": _dv.get("periodCompleted"),
+                        "periodAssessments": _dv.get("periodAssessments"),
+                        "periodCount": _dv.get("periodCount"),
+                        "periodRecords": _dv.get("periodRecords"),
+                        "periodEarned": _dv.get("periodEarned"),
+                    }
+                await websocket.send_json({
+                    "type": "debug",
+                    "stage": "aggregation",
+                    "dateContext": {
+                        "is_first_report": date_context.get("is_first_report"),
+                        "from_date": date_context.get("from_date"),
+                        "to_date": date_context.get("to_date"),
+                        "report_count": date_context.get("report_count"),
+                    },
+                    "summary": agg_summary,
+                })
+            except Exception:
+                pass
+
             prev_report = date_context.get("previous_report")
             prev_pass_outputs = {}
             if prev_report:
@@ -3234,10 +3274,17 @@ async def educator_insights_websocket(websocket: WebSocket):
                 if pass_key in ("curriculum", "performance", "content", "attendance", "achievements"):
                     dimension_data = all_data.get(pass_key, {})
                     if not dimension_data.get("has_data"):
-                        # Skip this pass — no data
+                        # Skip this pass — no data at all
                         no_data_msg = f"No {pass_name.lower()} data available yet."
                         pass_outputs[pass_key] = no_data_msg
                         try:
+                            await websocket.send_json({
+                                "type": "debug",
+                                "stage": "pass_skipped",
+                                "passKey": pass_key,
+                                "passName": pass_name,
+                                "reason": "has_data is False — no data exists for this dimension",
+                            })
                             await websocket.send_json({
                                 "type": "pass_complete",
                                 "pass": pass_num,
@@ -3249,6 +3296,60 @@ async def educator_insights_websocket(websocket: WebSocket):
                         except Exception:
                             break
                         continue
+
+                    # Check for "no change" — has_data is True but period activity is zero
+                    period_field_map = {
+                        "curriculum": "periodCompleted",
+                        "performance": "periodAssessments",
+                        "content": "periodCount",
+                        "attendance": "periodRecords",
+                        "achievements": "periodEarned",
+                    }
+                    period_field = period_field_map.get(pass_key)
+                    period_count = dimension_data.get(period_field, None)
+                    is_no_change = (
+                        period_count is not None
+                        and period_count == 0
+                        and not date_context.get("is_first_report")
+                    )
+
+                    if is_no_change:
+                        # Build a summary from all-time data instead of calling the LLM
+                        from_date = date_context.get("from_date", "unknown")
+                        summary_parts = {
+                            "curriculum": lambda d: f"Total milestones: {d.get('totalMilestones', 0)} completed out of {d.get('totalMilestones', 0) + d.get('remainingMilestones', 0)}.",
+                            "performance": lambda d: f"Total assessments: {d.get('totalAssessments', 0)}. Overall average: {d.get('overallAvg', 0):.1f}%.",
+                            "content": lambda d: f"Total resources created: {d.get('totalResources', 0)}. Top type: {d.get('topType', 'N/A')}.",
+                            "attendance": lambda d: f"Total records: {d.get('totalRecords', 0)}. Average rate: {d.get('avgRate', 0):.1f}%.",
+                            "achievements": lambda d: f"Total earned: {d.get('totalEarned', 0)} of {d.get('totalAvailable', 0)}. Points: {d.get('totalPoints', 0)}.",
+                        }
+                        stats = summary_parts.get(pass_key, lambda d: "")(dimension_data)
+                        no_change_msg = f"No new {pass_name.lower()} activity since the last report ({from_date}). {stats}"
+                        pass_outputs[pass_key] = no_change_msg
+                        try:
+                            await websocket.send_json({
+                                "type": "debug",
+                                "stage": "no_change",
+                                "passKey": pass_key,
+                                "passName": pass_name,
+                                "periodField": period_field,
+                                "periodCount": period_count,
+                                "message": no_change_msg,
+                            })
+                            await websocket.send_json({
+                                "type": "pass_complete",
+                                "pass": pass_num,
+                                "passName": pass_name,
+                                "result": no_change_msg,
+                                "noChange": True,
+                                "fromDate": from_date,
+                                "stats": stats,
+                            })
+                            await asyncio.sleep(0)
+                        except Exception:
+                            break
+                        continue
+
                     llm_input = dimension_data.get("llm_text", "")
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Analyze the data and provide bullet points.")
                     system_prompt = system_prompt_template.replace("{data}", llm_input)
@@ -3321,6 +3422,21 @@ async def educator_insights_websocket(websocket: WebSocket):
                 _t1_params = get_tier1_gen_params(task_type) if _is_tier1 else {}
                 max_tokens = _t1_params.get("max_tokens", 1000) if _is_tier1 else 1500
                 temperature = _t1_params.get("temperature", 0.5) if _is_tier1 else 0.5
+
+                # Debug: send prompt being fed to the LLM
+                try:
+                    await websocket.send_json({
+                        "type": "debug",
+                        "stage": "llm_input",
+                        "passKey": pass_key,
+                        "passName": pass_name,
+                        "promptLength": len(full_prompt),
+                        "prompt": full_prompt,
+                        "maxTokens": max_tokens,
+                        "temperature": temperature,
+                    })
+                except Exception:
+                    pass
 
                 # Acquire slot and generate
                 slot_mode = None
@@ -3400,6 +3516,19 @@ async def educator_insights_websocket(websocket: WebSocket):
                 full_output = _re.sub(r'<think>[\s\S]*$', '', full_output).strip()
                 pass_outputs[pass_key] = full_output
 
+                # Debug: send LLM output
+                try:
+                    await websocket.send_json({
+                        "type": "debug",
+                        "stage": "llm_output",
+                        "passKey": pass_key,
+                        "passName": pass_name,
+                        "outputLength": len(full_output),
+                        "output": full_output,
+                    })
+                except Exception:
+                    pass
+
                 # Send pass_complete
                 try:
                     await websocket.send_json({
@@ -3426,6 +3555,69 @@ async def educator_insights_websocket(websocket: WebSocket):
                 ],
                 "synthesis": pass_outputs.get("synthesis", ""),
             }
+
+            # ── Persistent issue detection & motivational reminders ──
+            try:
+                from routes.insights import _load_reports
+                past_reports = _load_reports()
+                # Include the current report for analysis
+                all_reports = past_reports + [report]
+                # Only look at the last 4 reports (current + 3 previous)
+                recent = all_reports[-4:] if len(all_reports) >= 4 else all_reports
+
+                reminders = []
+                if len(recent) >= 3:
+                    def _check_streak(reports_list, pass_key, check_fn, dimension_label, suggestion):
+                        """Check if an issue persists across consecutive reports."""
+                        streak = 0
+                        for r in reports_list:
+                            rp = next((p for p in r.get("passes", []) if p.get("key") == pass_key), None)
+                            if rp and check_fn(rp.get("output", "")):
+                                streak += 1
+                            else:
+                                streak = 0
+                        if streak >= 3:
+                            reminders.append({
+                                "dimension": dimension_label,
+                                "issue": f"No progress in {dimension_label.lower()} for {streak} consecutive reports.",
+                                "streak_count": streak,
+                                "suggestion": suggestion,
+                            })
+
+                    # Curriculum: no-change or gaps persisting
+                    _check_streak(recent, "curriculum",
+                        lambda o: o.startswith("No new ") or "no new" in o.lower(),
+                        "Curriculum Coverage",
+                        "Try updating a few milestones or marking some progress in your curriculum tracker to keep momentum!")
+
+                    # Performance: no new assessments
+                    _check_streak(recent, "performance",
+                        lambda o: o.startswith("No new ") or "no new" in o.lower(),
+                        "Student Performance",
+                        "Consider adding a quick quiz or grading a recent assignment to keep performance data fresh.")
+
+                    # Content: no new content created
+                    _check_streak(recent, "content",
+                        lambda o: o.startswith("No new ") or "no new" in o.lower(),
+                        "Content Creation",
+                        "Try creating a quick quiz or worksheet to keep your content library growing!")
+
+                    # Attendance: no new records
+                    _check_streak(recent, "attendance",
+                        lambda o: o.startswith("No new ") or "no new" in o.lower(),
+                        "Attendance & Engagement",
+                        "Recording attendance regularly helps track student engagement trends over time.")
+
+                    # Achievements: no new achievements
+                    _check_streak(recent, "achievements",
+                        lambda o: o.startswith("No new ") or "no new" in o.lower(),
+                        "Achievements",
+                        "Keep using the platform and you'll unlock new achievements naturally!")
+
+                report["reminders"] = reminders
+            except Exception as e:
+                logger.error(f"Reminders detection error: {e}")
+                report["reminders"] = []
 
             # Save to disk
             try:

@@ -41,6 +41,7 @@ import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
 import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
 import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
 import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
 import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 
@@ -94,6 +95,7 @@ const StoryBook: React.FC<{ className?: string; style?: React.CSSProperties }> =
 const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Bulb01IconData} {...p} />;
 const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
 const Paintbrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
+const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
@@ -122,6 +124,7 @@ const PresentationBuilder = React.lazy(() => import('./PresentationBuilder'));
 const StoryBookCreator = React.lazy(() => import('./StoryBookCreator'));
 const Achievements = React.lazy(() => import('./Achievements'));
 const EducatorInsights = React.lazy(() => import('./EducatorInsights'));
+const PhotoReceiver = React.lazy(() => import('./PhotoReceiver'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -274,6 +277,14 @@ const tools: Tool[] = [
     group: 'my-classroom'
   },
   {
+    id: 'photo-transfer',
+    name: 'Photo Transfer',
+    icon: 'Camera',
+    type: 'photo-transfer',
+    description: 'Scan worksheets from your phone to PC over WiFi',
+    group: 'my-classroom'
+  },
+  {
     id: 'performance-metrics',
     name: 'Performance',
     icon: 'Speedometer',
@@ -363,6 +374,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   Trophy,
   StoryBook,
   Lightbulb,
+  Camera,
 };
 
 const WELCOME_TIPS = [
@@ -496,7 +508,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook', 'educator-insights']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook', 'educator-insights', 'photo-transfer']);
 const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook']);
 
 const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
@@ -865,6 +877,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     'rubric-generator': ['rubric-generator'],
     'class-management': ['class-management'],
     'support': ['support'],
+    'photo-transfer': ['photo-transfer'],
   };
 
   // Close tabs when any sidebar item is disabled (with close-all dialog)
@@ -1906,6 +1919,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'educator-insights':
         return <EducatorInsights tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
+      case 'photo-transfer':
+        return <PhotoReceiver tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'brain-dump':
         return (
           <BrainDump

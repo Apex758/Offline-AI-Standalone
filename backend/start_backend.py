@@ -23,7 +23,7 @@ print(f"Backend dir: {script_dir}")
 try:
     import uvicorn
     from main import app
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
 except Exception as e:
     print(f"Error: {e}")
     import traceback

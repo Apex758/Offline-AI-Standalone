@@ -19,6 +19,7 @@ import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import axios from 'axios';
 import type { InsightsData, InsightsReport, InsightsPassResult } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -45,6 +46,7 @@ const PASS_NAMES = [
 
 const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, onDataChange, isActive }) => {
   const { guardOffline } = useOfflineGuard();
+  const { notify } = useNotification();
 
   // Resolve teacher ID (username for milestones) and user ID (for achievements)
   const { teacherId, userId } = (() => {
@@ -66,7 +68,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [currentPass, setCurrentPass] = useState(0);
   const [totalPasses, setTotalPasses] = useState(7);
   const [currentPassName, setCurrentPassName] = useState('');
-  const [passResults, setPassResults] = useState<Record<string, { output: string; streaming: string; skipped?: boolean }>>(
+  const [passResults, setPassResults] = useState<Record<string, { output: string; streaming: string; skipped?: boolean; noChange?: boolean }>>(
     savedData?.passResults || {}
   );
   const [report, setReport] = useState<InsightsReport | null>(savedData?.report || null);
@@ -176,16 +178,35 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const streamingPassRef = useRef<string>('');
   const accumulatedTokensRef = useRef<string>('');
 
-  // Persist state to tab
+  // Persist state to tab — use refs to avoid stale closure / re-render issues
+  const insightsDataRef = useRef(insightsData);
+  const passResultsRef = useRef(passResults);
+  const reportRef = useRef(report);
+  const reportHistoryRef = useRef(reportHistory);
+  insightsDataRef.current = insightsData;
+  passResultsRef.current = passResults;
+  reportRef.current = report;
+  reportHistoryRef.current = reportHistory;
+
   const persistState = useCallback((updates: any) => {
     onDataChange({
-      insightsData,
-      passResults,
-      report,
-      reportHistory,
+      insightsData: insightsDataRef.current,
+      passResults: passResultsRef.current,
+      report: reportRef.current,
+      reportHistory: reportHistoryRef.current,
       ...updates,
     });
-  }, [onDataChange, insightsData, passResults, report, reportHistory]);
+  }, [onDataChange]);
+
+  // Persist state to parent when generation completes (avoids setState-during-render)
+  const prevGeneratingRef = useRef(false);
+  useEffect(() => {
+    // Fire only on the transition from generating → done, when we have a report
+    if (prevGeneratingRef.current && !isGenerating && report) {
+      persistState({ report, reportHistory: reportHistoryRef.current, passResults: passResultsRef.current });
+    }
+    prevGeneratingRef.current = isGenerating;
+  }, [isGenerating, report, persistState]);
 
   // Ref to prevent setState during render
   const hasInitialized = useRef(false);
@@ -216,10 +237,15 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             if (!report && res.data.length > 0) {
               const latest = res.data[res.data.length - 1];
               setReport(latest);
-              // Rebuild passResults from saved report
-              const saved: Record<string, { output: string; streaming: string }> = {};
-              for (const p of latest.passes || []) {
-                saved[p.key] = { output: p.output, streaming: '' };
+              // Rebuild passResults from saved report — ensure all 7 keys exist
+              const saved: Record<string, { output: string; streaming: string; skipped?: boolean }> = {};
+              for (const p of PASS_NAMES) {
+                const found = (latest.passes || []).find((rp: any) => rp.key === p.key);
+                if (found && found.output) {
+                  saved[p.key] = { output: found.output, streaming: '' };
+                } else {
+                  saved[p.key] = { output: '', streaming: '', skipped: true };
+                }
               }
               setPassResults(saved);
               persistState({ report: latest, reportHistory: res.data, passResults: saved });
@@ -264,6 +290,28 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       try {
         const msg = JSON.parse(event.data);
 
+        // --- Debug logging for pipeline visibility ---
+        if (msg.type === 'debug') {
+          if (msg.stage === 'aggregation') {
+            console.group('%c[Insights] Aggregation Data', 'color: #4fc3f7; font-weight: bold');
+            console.log('Date context:', msg.dateContext);
+            console.table(msg.summary);
+            console.groupEnd();
+          } else if (msg.stage === 'pass_skipped') {
+            console.log(`%c[Insights] SKIPPED: ${msg.passName} — ${msg.reason}`, 'color: #ffa726; font-weight: bold');
+          } else if (msg.stage === 'llm_input') {
+            console.group(`%c[Insights] LLM INPUT: ${msg.passName}`, 'color: #81c784; font-weight: bold');
+            console.log(`Prompt length: ${msg.promptLength} | Max tokens: ${msg.maxTokens} | Temperature: ${msg.temperature}`);
+            console.log(msg.prompt);
+            console.groupEnd();
+          } else if (msg.stage === 'llm_output') {
+            console.group(`%c[Insights] LLM OUTPUT: ${msg.passName}`, 'color: #ce93d8; font-weight: bold');
+            console.log(`Output length: ${msg.outputLength}`);
+            console.log(msg.output);
+            console.groupEnd();
+          }
+        }
+
         if (msg.type === 'status' && msg.pass !== undefined) {
           setCurrentPass(msg.pass);
           setTotalPasses(msg.total);
@@ -290,7 +338,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           const passKey = PASS_NAMES[msg.pass - 1]?.key || '';
           setPassResults(prev => ({
             ...prev,
-            [passKey]: { output: msg.result, streaming: '', skipped: msg.skipped }
+            [passKey]: { output: msg.result, streaming: '', skipped: msg.skipped, noChange: msg.noChange }
           }));
           accumulatedTokensRef.current = '';
           streamingPassRef.current = '';
@@ -299,12 +347,17 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         if (msg.type === 'complete') {
           setReport(msg.report);
           setIsGenerating(false);
-          // Update history
-          setReportHistory(prev => {
-            const updated = [...prev, msg.report];
-            persistState({ report: msg.report, reportHistory: updated });
-            return updated;
-          });
+          // Update history — persist is handled by the useEffect below
+          setReportHistory(prev => [...prev, msg.report]);
+
+          // Fire notifications for reminders
+          const reminders = msg.report?.reminders || [];
+          if (reminders.length === 1) {
+            notify(`Insight reminder: ${reminders[0].suggestion}`, 'info', tabId);
+          } else if (reminders.length > 1) {
+            notify(`${reminders.length} areas need attention in your insights report`, 'info', tabId);
+          }
+
           ws.close();
         }
 
@@ -342,12 +395,17 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       .catch(() => {});
   }, [report]);
 
-  // Load a historical report
+  // Load a historical report — ensure all 7 pass keys exist
   const handleLoadReport = useCallback((r: InsightsReport) => {
     setReport(r);
-    const saved: Record<string, { output: string; streaming: string }> = {};
-    for (const p of r.passes || []) {
-      saved[p.key] = { output: p.output, streaming: '' };
+    const saved: Record<string, { output: string; streaming: string; skipped?: boolean }> = {};
+    for (const p of PASS_NAMES) {
+      const found = (r.passes || []).find((rp: any) => rp.key === p.key);
+      if (found && found.output) {
+        saved[p.key] = { output: found.output, streaming: '' };
+      } else {
+        saved[p.key] = { output: '', streaming: '', skipped: true };
+      }
     }
     setPassResults(saved);
     setHistoryOpen(false);
@@ -709,59 +767,55 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             </div>
           )}
 
-          {/* Synthesis at top (only when complete) */}
-          {passResults.synthesis?.output && !passResults.synthesis.skipped && (
-            <InsightSection
-              icon={Bulb01IconData}
-              name="Executive Summary"
-              content={stripSynthesisHeader(passResults.synthesis.output)}
-              streaming={stripSynthesisHeader(passResults.synthesis.streaming)}
-              isActive={streamingPassRef.current === 'synthesis'}
-              color="amber"
-              prominent
-            />
+          {/* Motivational reminders */}
+          {report?.reminders && report.reminders.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {report.reminders.map((reminder, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-amber-50/60 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800">
+                  <span className="text-lg mt-0.5">💡</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-300">{reminder.dimension}</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">{reminder.suggestion}</p>
+                  </div>
+                  <span className="text-xs text-amber-500 dark:text-amber-500 whitespace-nowrap">{reminder.streak_count} reports</span>
+                </div>
+              ))}
+            </div>
           )}
 
-          {/* Progressive insight sections - always show all passes during/after generation */}
-          {PASS_NAMES.slice(0, 6).map((pass, idx) => {
+          {/* All insight sections — unified loop for all 7 passes */}
+          {PASS_NAMES.map((pass, idx) => {
             const result = passResults[pass.key];
             const isCurrentlyStreaming = isGenerating && streamingPassRef.current === pass.key;
-            // Pass numbers from backend are 1-indexed, array is 0-indexed
-            // isPending if: generating AND no result yet AND this pass hasn't been reached yet
-            const isPending = isGenerating && !result && currentPass <= idx;
+            // currentPass is 1-indexed from backend, idx is 0-indexed
+            // Pending: generating, no result yet, and backend hasn't reached this pass
+            const isPending = isGenerating && !result && currentPass < idx + 1;
             const isSkipped = result?.skipped;
+            const isSynthesis = pass.key === 'synthesis';
 
-            // Show section if: has result OR is generating (even without result) OR has report
-            const shouldShow = result || isGenerating || report;
-            if (!shouldShow) return null;
+            // Show section if: has result OR is generating OR viewing a report
+            if (!isGenerating && !report && !result) return null;
+
+            // For synthesis, strip duplicate headers
+            const content = isSynthesis ? stripSynthesisHeader(result?.output || '') : (result?.output || '');
+            const streaming = isSynthesis ? stripSynthesisHeader(result?.streaming || '') : (result?.streaming || '');
 
             return (
               <InsightSection
                 key={pass.key}
                 icon={pass.icon}
                 name={pass.name}
-                content={result?.output || ''}
-                streaming={result?.streaming || ''}
+                content={content}
+                streaming={streaming}
                 isActive={isCurrentlyStreaming}
                 isPending={isPending}
                 isSkipped={isSkipped}
-                color={['blue', 'green', 'purple', 'orange', 'yellow', 'teal'][idx]}
+                isNoChange={result?.noChange}
+                color={isSynthesis ? 'amber' : ['blue', 'green', 'purple', 'orange', 'yellow', 'teal'][idx]}
+                prominent={isSynthesis}
               />
             );
           })}
-
-          {/* Streaming synthesis while generating */}
-          {isGenerating && streamingPassRef.current === 'synthesis' && passResults.synthesis?.streaming && (
-            <InsightSection
-              icon={Bulb01IconData}
-              name="Executive Summary"
-              content=""
-              streaming={stripSynthesisHeader(passResults.synthesis.streaming)}
-              isActive={true}
-              color="amber"
-              prominent
-            />
-          )}
         </div>
       </div>
 
@@ -903,12 +957,13 @@ interface InsightSectionProps {
   isActive?: boolean;
   isPending?: boolean;
   isSkipped?: boolean;
+  isNoChange?: boolean;
   color: string;
   prominent?: boolean;
 }
 
 const InsightSection: React.FC<InsightSectionProps> = ({
-  icon, name, content, streaming, isActive, isPending, isSkipped, color, prominent
+  icon, name, content, streaming, isActive, isPending, isSkipped, isNoChange, color, prominent
 }) => {
   const colors = SECTION_COLORS[color] || SECTION_COLORS.blue;
   const displayText = stripThinkTags(content || streaming);
@@ -925,19 +980,62 @@ const InsightSection: React.FC<InsightSectionProps> = ({
     );
   }
 
-  if (isSkipped) {
+  // Map section name to a friendly empty-state message
+  const emptyMessages: Record<string, string> = {
+    'Curriculum Coverage': 'No curriculum coverage data available yet.',
+    'Student Performance': 'No student performance data recorded yet.',
+    'Content Creation': 'No content creation data available yet.',
+    'Attendance & Engagement': 'No attendance or engagement data recorded yet.',
+    'Achievements & Engagement': 'No achievements data available yet.',
+    'Teaching Recommendations': 'No recommendations available. Generate a report with data to receive teaching recommendations.',
+    'Executive Summary': 'No executive summary available yet. Generate a report to see a full summary.',
+  };
+  const emptyMsg = emptyMessages[name] || `No ${name.toLowerCase()} data available.`;
+
+  if (isNoChange && displayText) {
     return (
-      <div className={`p-4 rounded-xl border border-theme-border bg-theme-bg-secondary opacity-50`}>
-        <div className="flex items-center gap-2">
+      <div className={`p-4 rounded-xl border border-theme-border bg-theme-bg-secondary`}>
+        <div className="flex items-center gap-2 mb-2">
           <Icon icon={icon} className="w-5 text-theme-muted" />
           <span className="text-sm font-medium text-theme-muted">{name}</span>
-          <span className="text-xs text-theme-muted ml-auto">No data available</span>
+          <span className="text-xs text-blue-500 dark:text-blue-400 ml-auto flex items-center gap-1">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            No changes
+          </span>
         </div>
+        <p className="text-xs text-theme-secondary ml-7">{displayText}</p>
       </div>
     );
   }
 
-  if (!displayText) return null;
+  if (isSkipped || (!displayText && !isActive)) {
+    return (
+      <div className={`p-4 rounded-xl border border-theme-border bg-theme-bg-secondary`}>
+        <div className="flex items-center gap-2 mb-2">
+          <Icon icon={icon} className="w-5 text-theme-muted" />
+          <span className="text-sm font-medium text-theme-muted">{name}</span>
+          <span className="text-xs text-theme-muted ml-auto">No data available</span>
+        </div>
+        <p className="text-xs text-theme-muted ml-7">{emptyMsg}</p>
+      </div>
+    );
+  }
+
+  // Empty content but currently analyzing — show section with analyzing indicator
+  if (!displayText && isActive) {
+    return (
+      <div className={`p-4 rounded-xl border ${colors.border} ${prominent ? colors.bg : 'bg-theme-bg-secondary'} ring-2 ring-amber-400/50 transition-all duration-300`}>
+        <div className="flex items-center gap-2">
+          <Icon icon={icon} className={`w-5 ${colors.icon}`} />
+          <span className={`text-sm font-semibold ${prominent ? 'text-lg' : ''} text-theme-primary`}>{name}</span>
+          <div className="ml-auto flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+            Analyzing...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`p-4 rounded-xl border ${colors.border} ${prominent ? colors.bg : 'bg-theme-bg-secondary'} ${

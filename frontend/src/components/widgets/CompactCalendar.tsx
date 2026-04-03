@@ -200,7 +200,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
     const allPoints: string[] = [];
     for (const p of insightsReport.passes) {
       if (p.key === 'synthesis') continue;
-      if (!p.output || p.output.toLowerCase().includes('no ') && p.output.toLowerCase().includes('data available')) continue;
+      if (!p.output || (p.output.toLowerCase().includes('no ') && p.output.toLowerCase().includes('data available')) || p.output.toLowerCase().startsWith('no new ')) continue;
       const pts = parsePoints(p.output);
       allPoints.push(...pts);
     }
@@ -325,6 +325,16 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
             <h3 className="cc-title">
               <BulbIcon className="w-3.5 h-3.5" style={{ display: 'inline', marginRight: 5, verticalAlign: 'middle' }} />
               Insights
+              {insightsReport?.reminders && insightsReport.reminders.length > 0 && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  marginLeft: 6, fontSize: '0.6rem', fontWeight: 700,
+                  background: 'var(--dash-orange, #f59e0b)', color: '#fff',
+                  borderRadius: '9999px', minWidth: 16, height: 16, padding: '0 4px',
+                }} title={`${insightsReport.reminders.length} area${insightsReport.reminders.length > 1 ? 's' : ''} need attention`}>
+                  {insightsReport.reminders.length}
+                </span>
+              )}
             </h3>
             <div className="cc-header-actions" ref={settingsRef} style={{ position: 'relative' }}>
               {onRegenerateInsights && (
@@ -464,6 +474,24 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
                         </button>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Reminders */}
+                {insightsReport?.reminders && insightsReport.reminders.length > 0 && (
+                  <div className="cc-section">
+                    <div className="cc-rec-header">
+                      <span style={{ fontSize: '0.7rem' }}>💡</span>
+                      <span className="cc-section-title">Reminders</span>
+                    </div>
+                    <div className="cc-rec-items">
+                      {insightsReport.reminders.map((r, i) => (
+                        <div key={i} className="cc-rec-item">
+                          <span className="cc-rec-bullet" style={{ color: 'var(--dash-orange, #f59e0b)' }}>•</span>
+                          <span className="cc-rec-text">{r.suggestion}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
