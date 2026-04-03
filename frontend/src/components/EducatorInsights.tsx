@@ -13,6 +13,9 @@ import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
+import CalendarCheckIn01IconData from '@hugeicons/core-free-icons/CalendarCheckIn01Icon';
+import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import axios from 'axios';
 import type { InsightsData, InsightsReport, InsightsPassResult } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -71,6 +74,103 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [historyOpen, setHistoryOpen] = useState(false);
   const [error, setError] = useState('');
   const [dataLoading, setDataLoading] = useState(false);
+
+  // Settings panel state
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const settingsBtnRef = useRef<HTMLDivElement>(null);
+
+  // Pass toggles — which passes to run during generation
+  const PASS_TOGGLES_KEY = 'insights-pass-toggles';
+  const DEFAULT_PASS_TOGGLES: Record<string, boolean> = {
+    curriculum: true, performance: true, content: true,
+    attendance: true, achievements: true,
+    recommendations: true, synthesis: true,
+  };
+  const [passToggles, setPassToggles] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = localStorage.getItem(PASS_TOGGLES_KEY);
+      if (raw) return { ...DEFAULT_PASS_TOGGLES, ...JSON.parse(raw) };
+    } catch {}
+    return { ...DEFAULT_PASS_TOGGLES };
+  });
+
+  // Schedule form state
+  const [schedMode, setSchedMode] = useState<'manual' | 'daily' | 'interval'>('manual');
+  const [schedTime, setSchedTime] = useState('08:00');
+  const [schedDays, setSchedDays] = useState(1);
+  const [schedSaved, setSchedSaved] = useState(false);
+  const [schedLoading, setSchedLoading] = useState(false);
+
+  // Pass dependency enforcement
+  const PASS_DEPS: Record<string, string[]> = {
+    recommendations: ['curriculum', 'performance', 'content', 'attendance', 'achievements'],
+    synthesis: ['recommendations'],
+  };
+  const handlePassToggle = useCallback((key: string, val: boolean) => {
+    const next = { ...passToggles, [key]: val };
+    if (!val) {
+      // If turning off a pass, also turn off anything that depends on it
+      for (const [depKey, deps] of Object.entries(PASS_DEPS)) {
+        if (deps.includes(key)) {
+          next[depKey] = false;
+          // Cascade: if recommendations turned off, synthesis too
+          if (depKey === 'recommendations') next['synthesis'] = false;
+        }
+      }
+    }
+    if (val && key === 'recommendations') {
+      // Turning on recommendations — need at least the base passes that have data
+      // Don't force-enable them, but synthesis can now be re-enabled
+    }
+    if (val && key === 'synthesis') {
+      // Turning on synthesis requires recommendations
+      next['recommendations'] = true;
+    }
+    setPassToggles(next);
+    try { localStorage.setItem(PASS_TOGGLES_KEY, JSON.stringify(next)); } catch {}
+  }, [passToggles]);
+
+  // Load schedule on panel open
+  useEffect(() => {
+    if (scheduleOpen) {
+      fetch('/api/insights/schedule')
+        .then(r => r.json())
+        .then(d => {
+          setSchedMode(d.mode || 'manual');
+          setSchedTime(d.time || '08:00');
+          setSchedDays(d.every_days || 1);
+        })
+        .catch(() => {});
+    }
+  }, [scheduleOpen]);
+
+  // Close settings on outside click
+  useEffect(() => {
+    if (!settingsOpen && !scheduleOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (settingsBtnRef.current && !settingsBtnRef.current.contains(e.target as Node)) {
+        setSettingsOpen(false);
+        setScheduleOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [settingsOpen, scheduleOpen]);
+
+  const saveSchedule = async () => {
+    setSchedLoading(true);
+    try {
+      await fetch('/api/insights/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: schedMode, time: schedTime, every_days: schedDays }),
+      });
+      setSchedSaved(true);
+      setTimeout(() => { setSchedSaved(false); setScheduleOpen(false); setSettingsOpen(false); }, 1200);
+    } catch {}
+    setSchedLoading(false);
+  };
 
   const wsRef = useRef<WebSocket | null>(null);
   const streamingPassRef = useRef<string>('');
@@ -276,6 +376,86 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
   return (
     <div className="flex h-full overflow-hidden">
+      <style>{`
+        .ei-settings-dropdown {
+          position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
+          background: var(--dash-card-bg, white); border: 1px solid var(--dash-border, #E8E8E0);
+          border-radius: 0.75rem; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+          padding: 0.75rem; min-width: 220px;
+          display: flex; flex-direction: column; gap: 0.35rem;
+        }
+        .dark .ei-settings-dropdown { background: #1e293b; border-color: #334155; }
+        .ei-dropdown-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dash-text-sub, #94A3B8); margin-bottom: 0.15rem; }
+        .ei-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; cursor: pointer; padding: 0.25rem 0; }
+        .ei-toggle-label { font-size: 0.75rem; color: var(--dash-text, #374151); }
+        .dark .ei-toggle-label { color: #e2e8f0; }
+        .ei-toggle-switch {
+          width: 30px; height: 17px; border-radius: 9px;
+          background: var(--dash-border, #E8E8E0); position: relative;
+          cursor: pointer; flex-shrink: 0; transition: background 0.2s ease;
+        }
+        .ei-toggle-switch.ei-toggle-on { background: #d97706; }
+        .ei-toggle-thumb {
+          position: absolute; top: 2px; left: 2px;
+          width: 13px; height: 13px; border-radius: 50%;
+          background: white; transition: transform 0.2s ease;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .ei-toggle-on .ei-toggle-thumb { transform: translateX(13px); }
+        .ei-dep-hint { font-size: 0.6rem; color: var(--dash-text-sub, #94A3B8); line-height: 1.4; margin-top: 0.15rem; font-style: italic; }
+        .ei-dropdown-divider { height: 1px; background: var(--dash-border, #E8E8E0); margin: 0.2rem 0; }
+        .dark .ei-dropdown-divider { background: #334155; }
+        .ei-dropdown-action {
+          display: flex; align-items: center;
+          font-size: 0.75rem; color: #d97706; font-weight: 600;
+          background: none; border: none; cursor: pointer; padding: 0.25rem 0;
+          transition: opacity 0.15s;
+        }
+        .ei-dropdown-action:hover { opacity: 0.75; }
+        .ei-schedule-panel { min-width: 230px; }
+        .ei-sched-back {
+          display: flex; align-items: center; justify-content: center;
+          width: 22px; height: 22px; border-radius: 5px; border: none;
+          background: var(--dash-gold-a25, #F5F5F0); color: var(--dash-text, #374151);
+          cursor: pointer;
+        }
+        .dark .ei-sched-back { background: #334155; color: #e2e8f0; }
+        .ei-sched-option {
+          display: flex; align-items: center; gap: 0.5rem;
+          padding: 0.35rem 0.5rem; border-radius: 0.375rem;
+          cursor: pointer; transition: background 0.12s ease;
+        }
+        .ei-sched-option:hover { background: var(--dash-gold-a25, #F5F5F0); }
+        .dark .ei-sched-option:hover { background: #334155; }
+        .ei-sched-selected { background: var(--dash-gold-a25, #F5F5F0); }
+        .dark .ei-sched-selected { background: #334155; }
+        .ei-sched-dot {
+          width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+          border: 2px solid var(--dash-border, #E8E8E0);
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .ei-sched-selected .ei-sched-dot { border-color: #d97706; background: #d97706; }
+        .ei-sched-option-label { font-size: 0.75rem; color: var(--dash-text, #374151); }
+        .dark .ei-sched-option-label { color: #e2e8f0; }
+        .ei-sched-fields { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.4rem 0 0.15rem; }
+        .ei-sched-field { display: flex; align-items: center; gap: 0.4rem; }
+        .ei-sched-field-label { font-size: 0.675rem; color: var(--dash-text-sub, #94A3B8); display: flex; align-items: center; }
+        .ei-sched-input {
+          flex: 1; font-size: 0.75rem; padding: 0.25rem 0.5rem;
+          border: 1px solid var(--dash-border, #E8E8E0); border-radius: 0.375rem;
+          background: var(--dash-card-bg, white); color: var(--dash-text, #374151); outline: none;
+        }
+        .dark .ei-sched-input { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+        .ei-sched-input:focus { border-color: #d97706; }
+        .ei-sched-input-sm { max-width: 56px; }
+        .ei-sched-save {
+          margin-top: 0.5rem; width: 100%; padding: 0.4rem; border-radius: 0.375rem; border: none;
+          background: #d97706; color: white;
+          font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+        }
+        .ei-sched-save:hover:not(:disabled) { opacity: 0.85; }
+        .ei-sched-save:disabled { opacity: 0.6; cursor: default; }
+      `}</style>
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Header */}
@@ -322,6 +502,104 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               >
                 <Icon icon={Clock01IconData} className="w-5" />
               </button>
+              {/* Settings dropdown container */}
+              <div ref={settingsBtnRef} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => { setSettingsOpen(o => !o); setScheduleOpen(false); }}
+                  className={`p-2 rounded-lg transition-colors ${
+                    settingsOpen || scheduleOpen
+                      ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                      : 'hover:bg-theme-bg-tertiary text-theme-muted hover:text-theme-primary'
+                  }`}
+                  title="Settings & Schedule"
+                >
+                  <Icon icon={Settings01IconData} className="w-5" />
+                </button>
+
+                {/* Settings panel */}
+                {settingsOpen && !scheduleOpen && (
+                  <div className="ei-settings-dropdown">
+                    <p className="ei-dropdown-label">Passes to run</p>
+                    {PASS_NAMES.map(({ key, name }) => {
+                      const isDisabledByDep = (
+                        (key === 'recommendations' && !['curriculum','performance','content','attendance','achievements'].some(k => passToggles[k])) ||
+                        (key === 'synthesis' && !passToggles.recommendations)
+                      );
+                      return (
+                        <label key={key} className="ei-toggle-row" style={{ opacity: isDisabledByDep && !passToggles[key] ? 0.5 : 1 }}>
+                          <span className="ei-toggle-label">{name}</span>
+                          <span
+                            className={`ei-toggle-switch${passToggles[key] ? ' ei-toggle-on' : ''}`}
+                            onClick={(e) => { e.preventDefault(); if (!isDisabledByDep || passToggles[key]) handlePassToggle(key, !passToggles[key]); }}
+                          >
+                            <span className="ei-toggle-thumb" />
+                          </span>
+                        </label>
+                      );
+                    })}
+                    {/* Dependency hint */}
+                    <p className="ei-dep-hint">Recommendations requires at least one base pass. Summary requires Recommendations.</p>
+                    <div className="ei-dropdown-divider" />
+                    <button className="ei-dropdown-action" onClick={() => { setScheduleOpen(true); setSettingsOpen(false); }}>
+                      <Icon icon={CalendarCheckIn01IconData} className="w-4" style={{ marginRight: 5 }} />
+                      Schedule Insights
+                    </button>
+                  </div>
+                )}
+
+                {/* Schedule panel */}
+                {scheduleOpen && (
+                  <div className="ei-settings-dropdown ei-schedule-panel">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                      <button className="ei-sched-back" onClick={() => { setScheduleOpen(false); setSettingsOpen(true); }}>
+                        <Icon icon={ArrowLeft02IconData} className="w-3.5" />
+                      </button>
+                      <p className="ei-dropdown-label" style={{ margin: 0 }}>Schedule Insights</p>
+                    </div>
+
+                    {(['manual', 'daily', 'interval'] as const).map(m => (
+                      <label key={m} className={`ei-sched-option${schedMode === m ? ' ei-sched-selected' : ''}`}>
+                        <input type="radio" name="eiSchedMode" value={m} checked={schedMode === m} onChange={() => setSchedMode(m)} style={{ display: 'none' }} />
+                        <span className="ei-sched-dot" />
+                        <span className="ei-sched-option-label">
+                          {m === 'manual' ? 'Manual only' : m === 'daily' ? 'Daily' : 'Every N days'}
+                        </span>
+                      </label>
+                    ))}
+
+                    {(schedMode === 'daily' || schedMode === 'interval') && (
+                      <div className="ei-sched-fields">
+                        {schedMode === 'interval' && (
+                          <div className="ei-sched-field">
+                            <label className="ei-sched-field-label">Every</label>
+                            <input
+                              type="number" min={1} max={14} value={schedDays}
+                              onChange={e => setSchedDays(Math.max(1, Math.min(14, Number(e.target.value))))}
+                              className="ei-sched-input ei-sched-input-sm"
+                            />
+                            <span className="ei-sched-field-label">day(s)</span>
+                          </div>
+                        )}
+                        <div className="ei-sched-field">
+                          <label className="ei-sched-field-label">
+                            <Icon icon={Clock01IconData} className="w-3.5" />
+                          </label>
+                          <input
+                            type="time" value={schedTime}
+                            onChange={e => setSchedTime(e.target.value)}
+                            className="ei-sched-input"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <button className="ei-sched-save" onClick={saveSchedule} disabled={schedLoading}>
+                      {schedSaved ? '✓ Saved' : schedLoading ? 'Saving…' : 'Save Schedule'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating || !hasAnyData}

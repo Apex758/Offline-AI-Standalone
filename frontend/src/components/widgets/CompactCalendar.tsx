@@ -189,9 +189,22 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
 
   // ── Insights data helpers ─────────────────────────────────────────────────
   const recPoints = useMemo(() => {
-    if (!insightsReport) return [];
-    const pass = insightsReport.passes?.find(p => p.key === 'recommendations');
-    return parsePoints(pass?.output || '');
+    if (!insightsReport?.passes) return [];
+    // Gather points from recommendations pass, falling back to synthesis, then all passes
+    const recPass = insightsReport.passes.find(p => p.key === 'recommendations');
+    if (recPass?.output) {
+      const pts = parsePoints(recPass.output);
+      if (pts.length > 0) return pts;
+    }
+    // Fallback: gather non-empty pass outputs (skip "no data" messages)
+    const allPoints: string[] = [];
+    for (const p of insightsReport.passes) {
+      if (p.key === 'synthesis') continue;
+      if (!p.output || p.output.toLowerCase().includes('no ') && p.output.toLowerCase().includes('data available')) continue;
+      const pts = parsePoints(p.output);
+      allPoints.push(...pts);
+    }
+    return allPoints;
   }, [insightsReport]);
 
   const totalRecPages = Math.max(1, Math.ceil(recPoints.length / ITEMS_PER_PAGE));
@@ -432,15 +445,13 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
                       <BulbIcon className="w-3 h-3" style={{ color: 'var(--dash-orange)', flexShrink: 0 }} />
                       <span className="cc-section-title">Recommendations</span>
                     </div>
-                    <div className="cc-rec-viewport">
-                      <div className={`cc-rec-page cc-rec-${recSlide}`}>
-                        {currentRecItems.map((item, i) => (
-                          <div key={i} className="cc-rec-item">
-                            <span className="cc-rec-bullet">•</span>
-                            <span className="cc-rec-text">{item}</span>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="cc-rec-items">
+                      {currentRecItems.map((item, i) => (
+                        <div key={`${recPage}-${i}`} className="cc-rec-item">
+                          <span className="cc-rec-bullet">•</span>
+                          <span className="cc-rec-text">{item}</span>
+                        </div>
+                      ))}
                     </div>
                     {totalRecPages > 1 && (
                       <div className="cc-rec-nav">
@@ -457,15 +468,23 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
                 )}
 
                 {/* Synthesis */}
-                {prefs.synthesis && insightsReport.synthesis && (
-                  <div className="cc-section">
-                    <div className="cc-section-header">
-                      <ArrowUp className="w-3 h-3" style={{ color: 'var(--dash-primary)', flexShrink: 0 }} />
-                      <span className="cc-section-title">Summary</span>
+                {prefs.synthesis && (() => {
+                  const synthText = insightsReport.synthesis
+                    || insightsReport.passes?.find(p => p.key === 'synthesis')?.output
+                    || '';
+                  if (!synthText) return null;
+                  // Strip markdown headers for compact display
+                  const cleanText = synthText.replace(/^#+\s+/gm, '').trim();
+                  return (
+                    <div className="cc-section">
+                      <div className="cc-section-header">
+                        <ArrowUp className="w-3 h-3" style={{ color: 'var(--dash-primary)', flexShrink: 0 }} />
+                        <span className="cc-section-title">Summary</span>
+                      </div>
+                      <p className="cc-synthesis-text">{cleanText}</p>
                     </div>
-                    <p className="cc-synthesis-text">{insightsReport.synthesis}</p>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Timestamp + actions */}
                 {prefs.timestamp && formattedDate && (
@@ -643,20 +662,13 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
         /* ── Recommendations ── */
         .cc-rec-container {
           display: flex; flex-direction: column; gap: 0.25rem;
-          flex: 1; min-height: 0;
+          flex: 1; min-height: 0; overflow: hidden;
         }
-        .cc-rec-header { display: flex; align-items: center; gap: 0.3rem; }
-        .cc-rec-viewport {
-          flex: 1; min-height: 0; position: relative; overflow: hidden;
-        }
-        .cc-rec-page {
-          position: absolute; inset: 0;
+        .cc-rec-header { display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0; }
+        .cc-rec-items {
           display: flex; flex-direction: column; gap: 0.3rem;
-          transition: transform 0.22s ease, opacity 0.22s ease;
+          flex: 1; min-height: 0; overflow-y: auto;
         }
-        .cc-rec-active    { transform: translateX(0);      opacity: 1; }
-        .cc-rec-enter-right { transform: translateX(100%);  opacity: 0; }
-        .cc-rec-exit-left   { transform: translateX(-100%); opacity: 0; }
         .cc-rec-item { display: flex; align-items: flex-start; gap: 0.3rem; }
         .cc-rec-bullet { color: var(--dash-orange, #F2A631); font-size: 0.75rem; flex-shrink: 0; line-height: 1.5; }
         .cc-rec-text { font-size: 0.7rem; color: var(--dash-text, #374151); line-height: 1.5; }
