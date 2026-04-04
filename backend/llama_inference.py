@@ -429,6 +429,32 @@ class LlamaInference:
                 except Exception as e:
                     token_queue.put(("ERROR", str(e)))
                 finally:
+                    # Record metrics here — pure model compute time, always runs
+                    # before DONE is queued so caller early-exit can't skip it.
+                    _gen_end = time.perf_counter()
+                    _total_ms = (_gen_end - gen_start) * 1000
+                    _ttft_ms = ((first_token_time[0] - gen_start) * 1000) if first_token_time[0] else 0
+                    _snap_cpu, _snap_ram = 0.0, 0.0
+                    try:
+                        import psutil as _psutil
+                        _proc = _psutil.Process(os.getpid())
+                        _snap_cpu = _proc.cpu_percent(interval=None)
+                        _snap_ram = round(_proc.memory_info().rss / (1024 * 1024), 2)
+                    except Exception:
+                        pass
+                    try:
+                        from metrics_service import get_metrics_collector
+                        get_metrics_collector().record_inference(
+                            model_name=os.path.basename(self.model_path),
+                            task_type=tool_name,
+                            completion_tokens=token_count[0],
+                            ttft_ms=_ttft_ms,
+                            total_time_ms=_total_ms,
+                            cpu_percent=_snap_cpu,
+                            ram_usage_mb=_snap_ram,
+                        )
+                    except Exception as _me:
+                        logger.debug(f"Metrics recording skipped: {_me}")
                     token_queue.put(DONE)  # Signal completion
 
             # ✅ Start streaming in background thread
@@ -469,33 +495,6 @@ class LlamaInference:
 
             # Wait for thread to finish
             await stream_task
-
-            # Record metrics after generation completes
-            gen_end = time.perf_counter()
-            total_time_ms = (gen_end - gen_start) * 1000
-            ttft_ms = ((first_token_time[0] - gen_start) * 1000) if first_token_time[0] else 0
-            # Capture resources while model is still hot
-            snap_cpu, snap_ram = 0.0, 0.0
-            try:
-                import psutil
-                proc = psutil.Process(os.getpid())
-                snap_cpu = proc.cpu_percent(interval=None)
-                snap_ram = round(proc.memory_info().rss / (1024 * 1024), 2)
-            except Exception:
-                pass
-            try:
-                from metrics_service import get_metrics_collector
-                get_metrics_collector().record_inference(
-                    model_name=os.path.basename(self.model_path),
-                    task_type=tool_name,
-                    completion_tokens=token_count[0],
-                    ttft_ms=ttft_ms,
-                    total_time_ms=total_time_ms,
-                    cpu_percent=snap_cpu,
-                    ram_usage_mb=snap_ram,
-                )
-            except Exception as me:
-                logger.debug(f"Metrics recording skipped: {me}")
 
         except Exception as e:
             logger.error(f"❌ Streaming error: {e}")

@@ -806,6 +806,10 @@ button[style*="background-color: rgb(59"] {
   .text-theme-muted { color: var(--text-muted); }
   .text-theme-hint { color: var(--text-hint); }
 
+  /* Accent */
+  .bg-theme-accent { background-color: rgb(var(--accent)); }
+  .text-theme-accent-foreground { color: rgb(var(--accent-foreground)); }
+
   /* Semantic backgrounds */
   .bg-theme-surface { background-color: var(--bg-surface); }
   .bg-theme-secondary { background-color: var(--bg-secondary); }

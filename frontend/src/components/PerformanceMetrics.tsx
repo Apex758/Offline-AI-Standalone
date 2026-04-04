@@ -819,7 +819,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
         <button
           onClick={() => setActiveTab('overview')}
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'overview' ? 'bg-theme-accent text-white' : 'text-theme-muted hover:text-theme-primary'
+            activeTab === 'overview' ? 'bg-theme-accent text-theme-accent-foreground' : 'text-theme-muted hover:text-theme-primary'
           }`}
         >
           Summary
@@ -827,7 +827,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
         <button
           onClick={() => setActiveTab('history')}
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'history' ? 'bg-theme-accent text-white' : 'text-theme-muted hover:text-theme-primary'
+            activeTab === 'history' ? 'bg-theme-accent text-theme-accent-foreground' : 'text-theme-muted hover:text-theme-primary'
           }`}
         >
           History
