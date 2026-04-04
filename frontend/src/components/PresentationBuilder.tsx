@@ -22,7 +22,7 @@ import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { imageApi } from '../lib/imageApi';
-import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson } from '../utils/presentationPromptBuilder';
+import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson, buildPresentationPromptFromFreeInput } from '../utils/presentationPromptBuilder';
 import type { PresentationFormData, ParsedLessonInput } from '../utils/presentationPromptBuilder';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -86,7 +86,7 @@ interface Draft {
   curriculumMatches?: any[];
 }
 
-type InputMode = 'scratch' | 'lesson';
+type InputMode = 'scratch' | 'lesson' | 'prompt';
 type RightTab = 'color' | 'edit' | 'layouts';
 
 
@@ -1506,6 +1506,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   });
   const [useCurriculum, setUseCurriculum] = useState(savedData?.useCurriculum ?? true);
 
+  // Free prompt (prompt mode)
+  const [freePrompt, setFreePrompt] = useState<string>(savedData?.freePrompt || '');
+
   // Lesson plan selection (lesson mode)
   const [lessonPlans, setLessonPlans] = useState<LessonPlanRecord[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(savedData?.selectedPlanId || null);
@@ -1610,11 +1613,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   // Persist state
   useEffect(() => {
     onDataChange({
-      inputMode, formData, useCurriculum, selectedPlanId,
+      inputMode, formData, useCurriculum, selectedPlanId, freePrompt,
       slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount,
       presentationMode, maxImages, suggestedImages, showSuggestionPanel,
     });
-  }, [inputMode, formData, useCurriculum, selectedPlanId, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount, suggestedImages, showSuggestionPanel]);
+  }, [inputMode, formData, useCurriculum, selectedPlanId, freePrompt, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount, suggestedImages, showSuggestionPanel]);
 
   // Load lesson plan history
   useEffect(() => {
@@ -1868,7 +1871,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       const includeImagePlacement = imageMode !== 'none';
       let prompt: string;
 
-      if (inputMode === 'lesson') {
+      if (inputMode === 'prompt') {
+        if (!freePrompt.trim()) { setError('Please enter a prompt describing the presentation you want.'); setLoading(false); return; }
+        prompt = buildPresentationPromptFromFreeInput(freePrompt.trim(), includeImagePlacement, slideCount, presentationMode, imageMode) + imageContext;
+      } else if (inputMode === 'lesson') {
         const plan = lessonPlans.find(p => p.id === selectedPlanId);
         if (!plan) { setError('Please select a lesson plan first.'); setLoading(false); return; }
         prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount, presentationMode, imageMode) + imageContext;
@@ -1891,7 +1897,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
       if (queueEnabled) {
         enqueue({
-          label: `Presentation - ${formData.topic || 'Lesson'}`,
+          label: `Presentation - ${inputMode === 'prompt' ? freePrompt.slice(0, 40) : (formData.topic || 'Lesson')}`,
           toolType: 'Presentation',
           tabId,
           endpoint: ENDPOINT,
@@ -2106,6 +2112,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     const pptxgen = (await import('pptxgenjs')).default;
     const pptx = new pptxgen();
     pptx.layout = 'LAYOUT_WIDE';
+    // Typography scale — kids mode uses slightly larger, friendlier sizes
+    const isKids = presentationMode === 'kids';
+    const typo = {
+      badge:    { size: isKids ? 12 : 11, font: 'Arial', charSpacing: 3 },
+      hero:     { size: isKids ? 44 : 40, font: 'Georgia' },
+      subtitle: { size: isKids ? 20 : 18, font: 'Arial' },
+      heading:  { size: isKids ? 30 : 28, font: 'Georgia' },
+      body:     { size: isKids ? 18 : 16, font: 'Arial', lineSpacing: isKids ? 24 : 22 },
+      bullet:   { size: isKids ? 17 : 15, font: 'Arial', lineSpacing: isKids ? 22 : 20 },
+    };
+
     slides.forEach(slide => {
       const s = pptx.addSlide();
       const c = slide.content || {};
@@ -2141,17 +2158,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       const tyOff = pl === 'top' ? 3.2 : 0;
 
       if (slide.layout === 'title') {
-        if (c.badge) s.addText(c.badge, { x: txBase, y: 0.65 + tyOff, w: Math.min(5, txW), h: 0.25, fontSize: 9, color: pc, bold: true, charSpacing: 2 });
-        s.addText(c.headline || '', { x: txBase, y: 1.05 + tyOff, w: txW, h: 1.5, fontSize: 34, bold: true, color: tc, fontFace: 'Georgia' });
-        if (c.subtitle) s.addText(c.subtitle, { x: txBase, y: 2.7 + tyOff, w: Math.min(9, txW), h: 0.4, fontSize: 13, color: '777777' });
+        if (c.badge) s.addText(c.badge, { x: txBase, y: 0.55 + tyOff, w: Math.min(5, txW), h: 0.3, fontSize: typo.badge.size, color: pc, bold: true, fontFace: typo.badge.font, charSpacing: typo.badge.charSpacing });
+        s.addText(c.headline || '', { x: txBase, y: 1.0 + tyOff, w: txW, h: 1.8, fontSize: typo.hero.size, bold: true, color: tc, fontFace: typo.hero.font });
+        if (c.subtitle) s.addText(c.subtitle, { x: txBase, y: 3.0 + tyOff, w: Math.min(9, txW), h: 0.5, fontSize: typo.subtitle.size, color: '777777', fontFace: typo.subtitle.font });
       } else {
-        if (c.badge) s.addText(c.badge, { x: txBase, y: 0.38 + tyOff, w: Math.min(4, txW), h: 0.22, fontSize: 9, color: pc, bold: true });
-        s.addText(c.headline || '', { x: txBase, y: (c.badge ? 0.68 : 0.48) + tyOff, w: txW, h: 0.85, fontSize: 20, bold: true, color: tc, fontFace: 'Georgia' });
-        if (c.body) s.addText(c.body, { x: txBase, y: 1.65 + tyOff, w: Math.min(9, txW), h: 1.5, fontSize: 13, color: tc, wrap: true } as any);
-        (c.bullets || []).forEach((b, i) => s.addText(`•  ${b}`, { x: txBase + 0.2, y: 1.62 + tyOff + i * 0.52, w: Math.min(8.8, txW - 0.2), h: 0.48, fontSize: 12, color: tc, wrap: true } as any));
+        if (c.badge) s.addText(c.badge, { x: txBase, y: 0.35 + tyOff, w: Math.min(4, txW), h: 0.28, fontSize: typo.badge.size, color: pc, bold: true, fontFace: typo.badge.font, charSpacing: typo.badge.charSpacing });
+        s.addText(c.headline || '', { x: txBase, y: (c.badge ? 0.7 : 0.48) + tyOff, w: txW, h: 1.0, fontSize: typo.heading.size, bold: true, color: tc, fontFace: typo.heading.font });
+        if (c.body) s.addText(c.body, { x: txBase, y: 1.85 + tyOff, w: Math.min(9, txW), h: 1.8, fontSize: typo.body.size, color: tc, fontFace: typo.body.font, lineSpacingMultiple: 1.3, wrap: true } as any);
+        (c.bullets || []).forEach((b, i) => s.addText(`•  ${b}`, { x: txBase + 0.2, y: 1.82 + tyOff + i * 0.58, w: Math.min(8.8, txW - 0.2), h: 0.52, fontSize: typo.bullet.size, color: tc, fontFace: typo.bullet.font, lineSpacingMultiple: 1.2, wrap: true } as any));
       }
     });
-    const topicSlug = (formData.topic || 'presentation').replace(/\s+/g, '_');
+    const topicSlug = (inputMode === 'prompt' ? freePrompt.slice(0, 30) : formData.topic || 'presentation').replace(/\s+/g, '_');
     pptx.writeFile({ fileName: `${topicSlug}.pptx` });
   };
 
@@ -2213,7 +2230,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
             {/* Mode toggle */}
             <div className="flex rounded-lg border border-theme-border overflow-hidden">
-              {(['scratch', 'lesson'] as const).map(mode => (
+              {(['scratch', 'lesson', 'prompt'] as const).map(mode => (
                 <button
                   key={mode}
                   onClick={() => setInputMode(mode)}
@@ -2223,12 +2240,27 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   }`}
                   style={inputMode === mode ? { background: tabColor } : undefined}
                 >
-                  {mode === 'scratch' ? 'From Scratch' : 'From Lesson Plan'}
+                  {mode === 'scratch' ? 'From Scratch' : mode === 'lesson' ? 'From Lesson Plan' : 'Free Prompt'}
                 </button>
               ))}
             </div>
 
-            {inputMode === 'scratch' ? (
+            {inputMode === 'prompt' ? (
+              /* ── FREE PROMPT MODE ── */
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-theme-heading mb-1">Describe the presentation you want</label>
+                  <SmartTextArea
+                    value={freePrompt}
+                    onChange={v => setFreePrompt(v)}
+                    placeholder="e.g. A company quarterly review highlighting revenue growth, key wins, and next quarter goals..."
+                    rows={5}
+                    className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm resize-none"
+                  />
+                  <p className="text-xs text-theme-muted mt-1">No grade or subject required — just describe what you need and the AI will create it.</p>
+                </div>
+              </div>
+            ) : inputMode === 'scratch' ? (
               /* ── SCRATCH MODE FORM ── */
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">

@@ -601,6 +601,13 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     align-items: center;
     gap: 1rem;
   ">
+    ${qrCodeBase64 ? `
+    <img src="data:image/png;base64,${qrCodeBase64}" style="
+      width: 4rem;
+      height: 4rem;
+      image-rendering: pixelated;
+    " />
+    ` : `
     <div style="
       width: 2.5rem;
       height: 2.5rem;
@@ -613,9 +620,14 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       font-weight: 700;
       font-size: 1.125rem;
     ">${studentInfo.name.charAt(0)}</div>
+    `}
     <div>
       <div style="font-weight: 600; color: #1f2937; font-size: 1rem;">${studentInfo.name}</div>
+      ${qrCodeBase64 ? `
+      <div style="color: #6b7280; font-size: 0.75rem;">Scan QR to identify student &amp; ${quizId ? 'quiz' : 'document'}</div>
+      ` : `
       <div style="color: #6b7280; font-size: 0.875rem;">Student ID: ${studentInfo.id}</div>
+      `}
     </div>
   </div>
   ` : ''}

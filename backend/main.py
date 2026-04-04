@@ -8533,6 +8533,37 @@ async def export_calendar_ics(request: Request):
 
 # ── Scan-Grading Endpoints ──────────────────────────────────────────────────
 
+@app.post("/api/generate-qr")
+async def generate_qr(request: Request):
+    """Generate a QR code encoding both the document ID and student ID.
+
+    Expects JSON body:
+    {
+      "doc_type": "quiz" | "worksheet",
+      "doc_id": "quiz_xxx" | "worksheet_xxx",
+      "student_id": "JD12345"
+    }
+
+    Returns JSON: { "qr_base64": "<base64 PNG>" }
+    """
+    from qr_service import generate_page_qr
+
+    body = await request.json()
+    doc_type_raw = body.get("doc_type", "quiz")
+    doc_id = body.get("doc_id", "")
+    student_id = body.get("student_id", "")
+
+    if not doc_id or not student_id:
+        return JSONResponse({"error": "doc_id and student_id are required"}, status_code=400)
+
+    qr_type = "q" if doc_type_raw == "quiz" else "w"
+    # version_hash "0000" for non-randomized individual exports
+    qr_bytes = generate_page_qr(qr_type, doc_id, student_id, "0000")
+    qr_b64 = base64.b64encode(qr_bytes).decode()
+
+    return JSONResponse({"qr_base64": qr_b64})
+
+
 @app.post("/api/export-class-pack")
 async def export_class_pack(request: Request):
     """Export a complete class set with QR codes for scan-grading.

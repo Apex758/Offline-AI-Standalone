@@ -64,9 +64,28 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     setShowMenu(false);
 
     try {
+      // Generate QR code if student info is available
+      let qrCodeBase64: string | undefined;
+      if (data.studentInfo?.id) {
+        const docId = data.quizId || data.worksheetId || '';
+        const docType = dataType === 'worksheet' ? 'worksheet' : 'quiz';
+        if (docId) {
+          try {
+            const qrRes = await axios.post('http://localhost:8000/api/generate-qr', {
+              doc_type: docType,
+              doc_id: docId,
+              student_id: data.studentInfo.id
+            });
+            qrCodeBase64 = qrRes.data.qr_base64;
+          } catch (e) {
+            console.warn('QR generation failed, falling back to text ID:', e);
+          }
+        }
+      }
+
       let exportData;
       let title;
-      
+
       if (dataType === 'worksheet') {
         // Handle worksheet export
         exportData = prepareWorksheetForExport(
@@ -75,7 +94,9 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           data.formData,
           data.accentColor,
           data.generatedImages || [],
-          data.worksheetId
+          data.worksheetId,
+          undefined,
+          qrCodeBase64
         );
         title = data.formData.subject
           ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
@@ -127,10 +148,13 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           data.content,
           data.formData,
           data.accentColor,
-          data.exportOptions || {
-            showAnswerKey: true,
-            showExplanations: true,
-            boldCorrectAnswers: false
+          {
+            ...(data.exportOptions || {
+              showAnswerKey: true,
+              showExplanations: true,
+              boldCorrectAnswers: false
+            }),
+            qrCodeBase64
           },
           data.studentInfo,
           data.quizId

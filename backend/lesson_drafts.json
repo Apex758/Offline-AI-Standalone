@@ -27,45 +27,5 @@
     },
     "step": 1,
     "curriculumMatches": []
-  },
-  {
-    "id": "draft_quiz-generator-1774919170069_1774921541736",
-    "title": "Science - 4",
-    "timestamp": "2026-03-31T01:45:41.736Z",
-    "plannerType": "quiz",
-    "formData": {
-      "subject": "Science",
-      "gradeLevel": "4",
-      "learningOutcomes": "",
-      "questionTypes": [],
-      "cognitiveLevels": [],
-      "timeLimitPerQuestion": "",
-      "numberOfQuestions": "10",
-      "strand": "Waves",
-      "essentialOutcomes": "Develop a model of waves to describe patterns in terms of amplitude and wavelength and that waves can cause objects to move",
-      "specificOutcomes": "Define the terms: Wave, Amplitude, Wavelength, Crest, Trough, Pattern, Longitudinal waves, Transverse waves, Pitch, Vibration, Volume, Loudness, Mechanical waves, Electromagnetic waves, Reflection, Refraction, Diffraction, Sound intensity and decibels."
-    },
-    "step": 1,
-    "curriculumMatches": []
-  },
-  {
-    "id": "draft_quiz-generator-1775032901399_1775033190448",
-    "title": "Science - K",
-    "timestamp": "2026-04-01T08:46:30.448Z",
-    "plannerType": "quiz",
-    "formData": {
-      "subject": "Science",
-      "gradeLevel": "K",
-      "learningOutcomes": "",
-      "questionTypes": [],
-      "cognitiveLevels": [],
-      "timeLimitPerQuestion": "",
-      "numberOfQuestions": "10",
-      "strand": "",
-      "essentialOutcomes": "",
-      "specificOutcomes": ""
-    },
-    "step": 1,
-    "curriculumMatches": []
   }
 ]

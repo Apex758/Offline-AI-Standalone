@@ -84,7 +84,11 @@
       "WebFetch(domain:skills.sh)",
       "Bash(python -c \"import ast; ast.parse\\(open\\('backend/main.py'\\).read\\(\\)\\); print\\('main.py OK'\\)\")",
       "Bash(python -c \"import ast; ast.parse\\(open\\('backend/main.py', encoding='utf-8'\\).read\\(\\)\\); print\\('main.py OK'\\)\")",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(npm view:*)",
+      "Bash(grep -l \"scan.grade\\\\|scan-grade\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)",
+      "Bash(grep -n \"results.append\\\\|results\\\\\\\\.push\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/main.py\")",
+      "Bash(grep -l \"export-class-pack\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\"/*.tsx)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

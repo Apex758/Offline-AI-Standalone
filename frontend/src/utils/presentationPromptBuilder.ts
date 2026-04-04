@@ -95,6 +95,50 @@ RULES:
 }
 
 /**
+ * Build a prompt for generating presentation slides from a free-form user prompt.
+ * Not tied to curriculum structure — allows any topic or purpose.
+ */
+export function buildPresentationPromptFromFreeInput(
+  freePrompt: string,
+  includeImages?: boolean,
+  slideCount?: number,
+  presentationMode?: 'kids' | 'professional',
+  imageMode?: string
+): string {
+  const sc = slideCount || 8;
+  const isKids = presentationMode === 'kids';
+
+  return `Create a structured presentation slide deck based on the following request.
+Return ONLY valid JSON — no markdown, no code fences, no explanation.
+
+USER REQUEST:
+${freePrompt}
+
+JSON SCHEMA:
+{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|half|background|bottom-right|none","imageScene":"string (optional, short scene description for image)"' : ''}}}]}
+
+RULES:
+- headline: max 7 words, clear and engaging
+- bullets: max 12 words each, max 3-4 bullets per slide
+- Generate exactly ${sc} slides
+- First slide must be layout "title" with a strong headline and descriptive subtitle
+- Last slide must be layout "closing" with a summary or call-to-action
+- Middle slides: choose the BEST layout for each piece of content. Use "instruction" for informational content, "hook" for engaging questions, "objectives" for goals/key points, "activity" for interactive elements, "assessment" for evaluation criteria. Mix layouts for variety.
+- badge: a short label for the presentation topic (e.g. "Marketing", "Science", "Team Update")
+- Organize content logically — build a narrative arc from introduction to conclusion${isKids ? `
+- Use fun, engaging, age-appropriate language
+- Include interactive prompts like "Can you think of...?", "Let's try...", "What do you notice?"
+- Make it colorful and exciting in tone — keep learning playful` : `
+- Use clear, professional language
+- Keep tone polished and structured
+- Focus on delivering key information concisely`}${includeImages && imageMode === 'suggested' ? `
+- imageScene: Include on about HALF the slides. Write a DESCRIPTIVE image suggestion (15-25 words) for a relevant visual. Include imageScene on: title slide and 2-3 content slides. Do NOT include imageScene on text-heavy or closing slides. Slides WITHOUT imageScene should NOT have imagePlacement.
+- imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions — do NOT repeat the same position consecutively. Options: "background" or "half" for title slides, "right"/"left"/"top" for content slides, "bottom-right" for smaller accent images.` : includeImages ? `
+- imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict. Include imageScene on: title slide and 2-3 content slides. Do NOT include imageScene on text-heavy or closing slides. Slides WITHOUT imageScene should NOT have imagePlacement.
+- imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions — do NOT repeat the same position consecutively. Options: "background" or "half" for title slides, "right"/"left"/"top" for content slides, "bottom-right" for smaller accent images.` : ''}`;
+}
+
+/**
  * Build a prompt for generating presentation slides from an existing parsed lesson plan.
  */
 export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional', imageMode?: string): string {
