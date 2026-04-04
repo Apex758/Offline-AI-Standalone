@@ -38,6 +38,7 @@ interface WebSocketContextValue {
   getCustomData: (tabId: string, endpoint: string, key: string) => any;
   clearStreaming: (tabId: string, endpoint: string) => void;
   closeConnection: (tabId: string, endpoint: string) => void;
+  cancelStream: (tabId: string, endpoint: string) => void;
   subscribe: (tabId: string, endpoint: string, listener: () => void) => () => void;
 }
 
@@ -115,7 +116,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
           // ✅ Schedule batched update instead of immediate forceUpdate
           scheduleUpdate(key);
-        } else if (data.type === 'done') {
+        } else if (data.type === 'done' || data.type === 'cancelled') {
           conn.isStreaming = false;
           // ✅ Force immediate update on completion
           const existingTimer = updateTimersRef.current.get(key);
@@ -213,6 +214,13 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
+  const cancelStream = useCallback((tabId: string, endpoint: string) => {
+    // Immediately mark as not streaming so components stop their loading state
+    clearStreaming(tabId, endpoint);
+    // Close the WebSocket — backend detects disconnect and breaks its streaming loop
+    closeConnection(tabId, endpoint);
+  }, [clearStreaming, closeConnection]);
+
   const subscribe = useCallback((tabId: string, endpoint: string, listener: () => void): (() => void) => {
     const key = getConnectionKey(tabId, endpoint);
     const conn = connectionsRef.current.get(key);
@@ -235,6 +243,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       getCustomData,
       clearStreaming,
       closeConnection,
+      cancelStream,
       subscribe
     }}>
       {children}

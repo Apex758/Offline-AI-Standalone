@@ -156,7 +156,9 @@
       "Bash(grep -r \"sqlite3\\\\|conn.execute\\\\|cursor.execute\" backend/*.py)",
       "Bash(python-embed/python.exe -c ':*)",
       "Bash(grep -E \"\\\\.\\(js|ts|json\\)$\")",
-      "Bash(python -c \"import llama_cpp; print\\('system llama-cpp-python:', llama_cpp.__version__\\)\")"
+      "Bash(python -c \"import llama_cpp; print\\('system llama-cpp-python:', llama_cpp.__version__\\)\")",
+      "Bash(grep -E \"\\\\.py$\")",
+      "Bash(grep -rn \"def.*ocr\\\\|def.*parse\\\\|def.*validate\\\\|def.*grade\" backend/*.py)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

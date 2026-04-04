@@ -419,6 +419,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
   const [analyzerStatus, setAnalyzerStatus] = useState<'idle' | 'building' | 'done' | 'error'>('idle');
+  const [analyzerError, setAnalyzerError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -497,6 +498,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
 
   const handleGenerateAnalyzer = async () => {
     setAnalyzerStatus('building');
+    setAnalyzerError(null);
     try {
       const res = await axios.get(`${API}/generate-tier-analyzer`, {
         responseType: 'blob',
@@ -504,7 +506,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
       });
       const disposition = res.headers['content-disposition'] || '';
       const match = disposition.match(/filename="?([^"]+)"?/);
-      const filename = match ? match[1] : 'olh_tier_analyzer.py';
+      const filename = match ? match[1] : 'OLH_Tier_Analyzer.exe';
       const url = URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement('a');
       a.href = url;
@@ -513,10 +515,24 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
       URL.revokeObjectURL(url);
       setAnalyzerStatus('done');
       setTimeout(() => setAnalyzerStatus('idle'), 4000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Analyzer generation failed:', err);
+      let msg = 'Build failed.';
+      try {
+        const blob: Blob = err?.response?.data;
+        if (blob instanceof Blob) {
+          const text = await blob.text();
+          const parsed = JSON.parse(text);
+          if (parsed?.detail) msg = parsed.detail;
+        } else if (err?.response?.data?.detail) {
+          msg = err.response.data.detail;
+        } else if (err?.message) {
+          msg = err.message;
+        }
+      } catch { /* ignore */ }
+      setAnalyzerError(msg);
       setAnalyzerStatus('error');
-      setTimeout(() => setAnalyzerStatus('idle'), 4000);
+      setTimeout(() => { setAnalyzerStatus('idle'); setAnalyzerError(null); }, 8000);
     }
   };
 
@@ -630,6 +646,17 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
           </button>
         </div>
       </div>
+
+      {/* Analyzer error banner */}
+      {analyzerError && (
+        <div className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <Icon icon={AlertCircleIconData} size={18} className="mt-0.5 shrink-0" />
+          <div>
+            <span className="font-semibold">Tier Analyzer build failed — </span>
+            <span className="font-mono text-xs">{analyzerError}</span>
+          </div>
+        </div>
+      )}
 
       {/* Resource Warnings */}
       {warnings.length > 0 && (

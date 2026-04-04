@@ -10,9 +10,11 @@ import os
 import sys
 import asyncio
 import shutil
+import subprocess
 import tempfile
 import textwrap
 import logging
+import importlib.util
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -439,29 +441,22 @@ async def build_analyzer() -> tuple[bytes, str]:
     Tries PyInstaller → windowed .exe with OECS icon.
     Falls back to raw .py bytes if PyInstaller is unavailable or fails.
     """
-    pyinstaller_available = shutil.which("pyinstaller") is not None
-    if not pyinstaller_available:
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                sys.executable, "-m", "PyInstaller", "--version",
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL,
-            )
-            await proc.wait()
-            pyinstaller_available = proc.returncode == 0
-        except Exception:
-            pass
+    if importlib.util.find_spec("PyInstaller") is None:
+        raise RuntimeError(
+            "PyInstaller is not installed in the backend environment. "
+            "Run: pip install pyinstaller  (with the backend venv active), then restart the server."
+        )
 
-    if pyinstaller_available:
-        try:
-            return await _build_exe()
-        except Exception as e:
-            logger.warning(f"PyInstaller build failed ({e}), falling back to .py")
-
-    return SCRIPT_TEMPLATE.encode("utf-8"), "olh_tier_analyzer.py"
+    return await _build_exe()
 
 
 async def _build_exe() -> tuple[bytes, str]:
+    # Run the blocking PyInstaller call in a thread so it doesn't need
+    # ProactorEventLoop (uvicorn on Windows uses SelectorEventLoop).
+    return await asyncio.to_thread(_build_exe_sync)
+
+
+def _build_exe_sync() -> tuple[bytes, str]:
     with tempfile.TemporaryDirectory(prefix="olh_analyzer_") as tmpdir:
         tmp = Path(tmpdir)
         script_path = tmp / "olh_tier_analyzer.py"
@@ -476,7 +471,7 @@ async def _build_exe() -> tuple[bytes, str]:
         cmd = [
             sys.executable, "-m", "PyInstaller",
             "--onefile",
-            "--noconsole",          # GUI only — no terminal window
+            "--noconsole",
             "--name", "OLH_Tier_Analyzer",
             "--distpath", str(tmp / "dist"),
             "--workpath", str(tmp / "build"),
@@ -486,28 +481,22 @@ async def _build_exe() -> tuple[bytes, str]:
         ]
         if icon_arg:
             cmd += ["--icon", icon_arg]
-            # Bundle the icon alongside so tkinter can set the window icon
             cmd += ["--add-data", f"{icon_arg}{os.pathsep}."]
         cmd.append(str(script_path))
 
         logger.info("Running PyInstaller: %s", " ".join(cmd))
 
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
             cwd=str(tmp),
+            timeout=180,
         )
 
-        try:
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=180)
-        except asyncio.TimeoutError:
-            proc.kill()
-            raise RuntimeError("PyInstaller timed out after 180s")
-
-        if proc.returncode != 0:
-            err = stderr.decode(errors="replace")[-2000:]
-            raise RuntimeError(f"PyInstaller exited {proc.returncode}: {err}")
+        if result.returncode != 0:
+            err = result.stderr.decode(errors="replace")[-3000:]
+            logger.error("PyInstaller stderr:\n%s", err)
+            raise RuntimeError(f"PyInstaller failed (exit {result.returncode}): {err[-500:]}")
 
         exe_path = tmp / "dist" / "OLH_Tier_Analyzer.exe"
         if not exe_path.exists():

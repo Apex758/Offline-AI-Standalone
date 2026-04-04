@@ -4,6 +4,7 @@ import sys
 import os
 import io
 import queue
+import threading
 import time
 import subprocess
 import shutil
@@ -366,6 +367,7 @@ class LlamaInference:
         top_p: float = 0.9,
         stop: Optional[list] = None,
         repeat_penalty: float = 1.1,
+        cancel_event: Optional[threading.Event] = None,
     ):
         """
         TRUE REAL-TIME STREAMING!
@@ -417,6 +419,8 @@ class LlamaInference:
                             stream=True,
                         )
                         for output in stream:
+                            if cancel_event and cancel_event.is_set():
+                                break
                             token = output["choices"][0]["text"]
                             if first_token_time[0] is None:
                                 first_token_time[0] = time.perf_counter()
@@ -445,6 +449,10 @@ class LlamaInference:
 
                 # Check if done
                 if item is DONE:
+                    break
+
+                # Check for cancellation
+                if cancel_event and cancel_event.is_set():
                     break
 
                 # Check for error

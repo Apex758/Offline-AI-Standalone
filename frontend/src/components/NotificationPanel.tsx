@@ -144,8 +144,8 @@ type PanelTab = 'notifications' | 'queue';
 
 const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) => {
   const { history, unreadCount, markAllRead, clearHistory, navigateToTab } = useNotification();
-  const { queue, removeFromQueue, reorderQueue, clearCompleted, queueEnabled } = useQueue();
-  const { getActiveStreams } = useWebSocket();
+  const { queue, removeFromQueue, cancelGenerating, reorderQueue, clearCompleted, queueEnabled } = useQueue();
+  const { getActiveStreams, cancelStream } = useWebSocket();
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<PanelTab>('notifications');
   const isDark = useIsDark();
@@ -493,6 +493,26 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                             Generating...
                           </p>
                         </div>
+                        <button
+                          onClick={() => cancelStream(stream.tabId, stream.endpoint)}
+                          title="Cancel generation"
+                          style={{
+                            flexShrink: 0,
+                            padding: '4px',
+                            background: 'none',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            color: c.faint,
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'color 0.15s, background 0.15s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.color = c.error; e.currentTarget.style.background = `${c.error}18`; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = c.faint; e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <CloseIcon size={16} />
+                        </button>
                       </div>
                     ))}
 
@@ -508,6 +528,26 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                             {statusLabel(item.status)}
                           </p>
                         </div>
+                        <button
+                          onClick={() => cancelGenerating(item.id)}
+                          title="Cancel generation"
+                          style={{
+                            flexShrink: 0,
+                            padding: '4px',
+                            background: 'none',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            color: c.faint,
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'color 0.15s, background 0.15s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.color = c.error; e.currentTarget.style.background = `${c.error}18`; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = c.faint; e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <CloseIcon size={16} />
+                        </button>
                       </div>
                     ))}
 

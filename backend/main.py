@@ -93,6 +93,9 @@ logger = logging.getLogger(__name__)
 active_processes = set()
 process_lock = threading.Lock()
 
+# Global dict to track cancellable active generations: job_id -> threading.Event
+_active_cancel_events: dict = {}
+
 def register_process(process):
     """Register a subprocess for cleanup tracking"""
     with process_lock:
@@ -457,8 +460,18 @@ class AttendanceSave(BaseModel):
 
 
 # (Removed redundant OPTIONS handler; CORS middleware handles preflight)
-    
-    
+
+
+@app.post("/api/cancel/{job_id}")
+async def cancel_generation(job_id: str):
+    """Cancel an active generation by job_id. Sets the cancel event so the streaming loop stops."""
+    cancel_event = _active_cancel_events.get(job_id)
+    if cancel_event:
+        cancel_event.set()
+        return {"status": "cancelled", "jobId": job_id}
+    return {"status": "not_found", "jobId": job_id}
+
+
 @app.post("/api/login")
 async def login(credentials: dict):
     username = credentials.get("username")
@@ -1561,11 +1574,13 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 except Exception as e:
                     logger.error(f"Error sending curriculum references: {e}")
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                
+
                 # ✅ FIX: Use inference factory instead of process pool
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("lesson-plan") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
@@ -1580,8 +1595,9 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -1644,6 +1660,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
+                _active_cancel_events.pop(job_id, None)
                 try:
                     release_generation_slot(slot_mode or generation_mode)
                 except Exception as e:
@@ -1715,6 +1732,8 @@ async def quiz_websocket(websocket: WebSocket):
 
             full_prompt = build_prompt(system_prompt, prompt)
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 # Acquire generation slot (queue or parallel)
@@ -1732,8 +1751,9 @@ async def quiz_websocket(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -1794,6 +1814,7 @@ async def quiz_websocket(websocket: WebSocket):
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
+                _active_cancel_events.pop(job_id, None)
                 # Always release the slot
                 try:
                     release_generation_slot(slot_mode or generation_mode)
@@ -1864,6 +1885,8 @@ async def rubric_websocket(websocket: WebSocket):
 
             full_prompt = build_prompt(system_prompt, prompt)
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 # Acquire generation slot (queue or parallel)
@@ -1883,8 +1906,9 @@ async def rubric_websocket(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -1946,6 +1970,7 @@ async def rubric_websocket(websocket: WebSocket):
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
+                _active_cancel_events.pop(job_id, None)
                 try:
                     release_generation_slot(slot_mode or generation_mode)
                 except Exception as e:
@@ -1994,6 +2019,8 @@ async def kindergarten_websocket(websocket: WebSocket):
 
             full_prompt = build_prompt(system_prompt, prompt)
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 # Acquire generation slot (queue or parallel)
@@ -2011,8 +2038,9 @@ async def kindergarten_websocket(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -2077,6 +2105,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                     release_generation_slot(slot_mode or generation_mode)
                 except Exception as e:
                     logger.error(f"Error releasing generation slot: {e}")
+                _active_cancel_events.pop(job_id, None)
 
     except WebSocketDisconnect:
         logger.info("Kindergarten WebSocket disconnected")
@@ -2119,6 +2148,8 @@ async def multigrade_websocket(websocket: WebSocket):
 
             full_prompt = build_prompt(system_prompt, prompt)
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 # Acquire generation slot (queue or parallel)
@@ -2137,9 +2168,10 @@ async def multigrade_websocket(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
                     chunk_count += 1
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -2201,6 +2233,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
+                _active_cancel_events.pop(job_id, None)
                 try:
                     release_generation_slot(slot_mode or generation_mode)
                 except Exception as e:
@@ -2249,6 +2282,8 @@ async def cross_curricular_websocket(websocket: WebSocket):
 
             full_prompt = build_prompt(system_prompt, prompt)
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 # Acquire generation slot (queue or parallel)
@@ -2266,8 +2301,9 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -2328,6 +2364,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
+                _active_cancel_events.pop(job_id, None)
                 try:
                     release_generation_slot(slot_mode or generation_mode)
                 except Exception as e:
@@ -2402,6 +2439,8 @@ async def worksheet_websocket(websocket: WebSocket):
 
             full_prompt = build_prompt(system_prompt, prompt)
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 logger.info(f"Acquiring generation slot for job {job_id}")
@@ -2424,11 +2463,12 @@ async def worksheet_websocket(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
                     chunk_count += 1
                     if chunk_count <= 5:  # Log first few chunks
                         logger.info(f"Received chunk {chunk_count}: {chunk}")
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -2491,6 +2531,7 @@ async def worksheet_websocket(websocket: WebSocket):
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
+                _active_cancel_events.pop(job_id, None)
                 try:
                     release_generation_slot(slot_mode or generation_mode)
                 except Exception as e:
@@ -2543,6 +2584,8 @@ async def presentation_websocket(websocket: WebSocket):
 
             full_prompt = build_prompt(system_prompt, prompt)
 
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
             slot_mode = None
             try:
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
@@ -2559,8 +2602,9 @@ async def presentation_websocket(websocket: WebSocket):
                     max_tokens=_t1_params.get("max_tokens", 4000) if _is_tier1 else 4000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
+                    cancel_event=cancel_event,
                 ):
-                    if job_id in cancelled_job_ids:
+                    if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
 
@@ -2607,6 +2651,7 @@ async def presentation_websocket(websocket: WebSocket):
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
+                _active_cancel_events.pop(job_id, None)
                 try:
                     release_generation_slot(slot_mode or generation_mode)
                 except Exception as e:
@@ -3189,11 +3234,16 @@ async def educator_insights_websocket(websocket: WebSocket):
             teacher_id = data.get("teacherId", "default_teacher")
             user_id = data.get("userId")
             registration_date = data.get("registrationDate")
+            job_id = data.get("jobId") or f"insights-{teacher_id}"
             # grade_subjects: {"k": ["Math", "Language Arts"], "1": ["Science"]}
             grade_subjects = data.get("gradeSubjects") or None
             # Sanitize: ensure it's a dict of str → list-of-str
             if grade_subjects and not isinstance(grade_subjects, dict):
                 grade_subjects = None
+
+            # Create cancellation event for this insights run
+            cancel_event = threading.Event()
+            _active_cancel_events[job_id] = cancel_event
 
             import insights_service
 
@@ -3253,6 +3303,14 @@ async def educator_insights_websocket(websocket: WebSocket):
             total_passes = len(PASS_DEFINITIONS)
 
             for pass_idx, pass_def in enumerate(PASS_DEFINITIONS):
+                # Check for cancellation before each pass
+                if cancel_event.is_set():
+                    try:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                    except Exception:
+                        pass
+                    break
+
                 pass_num = pass_idx + 1
                 pass_key = pass_def["key"]
                 pass_name = pass_def["name"]
@@ -3482,7 +3540,10 @@ async def educator_insights_websocket(websocket: WebSocket):
                         prompt_template=full_prompt,
                         max_tokens=max_tokens,
                         temperature=temperature,
+                        cancel_event=cancel_event,
                     ):
+                        if cancel_event.is_set():
+                            break
                         if chunk.get("error"):
                             try:
                                 await websocket.send_json({"type": "error", "message": chunk["error"]})
@@ -3568,6 +3629,13 @@ async def educator_insights_websocket(websocket: WebSocket):
                     await asyncio.sleep(0)
                 except Exception:
                     break
+
+            # Clean up cancel event
+            _active_cancel_events.pop(job_id, None)
+
+            # If cancelled, skip saving report
+            if cancel_event.is_set():
+                continue
 
             # All passes done — build and save report
             report = {
@@ -9423,7 +9491,9 @@ async def generate_tier_analyzer_endpoint():
     try:
         file_bytes, filename = await build_analyzer()
     except Exception as e:
-        logger.error(f"Tier analyzer generation failed: {e}")
+        import traceback
+        full = traceback.format_exc()
+        logger.error(f"Tier analyzer generation failed: {e}\n{full}")
         raise HTTPException(status_code=500, detail=str(e))
 
     if filename.endswith(".exe"):

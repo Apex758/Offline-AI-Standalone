@@ -27,6 +27,7 @@ interface QueueContextValue {
   activeItem: QueueItem | null;
   enqueue: (item: Omit<QueueItem, 'id' | 'status' | 'addedAt'>) => void;
   removeFromQueue: (id: string) => void;
+  cancelGenerating: (id: string) => void;
   reorderQueue: (fromIndex: number, toIndex: number) => void;
   clearCompleted: () => void;
   clearAll: () => void;
@@ -95,6 +96,7 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ws.send(JSON.stringify({
             prompt: nextItem.prompt,
             generationMode: nextItem.generationMode,
+            jobId: nextItem.id,
             ...(nextItem.extraMessageData || {}),
           }));
 
@@ -189,6 +191,28 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, [notify]);
 
+  const cancelGenerating = useCallback((id: string) => {
+    const item = queueRef.current.find(i => i.id === id);
+    if (!item || item.status !== 'generating') return;
+
+    // Call the backend cancel REST endpoint
+    fetch(`http://localhost:8000/api/cancel/${encodeURIComponent(id)}`, { method: 'POST' })
+      .catch(() => {/* fire and forget */});
+
+    // Mark as cancelled/error in the queue immediately
+    processingRef.current = false;
+    currentItemRef.current = null;
+    setQueue(prev => prev.map(i =>
+      i.id === id ? { ...i, status: 'error' as QueueItemStatus, errorMessage: 'Cancelled' } : i
+    ));
+    notify(`${item.label} cancelled`);
+
+    // Kick off next waiting item
+    setTimeout(() => {
+      if (!processingRef.current) processNext();
+    }, 300);
+  }, [notify, processNext]);
+
   const reorderQueue = useCallback((fromIndex: number, toIndex: number) => {
     setQueue(prev => {
       // Only reorder waiting items
@@ -247,6 +271,7 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       activeItem,
       enqueue,
       removeFromQueue,
+      cancelGenerating,
       reorderQueue,
       clearCompleted,
       clearAll,

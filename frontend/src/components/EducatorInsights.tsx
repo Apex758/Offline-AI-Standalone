@@ -122,7 +122,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [showPhaseNav, setShowPhaseNav] = useState(false);
 
   // Educator Coach state
-  const [coachCollapsed, setCoachCollapsed] = useState(false);
+  const [coachCollapsed, setCoachCollapsed] = useState(true);
   const [coachChatId, setCoachChatId] = useState<string | null>(savedData?.coachChatId || null);
   const [coachTriggerDimension, setCoachTriggerDimension] = useState<string | undefined>();
   const [coachDimensionContext, setCoachDimensionContext] = useState<DimensionClickContext | undefined>();
@@ -368,7 +368,8 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
     notify('Generating educator insights report…', 'info', tabId);
 
-    // Scroll to analysis row so user can watch progress
+    // Collapse graph and scroll to analysis row so user can watch progress
+    setGraphExpanded(false);
     setTimeout(() => {
       row2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
@@ -481,6 +482,12 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           } else {
             notify('Educator insights report generated successfully', 'success', tabId);
           }
+
+          // Ensure Row 2 is visible after report completes
+          setGraphExpanded(false);
+          setTimeout(() => {
+            row2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 50);
 
           // Fire additional notifications for reminders
           const reminders = msg.report?.reminders || [];
