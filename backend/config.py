@@ -304,7 +304,8 @@ def resolve_vision_projector_path(model_filename: str) -> Optional[str]:
             fname = f.name.lower()
 
             # Match 1: prefix + 'vision' (e.g. phi4-mm-vision-q8.gguf)
-            if "vision" in fname and prefix and fname.startswith(prefix.lower()):
+            # Skip the model file itself to prevent self-matching (e.g. Gemma4-E2B-Vision.gguf matching itself)
+            if "vision" in fname and prefix and fname.startswith(prefix.lower()) and f.name != model_filename:
                 candidates.append(f)
                 continue
 

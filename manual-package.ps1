@@ -129,7 +129,7 @@ Write-Host "Installing dependencies..." -ForegroundColor Yellow
 if ($hasNvidiaGpu) {
     Write-Host "Installing llama-cpp-python with CUDA support..." -ForegroundColor Cyan
     & $pythonCmd -m pip install `
-        llama-cpp-python==0.3.16 `
+        llama-cpp-python==0.3.20 `
         --target "$bundleDir\python_libs" `
         --force-reinstall --no-deps `
         --no-warn-script-location `

@@ -20,9 +20,9 @@ import axios from 'axios';
 import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useNotification } from '../contexts/NotificationContext';
-import TeacherMetricsPanel from './TeacherMetricsPanel';
 import MetricsNudgeBanner from './MetricsNudgeBanner';
-import EducatorCoachDrawer from './EducatorCoachDrawer';
+import InsightsGraphRow from './InsightsGraphRow';
+import InsightsCoachPanel from './InsightsCoachPanel';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -87,7 +87,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [metricsExpanded, setMetricsExpanded] = useState<boolean>(savedData?.metricsExpanded || false);
 
   // Educator Coach state
-  const [coachOpen, setCoachOpen] = useState(false);
+  const [coachCollapsed, setCoachCollapsed] = useState(false);
   const [coachChatId, setCoachChatId] = useState<string | null>(savedData?.coachChatId || null);
   const [coachTriggerDimension, setCoachTriggerDimension] = useState<string | undefined>();
   const [nudgeDismissed, setNudgeDismissed] = useState<boolean>(savedData?.nudgeDismissed || false);
@@ -507,7 +507,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   );
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden relative">
       <style>{`
         .ei-settings-dropdown {
           position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
@@ -588,8 +588,6 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         .ei-sched-save:hover:not(:disabled) { opacity: 0.85; }
         .ei-sched-save:disabled { opacity: 0.6; cursor: default; }
       `}</style>
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Header */}
         <div className="flex-none px-6 py-4 border-b border-theme-border bg-theme-bg-secondary">
           <div className="flex items-center justify-between">
@@ -775,8 +773,23 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           )}
         </div>
 
-        {/* Main content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      {/* ── Row 1: Performance Graph ── */}
+      <InsightsGraphRow
+        metrics={teacherMetrics}
+        metricsHistory={metricsHistory}
+        previousMetrics={previousMetrics}
+        insightsData={insightsData}
+        loading={dataLoading && !teacherMetrics}
+        onDimensionClick={(dim) => {
+          setCoachTriggerDimension(dim);
+          setCoachCollapsed(false);
+        }}
+      />
+
+      {/* ── Row 2: Analysis + Coach ── */}
+      <div className="flex flex-1 min-h-0">
+        {/* Analysis section */}
+        <div className="flex-[3] overflow-y-auto px-6 py-4 space-y-4 min-w-0">
           {/* Error */}
           {error && (
             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
@@ -829,53 +842,20 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             />
           </div>
 
-          {/* Teacher Metrics Panel */}
-          {(teacherMetrics || dataLoading) && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <TeacherMetricsPanel
-                  metrics={teacherMetrics}
-                  history={metricsHistory}
-                  previousMetrics={previousMetrics}
-                  loading={dataLoading && !teacherMetrics}
-                  expanded={metricsExpanded}
-                  onToggleExpanded={(val) => {
-                    setMetricsExpanded(val);
-                    persistState({ metricsExpanded: val });
-                  }}
-                  onDimensionClick={(dim) => {
-                    setCoachTriggerDimension(dim);
-                    setCoachOpen(true);
-                  }}
-                />
-              </div>
-              {/* Talk to Coach button */}
-              {teacherMetrics && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => { setCoachTriggerDimension(undefined); setCoachOpen(true); }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
-                  >
-                    Talk to Coach
-                  </button>
-                </div>
-              )}
-              {/* Nudge banner */}
-              <MetricsNudgeBanner
-                metrics={teacherMetrics}
-                previousMetrics={previousMetrics}
-                dismissed={nudgeDismissed}
-                onDismiss={() => {
-                  setNudgeDismissed(true);
-                  persistState({ nudgeDismissed: true });
-                }}
-                onTalkToCoach={(dim) => {
-                  setCoachTriggerDimension(dim);
-                  setCoachOpen(true);
-                }}
-              />
-            </div>
-          )}
+          {/* Nudge banner */}
+          <MetricsNudgeBanner
+            metrics={teacherMetrics}
+            previousMetrics={previousMetrics}
+            dismissed={nudgeDismissed}
+            onDismiss={() => {
+              setNudgeDismissed(true);
+              persistState({ nudgeDismissed: true });
+            }}
+            onTalkToCoach={(dim) => {
+              setCoachTriggerDimension(dim);
+              setCoachCollapsed(false);
+            }}
+          />
 
           {/* No data prompt */}
           {!hasAnyData && !dataLoading && (
@@ -939,93 +919,91 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             );
           })}
         </div>
+
+        {/* ── Coach Panel (25%) ── */}
+        <InsightsCoachPanel
+          metrics={teacherMetrics}
+          triggerDimension={coachTriggerDimension}
+          teacherId={teacherId}
+          currentChatId={coachChatId}
+          onChatIdChange={(id) => {
+            setCoachChatId(id || null);
+            persistState({ coachChatId: id || null });
+          }}
+          collapsed={coachCollapsed}
+          onCollapsedChange={setCoachCollapsed}
+        />
       </div>
 
-      {/* History Sidebar Panel */}
-      <div
-        className={`border-l border-theme-border bg-theme-bg-secondary transition-all duration-300 overflow-hidden flex-shrink-0 ${
-          historyOpen ? 'w-80' : 'w-0'
-        }`}
-      >
-        <div className="h-full flex flex-col p-4 w-80">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-theme-primary">Insight Reports</h3>
-            <button
-              onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-theme-bg-tertiary transition-colors"
-            >
-              <Icon icon={Cancel01IconData} className="w-5 text-theme-muted" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-2">
-            {reportHistory.length === 0 ? (
-              <div className="text-center text-theme-muted mt-8">
-                <Icon icon={Bulb01IconData} className="w-12 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No reports generated yet</p>
-                <p className="text-xs mt-1">Click "Generate Report" to create your first insight</p>
-              </div>
-            ) : (
-              [...reportHistory].reverse().map(r => (
-                <div
-                  key={r.id}
-                  onClick={() => handleLoadReport(r)}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors group ${
-                    report?.id === r.id
-                      ? 'bg-amber-50 dark:bg-amber-900/10 border border-amber-300 dark:border-amber-700 shadow-sm'
-                      : 'bg-theme-bg-tertiary hover:bg-theme-bg-primary border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Icon icon={Bulb01IconData} className="w-4 text-amber-500 flex-shrink-0" />
-                        <p className="text-sm font-medium text-theme-primary">
-                          {new Date(r.generated_at).toLocaleDateString()}
-                        </p>
-                        {report?.id === r.id && (
-                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 uppercase tracking-wide">
-                            Current
-                          </span>
-                        )}
-                      </div>
-                      {r.from_date && r.to_date && (
-                        <p className="text-xs text-theme-muted mt-0.5 ml-6">
-                          {r.from_date} — {r.to_date}
-                        </p>
-                      )}
-                      <p className="text-xs text-theme-muted mt-0.5 ml-6">
-                        {new Date(r.generated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteReport(r.id); }}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
-                      title="Delete report"
-                    >
-                      <Icon icon={Delete02IconData} className="w-4 text-red-500" />
-                    </button>
-                  </div>
+      {/* ── History floating panel ── */}
+      {historyOpen && (
+        <>
+          <div className="absolute inset-0 z-30" onClick={() => setHistoryOpen(false)} />
+          <div className="absolute top-0 right-0 h-full w-80 z-40 flex flex-col bg-theme-bg-secondary border-l border-theme-border shadow-2xl">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-theme-border">
+              <h3 className="text-lg font-semibold text-theme-primary">Insight Reports</h3>
+              <button
+                onClick={() => setHistoryOpen(false)}
+                className="p-1 rounded hover:bg-theme-bg-tertiary transition-colors"
+              >
+                <Icon icon={Cancel01IconData} className="w-5 text-theme-muted" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {reportHistory.length === 0 ? (
+                <div className="text-center text-theme-muted mt-8">
+                  <Icon icon={Bulb01IconData} className="w-12 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">No reports generated yet</p>
+                  <p className="text-xs mt-1">Click "Generate Report" to create your first insight</p>
                 </div>
-              ))
-            )}
+              ) : (
+                [...reportHistory].reverse().map(r => (
+                  <div
+                    key={r.id}
+                    onClick={() => handleLoadReport(r)}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors group ${
+                      report?.id === r.id
+                        ? 'bg-amber-50 dark:bg-amber-900/10 border border-amber-300 dark:border-amber-700 shadow-sm'
+                        : 'bg-theme-bg-tertiary hover:bg-theme-bg-primary border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Icon icon={Bulb01IconData} className="w-4 text-amber-500 flex-shrink-0" />
+                          <p className="text-sm font-medium text-theme-primary">
+                            {new Date(r.generated_at).toLocaleDateString()}
+                          </p>
+                          {report?.id === r.id && (
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 uppercase tracking-wide">
+                              Current
+                            </span>
+                          )}
+                        </div>
+                        {r.from_date && r.to_date && (
+                          <p className="text-xs text-theme-muted mt-0.5 ml-6">
+                            {r.from_date} — {r.to_date}
+                          </p>
+                        )}
+                        <p className="text-xs text-theme-muted mt-0.5 ml-6">
+                          {new Date(r.generated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteReport(r.id); }}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
+                        title="Delete report"
+                      >
+                        <Icon icon={Delete02IconData} className="w-4 text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Educator Coach Drawer */}
-      <EducatorCoachDrawer
-        isOpen={coachOpen}
-        onClose={() => setCoachOpen(false)}
-        metrics={teacherMetrics}
-        triggerDimension={coachTriggerDimension}
-        teacherId={teacherId}
-        currentChatId={coachChatId}
-        onChatIdChange={(id) => {
-          setCoachChatId(id || null);
-          persistState({ coachChatId: id || null });
-        }}
-      />
+        </>
+      )}
     </div>
   );
 };

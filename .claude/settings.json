@@ -120,11 +120,24 @@
       "Bash(ls *.gguf)",
       "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/bin/Release/llama-cli.exe\" --version)",
       "Bash(python3 -c \"from pathlib import Path; p = Path\\(r'C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\models\\\\Gemma4-E2B-Vision.gguf'\\); print\\(f'Path: {p}'\\); print\\(f'Exists: {p.exists\\(\\)}'\\); print\\(f'Resolved: {p.resolve\\(\\)}'\\)\")",
-      "Bash(grep -r \"llama_cpp\\\\|Llama\\(\" /c/Users/LG/Desktop/Projects/'Offline AI Standalone'/backend/*.py)"
+      "Bash(grep -r \"llama_cpp\\\\|Llama\\(\" /c/Users/LG/Desktop/Projects/'Offline AI Standalone'/backend/*.py)",
+      "Bash(del \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\generate_test_plan_docx.py\")",
+      "Bash(curl -s \"https://api.github.com/repos/abetlen/llama-cpp-python/releases?per_page=50\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:llama-cpp-python.readthedocs.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:deepwiki.com)",
+      "WebFetch(domain:libraries.io)",
+      "WebFetch(domain:buttondown.com)",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\" -m pip install \"llama-cpp-python==0.3.20\" --find-links \"c:/Users/LG/AppData/Local/pip/cache/wheels/69/92/e3/\")",
+      "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/bin/Release/\"*.dll)",
+      "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/Lib/site-packages/llama_cpp/lib/\"*.dll)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
-      "C:\\Users\\LG\\.claude"
+      "C:\\Users\\LG\\.claude",
+      "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\backend"
     ]
   }
 }
