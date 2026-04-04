@@ -4,6 +4,39 @@ import SentIconData from '@hugeicons/core-free-icons/SentIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import axios from 'axios';
 import type { TeacherMetrics, ConsultantConversation } from '../types/insights';
+import type { DimensionClickContext } from './InsightsGraphRow';
+import { useSettings } from '../contexts/SettingsContext';
+
+function buildDimensionAutoMessage(dimension: string, ctx: DimensionClickContext): string {
+  const gradeChar = ctx.grade.charAt(0);
+  const phasePart = ctx.phaseLabel ? ` We're in ${ctx.phaseLabel} phase right now.` : '';
+  const weightPart = `It carries ${Math.round(ctx.weight * 100)}% of my composite score.`;
+  const keyFacts = ctx.breakdown.slice(0, 2).map(b => `${b.label}: ${b.value}`).join(', ');
+
+  if (gradeChar === 'A') {
+    return `My ${dimension} score is ${ctx.grade} (${ctx.score}/100) — I'm happy with it!${phasePart} ${weightPart} I want to understand what's keeping it strong and how to maintain it. Here's where things stand: ${keyFacts}.`;
+  } else if (gradeChar === 'B' || gradeChar === 'C') {
+    return `I want to improve my ${dimension} score — it's ${ctx.grade} (${ctx.score}/100) right now.${phasePart} ${weightPart} What's holding it back? Here's the data: ${keyFacts}.`;
+  } else {
+    return `I need help with my ${dimension} score — it's ${ctx.grade} (${ctx.score}/100) and I want to understand why and fix it.${phasePart} ${weightPart} Here's where things stand: ${keyFacts}.`;
+  }
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+const TOPIC_BUBBLES = [
+  { label: 'Curriculum', message: "Let's review my curriculum coverage. How am I doing and what gaps should I focus on?" },
+  { label: 'Performance', message: "I'd like to go over my students' performance data. What trends or concerns stand out?" },
+  { label: 'Content Creation', message: "Can you review my content creation? I want to know if I'm creating enough variety and volume." },
+  { label: 'Attendance', message: "Help me understand my attendance and student engagement data." },
+  { label: 'Achievements', message: "Let's talk about my achievement and engagement score — how can I improve it?" },
+  { label: 'Overall', message: "Give me a general overview of my teaching effectiveness and the best area to focus on first." },
+];
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -20,6 +53,8 @@ interface Message {
 interface InsightsCoachPanelProps {
   metrics: TeacherMetrics | null;
   triggerDimension?: string;
+  dimensionContext?: DimensionClickContext;
+  autoTriggerKey?: number;
   teacherId: string;
   currentChatId?: string | null;
   onChatIdChange?: (chatId: string) => void;
@@ -31,12 +66,17 @@ interface InsightsCoachPanelProps {
 const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
   metrics,
   triggerDimension,
+  dimensionContext,
+  autoTriggerKey,
   teacherId,
   currentChatId,
   onChatIdChange,
   collapsed: controlledCollapsed,
   onCollapsedChange,
 }) => {
+  const { settings } = useSettings();
+  const tabColor = settings.tabColors['educator-insights'] ?? '#d97706';
+
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const collapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
   const setCollapsed = (val: boolean) => {
@@ -44,30 +84,47 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
     else setInternalCollapsed(val);
   };
 
+  // Delayed state: background color only applies after the width animation finishes
+  const [fullyCollapsed, setFullyCollapsed] = useState(false);
+  useEffect(() => {
+    if (collapsed) {
+      const t = setTimeout(() => setFullyCollapsed(true), 310);
+      return () => clearTimeout(t);
+    } else {
+      setFullyCollapsed(false);
+    }
+  }, [collapsed]);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [conversations, setConversations] = useState<ConsultantConversation[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showTopicPicker, setShowTopicPicker] = useState(true);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [topicDismissing, setTopicDismissing] = useState(false);
+
+  // Topic is required unless this is a dimension coaching session
+  const isTopicRequired = !triggerDimension;
 
   const wsRef = useRef<WebSocket | null>(null);
   const chatIdRef = useRef<string | null>(currentChatId || null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Always holds latest sendMessage so the auto-trigger effect can call it without stale closure
+  const sendMessageRef = useRef<(override?: string) => void>(() => {});
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent]);
 
-  // Focus input when expanded
   useEffect(() => {
     if (!collapsed) {
-      setTimeout(() => inputRef.current?.focus(), 300);
+      setTimeout(() => inputRef.current?.focus(), 350);
     }
   }, [collapsed]);
 
-  // Load conversations list when expanded
   useEffect(() => {
     if (!collapsed) {
       axios.get(`/api/consultant/conversations?teacher_id=${encodeURIComponent(teacherId)}`)
@@ -76,7 +133,6 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
     }
   }, [collapsed, teacherId]);
 
-  // Load existing conversation messages
   useEffect(() => {
     if (currentChatId) {
       chatIdRef.current = currentChatId;
@@ -95,16 +151,38 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
     }
   }, [currentChatId]);
 
-  const sendMessage = useCallback(() => {
-    if (!input.trim() || isStreaming) return;
+  // Auto-send when a dimension coaching session is triggered
+  useEffect(() => {
+    if (!autoTriggerKey || !triggerDimension || !dimensionContext) return;
+    // Reset conversation for a clean focused session
+    chatIdRef.current = null;
+    onChatIdChange?.('');
+    setMessages([]);
+    setShowHistory(false);
+    setShowTopicPicker(false);
+    setSelectedTopic(null);
+    // Wait for panel open animation then auto-send
+    const t = setTimeout(() => {
+      const msg = buildDimensionAutoMessage(triggerDimension, dimensionContext);
+      sendMessageRef.current(msg);
+    }, 450);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoTriggerKey]);
+
+  const sendMessage = useCallback((overrideText?: string) => {
+    const content = overrideText !== undefined ? overrideText : input.trim();
+    if (!content || isStreaming) return;
+    // Block send if topic is required and not selected (auto-trigger passes overrideText so it bypasses)
+    if (overrideText === undefined && isTopicRequired && selectedTopic === null) return;
 
     const userMsg: Message = {
       id: String(Date.now()),
       role: 'user',
-      content: input.trim(),
+      content,
     };
     setMessages(prev => [...prev, userMsg]);
-    setInput('');
+    if (overrideText === undefined) setInput('');
     setIsStreaming(true);
     setStreamingContent('');
 
@@ -118,6 +196,8 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
         chat_id: chatIdRef.current,
         metrics_context: metrics,
         trigger_dimension: triggerDimension,
+        dimension_context: dimensionContext ?? null,
+        topic_context: selectedTopic,
         teacher_id: teacherId,
       }));
     };
@@ -127,17 +207,14 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-
         if (msg.type === 'chat_id') {
           chatIdRef.current = msg.chat_id;
           onChatIdChange?.(msg.chat_id);
         }
-
         if (msg.type === 'token') {
           accumulated += msg.content;
           setStreamingContent(accumulated);
         }
-
         if (msg.type === 'done') {
           setIsStreaming(false);
           if (accumulated) {
@@ -150,7 +227,6 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
           setStreamingContent('');
           ws.close();
         }
-
         if (msg.type === 'error') {
           setIsStreaming(false);
           setStreamingContent('');
@@ -159,15 +235,12 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
       } catch {}
     };
 
-    ws.onerror = () => {
-      setIsStreaming(false);
-      setStreamingContent('');
-    };
+    ws.onerror = () => { setIsStreaming(false); setStreamingContent(''); };
+    ws.onclose = () => { wsRef.current = null; };
+  }, [input, isStreaming, isTopicRequired, selectedTopic, metrics, triggerDimension, dimensionContext, teacherId, onChatIdChange]);
 
-    ws.onclose = () => {
-      wsRef.current = null;
-    };
-  }, [input, isStreaming, metrics, triggerDimension, teacherId, onChatIdChange]);
+  // Keep ref current so auto-trigger effect always calls the latest version
+  useEffect(() => { sendMessageRef.current = sendMessage; }, [sendMessage]);
 
   const loadConversation = (convId: string) => {
     onChatIdChange?.(convId);
@@ -192,173 +265,292 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
     onChatIdChange?.('');
     setMessages([]);
     setShowHistory(false);
+    setShowTopicPicker(true);
+    setSelectedTopic(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      if (!isTopicRequired || selectedTopic !== null) sendMessage();
     }
   };
 
-  // ── Collapsed strip ──
-  if (collapsed) {
-    return (
+  return (
+    <div
+      className="relative flex-shrink-0 border-l border-theme-border flex flex-col"
+      style={{
+        width: collapsed ? '3.5rem' : '40%',
+        minWidth: '3.5rem',
+        transition: 'width 300ms ease-in-out, background 400ms ease-in-out',
+        background: fullyCollapsed
+          ? `linear-gradient(160deg, ${hexToRgba(tabColor, 0.13)}, ${hexToRgba(tabColor, 0.06)})`
+          : 'var(--bg-secondary, #f9fafb)',
+        backdropFilter: fullyCollapsed ? 'blur(10px)' : 'none',
+        WebkitBackdropFilter: fullyCollapsed ? 'blur(10px)' : 'none',
+        overflow: 'hidden',
+      }}
+    >
+      {/* ── Collapsed overlay ── */}
       <div
-        className="w-8 flex-shrink-0 border-l border-theme-border bg-theme-bg-secondary cursor-pointer hover:bg-theme-bg-tertiary transition-colors flex items-center justify-center"
+        className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
+        style={{
+          opacity: collapsed ? 1 : 0,
+          pointerEvents: collapsed ? 'auto' : 'none',
+          transition: 'opacity 150ms ease-in-out',
+        }}
         onClick={() => setCollapsed(false)}
         title="Talk to Coach"
       >
         <span
-          className="text-[10px] font-semibold text-theme-secondary select-none whitespace-nowrap"
-          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '0.06em' }}
+          className="text-xs font-semibold select-none whitespace-nowrap"
+          style={{
+            writingMode: 'vertical-rl',
+            transform: 'rotate(180deg)',
+            letterSpacing: '0.08em',
+            color: tabColor,
+          }}
         >
           Talk to Coach
         </span>
       </div>
-    );
-  }
 
-  // ── Expanded panel ──
-  return (
-    <div className="flex-[1] min-w-0 border-l border-theme-border flex flex-col bg-theme-bg-secondary" style={{ minWidth: 180 }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-theme-border flex-shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-blue-500 text-[10px] font-bold">EC</span>
+      {/* ── Expanded content ── */}
+      <div
+        className="flex flex-col h-full min-w-0 pt-5"
+        style={{
+          opacity: collapsed ? 0 : 1,
+          pointerEvents: collapsed ? 'none' : 'auto',
+          transition: 'opacity 200ms ease-in-out 80ms',
+        }}
+      >
+        {/* Header — EC badge + title + actions on one row */}
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 border-b border-theme-border flex-shrink-0"
+          style={{ background: `linear-gradient(to right, ${hexToRgba(tabColor, 0.06)}, transparent)` }}
+        >
+          <div
+            className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
+            style={{ background: hexToRgba(tabColor, 0.12), border: `1px solid ${hexToRgba(tabColor, 0.25)}` }}
+          >
+            <span className="text-xs font-bold" style={{ color: tabColor }}>EC</span>
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-theme-primary truncate">Educator Coach</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-base font-semibold text-theme-primary leading-tight">Educator Coach</p>
             {triggerDimension && (
-              <p className="text-[10px] text-theme-secondary truncate">Focus: {triggerDimension}</p>
+              <p className="text-xs text-theme-secondary truncate leading-tight">Focus: {triggerDimension}</p>
             )}
           </div>
-        </div>
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className="p-1 rounded hover:bg-theme-bg-tertiary transition-colors"
-            title="Conversation history"
-          >
-            <Icon icon={Clock01IconData} className="w-3.5 text-theme-muted" />
-          </button>
-          {/* Collapse button */}
-          <button
-            onClick={() => setCollapsed(true)}
-            className="p-1 rounded hover:bg-theme-bg-tertiary transition-colors"
-            title="Collapse panel"
-          >
-            <svg className="w-3.5 h-3.5 text-theme-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* History dropdown */}
-      {showHistory && (
-        <div className="border-b border-theme-border bg-theme-bg-secondary px-3 py-2 max-h-40 overflow-y-auto flex-shrink-0">
-          <button
-            onClick={startNewConversation}
-            className="w-full text-left px-2 py-1.5 text-xs text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md mb-1"
-          >
-            + New conversation
-          </button>
-          {conversations.map(conv => (
+          <div className="flex items-center gap-1 flex-shrink-0">
             <button
-              key={conv.id}
-              onClick={() => loadConversation(conv.id)}
-              className={`w-full text-left px-2 py-1.5 text-xs rounded-md hover:bg-theme-bg-tertiary ${
-                chatIdRef.current === conv.id ? 'bg-theme-bg-tertiary font-medium' : ''
-              }`}
+              onClick={() => setShowHistory(!showHistory)}
+              className="p-2 rounded hover:bg-theme-bg-tertiary transition-colors"
+              title="Conversation history"
             >
-              <span className="text-theme-primary truncate block">{conv.title || 'Untitled'}</span>
-              {conv.dimension_focus && (
-                <span className="text-[10px] text-theme-muted">({conv.dimension_focus})</span>
-              )}
+              <Icon icon={Clock01IconData} className="w-5 text-theme-muted" />
             </button>
-          ))}
-          {conversations.length === 0 && (
-            <p className="text-[10px] text-theme-muted px-2 py-1">No previous conversations</p>
-          )}
-        </div>
-      )}
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0">
-        {messages.length === 0 && !isStreaming && (
-          <div className="text-center py-6 px-2">
-            <p className="text-xs text-theme-secondary mb-1">
-              {triggerDimension
-                ? `Let's work on improving your ${triggerDimension} score.`
-                : 'Ask me about your teaching metrics or how to improve.'}
-            </p>
-            <p className="text-[10px] text-theme-muted">
-              I have context about your performance and can suggest concrete steps.
-            </p>
-          </div>
-        )}
-
-        {messages.map(msg => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs ${
-                msg.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-theme-bg text-theme-primary border border-theme-border'
-              }`}
+            <button
+              onClick={() => setCollapsed(true)}
+              className="p-2 rounded hover:bg-theme-bg-tertiary transition-colors"
+              title="Collapse panel"
             >
-              <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-            </div>
+              <svg className="w-5 h-5 text-theme-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
-        ))}
-
-        {/* Streaming message */}
-        {isStreaming && streamingContent && (
-          <div className="flex justify-start">
-            <div className="max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg text-theme-primary border border-theme-border">
-              <p className="whitespace-pre-wrap leading-relaxed">{streamingContent}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Thinking indicator */}
-        {isStreaming && !streamingContent && (
-          <div className="flex justify-start">
-            <div className="rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg border border-theme-border">
-              <span className="text-theme-muted animate-pulse">Thinking...</span>
-            </div>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input */}
-      <div className="px-3 py-2 border-t border-theme-border flex-shrink-0">
-        <div className="flex items-end gap-1.5">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask the Educator Coach..."
-            className="flex-1 resize-none rounded-lg px-2.5 py-1.5 text-xs bg-theme-bg border border-theme-border text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-            rows={1}
-            style={{ maxHeight: 100 }}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={!input.trim() || isStreaming}
-            className="p-1.5 rounded-lg bg-blue-500 text-white disabled:opacity-40 hover:bg-blue-600 transition-colors flex-shrink-0"
-          >
-            <Icon icon={SentIconData} className="w-3.5" />
-          </button>
         </div>
+
+        {/* ── Chat zone — history overlay lives here ── */}
+        <div className="relative flex-1 flex flex-col min-h-0">
+
+          {/* History backdrop */}
+          <div
+            className="absolute inset-0 z-10"
+            style={{
+              background: 'rgba(0,0,0,0.25)',
+              opacity: showHistory ? 1 : 0,
+              pointerEvents: showHistory ? 'auto' : 'none',
+              transition: 'opacity 200ms ease',
+            }}
+            onClick={() => setShowHistory(false)}
+          />
+
+          {/* History slide-in panel (from right) */}
+          <div
+            className="absolute top-0 right-0 bottom-0 z-20 flex flex-col border-l border-theme-border shadow-2xl"
+            style={{
+              width: '85%',
+              background: 'var(--bg-secondary, #f9fafb)',
+              transform: showHistory ? 'translateX(0)' : 'translateX(100%)',
+              transition: 'transform 260ms cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-theme-border flex-shrink-0">
+              <span className="text-sm font-semibold text-theme-primary">Conversation History</span>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-1 rounded hover:bg-theme-bg-tertiary transition-colors text-theme-muted text-lg leading-none"
+                title="Close history"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-3 py-2">
+              <button
+                onClick={startNewConversation}
+                className="w-full text-left px-2 py-1.5 text-xs text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md mb-1"
+              >
+                + New conversation
+              </button>
+              {conversations.map(conv => (
+                <button
+                  key={conv.id}
+                  onClick={() => loadConversation(conv.id)}
+                  className={`w-full text-left px-2 py-1.5 text-xs rounded-md hover:bg-theme-bg-tertiary ${
+                    chatIdRef.current === conv.id ? 'bg-theme-bg-tertiary font-medium' : ''
+                  }`}
+                >
+                  <span className="text-theme-primary truncate block">{conv.title || 'Untitled'}</span>
+                  {conv.dimension_focus && (
+                    <span className="text-[10px] text-theme-muted">({conv.dimension_focus})</span>
+                  )}
+                </button>
+              ))}
+              {conversations.length === 0 && (
+                <p className="text-[10px] text-theme-muted px-2 py-1">No previous conversations</p>
+              )}
+            </div>
+          </div>
+
+          {/* Sticky selected-topic chip — sits above scroll area */}
+          {selectedTopic && (
+            <div
+              className="flex-shrink-0 flex items-center justify-center py-2 px-3 border-b border-theme-border"
+              style={{ background: 'var(--bg-secondary, #f9fafb)' }}
+            >
+              <button
+                onClick={() => { setSelectedTopic(null); setShowTopicPicker(true); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-opacity hover:opacity-70"
+                style={{
+                  color: tabColor,
+                  borderColor: hexToRgba(tabColor, 0.35),
+                  background: hexToRgba(tabColor, 0.08),
+                }}
+                title="Change topic"
+              >
+                ← {selectedTopic}
+              </button>
+            </div>
+          )}
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0">
+            {messages.length === 0 && !isStreaming && (
+              <div className="py-4 px-1">
+                {showTopicPicker ? (
+                  <>
+                    <p className="text-xs text-theme-secondary mb-3 font-medium text-center">What would you like to discuss?</p>
+                    <div className="flex flex-wrap gap-1.5 justify-center">
+                      {TOPIC_BUBBLES.map(t => (
+                        <button
+                          key={t.label}
+                          onClick={() => {
+                            setTopicDismissing(true);
+                            setTimeout(() => {
+                              setSelectedTopic(t.label);
+                              setShowTopicPicker(false);
+                              setTopicDismissing(false);
+                            }, 200);
+                          }}
+                          className="px-3 py-1.5 rounded-full text-xs border border-theme-border bg-theme-bg hover:bg-theme-bg-secondary text-theme-primary"
+                          style={{
+                            opacity: topicDismissing ? 0 : 1,
+                            transform: topicDismissing ? 'scale(0.85)' : 'scale(1)',
+                            transition: 'opacity 200ms ease, transform 200ms ease',
+                          }}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-2">
+                    <p className="text-xs text-theme-secondary mb-1">
+                      {triggerDimension
+                        ? `Let's work on improving your ${triggerDimension} score.`
+                        : 'Ask me about your teaching metrics or how to improve.'}
+                    </p>
+                    <p className="text-[10px] text-theme-muted">
+                      I have context about your performance and can suggest concrete steps.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {messages.map(msg => (
+              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs ${
+                    msg.role === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-theme-bg text-theme-primary border border-theme-border'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                </div>
+              </div>
+            ))}
+
+            {isStreaming && streamingContent && (
+              <div className="flex justify-start">
+                <div className="max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg text-theme-primary border border-theme-border">
+                  <p className="whitespace-pre-wrap leading-relaxed">{streamingContent}</p>
+                </div>
+              </div>
+            )}
+
+            {isStreaming && !streamingContent && (
+              <div className="flex justify-start">
+                <div className="rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg border border-theme-border">
+                  <span className="text-theme-muted animate-pulse">Thinking...</span>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="px-3 py-2 border-t border-theme-border flex-shrink-0">
+            <div className="flex items-end gap-1.5">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 132) + 'px';
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder={isTopicRequired && selectedTopic === null ? 'Select a topic above to start chatting…' : 'Ask the Educator Coach…'}
+                className="flex-1 resize-none rounded-lg px-2.5 py-1.5 text-xs bg-theme-bg border border-theme-border text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                rows={2}
+                style={{ maxHeight: 132, minHeight: '2.5rem', overflowY: 'auto' }}
+              />
+              <button
+                onClick={() => sendMessage()}
+                disabled={!input.trim() || isStreaming || (isTopicRequired && selectedTopic === null)}
+                className="w-10 h-10 rounded-lg bg-blue-500 text-white disabled:opacity-40 hover:bg-blue-600 transition-colors flex-shrink-0 flex items-center justify-center"
+              >
+                <Icon icon={SentIconData} className="w-4" />
+              </button>
+            </div>
+          </div>
+
+        </div>{/* end chat-zone */}
       </div>
     </div>
   );

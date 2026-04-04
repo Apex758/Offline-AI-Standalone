@@ -418,6 +418,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
   const [liveHistory, setLiveHistory] = useState<LiveSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
+  const [analyzerStatus, setAnalyzerStatus] = useState<'idle' | 'building' | 'done' | 'error'>('idle');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -494,6 +495,31 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
     }
   };
 
+  const handleGenerateAnalyzer = async () => {
+    setAnalyzerStatus('building');
+    try {
+      const res = await axios.get(`${API}/generate-tier-analyzer`, {
+        responseType: 'blob',
+        timeout: 200_000,
+      });
+      const disposition = res.headers['content-disposition'] || '';
+      const match = disposition.match(/filename="?([^"]+)"?/);
+      const filename = match ? match[1] : 'olh_tier_analyzer.py';
+      const url = URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      setAnalyzerStatus('done');
+      setTimeout(() => setAnalyzerStatus('idle'), 4000);
+    } catch (err) {
+      console.error('Analyzer generation failed:', err);
+      setAnalyzerStatus('error');
+      setTimeout(() => setAnalyzerStatus('idle'), 4000);
+    }
+  };
+
   const handleClear = async () => {
     if (!confirm('Clear all metrics data? This cannot be undone.')) return;
     try {
@@ -551,6 +577,42 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
           >
             <Icon icon={Refresh01IconData} size={16} />
             Refresh
+          </button>
+          <button
+            onClick={handleGenerateAnalyzer}
+            disabled={analyzerStatus === 'building'}
+            title="Generate a standalone tool teachers can run to find their compatible OLH tier"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              analyzerStatus === 'done'
+                ? 'bg-green-500/15 text-green-400'
+                : analyzerStatus === 'error'
+                ? 'bg-red-500/10 text-red-400'
+                : analyzerStatus === 'building'
+                ? 'bg-theme-surface text-theme-muted cursor-wait'
+                : 'bg-theme-surface hover:bg-theme-hover text-theme-secondary'
+            }`}
+          >
+            {analyzerStatus === 'building' ? (
+              <>
+                <span className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                Building...
+              </>
+            ) : analyzerStatus === 'done' ? (
+              <>
+                <Icon icon={Download01IconData} size={16} />
+                Analyzer Ready
+              </>
+            ) : analyzerStatus === 'error' ? (
+              <>
+                <Icon icon={Download01IconData} size={16} />
+                Build Failed
+              </>
+            ) : (
+              <>
+                <Icon icon={Download01IconData} size={16} />
+                OLH Tier Analyzer
+              </>
+            )}
           </button>
           <button
             onClick={handleExport}

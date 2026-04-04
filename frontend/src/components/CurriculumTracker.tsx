@@ -1038,7 +1038,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               <div className="text-sm text-white/80">Overall Progress</div>
               <div className="text-2xl font-bold">
                 {(() => {
-                  const active = milestones.filter(m => m.status !== 'skipped');
+                  const active = filteredMilestones.filter(m => m.status !== 'skipped');
                   let total = 0, done = 0;
                   for (const m of active) {
                     if (m.checklist && m.checklist.length > 0) {

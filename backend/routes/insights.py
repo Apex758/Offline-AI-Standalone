@@ -134,11 +134,18 @@ def _save_reports(reports: list):
 
 
 @router.get("/data")
-async def get_insights_data(teacher_id: str = "default_teacher", user_id: str | None = None):
+async def get_insights_data(teacher_id: str = "default_teacher", user_id: str | None = None, grade_subjects: str | None = None):
     """Return aggregated data from all sources (no LLM). Fast endpoint for summary cards."""
     try:
         import insights_service
-        data = insights_service.aggregate_all(teacher_id, user_id)
+        import json as _json
+        gs = None
+        if grade_subjects:
+            try:
+                gs = _json.loads(grade_subjects)
+            except Exception:
+                gs = None
+        data = insights_service.aggregate_all(teacher_id, user_id, grade_subjects=gs)
         return data
     except Exception as e:
         logger.error(f"Error aggregating insights data: {e}")
@@ -162,12 +169,24 @@ async def delete_report(report_id: str):
     return {"status": "deleted"}
 
 
-def save_report(report: dict):
+def save_report(report: dict, teacher_id: str = "default_teacher"):
     """Save a new report (called from WebSocket handler)."""
     if not report.get("id"):
         report["id"] = str(uuid.uuid4())
     if not report.get("generated_at"):
         report["generated_at"] = datetime.now().isoformat()
+
+    # Tag report with current academic phase
+    if not report.get("academic_phase_key"):
+        try:
+            import teacher_metrics_service
+            phase_info = teacher_metrics_service.detect_school_phase(teacher_id)
+            report["academic_phase_key"] = phase_info.get("phase")
+            report["academic_phase_label"] = phase_info.get("phase_label")
+            report["semester_label"] = phase_info.get("semester")
+        except Exception:
+            pass
+
     reports = _load_reports()
     reports.append(report)
     _save_reports(reports)

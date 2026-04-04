@@ -42,13 +42,22 @@ function getTrend(current: number, previous: number | undefined): 'up' | 'down' 
   return 'neutral';
 }
 
+export interface DimensionClickContext {
+  score: number;
+  grade: string;
+  weight: number;
+  description: string;
+  phaseLabel: string;
+  breakdown: { label: string; value: string; note?: string }[];
+}
+
 interface InsightsGraphRowProps {
   metrics: TeacherMetrics | null;
   metricsHistory: MetricSnapshot[];
   previousMetrics?: TeacherMetrics | null;
   insightsData?: InsightsData | null;
   loading?: boolean;
-  onDimensionClick?: (dimension: string) => void;
+  onDimensionClick?: (dimension: string, ctx: DimensionClickContext) => void;
 }
 
 const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
@@ -61,6 +70,8 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 }) => {
   const [panelOpen, setPanelOpen] = useState(false);
   const [phasePopoverOpen, setPhasePopoverOpen] = useState(false);
+  const [showPhaseBands, setShowPhaseBands] = useState(true);
+  const [expandedDimension, setExpandedDimension] = useState<string | null>(null);
   const phaseBadgeRef = useRef<HTMLButtonElement>(null);
 
   // Loading skeleton
@@ -97,6 +108,8 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                 onClose={() => setPhasePopoverOpen(false)}
                 anchorTop={btnRect.top - containerRect.top}
                 anchorLeft={btnRect.right - containerRect.left}
+                showPhaseBands={showPhaseBands}
+                onTogglePhaseBands={() => setShowPhaseBands(p => !p)}
               />
             );
           })()}
@@ -106,6 +119,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
               data={metricsHistory}
               phaseBadgeRef={phaseBadgeRef}
               onPhaseClick={() => setPhasePopoverOpen(p => !p)}
+              showPhaseBands={showPhaseBands}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-sm text-theme-secondary">
@@ -138,14 +152,14 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
               {/* 5 data metrics stacked vertically below the grade */}
               {insightsData && (
-                <div className="flex flex-col items-end gap-2 bg-theme-bg/85 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-theme-border/60">
+                <div className="flex flex-col items-end gap-3 bg-theme-bg/85 backdrop-blur-sm rounded-lg px-3.5 py-3 border border-theme-border/60" style={{ minWidth: '10.5rem' }}>
                   {/* Curriculum */}
-                  <div className="flex flex-col items-end leading-none gap-0.5">
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-theme-muted">Curriculum</span>
-                    <span className="text-xs font-bold text-theme-primary">
+                  <div className="flex flex-col items-end leading-none gap-1">
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Curriculum</span>
+                    <span className="text-base font-bold text-theme-primary">
                       {insightsData.curriculum?.has_data ? `${insightsData.curriculum.pct}%` : '--'}
                     </span>
-                    <span className="text-[9px] text-theme-muted">
+                    <span className="text-xs text-theme-muted">
                       {insightsData.curriculum?.has_data
                         ? `${insightsData.curriculum.completed}/${insightsData.curriculum.total} milestones`
                         : 'No milestones tracked'}
@@ -155,12 +169,12 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                   <div className="w-full h-px bg-theme-border/40" />
 
                   {/* Performance */}
-                  <div className="flex flex-col items-end leading-none gap-0.5">
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-theme-muted">Performance</span>
-                    <span className="text-xs font-bold text-theme-primary">
+                  <div className="flex flex-col items-end leading-none gap-1">
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Performance</span>
+                    <span className="text-base font-bold text-theme-primary">
                       {insightsData.performance?.has_data ? `${insightsData.performance.avgScore}%` : '--'}
                     </span>
-                    <span className="text-[9px] text-theme-muted">
+                    <span className="text-xs text-theme-muted">
                       {insightsData.performance?.has_data
                         ? `${insightsData.performance.totalStudents} students tracked`
                         : 'No grades recorded'}
@@ -170,12 +184,12 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                   <div className="w-full h-px bg-theme-border/40" />
 
                   {/* Content */}
-                  <div className="flex flex-col items-end leading-none gap-0.5">
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-theme-muted">Content</span>
-                    <span className="text-xs font-bold text-theme-primary">
+                  <div className="flex flex-col items-end leading-none gap-1">
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Content</span>
+                    <span className="text-base font-bold text-theme-primary">
                       {insightsData.content?.has_data ? `${insightsData.content.totalResources}` : '--'}
                     </span>
-                    <span className="text-[9px] text-theme-muted">
+                    <span className="text-xs text-theme-muted">
                       {insightsData.content?.has_data ? `Top: ${insightsData.content.topType}` : 'No content created'}
                     </span>
                   </div>
@@ -183,12 +197,12 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                   <div className="w-full h-px bg-theme-border/40" />
 
                   {/* Attendance */}
-                  <div className="flex flex-col items-end leading-none gap-0.5">
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-theme-muted">Attendance</span>
-                    <span className="text-xs font-bold text-theme-primary">
+                  <div className="flex flex-col items-end leading-none gap-1">
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Attendance</span>
+                    <span className="text-base font-bold text-theme-primary">
                       {insightsData.attendance?.has_data ? `${insightsData.attendance.avgRate}%` : '--'}
                     </span>
-                    <span className="text-[9px] text-theme-muted">
+                    <span className="text-xs text-theme-muted">
                       {insightsData.attendance?.has_data
                         ? `${insightsData.attendance.atRiskCount} at-risk students`
                         : 'No attendance recorded'}
@@ -198,14 +212,14 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                   <div className="w-full h-px bg-theme-border/40" />
 
                   {/* Achievements */}
-                  <div className="flex flex-col items-end leading-none gap-0.5">
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-theme-muted">Achievements</span>
-                    <span className="text-xs font-bold text-theme-primary">
+                  <div className="flex flex-col items-end leading-none gap-1">
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Achievements</span>
+                    <span className="text-base font-bold text-theme-primary">
                       {insightsData.achievements?.has_data
                         ? `${insightsData.achievements.totalEarned}/${insightsData.achievements.totalAvailable}`
                         : '--'}
                     </span>
-                    <span className="text-[9px] text-theme-muted">
+                    <span className="text-xs text-theme-muted">
                       {insightsData.achievements?.has_data
                         ? `${insightsData.achievements.rank?.title || 'Newcomer'} · ${insightsData.achievements.streakDays}d streak`
                         : 'No achievements yet'}
@@ -224,8 +238,8 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
         >
           {/* Inner div is always 18rem so content doesn't re-flow during animation */}
           <div className="w-72 h-full overflow-y-auto flex flex-col">
-            <div className="px-3 pt-3 pb-1 border-b border-theme-border">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-theme-secondary">
+            <div className="px-3 pt-3 pb-1.5 border-b border-theme-border">
+              <p className="text-xs font-bold uppercase tracking-wider text-theme-secondary">
                 Dimension Breakdown
               </p>
             </div>
@@ -237,47 +251,113 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                 const trend = getTrend(dim.score, prevDim?.score);
                 const barColor = getGradeColor(dim.score);
                 const weightPct = Math.round(dim.weight * 100);
-                const clickable = !!onDimensionClick && dim.score < 70;
+                const isExpanded = expandedDimension === key;
+
+                const breakdown: { label: string; value: string; note?: string }[] = [];
+                if (key === 'curriculum' && insightsData?.curriculum) {
+                  const c = insightsData.curriculum;
+                  breakdown.push({ label: 'Completion rate', value: c.has_data ? `${c.pct}%` : '--', note: '60% of score' });
+                  breakdown.push({ label: 'Milestones done', value: c.has_data ? `${c.completed} / ${c.total}` : '--' });
+                  if (c.gaps?.length) breakdown.push({ label: 'Gaps found', value: `${c.gaps.length} topic${c.gaps.length > 1 ? 's' : ''}`, note: 'Penalises score' });
+                } else if (key === 'performance' && insightsData?.performance) {
+                  const p = insightsData.performance;
+                  breakdown.push({ label: 'Class average', value: p.has_data ? `${p.avgScore}%` : '--', note: 'Primary driver' });
+                  breakdown.push({ label: 'Students tracked', value: p.has_data ? `${p.totalStudents}` : '--' });
+                  if (p.bySubject?.length) breakdown.push({ label: 'Subjects covered', value: `${p.bySubject.length}` });
+                } else if (key === 'content' && insightsData?.content) {
+                  const c = insightsData.content;
+                  breakdown.push({ label: 'Total resources', value: c.has_data ? `${c.totalResources}` : '--', note: 'Volume drives score' });
+                  breakdown.push({ label: 'Top type', value: c.has_data ? c.topType : '--' });
+                  if (c.recent7d !== undefined) breakdown.push({ label: 'Last 7 days', value: `${c.recent7d}`, note: 'Recency bonus' });
+                  const typeCount = c.byType ? Object.keys(c.byType).length : 0;
+                  if (typeCount) breakdown.push({ label: 'Content types', value: `${typeCount}`, note: 'Diversity bonus' });
+                } else if (key === 'attendance' && insightsData?.attendance) {
+                  const a = insightsData.attendance;
+                  breakdown.push({ label: 'Average rate', value: a.has_data ? `${a.avgRate}%` : '--', note: 'Primary driver' });
+                  breakdown.push({ label: 'At-risk students', value: a.has_data ? `${a.atRiskCount}` : '--', note: a.atRiskCount > 0 ? 'Penalises score' : undefined });
+                } else if (key === 'achievements' && insightsData?.achievements) {
+                  const a = insightsData.achievements;
+                  breakdown.push({ label: 'Trophies earned', value: a.has_data ? `${a.totalEarned} / ${a.totalAvailable}` : '--', note: '40% of score' });
+                  breakdown.push({ label: 'Activity streak', value: a.has_data ? `${a.streakDays} days` : '--', note: '30% of score' });
+                  breakdown.push({ label: 'Active days total', value: a.has_data ? `${a.totalActiveDays}` : '--', note: '30% of score' });
+                  if (a.rank) breakdown.push({ label: 'Current rank', value: a.rank.title });
+                  if (a.rank?.next_title) breakdown.push({ label: 'Next rank', value: a.rank.next_title, note: a.rank.achievements_for_next ? `${a.rank.achievements_for_next} more needed` : undefined });
+                }
 
                 return (
-                  <div
-                    key={key}
-                    className={`rounded-lg border border-theme-border p-2.5 ${clickable ? 'cursor-pointer hover:bg-theme-bg-tertiary/50' : ''}`}
-                    onClick={() => clickable ? onDimensionClick!(key) : undefined}
-                  >
-                    <div className="flex items-center gap-2">
-                      {config && (
-                        <Icon icon={config.icon} className="w-3.5" style={{ color: config.color }} />
-                      )}
-                      <span className="text-xs font-medium text-theme-primary capitalize flex-1">{key}</span>
+                  <div key={key} className="rounded-lg border border-theme-border overflow-hidden">
+                    {/* Header row — click to expand */}
+                    <div
+                      className="flex items-center gap-2 p-3 cursor-pointer hover:bg-theme-bg-tertiary/40 transition-colors select-none"
+                      onClick={() => setExpandedDimension(isExpanded ? null : key)}
+                    >
+                      {config && <Icon icon={config.icon} className="w-4" style={{ color: config.color }} />}
+                      <span className="text-sm font-medium text-theme-primary capitalize flex-1">{key}</span>
 
-                      {trend === 'up' && (
-                        <Icon icon={ArrowUp01IconData} className="w-3" style={{ color: '#22c55e' }} />
-                      )}
-                      {trend === 'down' && (
-                        <Icon icon={ArrowDown01IconData} className="w-3" style={{ color: '#ef4444' }} />
-                      )}
-                      {trend === 'neutral' && (
-                        <Icon icon={ArrowRight01IconData} className="w-3" style={{ color: '#9ca3af' }} />
-                      )}
+                      {trend === 'up' && <Icon icon={ArrowUp01IconData} className="w-3.5" style={{ color: '#22c55e' }} />}
+                      {trend === 'down' && <Icon icon={ArrowDown01IconData} className="w-3.5" style={{ color: '#ef4444' }} />}
+                      {trend === 'neutral' && <Icon icon={ArrowRight01IconData} className="w-3.5" style={{ color: '#9ca3af' }} />}
 
-                      <span
-                        className="text-xs font-semibold px-1 py-0.5 rounded"
-                        style={{ backgroundColor: barColor + '20', color: barColor }}
-                      >
+                      <span className="text-sm font-semibold px-1.5 py-0.5 rounded" style={{ backgroundColor: barColor + '20', color: barColor }}>
                         {dim.grade}
                       </span>
-                      <span className="text-xs text-theme-muted">{weightPct}%</span>
+                      <span className="text-sm text-theme-muted">{weightPct}%</span>
+                      <svg
+                        className="w-3.5 h-3.5 text-theme-muted flex-shrink-0 transition-transform duration-200"
+                        style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
                     </div>
 
-                    <div className="mt-1.5 h-1.5 rounded-full bg-theme-bg-tertiary overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${dim.score}%`, backgroundColor: barColor }}
-                      />
+                    {/* Progress bar */}
+                    <div className="mx-3 mb-2.5 h-1.5 rounded-full bg-theme-bg-tertiary overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${dim.score}%`, backgroundColor: barColor }} />
                     </div>
 
-                    <p className="text-[10px] text-theme-secondary mt-1 leading-snug">{dim.description}</p>
+                    {/* Expanded section */}
+                    {isExpanded && (
+                      <div className="px-3 pb-3 pt-2 border-t border-theme-border/50 space-y-2.5">
+                        <p className="text-xs text-theme-secondary leading-snug">{dim.description}</p>
+
+                        {breakdown.length > 0 && (
+                          <div className="space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-theme-muted">What contributes</p>
+                            {breakdown.map((row, i) => (
+                              <div key={i} className="flex items-center justify-between gap-2">
+                                <span className="text-xs text-theme-secondary">{row.label}</span>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  {row.note && <span className="text-[10px] text-theme-muted italic">{row.note}</span>}
+                                  <span className="text-xs font-semibold text-theme-primary">{row.value}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {onDimensionClick && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const ctx: DimensionClickContext = {
+                                score: dim.score,
+                                grade: dim.grade,
+                                weight: dim.weight,
+                                description: dim.description,
+                                phaseLabel: metrics?.phase?.phase_label || '',
+                                breakdown,
+                              };
+                              onDimensionClick(key, ctx);
+                            }}
+                            className="w-full text-xs font-medium py-1.5 px-2 rounded-md border transition-colors text-left"
+                            style={{ borderColor: barColor + '50', color: barColor, backgroundColor: barColor + '0d' }}
+                          >
+                            Talk to Coach about {key} →
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}

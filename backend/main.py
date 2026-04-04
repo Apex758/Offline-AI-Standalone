@@ -19,6 +19,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Requ
 from fastapi.responses import JSONResponse, Response, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from image_service import get_image_service
+from tier2_prompts import get_tier2_system_prompt
 import base64
 from pydantic import BaseModel
 from typing import List, Optional
@@ -45,6 +46,7 @@ from pathlib import Path
 from datetime import datetime
 from routes import milestones, achievements, insights, teacher_metrics
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from tier_analyzer_generator import build_analyzer
 
 _scheduler: AsyncIOScheduler | None = None
 import student_service
@@ -552,16 +554,7 @@ def build_title_prompt(user_msg: str, assistant_msg: str) -> str:
     if _tier_info["tier"] == 1:
         system_prompt = get_tier1_system_prompt("title-generation")
     else:
-        system_prompt = """You are a title generation assistant. Create concise, descriptive titles for chat conversations.
-
-Rules:
-- Maximum 60 characters
-- Use title case
-- Be specific and descriptive
-- Capture the main topic or question
-- No special characters except hyphens and ampersands
-- No quotes or punctuation at the end
-- Focus on the key concept or action"""
+        system_prompt = get_tier2_system_prompt("title-generation")
 
     user_prompt = f"""Based on this conversation, create a concise title (max 60 characters):
 
@@ -938,7 +931,7 @@ async def websocket_chat(websocket: WebSocket):
             if not user_message:
                 continue
 
-            default_system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
+            default_system_prompt = get_tier2_system_prompt("chat")
 
             # Tier-1 awareness: use simpler prompt and tighter params for small models
             from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
@@ -1433,7 +1426,7 @@ async def delete_lesson_draft(draft_id: str):
 async def generate_lesson_plan(request: LessonPlanRequest):
     """Generate a lesson plan using the LLM (via process pool)"""
     try:
-        prompt_text = build_prompt("You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans.", request.prompt)
+        prompt_text = build_prompt(get_tier2_system_prompt("lesson-plan"), request.prompt)
 
         settings = {
             "model_path": get_model_path(),
@@ -1534,7 +1527,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
             if _is_tier1:
                 system_prompt = get_tier1_system_prompt("lesson-plan", _grade)
             else:
-                system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
+                system_prompt = get_tier2_system_prompt("lesson-plan")
 
             # Prefer user-selected ELO/SCOs from the form over generic curriculum context
             user_elo = ""
@@ -1705,7 +1698,7 @@ async def quiz_websocket(websocket: WebSocket):
                 if _is_tier1:
                     system_prompt = get_tier1_system_prompt("quiz", _grade)
                 else:
-                    system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
+                    system_prompt = get_tier2_system_prompt("quiz")
 
                 # Legacy path: add curriculum context for alignment
                 if curriculum_matcher and isinstance(form_data, dict) and form_data:
@@ -1854,7 +1847,7 @@ async def rubric_websocket(websocket: WebSocket):
             if _is_tier1:
                 system_prompt = get_tier1_system_prompt("rubric", _grade)
             else:
-                system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
+                system_prompt = get_tier2_system_prompt("rubric")
 
             # Add curriculum context for alignment
             if curriculum_matcher and isinstance(form_data, dict) and form_data:
@@ -1997,7 +1990,7 @@ async def kindergarten_websocket(websocket: WebSocket):
             if _is_tier1:
                 system_prompt = get_tier1_system_prompt("kindergarten", "K")
             else:
-                system_prompt = "You are an expert early childhood educator specializing in kindergarten education. Create developmentally appropriate, engaging, and playful lesson plans that foster learning through exploration and hands-on activities."
+                system_prompt = get_tier2_system_prompt("kindergarten")
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -2122,7 +2115,7 @@ async def multigrade_websocket(websocket: WebSocket):
             if _is_tier1:
                 system_prompt = get_tier1_system_prompt("multigrade")
             else:
-                system_prompt = "You are an expert educator specializing in multigrade and multi-age classroom instruction. Create comprehensive lesson plans that address multiple grade levels simultaneously with differentiated activities and flexible grouping strategies."
+                system_prompt = get_tier2_system_prompt("multigrade")
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -2252,7 +2245,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
             if _is_tier1:
                 system_prompt = get_tier1_system_prompt("cross-curricular", _grade)
             else:
-                system_prompt = "You are an expert educational consultant specializing in integrated and cross-curricular lesson planning. Create comprehensive lesson plans that meaningfully connect multiple subject areas and demonstrate authentic interdisciplinary learning."
+                system_prompt = get_tier2_system_prompt("cross-curricular")
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -2395,7 +2388,7 @@ async def worksheet_websocket(websocket: WebSocket):
             if _is_tier1:
                 system_prompt = get_tier1_system_prompt("worksheet", _grade)
             else:
-                system_prompt = f"You are an expert educational worksheet designer. Create comprehensive, well-structured worksheets that accurately assess student learning and align with curriculum standards. Focus on clear instructions, appropriate difficulty level, and educational value."
+                system_prompt = get_tier2_system_prompt("worksheet")
 
             # Add curriculum context for alignment
             if curriculum_matcher and (subject or grade_level):
@@ -2546,12 +2539,7 @@ async def presentation_websocket(websocket: WebSocket):
             if _is_tier1:
                 system_prompt = get_tier1_system_prompt(_t1_prompt_key, _grade)
             else:
-                system_prompt = (
-                    "You are an expert presentation designer for educational content. "
-                    "Convert lesson plans into concise, visually-oriented slide decks. "
-                    "Return ONLY valid JSON with no markdown fences or explanation. "
-                    "Each slide should have punchy headlines (max 7 words) and short bullet points (max 12 words each)."
-                )
+                system_prompt = get_tier2_system_prompt(_t1_prompt_key)
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -2771,12 +2759,7 @@ async def storybook_websocket(websocket: WebSocket):
                     if _is_tier1:
                         system_prompt = get_tier1_system_prompt("storybook", grade)
                     else:
-                        system_prompt = (
-                            "You are a children's storybook author specializing in early childhood education (K-2). "
-                            "Create engaging, age-appropriate stories with clear characters, simple vocabulary, "
-                            "and vivid scene descriptions. Tag every text segment with its speaker. "
-                            "Return ONLY valid JSON with no markdown fences or explanation."
-                        )
+                        system_prompt = get_tier2_system_prompt("storybook")
 
                     full_prompt = build_prompt(system_prompt, prompt)
 
@@ -3711,6 +3694,8 @@ async def websocket_consultant(websocket: WebSocket):
             chat_id = msg.get("chat_id")
             metrics_context = msg.get("metrics_context")
             trigger_dimension = msg.get("trigger_dimension")
+            dimension_context = msg.get("dimension_context")
+            topic_context = msg.get("topic_context")
             teacher_id = msg.get("teacher_id", "default_teacher")
 
             if not user_message:
@@ -3767,17 +3752,69 @@ async def websocket_consultant(websocket: WebSocket):
             # Build conversation context from memory
             summary_block, history = memory.build_context(chat_id, n_pairs=4)
 
-            # Trigger dimension context
+            # Trigger dimension context — rich focused coaching block
             trigger_block = ""
             if trigger_dimension and metrics_context:
                 d = metrics_context.get("dimensions", {}).get(trigger_dimension, {})
-                trigger_block = (
-                    f"\n\nThe teacher opened this conversation because their {trigger_dimension} score is "
-                    f"{d.get('score', 0)} ({d.get('grade', '?')}). Start by acknowledging this and asking "
-                    f"diagnostic questions to understand why it's low."
+                score = d.get('score', 0)
+                grade = d.get('grade', '?')
+                weight_pct = round(d.get('weight', 0) * 100)
+                phase_label = metrics_context.get("phase", {}).get("phase_label", "")
+
+                lines = [
+                    f"\n\n{'='*50}",
+                    f"FOCUSED COACHING SESSION: {trigger_dimension.upper()}",
+                    f"Score: {score}/100 ({grade}) | Phase weight: {weight_pct}% of composite score",
+                ]
+                if phase_label:
+                    lines.append(f"Current school phase: {phase_label}")
+
+                # Include detailed breakdown if provided
+                if dimension_context:
+                    breakdown = dimension_context.get("breakdown", [])
+                    if breakdown:
+                        lines.append("\nBreakdown of what drives this score:")
+                        for row in breakdown:
+                            note = f"  [{row['note']}]" if row.get('note') else ""
+                            lines.append(f"  • {row['label']}: {row['value']}{note}")
+
+                # Grade-aware coaching directive
+                grade_char = grade[0] if grade else 'F'
+                if grade_char == 'A':
+                    directive = (
+                        f"The teacher is proud of their {trigger_dimension} performance. "
+                        f"Acknowledge the strong score enthusiastically. Explain exactly what they're doing right using the breakdown data. "
+                        f"Then give 1-2 forward-looking tips to maintain it as school phases change."
+                    )
+                elif grade_char in ('B', 'C'):
+                    directive = (
+                        f"The teacher wants to push their {trigger_dimension} score from {grade} to the next grade. "
+                        f"Be encouraging — they're not far off. Pinpoint the 1-2 specific factors from the breakdown "
+                        f"that have the most leverage, and give concrete, actionable steps for each."
+                    )
+                else:
+                    directive = (
+                        f"The teacher is concerned about their low {trigger_dimension} score ({grade}, {score}/100). "
+                        f"Be empathetic but direct — do NOT ask what's wrong, you already know from the breakdown data. "
+                        f"Lead immediately with the specific bottleneck (use exact numbers from the breakdown), "
+                        f"explain why it matters to their overall grade, then give 2-3 concrete immediate steps. "
+                        f"End with one encouraging, targeted question to keep them engaged."
+                    )
+
+                lines.append(f"\nCOACHING DIRECTIVE: {directive}")
+                lines.append('='*50)
+                trigger_block = "\n".join(lines)
+
+            # Soft topic context — only when teacher picked a topic bubble (no full dimension trigger active)
+            topic_block = ""
+            if topic_context and not trigger_dimension:
+                topic_block = (
+                    f"\n\nThe teacher has chosen to discuss '{topic_context}' in this session. "
+                    f"Keep your responses focused on this area, but let the teacher lead — "
+                    f"do not open with a formal assessment. Wait for their question and answer helpfully."
                 )
 
-            system_prompt = base_prompt + metric_block + rec_block + trigger_block
+            system_prompt = base_prompt + metric_block + rec_block + trigger_block + topic_block
             if summary_block:
                 system_prompt += f"\n\n{summary_block}"
 
@@ -6687,6 +6724,7 @@ async def get_model_recommendations():
     try:
         from metrics_service import _get_system_specs
         from model_recommender import get_hardware_profile, recommend_models
+        from config import scan_ocr_models
 
         specs = _get_system_specs()
         hw_profile = get_hardware_profile(specs)
@@ -9373,6 +9411,31 @@ async def save_worksheet_instances_endpoint(request: Request):
     return JSONResponse(content={"saved": saved, "count": len(saved)})
 
 
+# ── OLH Tier Analyzer ────────────────────────────────────────────────────────
+
+@app.get("/api/generate-tier-analyzer")
+async def generate_tier_analyzer_endpoint():
+    """
+    Build and return the OLH Tier Analyzer tool.
+    Attempts to produce a Windows .exe (with OECS icon) via PyInstaller.
+    Falls back to a plain .py script if PyInstaller is unavailable.
+    """
+    try:
+        file_bytes, filename = await build_analyzer()
+    except Exception as e:
+        logger.error(f"Tier analyzer generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if filename.endswith(".exe"):
+        media_type = "application/octet-stream"
+    else:
+        media_type = "text/x-python"
+
+    return Response(
+        content=file_bytes,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 

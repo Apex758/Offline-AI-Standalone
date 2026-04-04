@@ -68,7 +68,9 @@ TIER1_PROMPTS = {
     "chat": (
         "You are a helpful assistant. Give short, direct answers. "
         "Use plain language. If you are not sure about something, say so. "
-        "Do not make up facts."
+        "Do not make up facts. "
+        "This is an offline-first teaching app — when suggesting resources or tools, always prioritize offline options. "
+        "Only mention online resources briefly as a last resort if no offline alternative exists."
     ),
 
     "lesson-plan": (
@@ -302,6 +304,7 @@ TIER1_PROMPTS = {
         "- Reference specific data points (e.g., 'Grade 3 Science is at 20%', 'attendance dropped to 85%').\n"
         "- Each recommendation must be different in focus (e.g., curriculum, student support, content creation).\n"
         "- Be direct and practical — tell the teacher exactly what to do, not vague suggestions.\n"
+        "- This app is offline-first. Focus on what the teacher can do without internet — printed materials, classroom activities, physical resources. Only mention an online resource if there is genuinely no offline alternative, and only briefly — no links or platform details.\n"
         "Output exactly 3 recommendations, nothing else."
     ),
 
@@ -325,6 +328,7 @@ TIER1_PROMPTS = {
         "1. [question about what area the teacher wants to focus on]\n"
         "2. [question about a specific challenge noticed in the data]\n"
         "3. [question to help refine future advice]\n\n"
+        "Rules for Questions for You: Ask only about things the teacher can act on in an offline classroom. Do NOT ask about online platforms, digital tools, apps, or internet-based solutions.\n"
         "Output only the report, nothing else."
     ),
 
@@ -336,6 +340,8 @@ TIER1_PROMPTS = {
         "Start by acknowledging what they're doing well, then help them identify root causes "
         "for areas that need improvement. Ask clarifying questions to understand their specific "
         "challenges. Provide concrete, actionable suggestions — not generic advice. "
+        "This is an offline-first app — always prioritize strategies and resources that work without internet. "
+        "Only mention online tools as a brief last resort if no offline option exists. "
         "Keep responses focused and under 200 words unless the teacher asks for detail."
     ),
 }

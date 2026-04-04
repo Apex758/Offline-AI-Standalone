@@ -582,7 +582,14 @@ DEFAULT_TIER_CONFIG = {
             "brain-dump": "fast",
             "title-generation": "fast",
             "autocomplete": "fast",
-            "organize-note": "fast"
+            "organize-note": "fast",
+            "insights-curriculum": "primary",
+            "insights-performance": "primary",
+            "insights-content": "primary",
+            "insights-attendance": "primary",
+            "insights-achievements": "primary",
+            "insights-recommendations": "primary",
+            "insights-synthesis": "primary"
         }
     }
 }

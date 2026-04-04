@@ -8,9 +8,21 @@ import { format, parseISO } from 'date-fns';
 import type { MetricSnapshot, SchoolPhase } from '../../types/insights';
 
 const PHASE_COLORS_SOLID: Partial<Record<SchoolPhase, string>> = {
+  // Generic
   start_of_year: '#3b82f6', early_year: '#22c55e', mid_year: '#6b7280',
   pre_exam: '#f97316', exam_period: '#ef4444', post_exam: '#a855f7',
   vacation: '#eab308', reopening: '#06b6d4',
+  // Caribbean
+  semester_1_early:     '#3b82f6',
+  midterm_1_prep:       '#f97316',
+  midterm_1:            '#ef4444',
+  semester_1_late:      '#6366f1',
+  inter_semester_break: '#eab308',
+  semester_2_early:     '#22c55e',
+  midterm_2_prep:       '#f97316',
+  midterm_2:            '#ef4444',
+  semester_2_late:      '#14b8a6',
+  end_of_year_exam:     '#dc2626',
 };
 
 interface TeacherMetricsChartProps {
@@ -19,6 +31,7 @@ interface TeacherMetricsChartProps {
   compact?: boolean; // compact mode hides dimension overlays + legend
   phaseBadgeRef?: React.Ref<HTMLButtonElement>;
   onPhaseClick?: () => void;
+  showPhaseBands?: boolean;
 }
 
 const GRADE_COLORS: Record<string, string> = {
@@ -39,6 +52,7 @@ const GRADE_BANDS = [
 ];
 
 const PHASE_COLORS: Partial<Record<SchoolPhase, string>> = {
+  // Generic
   start_of_year: 'rgba(59,130,246,0.06)',
   early_year: 'rgba(34,197,94,0.06)',
   mid_year: 'rgba(107,114,128,0.04)',
@@ -47,7 +61,27 @@ const PHASE_COLORS: Partial<Record<SchoolPhase, string>> = {
   post_exam: 'rgba(168,85,247,0.06)',
   vacation: 'rgba(234,179,8,0.06)',
   reopening: 'rgba(6,182,212,0.06)',
+  // Caribbean
+  semester_1_early:     'rgba(59,130,246,0.06)',
+  midterm_1_prep:       'rgba(249,115,22,0.07)',
+  midterm_1:            'rgba(239,68,68,0.08)',
+  semester_1_late:      'rgba(99,102,241,0.06)',
+  inter_semester_break: 'rgba(234,179,8,0.06)',
+  semester_2_early:     'rgba(34,197,94,0.06)',
+  midterm_2_prep:       'rgba(249,115,22,0.07)',
+  midterm_2:            'rgba(239,68,68,0.08)',
+  semester_2_late:      'rgba(20,184,166,0.06)',
+  end_of_year_exam:     'rgba(220,38,38,0.09)',
 };
+
+// Which phases belong to Semester 1 vs Semester 2 (for divider rendering)
+const SEMESTER_1_PHASES = new Set<SchoolPhase>([
+  'start_of_year', 'early_year', 'mid_year',
+  'semester_1_early', 'midterm_1_prep', 'midterm_1', 'semester_1_late',
+]);
+const SEMESTER_2_PHASES = new Set<SchoolPhase>([
+  'semester_2_early', 'midterm_2_prep', 'midterm_2', 'semester_2_late', 'end_of_year_exam',
+]);
 
 const DIMENSION_SERIES = [
   { key: 'curriculum_score',   name: 'Curriculum',   color: '#3b82f6' },
@@ -86,6 +120,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   compact = false,
   phaseBadgeRef,
   onPhaseClick,
+  showPhaseBands = true,
 }) => {
   const { ref: chartContainerRef, width: chartWidth, height: chartContainerHeight } = useContainerSize();
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
@@ -169,13 +204,19 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
             Phase: {snap.phase_label}
           </p>
         )}
-        {!compact && payload.slice(1).map((entry: any, i: number) => (
-          <div key={i} className="flex items-center gap-2 text-xs mb-0.5">
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'inline-block' }} />
-            <span style={{ color: 'var(--dash-text-sub)' }}>{entry.name}</span>
-            <span className="font-semibold ml-auto" style={{ color: 'var(--dash-text)' }}>{Math.round(entry.value)}</span>
-          </div>
-        ))}
+        {!compact && payload.slice(1).map((entry: any, i: number) => {
+          const val = Math.round(entry.value);
+          const grade = getGradeLabel(val);
+          const gradeColor = getGradeColor(val);
+          return (
+            <div key={i} className="flex items-center gap-2 text-xs mb-0.5">
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'inline-block' }} />
+              <span style={{ color: 'var(--dash-text-sub)' }}>{entry.name}</span>
+              <span className="font-semibold ml-auto" style={{ color: 'var(--dash-text)' }}>{val}</span>
+              <span className="font-bold text-[10px] px-1 py-0.5 rounded" style={{ backgroundColor: gradeColor + '22', color: gradeColor, minWidth: '1.4rem', textAlign: 'center' }}>{grade}</span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -223,17 +264,18 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
   return (
     <div
-      className="rounded-2xl px-4 pt-3 pb-20 h-full flex flex-col"
-      style={{ backgroundColor: 'var(--dash-card-bg)', boxShadow: '0 4px 16px var(--dash-card-shadow)' }}
+      className="rounded-2xl px-4 pt-3 pb-20 h-full flex flex-col tmc-root"
+      style={{ backgroundColor: 'var(--dash-card-bg)', boxShadow: '0 4px 16px var(--dash-card-shadow)', outline: 'none' }}
     >
+      <style>{`.tmc-root *:focus { outline: none !important; }`}</style>
       {!compact && (
         <div className="flex items-center gap-2 mb-2">
-          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Teaching Effectiveness</h3>
+          <h3 className="text-base font-bold" style={{ color: 'var(--dash-text)' }}>Teaching Effectiveness</h3>
           {chartData.length > 0 && onPhaseClick && (
             <button
               ref={phaseBadgeRef}
               onClick={onPhaseClick}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-opacity hover:opacity-80"
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border transition-opacity hover:opacity-80"
               style={{
                 backgroundColor: 'var(--dash-card-bg)',
                 borderColor: 'var(--dash-border)',
@@ -250,7 +292,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
         </div>
       )}
 
-      <div ref={chartContainerRef} className="flex-1" style={{ width: '100%' }}>
+      <div ref={chartContainerRef} className="flex-1" style={{ width: '100%', outline: 'none' }} onMouseDown={e => e.preventDefault()}>
         {chartWidth > 0 && chartContainerHeight > 0 && (
           <AreaChart width={chartWidth} height={chartContainerHeight} data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
             <defs>
@@ -263,7 +305,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
             <CartesianGrid strokeDasharray="3 3" stroke="var(--dash-border)" vertical={false} />
 
             {/* Phase background bands */}
-            {phaseBands.map((band, i) => (
+            {showPhaseBands && phaseBands.map((band, i) => (
               <ReferenceArea
                 key={i}
                 x1={band.x1}

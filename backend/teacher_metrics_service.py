@@ -54,19 +54,22 @@ def _init_db():
     try:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS teacher_metric_snapshots (
-                id              TEXT PRIMARY KEY,
-                teacher_id      TEXT NOT NULL,
-                computed_at     TEXT NOT NULL,
-                phase           TEXT NOT NULL,
-                composite_score REAL NOT NULL,
-                composite_grade TEXT NOT NULL,
-                curriculum_score  REAL,
-                performance_score REAL,
-                content_score     REAL,
-                attendance_score  REAL,
-                achievements_score REAL,
-                weights_json    TEXT,
-                phase_label     TEXT,
+                id                  TEXT PRIMARY KEY,
+                teacher_id          TEXT NOT NULL,
+                computed_at         TEXT NOT NULL,
+                phase               TEXT NOT NULL,
+                composite_score     REAL NOT NULL,
+                composite_grade     TEXT NOT NULL,
+                curriculum_score    REAL,
+                performance_score   REAL,
+                content_score       REAL,
+                attendance_score    REAL,
+                achievements_score  REAL,
+                weights_json        TEXT,
+                phase_label         TEXT,
+                academic_phase_id   TEXT,
+                academic_phase_key  TEXT,
+                semester_label      TEXT,
                 UNIQUE(teacher_id, computed_at)
             );
 
@@ -97,6 +100,17 @@ def _init_db():
             CREATE INDEX IF NOT EXISTS idx_cm_chat_id
             ON consultant_messages(chat_id);
         """)
+        # Migrations for new snapshot columns
+        for col, definition in [
+            ('academic_phase_id',  'TEXT'),
+            ('academic_phase_key', 'TEXT'),
+            ('semester_label',     'TEXT'),
+        ]:
+            try:
+                conn.execute(f'ALTER TABLE teacher_metric_snapshots ADD COLUMN {col} {definition}')
+            except Exception:
+                pass
+
         conn.commit()
     finally:
         conn.close()
@@ -126,17 +140,30 @@ def score_to_grade(score: float) -> str:
 # ── Phase detection ──────────────────────────────────────────────────────────
 
 PHASE_WEIGHT_PROFILES = {
-    "start_of_year":  {"curriculum": 0.30, "content": 0.30, "performance": 0.10, "attendance": 0.15, "achievements": 0.15},
-    "early_year":     {"curriculum": 0.25, "content": 0.25, "performance": 0.15, "attendance": 0.20, "achievements": 0.15},
-    "mid_year":       {"curriculum": 0.20, "content": 0.20, "performance": 0.25, "attendance": 0.20, "achievements": 0.15},
-    "pre_exam":       {"curriculum": 0.15, "content": 0.25, "performance": 0.30, "attendance": 0.15, "achievements": 0.15},
-    "exam_period":    {"curriculum": 0.10, "content": 0.10, "performance": 0.40, "attendance": 0.20, "achievements": 0.20},
-    "post_exam":      {"curriculum": 0.15, "content": 0.15, "performance": 0.35, "attendance": 0.15, "achievements": 0.20},
-    "vacation":       {"curriculum": 0.30, "content": 0.30, "performance": 0.05, "attendance": 0.05, "achievements": 0.30},
-    "reopening":      {"curriculum": 0.30, "content": 0.25, "performance": 0.10, "attendance": 0.25, "achievements": 0.10},
+    # ── Generic phases ───────────────────────────────────────────────────────
+    "start_of_year":      {"curriculum": 0.30, "content": 0.30, "performance": 0.10, "attendance": 0.15, "achievements": 0.15},
+    "early_year":         {"curriculum": 0.25, "content": 0.25, "performance": 0.15, "attendance": 0.20, "achievements": 0.15},
+    "mid_year":           {"curriculum": 0.20, "content": 0.20, "performance": 0.25, "attendance": 0.20, "achievements": 0.15},
+    "pre_exam":           {"curriculum": 0.15, "content": 0.25, "performance": 0.30, "attendance": 0.15, "achievements": 0.15},
+    "exam_period":        {"curriculum": 0.10, "content": 0.10, "performance": 0.40, "attendance": 0.20, "achievements": 0.20},
+    "post_exam":          {"curriculum": 0.15, "content": 0.15, "performance": 0.35, "attendance": 0.15, "achievements": 0.20},
+    "vacation":           {"curriculum": 0.30, "content": 0.30, "performance": 0.05, "attendance": 0.05, "achievements": 0.30},
+    "reopening":          {"curriculum": 0.30, "content": 0.25, "performance": 0.10, "attendance": 0.25, "achievements": 0.10},
+    # ── Caribbean two-semester phases ────────────────────────────────────────
+    "semester_1_early":     {"curriculum": 0.28, "content": 0.27, "performance": 0.15, "attendance": 0.18, "achievements": 0.12},
+    "midterm_1_prep":       {"curriculum": 0.15, "content": 0.20, "performance": 0.35, "attendance": 0.15, "achievements": 0.15},
+    "midterm_1":            {"curriculum": 0.10, "content": 0.10, "performance": 0.42, "attendance": 0.22, "achievements": 0.16},
+    "semester_1_late":      {"curriculum": 0.20, "content": 0.20, "performance": 0.30, "attendance": 0.18, "achievements": 0.12},
+    "inter_semester_break": {"curriculum": 0.30, "content": 0.32, "performance": 0.05, "attendance": 0.05, "achievements": 0.28},
+    "semester_2_early":     {"curriculum": 0.28, "content": 0.25, "performance": 0.15, "attendance": 0.22, "achievements": 0.10},
+    "midterm_2_prep":       {"curriculum": 0.15, "content": 0.20, "performance": 0.35, "attendance": 0.15, "achievements": 0.15},
+    "midterm_2":            {"curriculum": 0.10, "content": 0.10, "performance": 0.42, "attendance": 0.22, "achievements": 0.16},
+    "semester_2_late":      {"curriculum": 0.15, "content": 0.15, "performance": 0.38, "attendance": 0.15, "achievements": 0.17},
+    "end_of_year_exam":     {"curriculum": 0.10, "content": 0.08, "performance": 0.48, "attendance": 0.20, "achievements": 0.14},
 }
 
 PHASE_LABELS = {
+    # Generic
     "start_of_year": "Start of Year",
     "early_year": "Early Year",
     "mid_year": "Mid-Year",
@@ -145,6 +172,17 @@ PHASE_LABELS = {
     "post_exam": "Post-Exam",
     "vacation": "Vacation",
     "reopening": "Reopening",
+    # Caribbean
+    "semester_1_early":     "Semester 1 — Early",
+    "midterm_1_prep":       "Mid-Term 1 Prep",
+    "midterm_1":            "Mid-Term 1",
+    "semester_1_late":      "Semester 1 — Late",
+    "inter_semester_break": "Inter-Semester Break",
+    "semester_2_early":     "Semester 2 — Early",
+    "midterm_2_prep":       "Mid-Term 2 Prep",
+    "midterm_2":            "Mid-Term 2",
+    "semester_2_late":      "Semester 2 — Late",
+    "end_of_year_exam":     "End-of-Year Exams",
 }
 
 EQUAL_WEIGHTS = {"curriculum": 0.20, "content": 0.20, "performance": 0.20, "attendance": 0.20, "achievements": 0.20}
@@ -153,7 +191,10 @@ EQUAL_WEIGHTS = {"curriculum": 0.20, "content": 0.20, "performance": 0.20, "atte
 def detect_school_phase(teacher_id: str) -> dict:
     """Determine current academic phase from the school calendar.
 
-    Returns: {phase, phase_label, next_event, days_until, weights}
+    For Caribbean two-semester configs, matches against academic_phases table.
+    For generic configs, falls back to the legacy priority-based detection.
+
+    Returns: {phase, phase_label, semester, next_event, days_until, weights, academic_phase_id}
     """
     try:
         import school_year_service
@@ -165,22 +206,58 @@ def detect_school_phase(teacher_id: str) -> dict:
         return {
             "phase": "mid_year",
             "phase_label": "Mid-Year (no calendar)",
+            "semester": None,
             "next_event": None,
             "days_until": None,
             "weights": EQUAL_WEIGHTS,
+            "academic_phase_id": None,
         }
 
     today = datetime.now().date()
+
+    # ── Caribbean two-semester: use academic_phases table ──
+    if config.get("structure_type") == "caribbean_two_semester":
+        try:
+            phase_row = school_year_service.get_phase_for_date(teacher_id)
+        except Exception:
+            phase_row = None
+
+        if phase_row:
+            phase_key = phase_row["phase_key"]
+            # Find next upcoming phase boundary
+            try:
+                all_phases = school_year_service.list_academic_phases(config["id"])
+                next_event = None
+                days_until = None
+                for ap in all_phases:
+                    ap_start = datetime.fromisoformat(ap["start_date"]).date()
+                    if ap_start > today:
+                        next_event = ap["phase_label"]
+                        days_until = (ap_start - today).days
+                        break
+            except Exception:
+                next_event = None
+                days_until = None
+
+            return {
+                "phase": phase_key,
+                "phase_label": phase_row["phase_label"],
+                "semester": phase_row.get("semester"),
+                "next_event": next_event,
+                "days_until": days_until,
+                "weights": PHASE_WEIGHT_PROFILES.get(phase_key, EQUAL_WEIGHTS),
+                "academic_phase_id": phase_row["id"],
+            }
+
+    # ── Generic config: legacy detection ──
     start_date = datetime.fromisoformat(config["start_date"]).date()
     end_date = datetime.fromisoformat(config["end_date"]).date()
 
-    # Load events for this config
     try:
         events = school_year_service.list_events(config["id"])
     except Exception:
         events = []
 
-    # Parse exam/midterm events
     exam_events = []
     for evt in events:
         etype = (evt.get("event_type") or "").lower()
@@ -188,11 +265,8 @@ def detect_school_phase(teacher_id: str) -> dict:
             evt_start = datetime.fromisoformat(evt["event_date"]).date()
             evt_end = datetime.fromisoformat(evt["end_date"]).date() if evt.get("end_date") else evt_start
             exam_events.append({"title": evt["title"], "start": evt_start, "end": evt_end})
-
-    # Sort exam events by start date
     exam_events.sort(key=lambda e: e["start"])
 
-    # Find next upcoming event (any type) for context
     next_event = None
     days_until = None
     for evt in sorted(events, key=lambda e: e.get("event_date", "")):
@@ -202,15 +276,16 @@ def detect_school_phase(teacher_id: str) -> dict:
             days_until = (evt_date - today).days
             break
 
-    # Priority-based phase detection
     phase = _detect_phase_priority(today, start_date, end_date, exam_events)
 
     return {
         "phase": phase,
         "phase_label": PHASE_LABELS.get(phase, phase),
+        "semester": None,
         "next_event": next_event,
         "days_until": days_until,
         "weights": PHASE_WEIGHT_PROFILES.get(phase, EQUAL_WEIGHTS),
+        "academic_phase_id": None,
     }
 
 
@@ -538,8 +613,11 @@ def compute_composite_score(teacher_id: str, aggregated_data: dict = None) -> di
         "phase": {
             "phase": phase_info["phase"],
             "phase_label": phase_info["phase_label"],
+            "semester": phase_info.get("semester"),
             "next_event": phase_info["next_event"],
             "days_until": phase_info["days_until"],
+            "academic_phase_id": phase_info.get("academic_phase_id"),
+            "academic_phase_key": phase_info["phase"],
         },
         "dimensions": dimensions,
         "computed_at": datetime.now().isoformat(),
@@ -554,8 +632,12 @@ def save_metric_snapshot(teacher_id: str, snapshot: dict) -> None:
     try:
         snapshot_id = str(uuid.uuid4())
         computed_at = snapshot.get("computed_at", datetime.now().isoformat())
-        phase = snapshot.get("phase", {}).get("phase", "mid_year")
-        phase_label = snapshot.get("phase", {}).get("phase_label", "")
+        phase_info = snapshot.get("phase", {})
+        phase = phase_info.get("phase", "mid_year")
+        phase_label = phase_info.get("phase_label", "")
+        academic_phase_id = phase_info.get("academic_phase_id")
+        academic_phase_key = phase_info.get("academic_phase_key") or phase
+        semester_label = phase_info.get("semester")
         dims = snapshot.get("dimensions", {})
 
         weights = {}
@@ -566,8 +648,9 @@ def save_metric_snapshot(teacher_id: str, snapshot: dict) -> None:
             INSERT OR REPLACE INTO teacher_metric_snapshots
             (id, teacher_id, computed_at, phase, composite_score, composite_grade,
              curriculum_score, performance_score, content_score, attendance_score,
-             achievements_score, weights_json, phase_label)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             achievements_score, weights_json, phase_label,
+             academic_phase_id, academic_phase_key, semester_label)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             snapshot_id,
             teacher_id,
@@ -582,6 +665,9 @@ def save_metric_snapshot(teacher_id: str, snapshot: dict) -> None:
             dims.get("achievements", {}).get("score", 0),
             json.dumps(weights),
             phase_label,
+            academic_phase_id,
+            academic_phase_key,
+            semester_label,
         ))
         conn.commit()
     except Exception as e:
@@ -598,7 +684,8 @@ def get_metric_history(teacher_id: str, limit: int = 50) -> list[dict]:
             SELECT id, teacher_id, computed_at, phase, phase_label,
                    composite_score, composite_grade,
                    curriculum_score, performance_score, content_score,
-                   attendance_score, achievements_score, weights_json
+                   attendance_score, achievements_score, weights_json,
+                   academic_phase_id, academic_phase_key, semester_label
             FROM teacher_metric_snapshots
             WHERE teacher_id = ?
             ORDER BY computed_at ASC
@@ -610,3 +697,99 @@ def get_metric_history(teacher_id: str, limit: int = 50) -> list[dict]:
         return []
     finally:
         conn.close()
+
+
+def get_metric_history_by_phase(teacher_id: str) -> list[dict]:
+    """Return snapshots grouped by academic phase, enriched with phase summary if available."""
+    try:
+        import school_year_service
+        config = school_year_service.get_active_config(teacher_id)
+        if not config:
+            return []
+
+        all_phases = school_year_service.list_academic_phases(config["id"])
+        if not all_phases:
+            return []
+
+        all_snapshots = get_metric_history(teacher_id, limit=500)
+        summaries = {s["phase_key"]: s for s in school_year_service.list_phase_summaries(teacher_id)}
+
+        result = []
+        for ap in all_phases:
+            phase_snaps = [
+                s for s in all_snapshots
+                if s.get("academic_phase_key") == ap["phase_key"]
+            ]
+            summary = summaries.get(ap["phase_key"])
+            result.append({
+                "phase_key":    ap["phase_key"],
+                "phase_label":  ap["phase_label"],
+                "semester":     ap.get("semester"),
+                "start_date":   ap["start_date"],
+                "end_date":     ap["end_date"],
+                "phase_order":  ap["phase_order"],
+                "snapshots":    phase_snaps,
+                "phase_summary": summary,
+            })
+        return result
+    except Exception as e:
+        logger.error(f"Failed to get history by phase: {e}")
+        return []
+
+
+def generate_phase_summary(teacher_id: str, phase_key: str) -> dict | None:
+    """Compute and save a summary for a completed academic phase."""
+    try:
+        import school_year_service
+        config = school_year_service.get_active_config(teacher_id)
+        if not config:
+            return None
+
+        all_phases = school_year_service.list_academic_phases(config["id"])
+        phase_row = next((p for p in all_phases if p["phase_key"] == phase_key), None)
+        if not phase_row:
+            return None
+
+        # Fetch all snapshots for this phase
+        snaps = [
+            s for s in get_metric_history(teacher_id, limit=500)
+            if s.get("academic_phase_key") == phase_key
+        ]
+
+        if not snaps:
+            return None
+
+        scores = [s["composite_score"] for s in snaps]
+        avg_c  = round(sum(scores) / len(scores), 1)
+        peak_c = round(max(scores), 1)
+        low_c  = round(min(scores), 1)
+
+        dim_keys = ["curriculum_score", "performance_score", "content_score",
+                    "attendance_score", "achievements_score"]
+        dim_labels = ["curriculum", "performance", "content", "attendance", "achievements"]
+        deltas = {}
+        for dk, dl in zip(dim_keys, dim_labels):
+            first = snaps[0].get(dk) or 0
+            last  = snaps[-1].get(dk) or 0
+            deltas[dl] = round(last - first, 1)
+
+        summary = {
+            "config_id":        config["id"],
+            "teacher_id":       teacher_id,
+            "phase_key":        phase_key,
+            "phase_label":      phase_row["phase_label"],
+            "semester":         phase_row.get("semester"),
+            "start_date":       phase_row["start_date"],
+            "end_date":         phase_row["end_date"],
+            "avg_composite":    avg_c,
+            "peak_composite":   peak_c,
+            "low_composite":    low_c,
+            "snapshot_count":   len(snaps),
+            "dimension_deltas": deltas,
+            "generated_at":     datetime.now().isoformat(),
+        }
+
+        return school_year_service.save_phase_summary(summary)
+    except Exception as e:
+        logger.error(f"Failed to generate phase summary: {e}")
+        return None

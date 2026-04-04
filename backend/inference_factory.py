@@ -74,7 +74,13 @@ def get_inference_instance(use_singleton: bool = True):
             logger.info("Creating new local Llama instance (simultaneous mode)...")
             from llama_inference import LlamaInference
             clip_path = resolve_vision_projector_path(get_selected_model())
-            return LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
+            try:
+                return LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
+            except Exception as e:
+                if clip_path:
+                    logger.warning(f"Failed to load model with vision projector, retrying without: {e}")
+                    return LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=None)
+                raise
 
     else:
         raise ValueError(
@@ -97,7 +103,14 @@ def _get_local_singleton():
         logger.info("Loading local Llama model (singleton)...")
         from llama_inference import LlamaInference
         clip_path = resolve_vision_projector_path(get_selected_model())
-        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
+        try:
+            _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
+        except Exception as e:
+            if clip_path:
+                logger.warning(f"Failed to load model with vision projector, retrying without: {e}")
+                _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=None)
+            else:
+                raise
         return _local_instance
 
 
@@ -120,7 +133,14 @@ def reload_local_model():
         new_model_path = get_model_path()
         clip_path = resolve_vision_projector_path(get_selected_model())
         logger.info(f"Loading model: {new_model_path}, clip: {clip_path}")
-        _local_instance = LlamaInference(model_path=new_model_path, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
+        try:
+            _local_instance = LlamaInference(model_path=new_model_path, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
+        except Exception as e:
+            if clip_path:
+                logger.warning(f"Failed to load model with vision projector, retrying without: {e}")
+                _local_instance = LlamaInference(model_path=new_model_path, n_ctx=MODEL_N_CTX, clip_model_path=None)
+            else:
+                raise
         return _local_instance
 
 

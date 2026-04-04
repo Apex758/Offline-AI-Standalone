@@ -7,7 +7,7 @@ import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
 import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
-import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
 import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
@@ -17,12 +17,16 @@ import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
 import CalendarCheckIn01IconData from '@hugeicons/core-free-icons/CalendarCheckIn01Icon';
 import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import axios from 'axios';
-import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot } from '../types/insights';
+import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot, PhaseHistoryEntry, AcademicPhase, SchoolYearConfig } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useNotification } from '../contexts/NotificationContext';
+import { useSettings } from '../contexts/SettingsContext';
 import MetricsNudgeBanner from './MetricsNudgeBanner';
-import InsightsGraphRow from './InsightsGraphRow';
+import InsightsGraphRow, { type DimensionClickContext } from './InsightsGraphRow';
 import InsightsCoachPanel from './InsightsCoachPanel';
+import SchoolYearSetupModal from './SchoolYearSetupModal';
+import PhaseHistoryNav from './PhaseHistoryNav';
+import PhaseBreakdownModal from './PhaseBreakdownModal';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -43,13 +47,22 @@ const PASS_NAMES = [
   { key: 'content', name: 'Content Creation', icon: File01IconData },
   { key: 'attendance', name: 'Attendance & Engagement', icon: Calendar01IconData },
   { key: 'achievements', name: 'Achievements & Engagement', icon: Award01IconData },
-  { key: 'recommendations', name: 'Teaching Recommendations', icon: ArrowRight01IconData },
+  { key: 'recommendations', name: 'Teaching Recommendations', icon: Target01IconData },
   { key: 'synthesis', name: 'Executive Summary', icon: Bulb01IconData },
 ];
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, onDataChange, isActive }) => {
   const { guardOffline } = useOfflineGuard();
   const { notify } = useNotification();
+  const { settings } = useSettings();
+  const tabColor = settings.tabColors['educator-insights'] ?? '#d97706';
 
   // Resolve teacher ID (username for milestones) and user ID (for achievements)
   const { teacherId, userId } = (() => {
@@ -64,6 +77,21 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       }
     } catch {}
     return { teacherId: 'default_teacher', userId: 'default_teacher' };
+  })();
+
+  // Resolve grade/subject filter from teacher profile (used to scope insights to what this teacher teaches)
+  const gradeSubjectsParam = (() => {
+    try {
+      const raw = localStorage.getItem('app-settings-main');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const gs = parsed?.profile?.gradeSubjects;
+        if (gs && typeof gs === 'object' && Object.keys(gs).length > 0) {
+          return encodeURIComponent(JSON.stringify(gs));
+        }
+      }
+    } catch {}
+    return null;
   })();
   // State
   const [insightsData, setInsightsData] = useState<InsightsData | null>(savedData?.insightsData || null);
@@ -86,11 +114,21 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [previousMetrics, setPreviousMetrics] = useState<TeacherMetrics | null>(savedData?.previousMetrics || null);
   const [metricsExpanded, setMetricsExpanded] = useState<boolean>(savedData?.metricsExpanded || false);
 
+  // Academic phase history state
+  const [phaseHistory, setPhaseHistory] = useState<PhaseHistoryEntry[]>(savedData?.phaseHistory || []);
+  const [selectedPhaseKey, setSelectedPhaseKey] = useState<string | null>(null);
+  const [phaseBreakdownEntry, setPhaseBreakdownEntry] = useState<PhaseHistoryEntry | null>(null);
+  const [showSchoolYearSetup, setShowSchoolYearSetup] = useState(false);
+  const [showPhaseNav, setShowPhaseNav] = useState(false);
+
   // Educator Coach state
   const [coachCollapsed, setCoachCollapsed] = useState(false);
   const [coachChatId, setCoachChatId] = useState<string | null>(savedData?.coachChatId || null);
   const [coachTriggerDimension, setCoachTriggerDimension] = useState<string | undefined>();
+  const [coachDimensionContext, setCoachDimensionContext] = useState<DimensionClickContext | undefined>();
+  const [coachAutoTriggerKey, setCoachAutoTriggerKey] = useState(0);
   const [nudgeDismissed, setNudgeDismissed] = useState<boolean>(savedData?.nudgeDismissed || false);
+  const row2Ref = useRef<HTMLDivElement>(null);
 
   // Settings panel state
   const [graphExpanded, setGraphExpanded] = useState(true);
@@ -210,9 +248,10 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       passResults: passResultsRef.current,
       report: reportRef.current,
       reportHistory: reportHistoryRef.current,
+      phaseHistory,
       ...updates,
     });
-  }, [onDataChange]);
+  }, [onDataChange, phaseHistory]);
 
   // Persist state to parent when generation completes (avoids setState-during-render)
   const prevGeneratingRef = useRef(false);
@@ -237,7 +276,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     if (!insightsData && !dataLoading && !hasInitialized.current) {
       hasInitialized.current = true;
       setDataLoading(true);
-      axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+      axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}${gradeSubjectsParam ? `&grade_subjects=${gradeSubjectsParam}` : ''}`)
         .then(res => {
           setInsightsData(res.data);
           persistState({ insightsData: res.data });
@@ -302,6 +341,16 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         })
         .catch(() => {});
     }
+    // Load phase history
+    axios.get(`/api/teacher-metrics/history-by-phase?teacher_id=${encodeURIComponent(teacherId)}`)
+      .then(res => {
+        const ph = res.data?.phases;
+        if (Array.isArray(ph) && ph.length > 0) {
+          setPhaseHistory(ph);
+          persistState({ phaseHistory: ph });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Generate insights via WebSocket
@@ -318,6 +367,11 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     streamingPassRef.current = '';
 
     notify('Generating educator insights report…', 'info', tabId);
+
+    // Scroll to analysis row so user can watch progress
+    setTimeout(() => {
+      row2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(`${protocol}//localhost:8000/ws/educator-insights`);
@@ -494,14 +548,14 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   // Refresh summary card data
   const handleRefreshData = useCallback(() => {
     setDataLoading(true);
-    axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+    axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}${gradeSubjectsParam ? `&grade_subjects=${gradeSubjectsParam}` : ''}`)
       .then(res => {
         setInsightsData(res.data);
         persistState({ insightsData: res.data });
       })
       .catch(() => {})
       .finally(() => setDataLoading(false));
-  }, [teacherId, userId, persistState]);
+  }, [teacherId, userId, gradeSubjectsParam, persistState]);
 
   // Check if we have any data at all
   const hasAnyData = insightsData && (
@@ -648,14 +702,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-theme-primary">Educator Insights</h1>
-                <p className="text-sm text-theme-secondary">
-                  AI-powered analysis of your teaching data
-                  {report?.from_date && report?.to_date && (
-                    <span className="ml-2 text-theme-muted">
-                      ({report.from_date} to {report.to_date})
-                    </span>
-                  )}
-                </p>
+                <p className="text-sm text-theme-secondary">AI-powered analysis of your teaching data</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -682,6 +729,27 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 title="Report History"
               >
                 <Icon icon={Clock01IconData} className="w-5" />
+              </button>
+              {/* Phase History toggle */}
+              <button
+                onClick={() => setShowPhaseNav(v => !v)}
+                className={`p-2 rounded-lg transition-colors text-xs font-semibold ${
+                  showPhaseNav
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    : 'hover:bg-theme-bg-tertiary text-theme-muted hover:text-theme-primary'
+                }`}
+                title="Academic Phases"
+                style={{ fontSize: 11, padding: '6px 10px', borderRadius: 8 }}
+              >
+                Phases
+              </button>
+              {/* Setup School Year button */}
+              <button
+                onClick={() => setShowSchoolYearSetup(true)}
+                className="p-2 rounded-lg hover:bg-theme-bg-tertiary text-theme-muted hover:text-theme-primary transition-colors"
+                title="Setup School Year"
+              >
+                <Icon icon={CalendarCheckIn01IconData} className="w-5" />
               </button>
               {/* Settings dropdown container */}
               <div ref={settingsBtnRef} style={{ position: 'relative' }}>
@@ -829,19 +897,70 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         className={`relative overflow-hidden transition-all duration-300 ease-in-out ${
           graphExpanded ? 'flex-1 min-h-0' : 'flex-none h-0'
         }`}
+        style={{ display: graphExpanded ? 'flex' : undefined }}
       >
+        {/* Phase History Nav sidebar */}
+        {graphExpanded && showPhaseNav && (
+          <div style={{
+            width: 220, flexShrink: 0, borderRight: '1px solid var(--dash-border)',
+            overflowY: 'auto', padding: '12px 6px',
+            backgroundColor: 'var(--dash-bg)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px 10px' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--dash-text-sub)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Academic Phases
+              </span>
+              <button
+                onClick={() => setShowSchoolYearSetup(true)}
+                style={{ fontSize: 10, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
+              >
+                + Setup
+              </button>
+            </div>
+            <PhaseHistoryNav
+              phases={phaseHistory}
+              selectedPhaseKey={selectedPhaseKey}
+              onSelectPhase={setSelectedPhaseKey}
+              onViewBreakdown={setPhaseBreakdownEntry}
+            />
+          </div>
+        )}
+
+        <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
         <InsightsGraphRow
           metrics={teacherMetrics}
           metricsHistory={metricsHistory}
           previousMetrics={previousMetrics}
           insightsData={insightsData}
           loading={dataLoading && !teacherMetrics}
-          onDimensionClick={(dim) => {
+          onDimensionClick={(dim, ctx) => {
+            // Store context and reset conversation so each click gets a fresh focused session
             setCoachTriggerDimension(dim);
-            setCoachCollapsed(false);
+            setCoachDimensionContext(ctx);
+            setCoachChatId(null);
+            setCoachAutoTriggerKey(k => k + 1);
+
+            if (graphExpanded) {
+              // Row 2 is hidden — collapse graph first, then open coach after transition
+              setGraphExpanded(false);
+              setTimeout(() => {
+                setCoachCollapsed(false);
+                row2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 320);
+            } else {
+              // Row 2 already visible — just open coach and scroll
+              setCoachCollapsed(false);
+              setTimeout(() => {
+                row2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 50);
+            }
           }}
         />
-        <div className="ei-graph-fade-overlay" aria-hidden="true" />
+        <div
+          className="ei-graph-fade-overlay"
+          aria-hidden="true"
+          style={{ background: `linear-gradient(to bottom, transparent 0%, ${hexToRgba(tabColor, 0.12)} 100%)` }}
+        />
         <button
           className="ei-graph-toggle-arrow"
           onClick={() => setGraphExpanded(e => !e)}
@@ -862,15 +981,20 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             <path d="M-16 5 L12 19 L40 5" />
           </svg>
         </button>
+        </div>{/* end flex-1 wrapper */}
       </div>
 
       {/* ── Row 2: Analysis + Coach ── */}
-      <div className={`relative flex overflow-hidden transition-all duration-300 ease-in-out ${
+      <div ref={row2Ref} className={`relative flex overflow-hidden transition-all duration-300 ease-in-out ${
         graphExpanded ? 'flex-none h-0' : 'flex-1 min-h-0'
       }`}>
         {!graphExpanded && (
           <>
-            <div className="ei-graph-fade-overlay-top" aria-hidden="true" />
+            <div
+              className="ei-graph-fade-overlay-top"
+              aria-hidden="true"
+              style={{ background: `linear-gradient(to top, transparent 0%, ${hexToRgba(tabColor, 0.12)} 100%)` }}
+            />
             <button
               className="ei-graph-toggle-arrow"
               style={{ bottom: 'auto', top: 14 }}
@@ -895,7 +1019,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           </>
         )}
         {/* Analysis section */}
-        <div className="flex-[3] overflow-y-auto px-6 pt-20 pb-4 space-y-4 min-w-0">
+        <div className="flex-1 overflow-y-auto px-6 pt-20 pb-4 space-y-4 min-w-0">
           {/* Error */}
           {error && (
             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
@@ -903,21 +1027,6 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               {error}
             </div>
           )}
-
-          {/* Nudge banner */}
-          <MetricsNudgeBanner
-            metrics={teacherMetrics}
-            previousMetrics={previousMetrics}
-            dismissed={nudgeDismissed}
-            onDismiss={() => {
-              setNudgeDismissed(true);
-              persistState({ nudgeDismissed: true });
-            }}
-            onTalkToCoach={(dim) => {
-              setCoachTriggerDimension(dim);
-              setCoachCollapsed(false);
-            }}
-          />
 
           {/* No data prompt */}
           {!hasAnyData && !dataLoading && (
@@ -931,38 +1040,23 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             </div>
           )}
 
-          {/* Motivational reminders */}
-          {report?.reminders && report.reminders.length > 0 && (
-            <div className="space-y-2 mb-4">
-              {report.reminders.map((reminder, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-amber-50/60 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800">
-                  <span className="text-lg mt-0.5">💡</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-amber-800 dark:text-amber-300">{reminder.dimension}</p>
-                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">{reminder.suggestion}</p>
-                  </div>
-                  <span className="text-xs text-amber-500 dark:text-amber-500 whitespace-nowrap">{reminder.streak_count} reports</span>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* All insight sections — unified loop for all 7 passes */}
           {PASS_NAMES.map((pass, idx) => {
             const result = passResults[pass.key];
             const isCurrentlyStreaming = isGenerating && streamingPassRef.current === pass.key;
-            // currentPass is 1-indexed from backend, idx is 0-indexed
-            // Pending: generating, no result yet, and backend hasn't reached this pass
             const isPending = isGenerating && !result && currentPass < idx + 1;
             const isSkipped = result?.skipped;
             const isSynthesis = pass.key === 'synthesis';
 
-            // Show section if: has result OR is generating OR viewing a report
             if (!isGenerating && !report && !result) return null;
 
-            // For synthesis, strip duplicate headers
             const content = isSynthesis ? stripSynthesisHeader(result?.output || '') : (result?.output || '');
             const streaming = isSynthesis ? stripSynthesisHeader(result?.streaming || '') : (result?.streaming || '');
+
+            const reminder = report?.reminders?.find(r =>
+              pass.name.toLowerCase().startsWith(r.dimension.toLowerCase()) ||
+              r.dimension.toLowerCase() === pass.name.toLowerCase()
+            );
 
             return (
               <InsightSection
@@ -977,6 +1071,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 isNoChange={result?.noChange}
                 color={isSynthesis ? 'amber' : ['blue', 'green', 'purple', 'orange', 'yellow', 'teal'][idx]}
                 prominent={isSynthesis}
+                reminder={reminder}
               />
             );
           })}
@@ -986,6 +1081,8 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         <InsightsCoachPanel
           metrics={teacherMetrics}
           triggerDimension={coachTriggerDimension}
+          dimensionContext={coachDimensionContext}
+          autoTriggerKey={coachAutoTriggerKey}
           teacherId={teacherId}
           currentChatId={coachChatId}
           onChatIdChange={(id) => {
@@ -998,10 +1095,16 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       </div>
 
       {/* ── History floating panel ── */}
-      {historyOpen && (
-        <>
-          <div className="absolute inset-0 z-30" onClick={() => setHistoryOpen(false)} />
-          <div className="absolute top-0 right-0 h-full w-80 z-40 flex flex-col bg-theme-bg-secondary border-l border-theme-border shadow-2xl">
+      <>
+        <div
+          className="absolute inset-0 z-30"
+          onClick={() => setHistoryOpen(false)}
+          style={{ opacity: historyOpen ? 1 : 0, pointerEvents: historyOpen ? 'auto' : 'none', transition: 'opacity 200ms ease' }}
+        />
+        <div
+          className="absolute top-0 right-0 h-full w-80 z-40 flex flex-col bg-theme-bg-secondary border-l border-theme-border shadow-2xl"
+          style={{ transform: historyOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 260ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+        >
             <div className="flex items-center justify-between px-4 py-4 border-b border-theme-border">
               <h3 className="text-lg font-semibold text-theme-primary">Insight Reports</h3>
               <button
@@ -1065,6 +1168,30 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             </div>
           </div>
         </>
+
+      {/* ── Modals ── */}
+      {showSchoolYearSetup && (
+        <SchoolYearSetupModal
+          teacherId={teacherId}
+          onClose={() => setShowSchoolYearSetup(false)}
+          onSaved={(_config, _phases) => {
+            setShowSchoolYearSetup(false);
+            // Reload phase history after saving
+            axios.get(`/api/teacher-metrics/history-by-phase?teacher_id=${encodeURIComponent(teacherId)}`)
+              .then(res => {
+                const ph = res.data?.phases;
+                if (Array.isArray(ph)) setPhaseHistory(ph);
+              })
+              .catch(() => {});
+          }}
+        />
+      )}
+      {phaseBreakdownEntry && (
+        <PhaseBreakdownModal
+          entry={phaseBreakdownEntry}
+          teacherId={teacherId}
+          onClose={() => setPhaseBreakdownEntry(null)}
+        />
       )}
     </div>
   );
@@ -1136,10 +1263,11 @@ interface InsightSectionProps {
   isNoChange?: boolean;
   color: string;
   prominent?: boolean;
+  reminder?: { dimension: string; suggestion: string; streak_count: number };
 }
 
 const InsightSection: React.FC<InsightSectionProps> = ({
-  icon, name, content, streaming, isActive, isPending, isSkipped, isNoChange, color, prominent
+  icon, name, content, streaming, isActive, isPending, isSkipped, isNoChange, color, prominent, reminder
 }) => {
   const colors = SECTION_COLORS[color] || SECTION_COLORS.blue;
   const displayText = stripThinkTags(content || streaming);
@@ -1227,6 +1355,13 @@ const InsightSection: React.FC<InsightSectionProps> = ({
           </div>
         )}
       </div>
+      {reminder && (
+        <div className="flex items-start gap-2 mb-3 p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-900/15 border border-amber-200/70 dark:border-amber-800/50">
+          <span className="text-sm mt-0.5">💡</span>
+          <p className="text-xs text-amber-700 dark:text-amber-400 flex-1">{reminder.suggestion}</p>
+          <span className="text-xs text-amber-500 whitespace-nowrap">{reminder.streak_count} reports</span>
+        </div>
+      )}
       <div className="text-sm text-theme-secondary leading-relaxed whitespace-pre-wrap">
         {renderMarkdown(displayText)}
       </div>

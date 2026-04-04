@@ -75,13 +75,22 @@ export interface InsightsReport {
   synthesis: string;
   reminders?: InsightsReminder[];
   metrics?: TeacherMetrics;
+  academic_phase_key?: string;
+  academic_phase_label?: string;
+  semester_label?: string;
 }
 
 // ── Teacher Performance Metrics ──────────────────────────────────────────────
 
 export type SchoolPhase =
+  // Generic phases
   | 'start_of_year' | 'early_year' | 'mid_year' | 'pre_exam'
-  | 'exam_period' | 'post_exam' | 'vacation' | 'reopening';
+  | 'exam_period' | 'post_exam' | 'vacation' | 'reopening'
+  // Caribbean two-semester phases
+  | 'semester_1_early' | 'midterm_1_prep' | 'midterm_1' | 'semester_1_late'
+  | 'inter_semester_break'
+  | 'semester_2_early' | 'midterm_2_prep' | 'midterm_2' | 'semester_2_late'
+  | 'end_of_year_exam';
 
 export interface DimensionMetric {
   score: number;
@@ -97,7 +106,15 @@ export interface DimensionMetric {
 export interface TeacherMetrics {
   composite_score: number;
   composite_grade: string;
-  phase: { phase: SchoolPhase; phase_label: string; next_event: string | null; days_until: number | null };
+  phase: {
+    phase: SchoolPhase;
+    phase_label: string;
+    semester: string | null;
+    next_event: string | null;
+    days_until: number | null;
+    academic_phase_id: string | null;
+    academic_phase_key: string;
+  };
   dimensions: Record<'curriculum' | 'performance' | 'content' | 'attendance' | 'achievements', DimensionMetric>;
   computed_at: string;
 }
@@ -115,6 +132,60 @@ export interface MetricSnapshot {
   attendance_score: number;
   achievements_score: number;
   weights_json?: string;
+  academic_phase_id?: string | null;
+  academic_phase_key?: string | null;
+  semester_label?: string | null;
+}
+
+export interface AcademicPhase {
+  id: string;
+  config_id: string;
+  teacher_id: string;
+  phase_key: string;
+  phase_label: string;
+  semester: string | null;
+  start_date: string;
+  end_date: string;
+  phase_order: number;
+}
+
+export interface AcademicPhaseSummary {
+  id: string;
+  config_id: string;
+  teacher_id: string;
+  phase_key: string;
+  phase_label: string;
+  semester: string | null;
+  start_date: string;
+  end_date: string;
+  avg_composite: number;
+  peak_composite: number;
+  low_composite: number;
+  snapshot_count: number;
+  dimension_deltas: Record<string, number>;
+  narrative?: string;
+  generated_at: string;
+}
+
+export interface PhaseHistoryEntry {
+  phase_key: string;
+  phase_label: string;
+  semester: string | null;
+  start_date: string;
+  end_date: string;
+  phase_order: number;
+  snapshots: MetricSnapshot[];
+  phase_summary: AcademicPhaseSummary | null;
+}
+
+export interface SchoolYearConfig {
+  id: string;
+  teacher_id: string;
+  label: string;
+  start_date: string;
+  end_date: string;
+  is_active: number;
+  structure_type: 'generic' | 'caribbean_two_semester';
 }
 
 // ── Educator Coach ───────────────────────────────────────────────────────────
