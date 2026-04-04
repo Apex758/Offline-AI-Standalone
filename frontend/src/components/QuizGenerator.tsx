@@ -781,6 +781,18 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setClassQuizData(studentData);
         setSelectedStudentIdx(null);
         setStudentPanelOpen(true);
+
+        // Persist quiz instances for QR-based scan grading
+        const quizId = currentQuizId || `quiz_${Date.now()}`;
+        axios.post('http://localhost:8000/api/save-quiz-instances', {
+          quiz_id: quizId,
+          class_name: selectedClassName,
+          students: studentData.map(s => ({
+            student_id: s.id,
+            name: s.name,
+            question_order: s.questionOrder
+          }))
+        }).catch(err => console.warn('Failed to save quiz instances:', err));
       }
     }
   }, [streamingQuiz, contextLoading]);

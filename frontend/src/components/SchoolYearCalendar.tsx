@@ -13,12 +13,9 @@ import {
   parseISO,
   isWithinInterval,
   isBefore,
-  isAfter
 } from 'date-fns';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
-import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
-import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import Add01IconData from '@hugeicons/core-free-icons/Add01Icon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
@@ -96,12 +93,10 @@ function getTeacherId(): string {
 const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedData, onDataChange, isActive }) => {
   const teacherId = getTeacherId();
 
-  // Config state
-  const [configs, setConfigs] = useState<SchoolYearConfig[]>([]);
-  const [activeConfig, setActiveConfig] = useState<SchoolYearConfig | null>(null);
+  // Single config state
+  const [config, setConfig] = useState<SchoolYearConfig | null>(null);
   const [configForm, setConfigForm] = useState({ label: '', start_date: '', end_date: '' });
   const [showConfigForm, setShowConfigForm] = useState(false);
-  const [editingConfig, setEditingConfig] = useState(false);
 
   // Event state
   const [events, setEvents] = useState<SchoolYearEvent[]>([]);
@@ -118,31 +113,24 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     grade_level: '',
   });
 
-  // Year navigation
-  const [viewYear, setViewYear] = useState(new Date().getFullYear());
-
   // ── Data Loading ──
 
-  const loadConfigs = useCallback(async () => {
-    try {
-      const res = await axios.get(`/api/school-year/config/${teacherId}`);
-      setConfigs(res.data.configs || []);
-    } catch (e) {
-      console.error('Failed to load school year configs:', e);
-    }
-  }, [teacherId]);
-
-  const loadActiveConfig = useCallback(async () => {
+  const loadConfig = useCallback(async () => {
     try {
       const res = await axios.get(`/api/school-year/config/${teacherId}/active`);
-      const config = res.data.config;
-      if (config) {
-        setActiveConfig(config);
-        // Set view year to the start of the school year
-        setViewYear(parseISO(config.start_date).getFullYear());
+      const cfg = res.data.config;
+      if (cfg) {
+        setConfig(cfg);
+      } else {
+        // No config yet — check if any exist at all (use the first one)
+        const listRes = await axios.get(`/api/school-year/config/${teacherId}`);
+        const configs = listRes.data.configs || [];
+        if (configs.length > 0) {
+          setConfig(configs[0]);
+        }
       }
     } catch (e) {
-      console.error('Failed to load active config:', e);
+      console.error('Failed to load school year config:', e);
     }
   }, [teacherId]);
 
@@ -156,15 +144,14 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
   }, []);
 
   useEffect(() => {
-    loadConfigs();
-    loadActiveConfig();
-  }, [loadConfigs, loadActiveConfig]);
+    loadConfig();
+  }, [loadConfig]);
 
   useEffect(() => {
-    if (activeConfig) {
-      loadEvents(activeConfig.id);
+    if (config) {
+      loadEvents(config.id);
     }
-  }, [activeConfig, loadEvents]);
+  }, [config, loadEvents]);
 
   // ── Events grouped by date ──
 
@@ -174,7 +161,6 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       const key = event.event_date;
       if (!map[key]) map[key] = [];
       map[key].push(event);
-      // For multi-day events, also map intermediate dates
       if (event.end_date && event.end_date !== event.event_date) {
         try {
           const start = parseISO(event.event_date);
@@ -193,12 +179,12 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     return map;
   }, [events]);
 
-  // ── 12 months for the view ──
+  // ── Months to display ──
 
   const months = useMemo(() => {
-    if (activeConfig) {
-      const startMonth = startOfMonth(parseISO(activeConfig.start_date));
-      const endMonth = startOfMonth(parseISO(activeConfig.end_date));
+    if (config) {
+      const startMonth = startOfMonth(parseISO(config.start_date));
+      const endMonth = startOfMonth(parseISO(config.end_date));
       const result: Date[] = [];
       let current = startMonth;
       while (isBefore(current, addMonths(endMonth, 1))) {
@@ -207,9 +193,10 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       }
       return result;
     }
-    // Default: show calendar year
-    return Array.from({ length: 12 }, (_, i) => new Date(viewYear, i, 1));
-  }, [activeConfig, viewYear]);
+    // Default: show current calendar year
+    const year = new Date().getFullYear();
+    return Array.from({ length: 12 }, (_, i) => new Date(year, i, 1));
+  }, [config]);
 
   // Events for selected date
   const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -217,15 +204,15 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
   // Is a date within the school year?
   const isInSchoolYear = useCallback((date: Date): boolean => {
-    if (!activeConfig) return true;
+    if (!config) return true;
     try {
-      const start = parseISO(activeConfig.start_date);
-      const end = parseISO(activeConfig.end_date);
+      const start = parseISO(config.start_date);
+      const end = parseISO(config.end_date);
       return isWithinInterval(date, { start, end });
     } catch {
       return true;
     }
-  }, [activeConfig]);
+  }, [config]);
 
   // ── Config Actions ──
 
@@ -239,42 +226,15 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
         end_date: configForm.end_date,
         is_active: 1,
       };
-      if (editingConfig && activeConfig) {
-        payload.id = activeConfig.id;
+      if (config) {
+        payload.id = config.id;
       }
       const res = await axios.post('/api/school-year/config', payload);
-      setActiveConfig(res.data.config);
+      setConfig(res.data.config);
       setShowConfigForm(false);
-      setEditingConfig(false);
       setConfigForm({ label: '', start_date: '', end_date: '' });
-      loadConfigs();
     } catch (e) {
       console.error('Failed to save config:', e);
-    }
-  };
-
-  const handleSelectConfig = async (config: SchoolYearConfig) => {
-    // Activate selected config
-    try {
-      await axios.post('/api/school-year/config', { ...config, is_active: 1 });
-      setActiveConfig(config);
-      setViewYear(parseISO(config.start_date).getFullYear());
-      loadConfigs();
-    } catch (e) {
-      console.error('Failed to activate config:', e);
-    }
-  };
-
-  const handleDeleteConfig = async (configId: string) => {
-    try {
-      await axios.delete(`/api/school-year/config/${configId}`);
-      if (activeConfig?.id === configId) {
-        setActiveConfig(null);
-        setEvents([]);
-      }
-      loadConfigs();
-    } catch (e) {
-      console.error('Failed to delete config:', e);
     }
   };
 
@@ -309,10 +269,10 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
   };
 
   const handleSaveEvent = async () => {
-    if (!eventForm.title || !eventForm.event_date || !activeConfig) return;
+    if (!eventForm.title || !eventForm.event_date || !config) return;
     try {
       const payload: any = {
-        config_id: activeConfig.id,
+        config_id: config.id,
         teacher_id: teacherId,
         title: eventForm.title,
         description: eventForm.description || null,
@@ -328,17 +288,17 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       await axios.post('/api/school-year/events', payload);
       setShowEventForm(false);
       setEditingEvent(null);
-      loadEvents(activeConfig.id);
+      loadEvents(config.id);
     } catch (e) {
       console.error('Failed to save event:', e);
     }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!activeConfig) return;
+    if (!config) return;
     try {
       await axios.delete(`/api/school-year/events/${eventId}`);
-      loadEvents(activeConfig.id);
+      loadEvents(config.id);
     } catch (e) {
       console.error('Failed to delete event:', e);
     }
@@ -367,26 +327,19 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           <div>
             <div className="syc-header-title">School Year Calendar</div>
             <div className="syc-header-subtitle">
-              {activeConfig ? activeConfig.label : 'No school year configured'}
+              {config ? config.label : 'No school year configured'}
             </div>
           </div>
         </div>
         <div className="syc-header-actions">
-          {!activeConfig && (
-            <button className="syc-today-btn" onClick={() => setViewYear(new Date().getFullYear())}>
-              Today
-            </button>
-          )}
-          {activeConfig && (
-            <button className="syc-today-btn" onClick={() => setSelectedDate(new Date())}>
-              Today
-            </button>
-          )}
+          <button className="syc-today-btn" onClick={() => setSelectedDate(new Date())}>
+            Today
+          </button>
         </div>
       </div>
 
       {/* Stats Strip */}
-      {activeConfig && events.length > 0 && (
+      {config && events.length > 0 && (
         <div className="syc-stats-strip">
           <span className="syc-stat-item">
             <strong>{events.length}</strong> events total
@@ -402,41 +355,37 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
       {/* Body */}
       <div className="syc-body">
-        {/* Left Panel - Config */}
+        {/* Left Panel */}
         <div className="syc-left-panel">
+          {/* School Year Config */}
           <div className="syc-panel-section">
             <div className="syc-section-title">School Year</div>
-            {activeConfig && !showConfigForm ? (
+            {config && !showConfigForm ? (
               <div className="syc-active-config">
-                <div className="syc-config-label">{activeConfig.label}</div>
+                <div className="syc-config-label">{config.label}</div>
                 <div className="syc-config-dates">
-                  {format(parseISO(activeConfig.start_date), 'MMM d, yyyy')} &mdash; {format(parseISO(activeConfig.end_date), 'MMM d, yyyy')}
+                  {format(parseISO(config.start_date), 'MMM d, yyyy')} &mdash; {format(parseISO(config.end_date), 'MMM d, yyyy')}
                 </div>
                 <div className="syc-config-actions">
                   <button className="syc-config-btn" onClick={() => {
-                    setEditingConfig(true);
                     setConfigForm({
-                      label: activeConfig.label,
-                      start_date: activeConfig.start_date,
-                      end_date: activeConfig.end_date,
+                      label: config.label,
+                      start_date: config.start_date,
+                      end_date: config.end_date,
                     });
                     setShowConfigForm(true);
                   }}>
                     <HugeiconsIcon icon={PencilEdit01IconData} size={14} /> Edit
                   </button>
-                  <button className="syc-config-btn syc-config-btn-danger" onClick={() => handleDeleteConfig(activeConfig.id)}>
-                    <HugeiconsIcon icon={Delete02IconData} size={14} /> Delete
-                  </button>
                 </div>
               </div>
             ) : !showConfigForm ? (
               <button className="syc-add-config-btn" onClick={() => {
-                setEditingConfig(false);
                 setConfigForm({ label: '', start_date: '', end_date: '' });
                 setShowConfigForm(true);
               }}>
                 <HugeiconsIcon icon={Add01IconData} size={16} />
-                New School Year
+                Set Up School Year
               </button>
             ) : null}
 
@@ -474,10 +423,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                   <button className="syc-btn-primary" onClick={handleSaveConfig}>
                     <HugeiconsIcon icon={Tick01IconData} size={14} /> Save
                   </button>
-                  <button className="syc-btn-secondary" onClick={() => {
-                    setShowConfigForm(false);
-                    setEditingConfig(false);
-                  }}>
+                  <button className="syc-btn-secondary" onClick={() => setShowConfigForm(false)}>
                     Cancel
                   </button>
                 </div>
@@ -485,80 +431,44 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
             )}
           </div>
 
-          {/* Other school years */}
-          {configs.length > 1 && (
-            <div className="syc-panel-section">
-              <div className="syc-section-title">All School Years</div>
-              <div className="syc-config-list">
-                {configs.map((config) => (
-                  <button
-                    key={config.id}
-                    className={`syc-config-list-item ${config.id === activeConfig?.id ? 'syc-config-active' : ''}`}
-                    onClick={() => handleSelectConfig(config)}
-                  >
-                    <span className="syc-config-list-label">{config.label}</span>
-                    {config.is_active === 1 && <span className="syc-config-active-badge">Active</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Quick Add */}
-          {activeConfig && (
+          {config && (
             <div className="syc-panel-section">
               <div className="syc-section-title">Quick Add Event</div>
               <div className="syc-quick-add-grid">
-                {Object.entries(EVENT_TYPE_CONFIG).map(([type, config]) => (
+                {Object.entries(EVENT_TYPE_CONFIG).map(([type, cfg]) => (
                   <button
                     key={type}
                     className="syc-quick-add-btn"
-                    style={{ borderColor: config.color, color: config.color }}
+                    style={{ borderColor: cfg.color, color: cfg.color }}
                     onClick={() => openEventForm(type)}
                   >
-                    <span className="syc-quick-dot" style={{ background: config.color }} />
-                    {config.label}
+                    <span className="syc-quick-dot" style={{ background: cfg.color }} />
+                    {cfg.label}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Legend */}
-          <div className="syc-panel-section">
-            <div className="syc-section-title">Legend</div>
-            <div className="syc-legend-list">
-              {Object.entries(EVENT_TYPE_CONFIG).map(([type, config]) => (
-                <div key={type} className="syc-legend-item">
-                  <span className="syc-legend-dot" style={{ background: config.color }} />
-                  <span>{config.label}</span>
-                </div>
-              ))}
-              <div className="syc-legend-item">
-                <span className="syc-legend-dot" style={{ background: '#F2A631', boxShadow: '0 0 0 2px #F2A631' }} />
-                <span>Today</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Center Panel - Year Calendar Grid */}
         <div className="syc-center-panel">
-          {!activeConfig ? (
+          {!config ? (
             <div className="syc-empty-state">
               <div className="syc-empty-icon">
                 <HugeiconsIcon icon={Calendar01IconData} size={48} color="#94A3B8" />
               </div>
               <h3 className="syc-empty-title">No School Year Configured</h3>
               <p className="syc-empty-desc">
-                Create a school year to start planning your academic calendar with exams, midterms, grading deadlines, and more.
+                Set up your school year to start planning your academic calendar with exams, midterms, grading deadlines, and more.
               </p>
               <button className="syc-btn-primary" onClick={() => {
-                setEditingConfig(false);
                 setConfigForm({ label: '', start_date: '', end_date: '' });
                 setShowConfigForm(true);
               }}>
-                <HugeiconsIcon icon={Add01IconData} size={16} /> Create School Year
+                <HugeiconsIcon icon={Add01IconData} size={16} /> Set Up School Year
               </button>
             </div>
           ) : (
@@ -581,8 +491,6 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                         const isTodayDate = isToday(day);
                         const isCurrentMonth = isSameMonth(day, month);
                         const inSchoolYear = isInSchoolYear(day);
-
-                        // Get unique event types for this day
                         const eventTypes = [...new Set(dayEvents.map((e) => e.event_type))];
 
                         return (
@@ -590,9 +498,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                             key={di}
                             className={`syc-mini-day ${isSelected ? 'syc-mini-day-selected' : ''} ${isTodayDate && !isSelected ? 'syc-mini-day-today' : ''} ${!isCurrentMonth ? 'syc-mini-day-outside' : ''} ${!inSchoolYear && isCurrentMonth ? 'syc-mini-day-dimmed' : ''}`}
                             disabled={!isCurrentMonth}
-                            onClick={() => {
-                              setSelectedDate(day);
-                            }}
+                            onClick={() => setSelectedDate(day)}
                           >
                             <span className="syc-mini-day-number">{format(day, 'd')}</span>
                             {isCurrentMonth && eventTypes.length > 0 && (
@@ -657,8 +563,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                   value={eventForm.event_type}
                   onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
                 >
-                  {Object.entries(EVENT_TYPE_CONFIG).map(([type, config]) => (
-                    <option key={type} value={type}>{config.label}</option>
+                  {Object.entries(EVENT_TYPE_CONFIG).map(([type, cfg]) => (
+                    <option key={type} value={type}>{cfg.label}</option>
                   ))}
                 </select>
               </label>
@@ -726,7 +632,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           <div className="syc-events-section">
             <div className="syc-events-header">
               <span className="syc-section-title">Events</span>
-              {activeConfig && !showEventForm && (
+              {config && !showEventForm && (
                 <button className="syc-icon-btn syc-add-event-btn" onClick={() => openEventForm()}>
                   <HugeiconsIcon icon={Add01IconData} size={16} />
                 </button>
@@ -736,7 +642,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
             {selectedDateEvents.length === 0 ? (
               <div className="syc-no-events">
                 <p>No events on this date</p>
-                {activeConfig && !showEventForm && (
+                {config && !showEventForm && (
                   <button className="syc-add-event-link" onClick={() => openEventForm()}>
                     + Add an event
                   </button>
@@ -982,12 +888,6 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           color: #1D362D;
         }
 
-        .syc-config-btn-danger:hover {
-          background: #FEE2E2;
-          color: #E53E3E;
-          border-color: #FECACA;
-        }
-
         .syc-add-config-btn {
           display: flex;
           align-items: center;
@@ -1100,51 +1000,6 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           color: #1D362D;
         }
 
-        /* Config List */
-        .syc-config-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .syc-config-list-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0.5rem 0.625rem;
-          border: 1px solid #E8E8E0;
-          border-radius: 0.5rem;
-          background: white;
-          cursor: pointer;
-          transition: all 0.15s ease;
-          text-align: left;
-        }
-
-        .syc-config-list-item:hover {
-          background: #F5F5F0;
-        }
-
-        .syc-config-active {
-          border-color: #1D362D;
-          background: #1D362D08;
-        }
-
-        .syc-config-list-label {
-          font-size: 0.8125rem;
-          font-weight: 600;
-          color: #374151;
-        }
-
-        .syc-config-active-badge {
-          font-size: 0.625rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          color: #1D362D;
-          background: #F8E59D;
-          padding: 0.125rem 0.375rem;
-          border-radius: 0.25rem;
-        }
-
         /* Quick Add */
         .syc-quick-add-grid {
           display: flex;
@@ -1172,28 +1027,6 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
         }
 
         .syc-quick-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-
-        /* Legend */
-        .syc-legend-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.375rem;
-        }
-
-        .syc-legend-item {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 0.75rem;
-          color: #64748B;
-        }
-
-        .syc-legend-dot {
           width: 8px;
           height: 8px;
           border-radius: 50%;

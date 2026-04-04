@@ -23,12 +23,9 @@
     "postinstall": "cd frontend && npm install"
   },
   "dependencies": {
-    "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "electron-log": "^5.0.1",
-    "electron-updater": "^6.1.7",
-    "react-calendar": "^6.0.0",
-    "react-router-dom": "^7.9.4"
+    "electron-updater": "^6.1.7"
   },
   "devDependencies": {
     "app-builder-bin": "^4.2.0",

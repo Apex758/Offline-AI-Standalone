@@ -19,6 +19,13 @@ accelerate>=0.24.0
 optimum-quanto>=0.2.0   # CPU-compatible 4-bit quantization (int4) via QuantoConfig
 bitsandbytes>=0.41.0    # GPU 4-bit quantization (NF4); skipped on CPU-only machines
 
+# --- Document Processing ---
+opencv-python-headless>=4.8.0
+
+# --- QR Code / Scan Grading ---
+qrcode[pil]>=7.4.0
+pyzbar>=0.1.9
+
 # --- Image Generation & Editing ---
 # Let iopaint manage diffusers/huggingface-hub/transformers versions
 iopaint==1.6.0

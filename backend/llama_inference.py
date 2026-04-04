@@ -11,6 +11,20 @@ import base64
 from typing import Optional, Dict, Any, List
 from llama_cpp import Llama
 
+# Monkey-patch llama-cpp-python ≤0.3.19 __del__ bug
+# (AttributeError: 'LlamaModel' object has no attribute 'sampler')
+try:
+    from llama_cpp._internals import LlamaModel as _LlamaModel
+    _original_del = _LlamaModel.__del__
+    def _safe_del(self):
+        try:
+            _original_del(self)
+        except AttributeError:
+            pass
+    _LlamaModel.__del__ = _safe_del
+except Exception:
+    pass
+
 def _optimal_thread_count() -> int:
     """Return a sensible thread count for llama-cpp inference.
 

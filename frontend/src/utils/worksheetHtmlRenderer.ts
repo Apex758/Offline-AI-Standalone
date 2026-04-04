@@ -17,12 +17,16 @@ interface RenderOptions {
   generatedImages?: string[];
   viewMode?: 'student' | 'teacher';
   worksheetId?: string;
+  /** When true, renders scan-friendly fillable bubbles for MC and TF questions */
+  scanMode?: boolean;
+  /** Base64-encoded QR code PNG to embed in the page header */
+  qrCodeBase64?: string;
 }
 
 export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: RenderOptions): string {
   if (!worksheet) return '';
 
-  const { formData, generatedImages = [], viewMode = 'student', worksheetId } = options;
+  const { formData, generatedImages = [], viewMode = 'student', worksheetId, scanMode = false, qrCodeBase64 } = options;
   const selectedTemplate = formData.selectedTemplate || 'list-based';
   const worksheetTitle = formData.worksheetTitle || worksheet.metadata.title;
   const generatedImage = generatedImages.length > 0 ? generatedImages[0] : null;
@@ -34,13 +38,13 @@ export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: Rende
 
   // Template-specific rendering to match preview exactly
   if (selectedTemplate === 'multiple-choice') {
-    contentHTML = generateMultipleChoiceHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId);
+    contentHTML = generateMultipleChoiceHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId, scanMode);
   } else if (selectedTemplate === 'comprehension') {
-    contentHTML = generateComprehensionHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId);
+    contentHTML = generateComprehensionHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId, scanMode);
   } else if (selectedTemplate === 'matching') {
     contentHTML = generateMatchingHTML(worksheet, formData, worksheetTitle, showAnswers, displayWorksheetId);
   } else if (selectedTemplate === 'list-based') {
-    contentHTML = generateListBasedHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId);
+    contentHTML = generateListBasedHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId, scanMode);
   } else if (selectedTemplate === 'math') {
     contentHTML = generateMathHTML(worksheet, formData, worksheetTitle, showAnswers, displayWorksheetId);
   }
@@ -63,9 +67,35 @@ export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: Rende
       margin: 0;
       padding: 0;
     }
+    ${scanMode ? `
+    .alignment-marker {
+      position: fixed;
+      width: 5mm;
+      height: 5mm;
+      background-color: black;
+      z-index: 9999;
+    }
+    .marker-top-left { top: 5mm; left: 5mm; }
+    .marker-bottom-left { bottom: 5mm; left: 5mm; }
+    .marker-bottom-right { bottom: 5mm; right: 5mm; }
+    .scan-qr-code {
+      position: fixed;
+      top: 5mm;
+      right: 5mm;
+      width: 20mm;
+      height: 20mm;
+      z-index: 9999;
+    }
+    ` : ''}
   </style>
 </head>
 <body>
+  ${scanMode ? `
+  <div class="alignment-marker marker-top-left"></div>
+  <div class="alignment-marker marker-bottom-left"></div>
+  <div class="alignment-marker marker-bottom-right"></div>
+  ${qrCodeBase64 ? `<img class="scan-qr-code" src="data:image/png;base64,${qrCodeBase64}" />` : ''}
+  ` : ''}
   ${contentHTML}
 </body>
 </html>
@@ -229,7 +259,8 @@ function generateMultipleChoiceHTML(
   worksheetTitle: string,
   generatedImage: string | null,
   showAnswers: boolean,
-  worksheetId?: string
+  worksheetId?: string,
+  scanMode: boolean = false
 ): string {
   const includeImages = formData.includeImages || false;
 
@@ -287,6 +318,14 @@ function generateMultipleChoiceHTML(
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
                    ${(q.options || []).map((option, optIndex) => {
                      const isCorrect = typeof q.correctAnswer === 'number' && q.correctAnswer === optIndex;
+                     if (scanMode) {
+                       return `
+                       <div style="display: flex; align-items: center; gap: 0.4rem;">
+                         <div style="width: 1.25rem; height: 1.25rem; border: 2px solid #374151; border-radius: 50%; display: inline-block;"></div>
+                         <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">${String.fromCharCode(65 + optIndex)})</span>
+                         <span style="font-size: 0.95rem; color: #374151;">${option}</span>
+                       </div>`;
+                     }
                      return `
                      <div style="display: flex; align-items: center; gap: 0.5rem;">
                        <div style="width: 1.5rem; height: 1.5rem; border: 2px solid ${isCorrect && showAnswers ? '#22c55e' : '#d1d5db'}; border-radius: 9999px; display: flex; align-items: center; justify-content: center; ${isCorrect && showAnswers ? 'background-color: #ecfdf3; color: #15803d;' : ''}">
@@ -315,7 +354,8 @@ function generateComprehensionHTML(
   worksheetTitle: string,
   generatedImage: string | null,
   showAnswers: boolean,
-  worksheetId?: string
+  worksheetId?: string,
+  scanMode: boolean = false
 ): string {
   const includeImages = formData.includeImages || false;
   const imagePlacement = formData.imagePlacement || 'large-centered';
@@ -379,14 +419,23 @@ function generateComprehensionHTML(
                 </p>
                  ${q.options ? `
                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.75rem;">
-                     ${q.options.map((option, optIndex) => `
+                     ${q.options.map((option, optIndex) => {
+                       if (scanMode) {
+                         return `
+                         <div style="display: flex; align-items: center; gap: 0.4rem;">
+                           <div style="width: 1.25rem; height: 1.25rem; border: 2px solid #374151; border-radius: 50%; display: inline-block;"></div>
+                           <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">${String.fromCharCode(65 + optIndex)})</span>
+                           <span style="font-size: 0.95rem; color: #374151;">${option}</span>
+                         </div>`;
+                       }
+                       return `
                        <div style="display: flex; align-items: center; gap: 0.5rem;">
                          <div style="width: 1.5rem; height: 1.5rem; border: 2px solid #d1d5db; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
                           <span style="font-size: 0.75rem; font-weight: 600;">${String.fromCharCode(65 + optIndex)}</span>
                         </div>
                         <span style="color: #374151;">${option}</span>
-                       </div>
-                     `).join('')}
+                       </div>`;
+                     }).join('')}
                    </div>
                  ` : `
                    ${showAnswers && q.correctAnswer ? `
@@ -498,7 +547,7 @@ function generateMatchingHTML(
   `;
 }
 
-function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null, showAnswers: boolean, worksheetId?: string): string {
+function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null, showAnswers: boolean, worksheetId?: string, scanMode: boolean = false): string {
   const includeImages = formData.includeImages || false;
   const questionType = formData.questionType || '';
   
@@ -571,7 +620,16 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
 }
 
 // Export function to use with backend
-export function prepareWorksheetForExport(content: string, parsedWorksheet: ParsedWorksheet | null, formData: any, accentColor: string, generatedImages?: string[], worksheetId?: string) {
+export function prepareWorksheetForExport(
+  content: string,
+  parsedWorksheet: ParsedWorksheet | null,
+  formData: any,
+  accentColor: string,
+  generatedImages?: string[],
+  worksheetId?: string,
+  scanMode?: boolean,
+  qrCodeBase64?: string
+) {
   // Use parsedWorksheet if available, otherwise we can't export (need structured data)
   if (!parsedWorksheet) {
     throw new Error('Parsed worksheet required for export');
@@ -582,7 +640,9 @@ export function prepareWorksheetForExport(content: string, parsedWorksheet: Pars
     formData,
     generatedImages,
     viewMode: formData.viewMode || 'student',
-    worksheetId
+    worksheetId,
+    scanMode,
+    qrCodeBase64
   });
 
   return {

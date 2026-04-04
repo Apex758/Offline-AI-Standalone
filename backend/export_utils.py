@@ -5,7 +5,7 @@ import base64
 from typing import Any, Dict, List, Union
 from bs4 import BeautifulSoup
 from docx import Document
-from docx.shared import Pt, RGBColor, Inches
+from docx.shared import Pt, RGBColor, Inches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
@@ -113,6 +113,127 @@ def parse_lesson_content_for_export(text: str) -> List[Dict[str, Any]]:
             current_section['content'].append({'type': 'paragraph', 'text': trimmed})
     
     return sections
+
+
+def add_qr_to_docx(doc, qr_bytes: bytes, title_text: str = ''):
+    """Add QR code image to the header area of the DOCX.
+
+    Creates a two-column header: left = title area, right = QR code.
+    """
+    section = doc.sections[0]
+    header = section.header
+    header.is_linked_to_previous = False
+
+    # Create a table in header: left cell = title area, right cell = QR
+    table = header.add_table(rows=1, cols=2, width=Cm(19))
+    table.columns[0].width = Cm(14)
+    table.columns[1].width = Cm(5)
+
+    # Remove table borders
+    tbl = table._element
+    tblPr = tbl.tblPr
+    if tblPr is None:
+        tblPr = OxmlElement('w:tblPr')
+        tbl.insert(0, tblPr)
+    tblBorders = OxmlElement('w:tblBorders')
+    for border_name in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+        border = OxmlElement(f'w:{border_name}')
+        border.set(qn('w:val'), 'none')
+        border.set(qn('w:sz'), '0')
+        tblBorders.append(border)
+    tblPr.append(tblBorders)
+
+    # Left cell: optional title text
+    if title_text:
+        left_cell = table.cell(0, 0)
+        left_para = left_cell.paragraphs[0]
+        run = left_para.add_run(title_text)
+        run.font.size = Pt(8)
+        run.font.color.rgb = RGBColor(156, 163, 175)
+
+    # Right cell: QR code
+    qr_cell = table.cell(0, 1)
+    qr_paragraph = qr_cell.paragraphs[0]
+    qr_paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    run = qr_paragraph.add_run()
+    run.add_picture(io.BytesIO(qr_bytes), width=Cm(2), height=Cm(2))
+
+
+def add_alignment_markers_to_html(html: str) -> str:
+    """Inject alignment marker CSS + elements into HTML for PDF export.
+
+    Adds 3 filled squares at top-left, bottom-left, bottom-right corners.
+    """
+    marker_css = """
+    .alignment-marker {
+        position: fixed;
+        width: 5mm;
+        height: 5mm;
+        background-color: black;
+        z-index: 9999;
+    }
+    .marker-top-left { top: 5mm; left: 5mm; }
+    .marker-bottom-left { bottom: 5mm; left: 5mm; }
+    .marker-bottom-right { bottom: 5mm; right: 5mm; }
+    """
+    marker_elements = """
+    <div class="alignment-marker marker-top-left"></div>
+    <div class="alignment-marker marker-bottom-left"></div>
+    <div class="alignment-marker marker-bottom-right"></div>
+    """
+
+    # Inject CSS before </head> or at start of <style>
+    if '</head>' in html:
+        html = html.replace('</head>',
+                            f'<style>{marker_css}</style></head>')
+    elif '<style>' in html:
+        html = html.replace('<style>', f'<style>{marker_css}')
+    else:
+        html = f'<style>{marker_css}</style>' + html
+
+    # Inject marker elements after <body> or at start
+    if '<body' in html:
+        # Find end of body tag
+        body_end = html.index('>', html.index('<body')) + 1
+        html = html[:body_end] + marker_elements + html[body_end:]
+    else:
+        html = marker_elements + html
+
+    return html
+
+
+def inject_qr_into_html(html: str, qr_base64: str) -> str:
+    """Inject QR code image into the top-right corner of HTML for PDF export.
+
+    Args:
+        html: The document HTML
+        qr_base64: Base64-encoded PNG of the QR code
+    """
+    qr_css = """
+    .scan-qr-code {
+        position: fixed;
+        top: 5mm;
+        right: 5mm;
+        width: 20mm;
+        height: 20mm;
+        z-index: 9999;
+    }
+    """
+    qr_element = f'<img class="scan-qr-code" src="data:image/png;base64,{qr_base64}" />'
+
+    if '</head>' in html:
+        html = html.replace('</head>',
+                            f'<style>{qr_css}</style></head>')
+    elif '<style>' in html:
+        html = html.replace('<style>', f'<style>{qr_css}')
+
+    if '<body' in html:
+        body_end = html.index('>', html.index('<body')) + 1
+        html = html[:body_end] + qr_element + html[body_end:]
+    else:
+        html = qr_element + html
+
+    return html
 
 
 def export_to_docx(data: Union[str, Dict, List], title: str = "Export") -> bytes:

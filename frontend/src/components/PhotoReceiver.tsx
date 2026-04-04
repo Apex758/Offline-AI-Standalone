@@ -8,7 +8,6 @@ import { useSettings } from '../contexts/SettingsContext';
 interface Photo {
   id: string;
   filename: string;
-  student_name: string;
   index: number;
   size_bytes: number;
   uploaded_at: string;
@@ -58,6 +57,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
   const [newClassName, setNewClassName] = useState('');
   const [showNewSession, setShowNewSession] = useState(true);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [savingToResources, setSavingToResources] = useState(false);
 
   // Hotspot + HTTPS state
   const [hotspotActive, setHotspotActive] = useState(false);
@@ -65,6 +65,12 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
   const [hotspotInfo, setHotspotInfo] = useState<{ ssid: string; password: string } | null>(null);
   const [httpsEnabled, setHttpsEnabled] = useState(false);
   const [httpsLoading, setHttpsLoading] = useState(false);
+
+  // Grade mode state
+  const [gradeMode, setGradeMode] = useState(false);
+  const [isGrading, setIsGrading] = useState(false);
+  const [gradingResults, setGradingResults] = useState<any[] | null>(null);
+  const [gradingSummary, setGradingSummary] = useState<{ total: number; graded: number; failed: number; class_average: number } | null>(null);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -162,6 +168,12 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       setPhotos(prev => prev.filter(p => p.id !== data.photo_id));
     });
 
+    es.addEventListener('session_deleted', (e) => {
+      const data = JSON.parse(e.data);
+      setSessions(prev => prev.filter(s => s.id !== data.session_id));
+      setActiveSession(prev => prev?.id === data.session_id ? null : prev);
+    });
+
     es.onerror = () => setConnected(false);
     es.onopen = () => setConnected(true);
 
@@ -227,6 +239,69 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       URL.revokeObjectURL(url);
     } catch {}
     setExportingPdf(false);
+  };
+
+  // ── Save to Resources ──
+  const saveToResources = async () => {
+    if (!activeSession) return;
+    setSavingToResources(true);
+    try {
+      const res = await fetch(`${BASE}/api/photo-transfer/save-to-resources/${activeSession.id}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.ok) {
+        const w = window as any;
+        if (w.electronAPI?.openFileExternal) {
+          w.electronAPI.openFileExternal(data.path);
+        }
+      }
+    } catch {}
+    setSavingToResources(false);
+  };
+
+  // ── Grade all photos in session ──
+  const gradeAll = async () => {
+    if (!activeSession || photos.length === 0) return;
+    setIsGrading(true);
+    setGradingResults(null);
+    setGradingSummary(null);
+    try {
+      // Fetch all photo files and send to scan-grade-auto
+      const formData = new FormData();
+      for (const photo of photos) {
+        const res = await fetch(`${BASE}/api/photo-transfer/photos/${activeSession.id}/${photo.filename}`);
+        if (res.ok) {
+          const blob = await res.blob();
+          formData.append('files', blob, photo.filename);
+        }
+      }
+      const gradeRes = await fetch(`${BASE}/api/scan-grade-auto`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await gradeRes.json();
+      setGradingResults(data.results || []);
+      setGradingSummary(data.summary || null);
+    } catch (err) {
+      console.error('Grading failed:', err);
+    }
+    setIsGrading(false);
+  };
+
+  // ── Delete session ──
+  const deleteSession = async (session: Session, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm(`Delete session "${session.session_name}" and all its photos?`)) return;
+    try {
+      await fetch(`${BASE}/api/photo-transfer/sessions/${session.id}`, { method: 'DELETE' });
+      setSessions(prev => prev.filter(s => s.id !== session.id));
+      if (activeSession?.id === session.id) {
+        setActiveSession(null);
+        setPhotos([]);
+        setSelectedPhoto(null);
+      }
+    } catch {}
   };
 
   // ── Delete photo ──
@@ -312,6 +387,70 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               }}
             >
               {exportingPdf ? 'Exporting...' : 'Export PDF'}
+            </button>
+          )}
+
+          {activeSession && photos.length > 0 && (
+            <button
+              onClick={saveToResources}
+              disabled={savingToResources}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                background: '#16a34a',
+                color: 'white',
+                border: 'none',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                opacity: savingToResources ? 0.6 : 1,
+              }}
+            >
+              {savingToResources ? 'Saving...' : 'Save to Resources'}
+            </button>
+          )}
+
+          {/* Grade Mode Toggle */}
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '6px 12px',
+            borderRadius: 20,
+            background: gradeMode ? '#fef3c7' : '#f1f5f9',
+            border: `1px solid ${gradeMode ? '#fbbf24' : '#e2e8f0'}`,
+            cursor: 'pointer',
+            fontSize: 13,
+            fontWeight: 600,
+            color: gradeMode ? '#92400e' : '#64748b',
+          }}>
+            <input
+              type="checkbox"
+              checked={gradeMode}
+              onChange={(e) => setGradeMode(e.target.checked)}
+              style={{ display: 'none' }}
+            />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+            Grade Mode
+          </label>
+
+          {/* Grade All Button */}
+          {gradeMode && activeSession && photos.length > 0 && (
+            <button
+              onClick={gradeAll}
+              disabled={isGrading}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                background: isGrading ? '#9ca3af' : '#7c3aed',
+                color: 'white',
+                border: 'none',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: isGrading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {isGrading ? 'Grading...' : `Grade All (${photos.length})`}
             </button>
           )}
         </div>
@@ -486,29 +625,18 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             )}
 
             {sessions.map(s => (
-              <div
+              <SessionItem
                 key={s.id}
-                onClick={() => {
+                session={s}
+                isActive={activeSession?.id === s.id}
+                onSelect={() => {
                   setActiveSession(s);
                   setPhotos(s.photos || []);
                   setShowNewSession(false);
                   setSelectedPhoto(null);
                 }}
-                style={{
-                  padding: '10px 12px',
-                  borderRadius: 8,
-                  marginBottom: 4,
-                  cursor: 'pointer',
-                  background: activeSession?.id === s.id ? '#eff6ff' : 'transparent',
-                  border: activeSession?.id === s.id ? '1px solid #bfdbfe' : '1px solid transparent',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>{s.session_name}</div>
-                <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                  {s.date} &middot; {s.photo_count} photo{s.photo_count !== 1 ? 's' : ''}
-                </div>
-              </div>
+                onDelete={(e) => deleteSession(s, e)}
+              />
             ))}
 
             {sessions.length === 0 && !showNewSession && (
@@ -573,39 +701,14 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   gap: 12,
                 }}>
                   {photos.map(photo => (
-                    <div
+                    <PhotoCard
                       key={photo.id}
-                      onClick={() => setSelectedPhoto(photo)}
-                      style={{
-                        borderRadius: 10,
-                        overflow: 'hidden',
-                        background: 'white',
-                        border: selectedPhoto?.id === photo.id ? '2px solid #2563eb' : '2px solid #e2e8f0',
-                        cursor: 'pointer',
-                        transition: 'border-color 0.15s, box-shadow 0.15s',
-                        boxShadow: selectedPhoto?.id === photo.id ? '0 0 0 3px rgba(37,99,235,0.15)' : 'none',
-                      }}
-                    >
-                      <div style={{
-                        width: '100%', aspectRatio: '4/3', overflow: 'hidden',
-                        background: '#f1f5f9',
-                      }}>
-                        <img
-                          src={photoUrl(photo)}
-                          alt={photo.filename}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div style={{ padding: '8px 10px' }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {photo.student_name || `Photo ${photo.index}`}
-                        </div>
-                        <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                          {(photo.size_bytes / 1024).toFixed(0)} KB
-                        </div>
-                      </div>
-                    </div>
+                      photo={photo}
+                      photoUrl={photoUrl(photo)}
+                      isSelected={selectedPhoto?.id === photo.id}
+                      onSelect={() => setSelectedPhoto(photo)}
+                      onDelete={() => deletePhoto(photo)}
+                    />
                   ))}
                 </div>
               )}
@@ -624,7 +727,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
         </div>
 
         {/* ── Photo detail sidebar ── */}
-        {selectedPhoto && activeSession && (
+        {selectedPhoto && activeSession && !gradingResults && (
           <div style={{
             width: 320,
             minWidth: 320,
@@ -661,7 +764,6 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               />
 
               <div style={{ marginTop: 16 }}>
-                <DetailRow label="Student" value={selectedPhoto.student_name || '—'} />
                 <DetailRow label="Filename" value={selectedPhoto.filename} />
                 <DetailRow label="Size" value={`${(selectedPhoto.size_bytes / 1024).toFixed(1)} KB`} />
                 <DetailRow label="Uploaded" value={new Date(selectedPhoto.uploaded_at).toLocaleTimeString()} />
@@ -680,6 +782,238 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             </div>
           </div>
         )}
+
+        {/* ── Grading Results Sidebar ── */}
+        {gradeMode && gradingResults && (
+          <div style={{
+            width: 360,
+            minWidth: 360,
+            background: 'white',
+            borderLeft: '1px solid #e2e8f0',
+            overflow: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <div style={{ padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>Grading Results</h3>
+                <button
+                  onClick={() => { setGradingResults(null); setGradingSummary(null); }}
+                  style={{
+                    width: 28, height: 28, borderRadius: 6,
+                    border: '1px solid #e2e8f0', background: 'white',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Summary card */}
+              {gradingSummary && (
+                <div style={{
+                  padding: 12, borderRadius: 8,
+                  background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                  color: 'white', marginBottom: 16,
+                }}>
+                  <div style={{ fontSize: 24, fontWeight: 700 }}>{gradingSummary.class_average}%</div>
+                  <div style={{ fontSize: 12, opacity: 0.8, marginTop: 2 }}>Class Average</div>
+                  <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 12 }}>
+                    <span>Graded: {gradingSummary.graded}</span>
+                    <span>Failed: {gradingSummary.failed}</span>
+                    <span>Total: {gradingSummary.total}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Individual results */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {gradingResults.map((result, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: 10, borderRadius: 8,
+                      border: `1px solid ${result.error ? '#fecaca' : '#e2e8f0'}`,
+                      background: result.error ? '#fef2f2' : '#ffffff',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                          {result.student_name || result.file_name}
+                        </div>
+                        {result.student_id && (
+                          <div style={{ fontSize: 11, color: '#64748b' }}>ID: {result.student_id}</div>
+                        )}
+                      </div>
+                      {!result.error && (
+                        <div style={{
+                          padding: '4px 10px', borderRadius: 12,
+                          background: result.percentage >= 70 ? '#f0fdf4' : result.percentage >= 50 ? '#fefce8' : '#fef2f2',
+                          color: result.percentage >= 70 ? '#16a34a' : result.percentage >= 50 ? '#ca8a04' : '#dc2626',
+                          fontSize: 13, fontWeight: 700,
+                        }}>
+                          {result.percentage}% ({result.letter_grade})
+                        </div>
+                      )}
+                    </div>
+                    {result.error && (
+                      <div style={{ fontSize: 11, color: '#dc2626', marginTop: 4 }}>{result.error}</div>
+                    )}
+                    {!result.error && (
+                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                        Score: {result.score}/{result.total_points}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── Session item with hover delete ──────────────────────────────────────────
+
+const SessionItem: React.FC<{
+  session: Session;
+  isActive: boolean;
+  onSelect: () => void;
+  onDelete: (e: React.MouseEvent) => void;
+}> = ({ session, isActive, onSelect, onDelete }) => {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '10px 12px',
+        borderRadius: 8,
+        marginBottom: 4,
+        cursor: 'pointer',
+        background: isActive ? '#eff6ff' : 'transparent',
+        border: isActive ? '1px solid #bfdbfe' : '1px solid transparent',
+        transition: 'all 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {session.session_name}
+        </div>
+        <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+          {session.date} &middot; {session.photo_count} photo{session.photo_count !== 1 ? 's' : ''}
+        </div>
+      </div>
+      {hovered && (
+        <button
+          onClick={onDelete}
+          title="Delete session"
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 6,
+            border: 'none',
+            background: 'rgba(220,38,38,0.1)',
+            color: '#dc2626',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            marginLeft: 8,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+};
+
+// ── Photo card with hover delete ────────────────────────────────────────────
+
+const PhotoCard: React.FC<{
+  photo: Photo;
+  photoUrl: string;
+  isSelected: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+}> = ({ photo, photoUrl, isSelected, onSelect, onDelete }) => {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius: 10,
+        overflow: 'hidden',
+        background: 'white',
+        border: isSelected ? '2px solid #2563eb' : '2px solid #e2e8f0',
+        cursor: 'pointer',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+        boxShadow: isSelected ? '0 0 0 3px rgba(37,99,235,0.15)' : 'none',
+        position: 'relative',
+      }}
+    >
+      {hovered && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          style={{
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            background: 'rgba(220,38,38,0.9)',
+            border: 'none',
+            color: 'white',
+            fontSize: 16,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+          }}
+          title="Delete photo"
+        >
+          &times;
+        </button>
+      )}
+      <div style={{
+        width: '100%', aspectRatio: '4/3', overflow: 'hidden',
+        background: '#f1f5f9',
+      }}>
+        <img
+          src={photoUrl}
+          alt={photo.filename}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          loading="lazy"
+        />
+      </div>
+      <div style={{ padding: '8px 10px' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {`Photo ${photo.index}`}
+        </div>
+        <div style={{ fontSize: 11, color: '#94a3b8' }}>
+          {(photo.size_bytes / 1024).toFixed(0)} KB
+        </div>
       </div>
     </div>
   );

@@ -6270,24 +6270,39 @@ async def update_dual_model_config(request: Request):
 @app.post("/api/model/preload")
 async def preload_model():
     """Preload the LLM model in the background.
-    
+
     This triggers lazy loading of the model when a user opens
     an AI-powered tab, so the model is ready by the time they
     click Generate.
     """
-    try:
-        from inference_factory import get_inference_instance
-        logger.info("Preloading LLM model...")
-        inference = get_inference_instance()
-        if inference.is_loaded:
-            logger.info("LLM model preloaded successfully")
-            return {"status": "loaded", "has_vision": getattr(inference, 'has_vision', False)}
-        else:
-            logger.error("Failed to preload LLM model")
-            return JSONResponse(status_code=500, content={"status": "failed"})
-    except Exception as e:
-        logger.error(f"Error preloading model: {e}")
-        return JSONResponse(status_code=500, content={"status": "error", "error": str(e)})
+    import traceback
+    from inference_factory import get_inference_instance
+
+    def _load_model():
+        """Run model loading in a thread so it doesn't block the event loop."""
+        return get_inference_instance()
+
+    last_error = None
+    for attempt in range(2):
+        try:
+            if attempt > 0:
+                logger.info(f"Retrying model preload (attempt {attempt + 1})...")
+                await asyncio.sleep(2)
+            else:
+                logger.info("Preloading LLM model...")
+            loop = asyncio.get_event_loop()
+            inference = await loop.run_in_executor(None, _load_model)
+            if inference.is_loaded:
+                logger.info("LLM model preloaded successfully")
+                return {"status": "loaded", "has_vision": getattr(inference, 'has_vision', False)}
+            else:
+                last_error = "Model loaded but is_loaded=False"
+                logger.error(f"Failed to preload LLM model (attempt {attempt + 1})")
+        except Exception as e:
+            last_error = str(e)
+            logger.error(f"Error preloading model (attempt {attempt + 1}): {e}\n{traceback.format_exc()}")
+
+    return JSONResponse(status_code=500, content={"status": "error", "error": last_error or "Unknown error"})
 
 
 @app.get("/api/vision/status")
@@ -8514,6 +8529,502 @@ async def export_calendar_ics(request: Request):
         media_type="text/calendar",
         headers={"Content-Disposition": "attachment; filename=oecs-calendar.ics"}
     )
+
+
+# ── Scan-Grading Endpoints ──────────────────────────────────────────────────
+
+@app.post("/api/export-class-pack")
+async def export_class_pack(request: Request):
+    """Export a complete class set with QR codes for scan-grading.
+
+    Expects JSON body:
+    {
+      "doc_type": "quiz" | "worksheet",
+      "doc_id": "quiz_xxx" | "worksheet_xxx",
+      "student_versions": [
+        {"student_id": "JD12345", "name": "John Doe", "question_order": [2,0,4,1,3]},
+        ...
+      ],
+      "format": "pdf" | "docx",
+      "raw_html_per_student": {"JD12345": "<html>...</html>", ...}  // pre-rendered HTML per student
+    }
+
+    Returns a ZIP containing individual student files + teacher answer key + answer_regions.json
+    """
+    import zipfile
+    from qr_service import generate_page_qr, compute_version_hash
+    from export_utils import export_to_pdf, export_to_docx, add_alignment_markers_to_html, inject_qr_into_html
+
+    body = await request.json()
+    doc_type = body["doc_type"]
+    doc_id = body["doc_id"]
+    student_versions = body["student_versions"]
+    fmt = body.get("format", "pdf")
+    raw_html_map = body.get("raw_html_per_student", {})
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for sv in student_versions:
+            sid = sv["student_id"]
+            name = sv.get("name", sid)
+            q_order = sv["question_order"]
+            v_hash = compute_version_hash(sid, q_order)
+
+            # Save instance to DB
+            if doc_type == "quiz":
+                student_service.save_quiz_instance(
+                    quiz_id=doc_id, student_id=sid,
+                    question_order=q_order, version_hash=v_hash,
+                    class_name=sv.get("class_name", "")
+                )
+            else:
+                student_service.save_worksheet_instance(
+                    worksheet_id=doc_id, student_id=sid,
+                    question_order=q_order, version_hash=v_hash,
+                    option_maps=sv.get("option_maps"),
+                    shuffled_column_b=sv.get("shuffled_column_b"),
+                    shuffled_word_bank=sv.get("shuffled_word_bank"),
+                    package_id=sv.get("package_id"),
+                    class_name=sv.get("class_name", "")
+                )
+
+            # Generate QR code
+            qr_type = "q" if doc_type == "quiz" else "w"
+            qr_bytes = generate_page_qr(qr_type, doc_id, sid, v_hash)
+            qr_b64 = base64.b64encode(qr_bytes).decode()
+
+            # Get or build HTML
+            html = raw_html_map.get(sid, "")
+            if html:
+                html = inject_qr_into_html(html, qr_b64)
+                html = add_alignment_markers_to_html(html)
+
+                # Export to requested format
+                data_payload = {"rawHtml": html}
+                if fmt == "pdf":
+                    file_bytes = export_to_pdf(data_payload, title=f"{name}")
+                    ext = "pdf"
+                else:
+                    file_bytes = export_to_docx(data_payload, title=f"{name}")
+                    ext = "docx"
+
+                safe_name = name.replace(" ", "_").replace("/", "_")
+                zf.writestr(f"{safe_name}_{sid}.{ext}", file_bytes)
+
+    buf.seek(0)
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename=class_pack_{doc_id}.zip"}
+    )
+
+
+@app.post("/api/scan-grade-auto")
+async def scan_grade_auto(
+    files: List[UploadFile] = File(...),
+):
+    """Auto-grade scanned worksheets/quizzes using QR codes.
+
+    Pipeline:
+    1. QR decode → identify doc + student + version
+    2. Fetch answer key + instance
+    3. If answer region template exists → pixel detection; else → OCR fallback
+    4. Re-map answers if randomized
+    5. Grade against answer key
+    6. Save grade to DB
+    """
+    from qr_service import extract_qr_from_scan, remap_answers, remap_mc_option
+    from image_alignment import align_scanned_page
+    from bubble_detector import detect_answers_from_template
+
+    # Pre-read files
+    file_data = []
+    for upload in files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    results = []
+
+    for file_bytes, filename in file_data:
+        result = {
+            "file_name": filename,
+            "qr_status": "not_found",
+            "student_name": None,
+            "student_id": None,
+            "doc_type": None,
+            "doc_id": None,
+            "score": 0,
+            "total_points": 0,
+            "percentage": 0.0,
+            "letter_grade": "F",
+            "answers": {},
+            "error": None
+        }
+
+        try:
+            # Step 1: QR decode
+            qr_data = extract_qr_from_scan(file_bytes)
+            if not qr_data:
+                result["qr_status"] = "not_found"
+                result["error"] = "No QR code detected on this page"
+                results.append(result)
+                continue
+
+            result["qr_status"] = "decoded"
+            result["doc_type"] = qr_data["type"]
+            result["doc_id"] = qr_data["doc_id"]
+            result["student_id"] = qr_data["student_id"]
+
+            # Step 2: Fetch answer key
+            if qr_data["type"] == "quiz":
+                answer_key = student_service.get_quiz_answer_key(qr_data["doc_id"])
+            else:
+                answer_key = student_service.get_worksheet_answer_key(qr_data["doc_id"])
+
+            if not answer_key:
+                result["error"] = f"Answer key not found for {qr_data['doc_id']}"
+                results.append(result)
+                continue
+
+            # Step 3: Get instance (for randomized order)
+            instance = student_service.get_instance_by_qr(
+                qr_data["type"], qr_data["doc_id"],
+                qr_data["student_id"], qr_data["version_hash"]
+            )
+
+            # Step 4: Get student info
+            student = student_service.get_student(qr_data["student_id"])
+            if student:
+                result["student_name"] = student["full_name"]
+
+            # Step 5: Check for answer region template
+            template = student_service.get_answer_region_template(qr_data["doc_id"])
+
+            questions = answer_key["questions"]
+            detected_answers = {}
+
+            if template:
+                # Pixel-based detection using template coordinates
+                aligned_img, align_info = align_scanned_page(file_bytes)
+                if aligned_img is not None:
+                    detections = detect_answers_from_template(aligned_img, template["regions"])
+                    for det in detections:
+                        q_idx = det["question_index"]
+                        if det["status"] == "detected":
+                            detected_answers[q_idx] = det["selected"]
+                        elif det["status"] == "needs_ocr":
+                            # Fallback to OCR for open-answer questions
+                            try:
+                                import ocr_service
+                                if ocr_service.is_ocr_available() and det.get("cropped_image") is not None:
+                                    import cv2
+                                    _, img_encoded = cv2.imencode('.png', det["cropped_image"])
+                                    ocr_text = ocr_service.extract_text(img_encoded.tobytes())
+                                    detected_answers[q_idx] = ocr_text.strip()
+                            except Exception:
+                                detected_answers[q_idx] = ""
+            else:
+                # Fallback: full-page OCR (existing pipeline)
+                try:
+                    import ocr_service
+                    if ocr_service.is_ocr_available():
+                        ocr_text = ocr_service.extract_text_for_grading(file_bytes)
+                        # Parse OCR output into detected answers (simple line-based)
+                        lines = ocr_text.strip().split('\n')
+                        for i, line in enumerate(lines):
+                            detected_answers[i] = line.strip()
+                except Exception as e:
+                    result["error"] = f"OCR fallback failed: {str(e)}"
+                    results.append(result)
+                    continue
+
+            # Step 6: Re-map if randomized
+            if instance and instance.get("question_order"):
+                q_order = instance["question_order"]
+                answer_list = [detected_answers.get(i, "") for i in range(len(q_order))]
+                remapped = remap_answers(answer_list, q_order)
+
+                # Also remap MC options if shuffled
+                option_maps = instance.get("option_maps")
+                if option_maps:
+                    for q_idx, answer in remapped.items():
+                        q_map = option_maps.get(str(q_idx))
+                        if q_map and answer and len(answer) == 1 and answer.upper() in 'ABCDE':
+                            remapped[q_idx] = remap_mc_option(answer, q_map)
+
+                detected_answers = remapped
+
+            # Step 7: Grade against answer key
+            score = 0
+            total = len(questions)
+            answer_details = {}
+
+            for i, q in enumerate(questions):
+                student_answer = detected_answers.get(i, "")
+                correct = q.get("correctAnswer", "")
+                q_type = q.get("type", "")
+
+                is_correct = False
+                if q_type in ("multiple-choice", "true-false"):
+                    if isinstance(correct, int):
+                        # correctAnswer is option index
+                        correct_letter = chr(65 + correct)
+                        is_correct = student_answer.upper() == correct_letter
+                    elif isinstance(correct, str):
+                        is_correct = student_answer.strip().lower() == correct.strip().lower()
+                elif q_type in ("fill-blank", "short-answer"):
+                    is_correct = student_answer.strip().lower() == str(correct).strip().lower()
+
+                if is_correct:
+                    score += 1
+
+                answer_details[str(i)] = {
+                    "student_answer": student_answer,
+                    "correct_answer": correct if isinstance(correct, str) else chr(65 + correct) if isinstance(correct, int) else str(correct),
+                    "is_correct": is_correct
+                }
+
+            percentage = round((score / total * 100) if total > 0 else 0, 1)
+            letter_grade = student_service.get_letter_grade(percentage)
+
+            result["score"] = score
+            result["total_points"] = total
+            result["percentage"] = percentage
+            result["letter_grade"] = letter_grade
+            result["answers"] = answer_details
+
+            # Step 8: Save grade to DB
+            if result["student_id"]:
+                grade_data = {
+                    "student_id": result["student_id"],
+                    "score": score,
+                    "total_points": total,
+                    "percentage": percentage,
+                    "letter_grade": letter_grade,
+                    "answers": answer_details,
+                }
+                if qr_data["type"] == "quiz":
+                    grade_data["quiz_title"] = answer_key.get("quiz_title", "")
+                    grade_data["subject"] = answer_key.get("subject", "")
+                    grade_data["quiz_id"] = qr_data["doc_id"]
+                    grade_data["instance_id"] = instance["id"] if instance else None
+                    student_service.save_quiz_grade(grade_data)
+                else:
+                    grade_data["worksheet_title"] = answer_key.get("worksheet_title", "")
+                    grade_data["subject"] = answer_key.get("subject", "")
+                    grade_data["worksheet_id"] = qr_data["doc_id"]
+                    grade_data["instance_id"] = instance["id"] if instance else None
+                    student_service.save_worksheet_grade(grade_data)
+
+        except Exception as e:
+            logger.error(f"Scan grade error for {filename}: {e}", exc_info=True)
+            result["error"] = str(e)
+
+        results.append(result)
+
+    # Summary
+    graded = [r for r in results if r["error"] is None and r["qr_status"] == "decoded"]
+    avg = round(sum(r["percentage"] for r in graded) / len(graded), 1) if graded else 0.0
+
+    return JSONResponse(content={
+        "results": results,
+        "summary": {
+            "total": len(results),
+            "graded": len(graded),
+            "failed": len(results) - len(graded),
+            "class_average": avg
+        }
+    })
+
+
+@app.post("/api/scan-grade-auto-stream")
+async def scan_grade_auto_stream(
+    files: List[UploadFile] = File(...),
+):
+    """SSE streaming version of scan-grade-auto for real-time progress."""
+    from qr_service import extract_qr_from_scan, remap_answers, remap_mc_option
+    from image_alignment import align_scanned_page
+    from bubble_detector import detect_answers_from_template
+
+    file_data = []
+    for upload in files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    async def event_stream():
+        graded_count = 0
+        failed_count = 0
+        total_pct = 0.0
+
+        for file_bytes, filename in file_data:
+            yield f"data: {json.dumps({'event': 'processing', 'file_name': filename, 'step': 'qr_decode', 'message': 'Scanning QR code...'})}\n\n"
+
+            try:
+                qr_data = extract_qr_from_scan(file_bytes)
+                if not qr_data:
+                    yield f"data: {json.dumps({'event': 'error', 'file_name': filename, 'error': 'No QR code detected'})}\n\n"
+                    failed_count += 1
+                    continue
+
+                student = student_service.get_student(qr_data["student_id"])
+                student_name = student["full_name"] if student else qr_data["student_id"]
+
+                yield f"data: {json.dumps({'event': 'qr_decoded', 'file_name': filename, 'student_name': student_name, 'doc_type': qr_data['type'], 'doc_id': qr_data['doc_id']})}\n\n"
+
+                # Fetch answer key
+                if qr_data["type"] == "quiz":
+                    answer_key = student_service.get_quiz_answer_key(qr_data["doc_id"])
+                else:
+                    answer_key = student_service.get_worksheet_answer_key(qr_data["doc_id"])
+
+                if not answer_key:
+                    doc_id = qr_data["doc_id"]
+                    yield f"data: {json.dumps({'event': 'error', 'file_name': filename, 'error': f'Answer key not found for {doc_id}'})}\n\n"
+                    failed_count += 1
+                    continue
+
+                yield f"data: {json.dumps({'event': 'processing', 'file_name': filename, 'step': 'detecting', 'message': 'Detecting answers...'})}\n\n"
+
+                instance = student_service.get_instance_by_qr(
+                    qr_data["type"], qr_data["doc_id"],
+                    qr_data["student_id"], qr_data["version_hash"]
+                )
+
+                template = student_service.get_answer_region_template(qr_data["doc_id"])
+                questions = answer_key["questions"]
+                detected_answers = {}
+
+                if template:
+                    aligned_img, _ = align_scanned_page(file_bytes)
+                    if aligned_img is not None:
+                        detections = detect_answers_from_template(aligned_img, template["regions"])
+                        for det in detections:
+                            if det["status"] == "detected":
+                                detected_answers[det["question_index"]] = det["selected"]
+                else:
+                    try:
+                        import ocr_service
+                        if ocr_service.is_ocr_available():
+                            ocr_text = ocr_service.extract_text_for_grading(file_bytes)
+                            for i, line in enumerate(ocr_text.strip().split('\n')):
+                                detected_answers[i] = line.strip()
+                    except Exception:
+                        pass
+
+                # Re-map if randomized
+                if instance and instance.get("question_order"):
+                    q_order = instance["question_order"]
+                    answer_list = [detected_answers.get(i, "") for i in range(len(q_order))]
+                    remapped = remap_answers(answer_list, q_order)
+                    option_maps = instance.get("option_maps")
+                    if option_maps:
+                        for q_idx, answer in remapped.items():
+                            q_map = option_maps.get(str(q_idx))
+                            if q_map and answer and len(answer) == 1 and answer.upper() in 'ABCDE':
+                                remapped[q_idx] = remap_mc_option(answer, q_map)
+                    detected_answers = remapped
+
+                # Grade
+                score = 0
+                total = len(questions)
+                for i, q in enumerate(questions):
+                    student_answer = detected_answers.get(i, "")
+                    correct = q.get("correctAnswer", "")
+                    if isinstance(correct, int):
+                        if student_answer.upper() == chr(65 + correct):
+                            score += 1
+                    elif isinstance(correct, str):
+                        if student_answer.strip().lower() == correct.strip().lower():
+                            score += 1
+
+                percentage = round((score / total * 100) if total > 0 else 0, 1)
+                letter_grade = student_service.get_letter_grade(percentage)
+
+                # Save
+                if qr_data["student_id"]:
+                    grade_data = {
+                        "student_id": qr_data["student_id"],
+                        "score": score, "total_points": total,
+                        "percentage": percentage, "letter_grade": letter_grade,
+                        "answers": detected_answers,
+                    }
+                    if qr_data["type"] == "quiz":
+                        grade_data["quiz_title"] = answer_key.get("quiz_title", "")
+                        grade_data["subject"] = answer_key.get("subject", "")
+                        grade_data["quiz_id"] = qr_data["doc_id"]
+                        grade_data["instance_id"] = instance["id"] if instance else None
+                        student_service.save_quiz_grade(grade_data)
+                    else:
+                        grade_data["worksheet_title"] = answer_key.get("worksheet_title", "")
+                        grade_data["subject"] = answer_key.get("subject", "")
+                        grade_data["worksheet_id"] = qr_data["doc_id"]
+                        grade_data["instance_id"] = instance["id"] if instance else None
+                        student_service.save_worksheet_grade(grade_data)
+
+                yield f"data: {json.dumps({'event': 'graded', 'file_name': filename, 'student_name': student_name, 'score': score, 'total': total, 'percentage': percentage, 'letter_grade': letter_grade})}\n\n"
+                graded_count += 1
+                total_pct += percentage
+
+            except Exception as e:
+                yield f"data: {json.dumps({'event': 'error', 'file_name': filename, 'error': str(e)})}\n\n"
+                failed_count += 1
+
+        avg = round(total_pct / graded_count, 1) if graded_count > 0 else 0.0
+        yield f"data: {json.dumps({'event': 'complete', 'total': len(file_data), 'graded': graded_count, 'failed': failed_count, 'class_average': avg})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@app.post("/api/save-quiz-instances")
+async def save_quiz_instances_endpoint(request: Request):
+    """Save per-student quiz instances when generating class versions.
+
+    Body: { quiz_id, class_name, students: [{student_id, name, question_order}] }
+    """
+    body = await request.json()
+    quiz_id = body["quiz_id"]
+    class_name = body.get("class_name", "")
+    students = body["students"]
+
+    saved = []
+    for s in students:
+        v_hash = student_service.compute_version_hash(s["student_id"], s["question_order"])
+        result = student_service.save_quiz_instance(
+            quiz_id=quiz_id, student_id=s["student_id"],
+            question_order=s["question_order"], version_hash=v_hash,
+            class_name=class_name
+        )
+        saved.append({**result, "student_id": s["student_id"], "name": s.get("name", "")})
+
+    return JSONResponse(content={"saved": saved, "count": len(saved)})
+
+
+@app.post("/api/save-worksheet-instances")
+async def save_worksheet_instances_endpoint(request: Request):
+    """Save per-student worksheet instances when generating class versions.
+
+    Body: { worksheet_id, class_name, package_id?, students: [{student_id, name, question_order, ...}] }
+    """
+    body = await request.json()
+    worksheet_id = body["worksheet_id"]
+    class_name = body.get("class_name", "")
+    package_id = body.get("package_id")
+    students = body["students"]
+
+    saved = []
+    for s in students:
+        v_hash = student_service.compute_version_hash(s["student_id"], s["question_order"])
+        result = student_service.save_worksheet_instance(
+            worksheet_id=worksheet_id, student_id=s["student_id"],
+            question_order=s["question_order"], version_hash=v_hash,
+            option_maps=s.get("option_maps"),
+            shuffled_column_b=s.get("shuffled_column_b"),
+            shuffled_word_bank=s.get("shuffled_word_bank"),
+            package_id=package_id, class_name=class_name
+        )
+        saved.append({**result, "student_id": s["student_id"], "name": s.get("name", "")})
+
+    return JSONResponse(content={"saved": saved, "count": len(saved)})
 
 
 

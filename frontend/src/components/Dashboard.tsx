@@ -43,6 +43,7 @@ import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
 import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
 import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
 import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
+import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
@@ -96,6 +97,7 @@ const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> =
 const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
 const Paintbrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
 const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
+const CalendarRange: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar03IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
@@ -125,6 +127,7 @@ const StoryBookCreator = React.lazy(() => import('./StoryBookCreator'));
 const Achievements = React.lazy(() => import('./Achievements'));
 const EducatorInsights = React.lazy(() => import('./EducatorInsights'));
 const PhotoReceiver = React.lazy(() => import('./PhotoReceiver'));
+const SchoolYearCalendar = React.lazy(() => import('./SchoolYearCalendar'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -195,6 +198,14 @@ const tools: Tool[] = [
     icon: 'FolderOpen',
     type: 'resource-manager',
     description: 'View, edit, and manage all your saved resources',
+    group: 'planning-prep'
+  },
+  {
+    id: 'school-year-calendar',
+    name: 'School Year',
+    icon: 'CalendarRange',
+    type: 'school-year-calendar',
+    description: 'Plan your school year with exams, midterms, grading deadlines, and more',
     group: 'planning-prep'
   },
   {
@@ -375,6 +386,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   StoryBook,
   Lightbulb,
   Camera,
+  CalendarRange,
 };
 
 const WELCOME_TIPS = [
@@ -508,7 +520,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook', 'educator-insights', 'photo-transfer']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook', 'educator-insights', 'photo-transfer', 'school-year-calendar']);
 const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook']);
 
 const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
@@ -725,6 +737,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     // Ensure performance-metrics always has a color
     if (!colors['performance-metrics']) colors['performance-metrics'] = generateColorVariants('#10b981'); // emerald-500
 
+    // Ensure school-year-calendar always has a color
+    if (!colors['school-year-calendar']) colors['school-year-calendar'] = generateColorVariants('#0d9488'); // teal-600
+
     return colors;
   }, [settings.tabColors]);
   
@@ -878,6 +893,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     'class-management': ['class-management'],
     'support': ['support'],
     'photo-transfer': ['photo-transfer'],
+    'school-year-calendar': ['school-year-calendar'],
   };
 
   // Close tabs when any sidebar item is disabled (with close-all dialog)
@@ -954,7 +970,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool, initialData?: Record<string, any>) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights', 'school-year-calendar'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -1921,6 +1937,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <EducatorInsights tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'photo-transfer':
         return <PhotoReceiver tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
+      case 'school-year-calendar':
+        return <SchoolYearCalendar tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'brain-dump':
         return (
           <BrainDump

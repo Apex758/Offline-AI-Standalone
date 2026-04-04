@@ -1,6 +1,7 @@
 import sqlite3
 import uuid
 import json
+import hashlib
 import os
 import random
 import string
@@ -161,6 +162,61 @@ def init_db():
                 graded           INTEGER DEFAULT 0
             )
         ''')
+        # ── Scan-Grading Tables ─────────────────────────────────────────
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS quiz_instances (
+                id               TEXT PRIMARY KEY,
+                quiz_id          TEXT NOT NULL,
+                student_id       TEXT NOT NULL,
+                question_order   TEXT NOT NULL,
+                version_hash     TEXT NOT NULL,
+                class_name       TEXT,
+                created_at       TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (quiz_id) REFERENCES quiz_answer_keys(quiz_id),
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+                UNIQUE (quiz_id, student_id)
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS worksheet_instances (
+                id               TEXT PRIMARY KEY,
+                worksheet_id     TEXT NOT NULL,
+                package_id       TEXT,
+                student_id       TEXT NOT NULL,
+                question_order   TEXT NOT NULL,
+                option_maps      TEXT,
+                shuffled_column_b TEXT,
+                shuffled_word_bank TEXT,
+                version_hash     TEXT NOT NULL,
+                class_name       TEXT,
+                created_at       TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (worksheet_id) REFERENCES worksheet_answer_keys(worksheet_id),
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+                UNIQUE (worksheet_id, student_id)
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS answer_region_templates (
+                id              TEXT PRIMARY KEY,
+                doc_type        TEXT NOT NULL,
+                page_size       TEXT DEFAULT 'letter',
+                regions         TEXT NOT NULL,
+                alignment_markers TEXT,
+                qr_position     TEXT,
+                created_at      TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        # ── Migrate: add quiz_id / instance_id to grade tables ──────────
+        for col in ('quiz_id', 'instance_id'):
+            try:
+                conn.execute(f'ALTER TABLE quiz_grades ADD COLUMN {col} TEXT')
+            except Exception:
+                pass
+        for col in ('worksheet_id', 'instance_id'):
+            try:
+                conn.execute(f'ALTER TABLE worksheet_grades ADD COLUMN {col} TEXT')
+            except Exception:
+                pass
         conn.commit()
     finally:
         conn.close()
@@ -481,8 +537,9 @@ def save_quiz_grade(data: dict) -> dict:
         grade_id = str(uuid.uuid4())
         conn.execute(
             '''INSERT INTO quiz_grades
-               (id, student_id, quiz_title, subject, score, total_points, percentage, letter_grade, answers)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+               (id, student_id, quiz_title, subject, score, total_points,
+                percentage, letter_grade, answers, quiz_id, instance_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
             (
                 grade_id,
                 data.get('student_id'),
@@ -493,6 +550,8 @@ def save_quiz_grade(data: dict) -> dict:
                 data.get('percentage'),
                 data.get('letter_grade'),
                 json.dumps(data.get('answers', {})),
+                data.get('quiz_id'),
+                data.get('instance_id'),
             )
         )
         conn.commit()
@@ -610,8 +669,9 @@ def save_worksheet_grade(data: dict) -> dict:
         grade_id = str(uuid.uuid4())
         conn.execute(
             '''INSERT INTO worksheet_grades
-               (id, student_id, worksheet_title, subject, score, total_points, percentage, letter_grade, answers)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+               (id, student_id, worksheet_title, subject, score, total_points,
+                percentage, letter_grade, answers, worksheet_id, instance_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
             (
                 grade_id,
                 data.get('student_id'),
@@ -622,6 +682,8 @@ def save_worksheet_grade(data: dict) -> dict:
                 data.get('percentage'),
                 data.get('letter_grade'),
                 json.dumps(data.get('answers', {})),
+                data.get('worksheet_id'),
+                data.get('instance_id'),
             )
         )
         conn.commit()
@@ -709,6 +771,161 @@ def mark_package_graded(package_id: str) -> None:
     finally:
         conn.close()
 
+
+# ── Quiz Instances (per-student randomized versions) ────────────────────────
+
+def compute_version_hash(student_id: str, question_order: list[int]) -> str:
+    """Generate a 4-char hash that uniquely identifies this student's question arrangement."""
+    raw = f"{student_id}:{','.join(map(str, question_order))}"
+    return hashlib.md5(raw.encode()).hexdigest()[:4]
+
+
+def save_quiz_instance(quiz_id: str, student_id: str, question_order: list[int],
+                       version_hash: str, class_name: str = '') -> dict:
+    """Persist a student's specific quiz version for QR-based auto-matching."""
+    conn = _get_conn()
+    instance_id = str(uuid.uuid4())
+    try:
+        conn.execute('''
+            INSERT OR REPLACE INTO quiz_instances
+            (id, quiz_id, student_id, question_order, version_hash, class_name)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (instance_id, quiz_id, student_id,
+              json.dumps(question_order), version_hash, class_name))
+        conn.commit()
+        return {"id": instance_id, "version_hash": version_hash}
+    finally:
+        conn.close()
+
+
+def save_worksheet_instance(worksheet_id: str, student_id: str,
+                            question_order: list[int], version_hash: str,
+                            option_maps: dict = None,
+                            shuffled_column_b: list = None,
+                            shuffled_word_bank: list = None,
+                            package_id: str = None,
+                            class_name: str = '') -> dict:
+    """Persist a student's specific worksheet version for QR-based auto-matching."""
+    conn = _get_conn()
+    instance_id = str(uuid.uuid4())
+    try:
+        conn.execute('''
+            INSERT OR REPLACE INTO worksheet_instances
+            (id, worksheet_id, package_id, student_id, question_order,
+             option_maps, shuffled_column_b, shuffled_word_bank,
+             version_hash, class_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (instance_id, worksheet_id, package_id, student_id,
+              json.dumps(question_order),
+              json.dumps(option_maps) if option_maps else None,
+              json.dumps(shuffled_column_b) if shuffled_column_b else None,
+              json.dumps(shuffled_word_bank) if shuffled_word_bank else None,
+              version_hash, class_name))
+        conn.commit()
+        return {"id": instance_id, "version_hash": version_hash}
+    finally:
+        conn.close()
+
+
+def get_instance_by_qr(doc_type: str, doc_id: str, student_id: str,
+                       version_hash: str) -> dict | None:
+    """Look up a quiz/worksheet instance by QR payload fields."""
+    conn = _get_conn()
+    try:
+        table = 'quiz_instances' if doc_type == 'quiz' else 'worksheet_instances'
+        id_col = 'quiz_id' if doc_type == 'quiz' else 'worksheet_id'
+        row = conn.execute(
+            f'SELECT * FROM {table} WHERE {id_col} = ? AND student_id = ? AND version_hash = ?',
+            (doc_id, student_id, version_hash)
+        ).fetchone()
+        if row:
+            result = dict(row)
+            result['question_order'] = json.loads(result['question_order'])
+            if doc_type == 'worksheet':
+                result['option_maps'] = json.loads(result['option_maps']) if result.get('option_maps') else None
+                result['shuffled_column_b'] = json.loads(result['shuffled_column_b']) if result.get('shuffled_column_b') else None
+                result['shuffled_word_bank'] = json.loads(result['shuffled_word_bank']) if result.get('shuffled_word_bank') else None
+            return result
+        return None
+    finally:
+        conn.close()
+
+
+def list_quiz_instances(quiz_id: str) -> list[dict]:
+    """List all student instances for a given quiz."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT qi.*, s.full_name FROM quiz_instances qi '
+            'JOIN students s ON s.id = qi.student_id '
+            'WHERE qi.quiz_id = ? ORDER BY s.full_name',
+            (quiz_id,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def list_worksheet_instances(worksheet_id: str) -> list[dict]:
+    """List all student instances for a given worksheet."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT wi.*, s.full_name FROM worksheet_instances wi '
+            'JOIN students s ON s.id = wi.student_id '
+            'WHERE wi.worksheet_id = ? ORDER BY s.full_name',
+            (worksheet_id,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+# ── Answer Region Templates ─────────────────────────────────────────────────
+
+def save_answer_region_template(doc_id: str, doc_type: str, regions: list,
+                                 alignment_markers: list = None,
+                                 qr_position: dict = None,
+                                 page_size: str = 'letter') -> dict:
+    """Save the coordinate layout for a generated document."""
+    conn = _get_conn()
+    try:
+        conn.execute('''
+            INSERT OR REPLACE INTO answer_region_templates
+            (id, doc_type, page_size, regions, alignment_markers, qr_position)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (doc_id, doc_type, page_size,
+              json.dumps(regions),
+              json.dumps(alignment_markers) if alignment_markers else None,
+              json.dumps(qr_position) if qr_position else None))
+        conn.commit()
+        row = conn.execute(
+            'SELECT * FROM answer_region_templates WHERE id = ?', (doc_id,)
+        ).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
+def get_answer_region_template(doc_id: str) -> dict | None:
+    """Fetch the answer region template for a document."""
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT * FROM answer_region_templates WHERE id = ?', (doc_id,)
+        ).fetchone()
+        if row:
+            result = dict(row)
+            result['regions'] = json.loads(result['regions'])
+            result['alignment_markers'] = json.loads(result['alignment_markers']) if result['alignment_markers'] else None
+            result['qr_position'] = json.loads(result['qr_position']) if result['qr_position'] else None
+            return result
+        return None
+    finally:
+        conn.close()
+
+
+# ── Attendance ───────────────────────────────────────────────────────────────
 
 def save_attendance(records: list[dict]) -> dict:
     conn = _get_conn()

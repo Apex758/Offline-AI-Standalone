@@ -20,6 +20,10 @@ interface RenderOptions {
   boldCorrectAnswers?: boolean;
   studentInfo?: { name: string; id: string };
   quizId?: string;
+  /** When true, renders scan-friendly fillable bubbles for MC and TF questions */
+  scanMode?: boolean;
+  /** Base64-encoded QR code PNG to embed in the page header */
+  qrCodeBase64?: string;
 }
 
 interface ParsedQuiz {
@@ -205,7 +209,9 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     showExplanations = true,
     boldCorrectAnswers = false,
     studentInfo,
-    quizId
+    quizId,
+    scanMode = false,
+    qrCodeBase64
   } = options;
 
   // Parse the quiz
@@ -262,29 +268,97 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     }
 
     // Options
-    question.options.forEach(option => {
-      const isCorrect = boldCorrectAnswers && option.letter === correctLetter;
-      
-      htmlContent += `
-        <div style="
-          margin-left: 1.5rem;
-          margin-bottom: 0.5rem;
-          display: flex;
-          align-items: flex-start;
-        ">
-          <span style="
-            margin-right: 0.75rem;
-            font-weight: ${isCorrect ? '700' : '600'};
-            color: ${isCorrect ? accentColor : accentColor + 'cc'};
-            ${isCorrect ? `background-color: ${accentColor}15; padding: 0.25rem 0.5rem; border-radius: 0.25rem;` : ''}
-          ">${option.letter})</span>
-          <span style="
-            color: #374151;
-            font-weight: ${isCorrect ? '600' : 'normal'};
-          ">${option.text}</span>
-        </div>
-      `;
-    });
+    if (scanMode && question.options.length > 0) {
+      // Scan-friendly mode: render fillable bubbles
+      // Check if this looks like True/False (2 options with True/False text)
+      const isTrueFalse = question.options.length === 2 &&
+        question.options.some(o => /^true$/i.test(o.text.trim())) &&
+        question.options.some(o => /^false$/i.test(o.text.trim()));
+
+      if (isTrueFalse) {
+        htmlContent += `
+          <div style="
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+          ">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div style="
+                width: 1.25rem; height: 1.25rem;
+                border: 2px solid #374151;
+                border-radius: 3px;
+                display: inline-block;
+              "></div>
+              <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">True</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div style="
+                width: 1.25rem; height: 1.25rem;
+                border: 2px solid #374151;
+                border-radius: 3px;
+                display: inline-block;
+              "></div>
+              <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">False</span>
+            </div>
+          </div>
+        `;
+      } else {
+        // Multiple choice: render as bubble row
+        htmlContent += `
+          <div style="
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+          ">
+        `;
+        question.options.forEach(option => {
+          htmlContent += `
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <div style="
+                width: 1.25rem; height: 1.25rem;
+                border: 2px solid #374151;
+                border-radius: 50%;
+                display: inline-block;
+              "></div>
+              <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">${option.letter})</span>
+              <span style="font-size: 0.95rem; color: #374151;">${option.text}</span>
+            </div>
+          `;
+        });
+        htmlContent += `</div>`;
+      }
+    } else {
+      // Standard rendering (teacher/preview mode)
+      question.options.forEach(option => {
+        const isCorrect = boldCorrectAnswers && option.letter === correctLetter;
+
+        htmlContent += `
+          <div style="
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+          ">
+            <span style="
+              margin-right: 0.75rem;
+              font-weight: ${isCorrect ? '700' : '600'};
+              color: ${isCorrect ? accentColor : accentColor + 'cc'};
+              ${isCorrect ? `background-color: ${accentColor}15; padding: 0.25rem 0.5rem; border-radius: 0.25rem;` : ''}
+            ">${option.letter})</span>
+            <span style="
+              color: #374151;
+              font-weight: ${isCorrect ? '600' : 'normal'};
+            ">${option.text}</span>
+          </div>
+        `;
+      });
+    }
 
     // Inline: Correct Answer + Explanation (Teacher Version)
     if (showAnswerKey) {
@@ -401,9 +475,35 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       margin: 0;
       padding: 0;
     }
+    ${scanMode ? `
+    .alignment-marker {
+      position: fixed;
+      width: 5mm;
+      height: 5mm;
+      background-color: black;
+      z-index: 9999;
+    }
+    .marker-top-left { top: 5mm; left: 5mm; }
+    .marker-bottom-left { bottom: 5mm; left: 5mm; }
+    .marker-bottom-right { bottom: 5mm; right: 5mm; }
+    .scan-qr-code {
+      position: fixed;
+      top: 5mm;
+      right: 5mm;
+      width: 20mm;
+      height: 20mm;
+      z-index: 9999;
+    }
+    ` : ''}
   </style>
 </head>
 <body>
+  ${scanMode ? `
+  <div class="alignment-marker marker-top-left"></div>
+  <div class="alignment-marker marker-bottom-left"></div>
+  <div class="alignment-marker marker-bottom-right"></div>
+  ${qrCodeBase64 ? `<img class="scan-qr-code" src="data:image/png;base64,${qrCodeBase64}" />` : ''}
+  ` : ''}
   <!-- Header Section -->
   <div style="
     position: relative;
@@ -544,6 +644,8 @@ export function prepareQuizForExport(
     showAnswerKey?: boolean;
     showExplanations?: boolean;
     boldCorrectAnswers?: boolean;
+    scanMode?: boolean;
+    qrCodeBase64?: string;
   } = {},
   studentInfo?: { name: string; id: string },
   quizId?: string

@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>OECS Photo Transfer</title>
+<title>OECS Learning Hub</title>
+<link rel="manifest" href="/api/photo-transfer/manifest.json">
+<meta name="apple-mobile-web-app-title" content="OECS Learning Hub">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   :root {
     --primary: #2563eb;
@@ -244,12 +247,29 @@
     border: 1.5px solid var(--primary);
   }
 
+  /* ── Capture bar (fixed bottom) ── */
+  .capture-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+    z-index: 20;
+  }
+  html.dark .capture-bar {
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+  }
+
   /* ── Capture button ── */
   .capture-btn {
-    padding: 22px;
+    padding: 18px;
     font-size: 18px;
     border-radius: 16px;
-    min-height: 72px;
+    min-height: 64px;
     background: linear-gradient(135deg, var(--primary), #7c3aed);
     box-shadow: 0 4px 14px rgba(37,99,235,0.3);
   }
@@ -354,6 +374,25 @@
     transition: border-color 0.15s;
   }
   .gallery-thumb:active { border-color: var(--primary); }
+  .gallery-thumb .thumb-delete {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(220,38,38,0.85);
+    border: none;
+    color: white;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
   .gallery-thumb img {
     width: 100%;
     height: 100%;
@@ -419,6 +458,18 @@
     align-items: center;
     justify-content: center;
   }
+  .lightbox-delete {
+    margin-top: 16px;
+    padding: 10px 28px;
+    border-radius: var(--radius-sm);
+    background: rgba(220,38,38,0.9);
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
 
   /* ── Counter badge ── */
   .counter-badge {
@@ -475,7 +526,7 @@
 <div class="header">
   <img class="header-logo" id="header-logo" src="/api/photo-transfer/logo" alt="OECS">
   <div class="header-text">
-    <h1>OECS Photo Transfer</h1>
+    <h1>OECS Learning Hub</h1>
     <div class="subtitle" id="session-label">Not connected</div>
   </div>
   <div class="status-pill connected" id="status-pill" style="display:none">
@@ -511,23 +562,18 @@
 
 <!-- ═══ Screen 2: Capture ═══ -->
 <div class="screen" id="screen-capture">
-  <div class="content">
+  <div class="content" style="padding-bottom:100px">
     <!-- Capture options -->
     <div class="card">
       <label class="toggle-row">
         <input type="checkbox" id="rapid-capture">
         <span>Rapid Capture <span style="color:var(--text-muted);font-size:11px">&mdash; auto-send &amp; reopen camera</span></span>
       </label>
+      <label class="toggle-row" style="margin-top:8px">
+        <input type="checkbox" id="grade-mode">
+        <span>Grade Mode <span style="color:var(--text-muted);font-size:11px">&mdash; scan QR codes on worksheets/quizzes for auto-grading</span></span>
+      </label>
     </div>
-
-    <!-- Capture button -->
-    <button class="btn capture-btn" id="btn-capture">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-        <circle cx="12" cy="13" r="4"/>
-      </svg>
-      Take Photo
-    </button>
 
     <input type="file" id="camera-input" accept="image/*" capture="environment">
 
@@ -559,6 +605,17 @@
       <div class="gallery-grid" id="gallery-grid"></div>
     </div>
   </div>
+
+  <!-- Fixed bottom capture button -->
+  <div class="capture-bar" id="capture-bar">
+    <button class="btn capture-btn" id="btn-capture">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      Take Photo
+    </button>
+  </div>
 </div>
 
 <!-- ═══ Lightbox ═══ -->
@@ -566,6 +623,7 @@
   <button class="lightbox-close" id="lightbox-close">&times;</button>
   <img id="lightbox-img" alt="Photo">
   <div class="lightbox-info" id="lightbox-info"></div>
+  <button class="lightbox-delete" id="lightbox-delete">Delete Photo</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -621,6 +679,7 @@
   const $className = $('class-name');
   const $btnStart  = $('btn-start-session');
   const $btnCapture = $('btn-capture');
+  const $captureBar = $('capture-bar');
   const $cameraInput = $('camera-input');
   const $previewArea = $('preview-area');
   const $previewImg  = $('preview-img');
@@ -650,38 +709,94 @@
   // ── Gallery ──
   function addToGallery(photoData) {
     const entry = {
+      id: photoData.id,
       url: BASE_URL + '/api/photo-transfer/photos/' + sessionId + '/' + photoData.filename,
       name: photoData.filename,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     sentPhotos.unshift(entry);
+    rebuildGallery();
+  }
 
+  function rebuildGallery() {
+    if (sentPhotos.length === 0) {
+      $galleryCard.style.display = 'none';
+      return;
+    }
     $galleryCard.style.display = 'block';
     $countBadge.textContent = sentPhotos.length;
 
-    // Rebuild grid (newest first)
     $galleryGrid.innerHTML = '';
     sentPhotos.forEach(function(p, i) {
       const div = document.createElement('div');
       div.className = 'gallery-thumb';
-      div.innerHTML = '<img src="' + p.url + '" alt="' + p.name + '" loading="lazy">' +
-        '<div class="thumb-label">Photo ' + (sentPhotos.length - i) + '</div>';
+
+      const img = document.createElement('img');
+      img.src = p.url;
+      img.alt = p.name;
+      img.loading = 'lazy';
+      div.appendChild(img);
+
+      const label = document.createElement('div');
+      label.className = 'thumb-label';
+      label.textContent = 'Photo ' + (sentPhotos.length - i);
+      div.appendChild(label);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'thumb-delete';
+      delBtn.innerHTML = '&times;';
+      delBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        deletePhoto(p);
+      });
+      div.appendChild(delBtn);
+
       div.addEventListener('click', function() { openLightbox(p); });
       $galleryGrid.appendChild(div);
     });
   }
 
+  async function deletePhoto(photo) {
+    try {
+      await fetch(BASE_URL + '/api/photo-transfer/photos/' + sessionId + '/' + photo.id, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      toast('Delete failed', 'error');
+      return;
+    }
+    const idx = sentPhotos.indexOf(photo);
+    if (idx !== -1) sentPhotos.splice(idx, 1);
+    photoCount = Math.max(0, photoCount - 1);
+    // Close lightbox if this photo is open
+    if (currentLightboxPhoto === photo) {
+      $('lightbox').classList.remove('active');
+      currentLightboxPhoto = null;
+    }
+    rebuildGallery();
+    toast('Photo deleted', 'success');
+  }
+
   // ── Lightbox ──
+  let currentLightboxPhoto = null;
   function openLightbox(photo) {
+    currentLightboxPhoto = photo;
     $('lightbox').classList.add('active');
     $('lightbox-img').src = photo.url;
     $('lightbox-info').textContent = photo.name + '  •  ' + photo.time;
   }
   $('lightbox-close').addEventListener('click', function() {
     $('lightbox').classList.remove('active');
+    currentLightboxPhoto = null;
   });
   $('lightbox').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('active');
+    if (e.target === this) {
+      this.classList.remove('active');
+      currentLightboxPhoto = null;
+    }
+  });
+  $('lightbox-delete').addEventListener('click', function() {
+    if (currentLightboxPhoto) deletePhoto(currentLightboxPhoto);
   });
 
   // ── Start Session ──
@@ -729,7 +844,7 @@
     reader.onload = (ev) => {
       $previewImg.src = ev.target.result;
       $previewArea.style.display = 'block';
-      $btnCapture.style.display = 'none';
+      $captureBar.style.display = 'none';
     };
     reader.readAsDataURL(file);
   });
@@ -738,7 +853,7 @@
   $btnRetake.addEventListener('click', () => {
     currentFile = null;
     $previewArea.style.display = 'none';
-    $btnCapture.style.display = 'flex';
+    $captureBar.style.display = 'flex';
   });
 
   // ── Send ──
@@ -747,11 +862,15 @@
 
     $previewArea.style.display = 'none';
     $uploadInd.style.display = 'block';
-    $btnCapture.style.display = 'none';
+    $captureBar.style.display = 'none';
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('session_id', sessionId);
+    const gradeMode = document.getElementById('grade-mode').checked;
+    if (gradeMode) {
+      formData.append('grade_mode', 'true');
+    }
 
     try {
       const res = await fetch(BASE_URL + '/api/photo-transfer/upload', {
@@ -783,13 +902,13 @@
           $previewArea.style.display = 'block';
         }
         $uploadInd.style.display = 'none';
-        $btnCapture.style.display = 'flex';
+        $captureBar.style.display = 'flex';
       }, 2000);
       return;
     }
 
     $uploadInd.style.display = 'none';
-    $btnCapture.style.display = 'flex';
+    $captureBar.style.display = 'flex';
 
     // Rapid Capture: auto-reopen camera after successful upload
     if ($('rapid-capture').checked) {

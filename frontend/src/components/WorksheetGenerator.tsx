@@ -504,6 +504,30 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         form_data: pkg.formData,
         randomized: pkg.randomized,
       }).catch(err => console.error('Failed to save worksheet package:', err));
+
+      // Persist worksheet instances for QR-based scan grading
+      const worksheetId = currentWorksheetId || `worksheet_${Date.now()}`;
+      const baseQuestions = parsedWorksheet.questions;
+      axios.post('http://localhost:8000/api/save-worksheet-instances', {
+        worksheet_id: worksheetId,
+        class_name: selectedClassName,
+        package_id: packageId,
+        students: versions.map(v => {
+          // Derive question order by matching shuffled questions to original indices
+          const questionOrder = v.questions.map(sq => {
+            const origIdx = baseQuestions.findIndex(bq => bq.question === sq.question);
+            return origIdx >= 0 ? origIdx : 0;
+          });
+          return {
+            student_id: v.student.id,
+            name: v.student.full_name,
+            question_order: questionOrder,
+            option_maps: v.optionMaps || null,
+            shuffled_column_b: v.shuffledColumnB || null,
+            shuffled_word_bank: v.shuffledWordBank || null,
+          };
+        })
+      }).catch(err => console.warn('Failed to save worksheet instances:', err));
     } else if (!classMode) {
       setWorksheetPackage(null);
     }

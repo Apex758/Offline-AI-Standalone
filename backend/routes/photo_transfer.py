@@ -201,6 +201,7 @@ async def upload_photo(
     file: UploadFile = File(...),
     session_id: str = Form(...),
     student_name: str = Form(""),
+    grade_mode: str = Form(""),
 ):
     """Receive a photo from the phone PWA and save it to the session folder."""
     _track_phone(request.client.host if request.client else "unknown")
@@ -217,18 +218,37 @@ async def upload_photo(
     filename = f"{idx:03d}{ext}"
     file_path = session_dir / filename
 
-    # Save file
+    # Save file (with optional document auto-crop)
     contents = await file.read()
+    auto_cropped = False
+    try:
+        from document_processor import process_document_image
+        contents, auto_cropped = process_document_image(contents)
+    except Exception as e:
+        logger.debug(f"Document processing skipped: {e}")
     file_path.write_bytes(contents)
 
     photo_entry = {
         "id": str(uuid.uuid4())[:8],
         "filename": filename,
         "index": idx,
+        "auto_cropped": auto_cropped,
         "size_bytes": len(contents),
         "uploaded_at": datetime.now().isoformat(),
         "path": str(file_path),
     }
+
+    # If grade mode, attempt QR decode on upload
+    qr_info = None
+    if grade_mode == "true":
+        try:
+            from qr_service import extract_qr_from_scan
+            qr_info = extract_qr_from_scan(contents)
+            if qr_info:
+                photo_entry["qr_data"] = qr_info
+                logger.info(f"QR decoded: {qr_info['doc_type']} {qr_info['doc_id']} for student {qr_info['student_id']}")
+        except Exception as e:
+            logger.debug(f"QR decode skipped: {e}")
 
     session["photo_count"] = idx
     session["photos"].append(photo_entry)
@@ -237,14 +257,26 @@ async def upload_photo(
     logger.info(f"Photo uploaded: {filename} ({len(contents)} bytes) → session {session_id}")
 
     # Broadcast to React frontend
-    await _broadcast("photo_uploaded", {
+    event_data = {
         "session_id": session_id,
         "photo": photo_entry,
         "total_count": idx,
         "phones_connected": get_connected_phone_count(),
-    })
+    }
+    if qr_info:
+        event_data["qr_data"] = qr_info
+        # Also send a separate match event for the UI
+        await _broadcast("photo_matched", {
+            "session_id": session_id,
+            "photo_id": photo_entry["id"],
+            "student_id": qr_info["student_id"],
+            "doc_type": qr_info["type"],
+            "doc_id": qr_info["doc_id"],
+        })
 
-    return {"ok": True, "photo": photo_entry, "total_count": idx}
+    await _broadcast("photo_uploaded", event_data)
+
+    return {"ok": True, "photo": photo_entry, "total_count": idx, "qr_data": qr_info}
 
 
 # ── Serve photo images ──────────────────────────────────────────────────────
@@ -316,6 +348,51 @@ async def export_pdf(session_id: str):
         )
     except ImportError:
         raise HTTPException(500, "Pillow not available for PDF export")
+
+
+# ── Save to Resources ───────────────────────────────────────────────────────
+
+def _get_resources_dir() -> Path:
+    """Return the app resources/photos directory (writable user data)."""
+    if os.name == "nt":
+        app_data = os.environ.get("APPDATA", os.path.expanduser("~"))
+        base = Path(app_data) / "OECS Learning Hub" / "resources" / "photos"
+    else:
+        base = Path.home() / ".olh_ai_education" / "resources" / "photos"
+    base.mkdir(parents=True, exist_ok=True)
+    return base
+
+
+@router.post("/save-to-resources/{session_id}")
+async def save_to_resources(session_id: str):
+    """Copy all photos from a session into the app resources folder."""
+    import shutil
+
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    if not session["photos"]:
+        raise HTTPException(400, "No photos in this session")
+
+    session_name = session.get("session_name", session.get("class_name", "Session"))
+    safe_name = re.sub(r'[^\w\s-]', '', session_name).strip().replace(' ', '_')
+    dest_folder = _get_resources_dir() / f"{safe_name}_{session['date']}"
+    dest_folder.mkdir(parents=True, exist_ok=True)
+
+    copied = 0
+    for photo in session["photos"]:
+        src = Path(photo["path"])
+        if src.exists():
+            shutil.copy2(src, dest_folder / photo["filename"])
+            copied += 1
+
+    logger.info(f"Saved {copied} photos to resources: {dest_folder}")
+    return {
+        "ok": True,
+        "copied": copied,
+        "path": str(dest_folder),
+    }
 
 
 # ── Network info ─────────────────────────────────────────────────────────────
@@ -415,6 +492,27 @@ async def delete_photo(session_id: str, photo_id: str):
         "session_id": session_id,
         "photo_id": photo_id,
     })
+
+    return {"ok": True}
+
+
+@router.delete("/sessions/{session_id}")
+async def delete_session(session_id: str):
+    """Delete an entire session and its photos from disk."""
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    # Remove the session folder and all its photos
+    folder = Path(session["folder_path"])
+    if folder.exists():
+        import shutil
+        shutil.rmtree(folder, ignore_errors=True)
+
+    del _sessions[session_id]
+    _save_sessions()
+
+    await _broadcast("session_deleted", {"session_id": session_id})
 
     return {"ok": True}
 
@@ -572,6 +670,28 @@ async def set_theme(request: Request):
     body = await request.json()
     _current_theme = body.get("theme", "light")
     return {"ok": True, "theme": _current_theme}
+
+
+# ── PWA manifest (hides URL bar when added to home screen) ──────────────────
+
+@router.get("/manifest.json")
+async def pwa_manifest():
+    """Serve a PWA manifest so the phone page can be added to home screen."""
+    return JSONResponse(
+        content={
+            "name": "OECS Learning Hub",
+            "short_name": "OECS",
+            "description": "Capture and transfer student worksheets",
+            "display": "standalone",
+            "start_url": "/phone",
+            "background_color": "#f8fafc",
+            "theme_color": "#2563eb",
+            "icons": [
+                {"src": "/api/photo-transfer/logo", "sizes": "512x512", "type": "image/png"}
+            ],
+        },
+        headers={"Cache-Control": "no-cache"},
+    )
 
 
 # ── Serve OECS logo ─────────────────────────────────────────────────────────
