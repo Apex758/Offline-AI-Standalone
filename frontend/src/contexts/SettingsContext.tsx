@@ -201,7 +201,7 @@ export const DEFAULT_SETTINGS: Settings = {
     displayName: '',
     school: '',
     gradeSubjects: {},
-    filterContentByProfile: false,
+    filterContentByProfile: true,
   },
   sidebarOrder: DEFAULT_SIDEBAR_ORDER,
   // Writing assistant defaults

@@ -14,8 +14,9 @@ const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }>
 const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowDown01IconData} {...p} />;
 import ResourceTrendChart from './ResourceTrendChart';
-import ResourceDistributionChart from './ResourceDistributionChart';
-import type { ResourceTrendData, DistributionData, Timeframe } from '../../types/analytics';
+import TeacherMetricsChart from './TeacherMetricsChart';
+import type { ResourceTrendData, Timeframe } from '../../types/analytics';
+import type { MetricSnapshot } from '../../types/insights';
 
 const TIMEFRAME_OPTIONS: { value: Timeframe; label: string }[] = [
   { value: 'week',    label: '1 Week' },
@@ -115,7 +116,7 @@ const TimeframeDropdown: React.FC<{
 
 interface ChartCarouselProps {
   trendData: ResourceTrendData[];
-  distributionData: DistributionData[];
+  metricsHistory?: MetricSnapshot[];
   timeframe: Timeframe;
   onTimeframeChange: (timeframe: Timeframe) => void;
   forcePaused?: boolean;
@@ -124,14 +125,14 @@ interface ChartCarouselProps {
 
 const ChartCarousel: React.FC<ChartCarouselProps> = ({
   trendData,
-  distributionData,
+  metricsHistory = [],
   timeframe,
   onTimeframeChange,
   forcePaused = false,
   tabColors = {}
 }) => {
-  const views: Array<'trend' | 'distribution'> = ['trend', 'distribution'];
-  const [currentView, setCurrentView] = useState<'trend' | 'distribution'>('trend');
+  const views: Array<'trend' | 'metrics'> = ['trend', 'metrics'];
+  const [currentView, setCurrentView] = useState<'trend' | 'metrics'>('trend');
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
@@ -217,15 +218,15 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
           <ResourceTrendChart data={trendData} timeframe={timeframe} tabColors={tabColors} />
         </div>
 
-        {/* Distribution Chart View */}
+        {/* Teacher Metrics Chart View */}
         <div
           className={`transition-all duration-500 h-full ${
-            currentView === 'distribution'
+            currentView === 'metrics'
               ? 'opacity-100 translate-x-0'
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
           }`}
         >
-          <ResourceDistributionChart data={distributionData} tabColors={tabColors} />
+          <TeacherMetricsChart data={metricsHistory} height={460} compact />
         </div>
       </div>
 

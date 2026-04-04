@@ -129,11 +129,21 @@ def _load_json_file(filename: str) -> list:
 
 # ── Curriculum Coverage ──────────────────────────────────────────────────────
 
-def aggregate_curriculum_data(teacher_id: str = "default", from_date: str | None = None, to_date: str | None = None) -> dict:
+def _normalize_grade(g: str) -> str:
+    """Normalize grade strings to a comparable lowercase key, e.g. 'Grade 1' → '1', 'K' → 'k'."""
+    g = g.strip().lower()
+    g = g.replace("grade ", "").replace("kindergarten", "k")
+    return g
+
+
+def aggregate_curriculum_data(teacher_id: str = "default", from_date: str | None = None, to_date: str | None = None,
+                               grade_subjects: dict | None = None) -> dict:
     """Analyze milestone completion rates by subject/grade.
 
     When from_date/to_date are provided, shows both overall totals AND
     milestones completed within the period (totals + delta approach).
+    If grade_subjects is provided (e.g. {"1": ["Math"], "3": ["Science"]}),
+    only grades/subjects the teacher actually teaches are included.
     """
     try:
         from milestones.milestone_db import get_milestone_db
@@ -142,6 +152,22 @@ def aggregate_curriculum_data(teacher_id: str = "default", from_date: str | None
         breakdown = db.get_progress_by_grade_subject(teacher_id)
     except Exception:
         return {"has_data": False, "llm_text": "", "total": 0, "completed": 0, "pct": 0, "gaps": [], "breakdown": []}
+
+    # Apply grade/subject filter when teacher profile is set
+    if grade_subjects:
+        allowed = {_normalize_grade(g): {s.lower() for s in subjs} for g, subjs in grade_subjects.items()}
+        breakdown = [
+            b for b in breakdown
+            if _normalize_grade(str(b.get("grade", ""))) in allowed
+            and b.get("subject", "").lower() in allowed.get(_normalize_grade(str(b.get("grade", ""))), set())
+        ]
+        # Recompute totals from filtered breakdown
+        total_filtered = sum(b.get("total", 0) for b in breakdown)
+        completed_filtered = sum(b.get("completed", 0) for b in breakdown)
+        if total_filtered > 0:
+            summary = {"total": total_filtered, "completed": completed_filtered,
+                       "in_progress": sum(b.get("in_progress", 0) for b in breakdown),
+                       "not_started": sum(b.get("not_started", 0) for b in breakdown)}
 
     total = summary.get("total", 0)
     completed = summary.get("completed", 0)
@@ -224,11 +250,13 @@ def aggregate_curriculum_data(teacher_id: str = "default", from_date: str | None
 
 # ── Student Performance ─────────────────────────────────────────────────────
 
-def aggregate_student_performance(from_date: str | None = None, to_date: str | None = None) -> dict:
+def aggregate_student_performance(from_date: str | None = None, to_date: str | None = None,
+                                   grade_subjects: dict | None = None) -> dict:
     """Analyze quiz and worksheet grades across all students.
 
     When from_date/to_date are provided, shows overall averages plus
     period-specific assessment counts and averages.
+    If grade_subjects provided, only subjects the teacher teaches are included.
     """
     try:
         conn = _get_students_conn()
@@ -250,6 +278,11 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
         ).fetchall()
 
         all_grades = [dict(g) for g in quiz_grades] + [dict(g) for g in ws_grades]
+
+        # Filter by teacher's subjects when profile is set
+        if grade_subjects:
+            allowed_subjects = {s.lower() for subjs in grade_subjects.values() for s in subjs}
+            all_grades = [g for g in all_grades if (g.get("subject") or "").lower() in allowed_subjects]
 
         if not all_grades or student_count == 0:
             return {"has_data": False, "llm_text": "", "avgScore": 0, "totalStudents": student_count, "distribution": {}, "bySubject": []}
@@ -355,11 +388,13 @@ def _parse_item_timestamp(item: dict) -> datetime | None:
         return None
 
 
-def aggregate_content_creation(from_date: str | None = None, to_date: str | None = None) -> dict:
+def aggregate_content_creation(from_date: str | None = None, to_date: str | None = None,
+                               grade_subjects: dict | None = None) -> dict:
     """Analyze resource creation history across all content types.
 
     When from_date/to_date are provided, shows both overall totals AND
     resources created within the period.
+    If grade_subjects provided, subject_counter is limited to teacher's subjects.
     """
     history_files = {
         "Lesson Plans": "lesson_plan_history.json",
@@ -392,13 +427,15 @@ def aggregate_content_creation(from_date: str | None = None, to_date: str | None
         by_type[label] = count
         total += count
 
+        _allowed_subjects = {s.lower() for subjs in grade_subjects.values() for s in subjs} if grade_subjects else None
         for item in items:
             # Extract subject from formData
             form_data = item.get("formData") or item.get("form_data") or {}
             if isinstance(form_data, dict):
                 subj = form_data.get("subject") or form_data.get("Subject")
                 if subj:
-                    subject_counter[subj] += 1
+                    if _allowed_subjects is None or subj.lower() in _allowed_subjects:
+                        subject_counter[subj] += 1
 
             # Check recency and period membership
             created = _parse_item_timestamp(item)
@@ -564,8 +601,10 @@ def aggregate_attendance_engagement(from_date: str | None = None, to_date: str |
 def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str | None = None, from_date: str | None = None, to_date: str | None = None) -> dict:
     """Analyze achievement progress, rank, streaks, and platform engagement.
 
-    Achievements may be stored under user_id (e.g. '1') rather than teacher_id
-    (e.g. 'admin'), so we accept both and prefer user_id for achievement queries.
+    Achievements may be stored under user_id (e.g. '1') or teacher_id (e.g.
+    'admin').  We try the primary ID first; if it yields no earned achievements
+    AND a different alternate ID is available, we fall back to the alternate so
+    that teachers who registered before the unified-ID migration still see data.
     When from_date/to_date provided, shows achievements earned in that period
     alongside overall totals.
     """
@@ -573,6 +612,20 @@ def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str
     try:
         import achievement_service
         earned_data = achievement_service.get_earned_achievements(ach_id)
+        # Fallback chain: try all candidate IDs until one returns achievements.
+        # This handles: numeric user_id "1", username "admin", legacy "default_teacher".
+        if not earned_data.get("all_earned"):
+            # Build ordered candidate list (deduplicated, excluding primary ach_id)
+            candidates = []
+            for cid in [user_id, teacher_id, "1", "admin", "default_teacher"]:
+                if cid and cid != ach_id and cid not in candidates:
+                    candidates.append(cid)
+            for cid in candidates:
+                alt_earned = achievement_service.get_earned_achievements(cid)
+                if alt_earned.get("all_earned"):
+                    earned_data = alt_earned
+                    ach_id = cid
+                    break
         streak_data = achievement_service._get_streak_counts(ach_id)
     except Exception:
         return {
@@ -658,16 +711,20 @@ def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str
 
 # ── Combined Aggregation ────────────────────────────────────────────────────
 
-def aggregate_all(teacher_id: str = "default_teacher", user_id: str | None = None, from_date: str | None = None, to_date: str | None = None) -> dict:
+def aggregate_all(teacher_id: str = "default_teacher", user_id: str | None = None,
+                  from_date: str | None = None, to_date: str | None = None,
+                  grade_subjects: dict | None = None) -> dict:
     """Aggregate all data sources. Returns both raw data and LLM text summaries.
 
     When from_date/to_date are provided, each aggregate function includes
     both overall totals and period-specific deltas in its llm_text.
+    If grade_subjects is provided (e.g. {"1": ["Math"], "k": ["Language Arts"]}),
+    curriculum/performance/content data is restricted to what the teacher teaches.
     """
     return {
-        "curriculum": aggregate_curriculum_data(teacher_id, from_date, to_date),
-        "performance": aggregate_student_performance(from_date, to_date),
-        "content": aggregate_content_creation(from_date, to_date),
+        "curriculum": aggregate_curriculum_data(teacher_id, from_date, to_date, grade_subjects),
+        "performance": aggregate_student_performance(from_date, to_date, grade_subjects),
+        "content": aggregate_content_creation(from_date, to_date, grade_subjects),
         "attendance": aggregate_attendance_engagement(from_date, to_date),
         "achievements": aggregate_achievement_data(teacher_id, user_id, from_date, to_date),
     }

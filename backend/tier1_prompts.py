@@ -57,6 +57,8 @@ TIER1_MAX_TOKENS = {
     "insights-achievements": 500,
     "insights-recommendations": 600,
     "insights-synthesis": 1500,
+    # Educator Coach
+    "consultant": 800,
 }
 
 # ── System prompts with embedded output templates ──────────────────────────────
@@ -324,6 +326,17 @@ TIER1_PROMPTS = {
         "2. [question about a specific challenge noticed in the data]\n"
         "3. [question to help refine future advice]\n\n"
         "Output only the report, nothing else."
+    ),
+
+    # ── Educator Coach ──
+    "consultant": (
+        "You are the Educator Coach, a supportive teaching consultant. "
+        "Your role is to help teachers understand and improve their teaching effectiveness. "
+        "You have access to the teacher's performance metrics and school context. "
+        "Start by acknowledging what they're doing well, then help them identify root causes "
+        "for areas that need improvement. Ask clarifying questions to understand their specific "
+        "challenges. Provide concrete, actionable suggestions — not generic advice. "
+        "Keep responses focused and under 200 words unless the teacher asks for detail."
     ),
 }
 

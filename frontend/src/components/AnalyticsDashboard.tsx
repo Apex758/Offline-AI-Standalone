@@ -130,6 +130,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [latestInsightsReport, setLatestInsightsReport] = useState<InsightsReport | null>(null);
+  const [metricsHistory, setMetricsHistory] = useState<import('../types/insights').MetricSnapshot[]>([]);
 
   useEffect(() => {
     setShowShowcase(settings.showTrophiesByDefault);
@@ -312,6 +313,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           _cacheProgressBreakdown = [];
         }
       }
+      // Load teacher metrics history for the carousel
+      try {
+        const metricsRes = await axios.get(`http://localhost:8000/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId || 'default_teacher')}`);
+        if (Array.isArray(metricsRes.data?.history)) {
+          setMetricsHistory(metricsRes.data.history);
+        }
+      } catch {}
     } catch (error) {
       console.error('Failed to load analytics data:', error);
     } finally {
@@ -805,7 +813,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             {/* Resource Trends Chart */}
             <ChartCarousel
               trendData={trendData}
-              distributionData={distributionData}
+              metricsHistory={metricsHistory}
               timeframe={timeframe}
               onTimeframeChange={setTimeframe}
               forcePaused={currentTutorialStep >= 5 && currentTutorialStep <= 7}

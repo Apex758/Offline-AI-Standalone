@@ -26,6 +26,14 @@ function AppContent() {
   const [user, setUser] = useState<User | null>(defaultUser);
   const [loading, setLoading] = useState(false);
 
+  // Seed localStorage['user'] so components that read it (e.g. EducatorInsights)
+  // can resolve the correct teacher/user IDs for achievement lookups.
+  useEffect(() => {
+    if (!localStorage.getItem('user')) {
+      localStorage.setItem('user', JSON.stringify(defaultUser));
+    }
+  }, []);
+
   // Apply theme & display filters (brightness / warm tone)
   useTheme();
   useDisplayFilters();

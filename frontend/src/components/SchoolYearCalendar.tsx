@@ -117,6 +117,90 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     reminder_offsets: '[]',
   });
 
+  // Calendar file import state
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [importPreview, setImportPreview] = useState<any[] | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const dragCounter = React.useRef(0);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items?.length) setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragOver(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    dragCounter.current = 0;
+
+    const files = e.dataTransfer.files;
+    if (!files?.length) return;
+
+    const file = files[0];
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext !== 'ics' && ext !== 'csv') {
+      alert('Unsupported file type. Please drop a .ics or .csv file.');
+      return;
+    }
+
+    setImportLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('teacher_id', teacherId);
+      const res = await axios.post('/api/teacher-metrics/calendar-import', formData);
+      const parsed = res.data.events || [];
+      if (parsed.length === 0) {
+        alert('No events found in the file.');
+      } else {
+        setImportPreview(parsed);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Failed to parse calendar file.');
+    } finally {
+      setImportLoading(false);
+    }
+  }, [teacherId]);
+
+  const confirmImport = useCallback(async () => {
+    if (!importPreview || !config) return;
+    setImportLoading(true);
+    try {
+      const eventsToSave = importPreview.map(evt => ({
+        config_id: config.id,
+        teacher_id: teacherId,
+        title: evt.title,
+        description: evt.description || null,
+        event_date: evt.event_date,
+        end_date: evt.end_date || null,
+        event_type: evt.event_type || 'custom',
+        all_day: 1,
+      }));
+      await axios.post('/api/school-year/events/bulk', { events: eventsToSave });
+      setImportPreview(null);
+      loadEvents(config.id);
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Failed to save imported events.');
+    } finally {
+      setImportLoading(false);
+    }
+  }, [importPreview, config, teacherId, loadEvents]);
+
   // ── Data Loading ──
 
   const loadConfig = useCallback(async () => {
@@ -327,7 +411,92 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
   // ── Render ──
 
   return (
-    <div className="syc-container">
+    <div
+      className="syc-container"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      style={{ position: 'relative' }}
+    >
+      {/* Drag-and-drop overlay */}
+      {isDragOver && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 50,
+          backgroundColor: 'rgba(59, 130, 246, 0.08)',
+          border: '3px dashed #3b82f6',
+          borderRadius: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: '#3b82f6' }}>Drop school calendar file here</p>
+            <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>.ics or .csv</p>
+          </div>
+        </div>
+      )}
+
+      {/* Import preview modal */}
+      {importPreview && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            backgroundColor: 'var(--theme-bg, #fff)',
+            borderRadius: 12, padding: 24, maxWidth: 500, width: '90%',
+            maxHeight: '70vh', display: 'flex', flexDirection: 'column',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>
+              Import {importPreview.length} events
+            </h3>
+            <div style={{ flex: 1, overflowY: 'auto', marginBottom: 16 }}>
+              {importPreview.map((evt, i) => (
+                <div key={i} style={{
+                  padding: '8px 0', borderBottom: '1px solid var(--theme-border, #e5e7eb)',
+                  fontSize: 13,
+                }}>
+                  <span style={{ fontWeight: 500 }}>{evt.title}</span>
+                  <span style={{ color: '#6b7280', marginLeft: 8 }}>
+                    {evt.event_date}{evt.end_date ? ` → ${evt.end_date}` : ''}
+                  </span>
+                  <span style={{
+                    marginLeft: 8, fontSize: 11, padding: '2px 6px',
+                    borderRadius: 4, backgroundColor: '#f3f4f6',
+                  }}>
+                    {evt.event_type}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setImportPreview(null)}
+                style={{
+                  padding: '8px 16px', borderRadius: 8, border: '1px solid var(--theme-border, #d1d5db)',
+                  background: 'transparent', cursor: 'pointer', fontSize: 13,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmImport}
+                disabled={importLoading || !config}
+                style={{
+                  padding: '8px 16px', borderRadius: 8, border: 'none',
+                  background: '#3b82f6', color: '#fff', cursor: 'pointer', fontSize: 13,
+                  opacity: importLoading || !config ? 0.5 : 1,
+                }}
+              >
+                {importLoading ? 'Importing...' : !config ? 'Set up school year first' : 'Confirm Import'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="syc-header">
         <div className="syc-header-left">

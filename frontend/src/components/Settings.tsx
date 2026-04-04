@@ -227,6 +227,9 @@ interface SettingsProps {
 
 interface ModelInfo {
   name: string;
+  display_name: string;
+  tier: number;
+  model_type: 'text' | 'vision';
   path: string;
   size_mb: number;
   extension: string;
@@ -2041,7 +2044,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           ) : (
                             availableModels.map((model) => (
                               <option key={model.name} value={model.name}>
-                                {model.name} ({model.size_mb.toFixed(2)} MB){recommendations?.recommended_llm?.name === model.name ? ' ★ Recommended' : ''}
+                                {model.tier > 0 ? `Tier ${model.tier} · ` : ''}{model.display_name || model.name} [{model.model_type === 'vision' ? 'Vision' : 'Text'}]{recommendations?.recommended_llm?.name === model.name ? ' ★ Recommended' : ''}
                               </option>
                             ))
                           )}

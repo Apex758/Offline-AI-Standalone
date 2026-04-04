@@ -61,6 +61,39 @@ def set_selected_model(model_name):
         return False
 
 # ============================================================================
+# LLM MODEL REGISTRY
+# Maps filename → display metadata (tier, type, display name)
+# ============================================================================
+
+LLM_MODEL_REGISTRY = {
+    "Qwen3.5-2B-Text.gguf": {
+        "display_name": "Qwen 3.5 2B",
+        "tier": 1,
+        "model_type": "text",
+    },
+    "Phi4-Mini-Text.gguf": {
+        "display_name": "Phi 4 Mini",
+        "tier": 1,
+        "model_type": "text",
+    },
+    "Gemma4-E2B-Vision.gguf": {
+        "display_name": "Gemma 4 E2B",
+        "tier": 2,
+        "model_type": "vision",
+    },
+    "Gemma4-E4B-Vision.gguf": {
+        "display_name": "Gemma 4 E4B",
+        "tier": 3,
+        "model_type": "vision",
+    },
+    "Qwen2.5-VL-7B-Vision.gguf": {
+        "display_name": "Qwen 2.5 VL 7B",
+        "tier": 4,
+        "model_type": "vision",
+    },
+}
+
+# ============================================================================
 # DIFFUSION MODEL CONFIGURATION
 # ============================================================================
 
@@ -279,7 +312,7 @@ def resolve_vision_projector_path(model_filename: str) -> Optional[str]:
             if "mmproj" in fname:
                 matched = False
                 # Check if model family matches (e.g. both contain "qwen2.5-vl")
-                for family in ["qwen2.5-vl", "qwen2-vl", "llava", "phi4", "minicpm", "lfm2"]:
+                for family in ["qwen2.5-vl", "qwen2-vl", "llava", "phi4", "minicpm", "lfm2", "gemma4"]:
                     if family in name_lower and family in fname:
                         candidates.append(f)
                         matched = True

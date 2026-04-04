@@ -811,14 +811,24 @@ button[style*="background-color: rgb(59"] {
   .bg-theme-secondary { background-color: var(--bg-secondary); }
   .bg-theme-tertiary { background-color: var(--bg-tertiary); }
   .bg-theme-hover { background-color: var(--bg-hover); }
+  /* Aliases used by EducatorCoachDrawer / drawer components */
+  .bg-theme-bg { background-color: var(--bg-surface); }
+  .bg-theme-bg-secondary { background-color: var(--bg-secondary); }
+  .bg-theme-bg-tertiary { background-color: var(--bg-tertiary); }
+
+  /* Semantic text — aliases */
+  .text-theme-primary { color: var(--text-label); }
+  .text-theme-secondary { color: var(--text-muted); }
 
   /* Semantic borders */
   .border-theme { border-color: var(--border-default); }
   .border-theme-strong { border-color: var(--border-strong); }
+  .border-theme-border { border-color: var(--border-default); }
 
   /* Hover variants */
   .hover\:bg-theme-hover:hover { background-color: var(--bg-hover); }
   .hover\:bg-theme-subtle:hover { background-color: var(--bg-hover-subtle); }
+  .hover\:bg-theme-bg-tertiary:hover { background-color: var(--bg-tertiary); }
 
   /* Student panel collapsed stripe pattern */
   .student-panel-collapsed {

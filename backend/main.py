@@ -39,11 +39,11 @@ from config import (
     IMAGE_MODELS_DIR, get_selected_diffusion_model, set_selected_diffusion_model,
     get_diffusion_model_path, scan_diffusion_models, get_image_model_info, get_image_model_path,
     get_tier_config, set_tier_config, get_model_tier, compute_effective_tier,
-    LAMA_MODEL_PATH,
+    LAMA_MODEL_PATH, LLM_MODEL_REGISTRY,
 )
 from pathlib import Path
 from datetime import datetime
-from routes import milestones, achievements, insights
+from routes import milestones, achievements, insights, teacher_metrics
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 _scheduler: AsyncIOScheduler | None = None
@@ -342,6 +342,9 @@ app.include_router(scene_router)
 # Include photo transfer routes (phone-to-PC via local WiFi)
 from routes.photo_transfer import router as photo_transfer_router
 app.include_router(photo_transfer_router)
+
+# Include teacher metrics routes
+app.include_router(teacher_metrics.router)
 
 # Include school year calendar routes
 from routes.school_year import router as school_year_router
@@ -3198,6 +3201,11 @@ async def educator_insights_websocket(websocket: WebSocket):
             teacher_id = data.get("teacherId", "default_teacher")
             user_id = data.get("userId")
             registration_date = data.get("registrationDate")
+            # grade_subjects: {"k": ["Math", "Language Arts"], "1": ["Science"]}
+            grade_subjects = data.get("gradeSubjects") or None
+            # Sanitize: ensure it's a dict of str → list-of-str
+            if grade_subjects and not isinstance(grade_subjects, dict):
+                grade_subjects = None
 
             import insights_service
 
@@ -3207,9 +3215,9 @@ async def educator_insights_websocket(websocket: WebSocket):
             except Exception:
                 date_context = {"is_first_report": True, "from_date": datetime.now().strftime("%Y-%m-%d"), "to_date": datetime.now().strftime("%Y-%m-%d"), "previous_report": None, "previous_report_id": None, "report_count": 0}
 
-            # Aggregate all data with date range filtering
+            # Aggregate all data with date range filtering (and teacher grade/subject filter)
             try:
-                all_data = insights_service.aggregate_all(teacher_id, user_id, date_context.get("from_date"), date_context.get("to_date"))
+                all_data = insights_service.aggregate_all(teacher_id, user_id, date_context.get("from_date"), date_context.get("to_date"), grade_subjects)
             except Exception as e:
                 logger.error(f"Insights data aggregation error: {e}")
                 await websocket.send_json({"type": "error", "message": f"Data aggregation failed: {e}"})
@@ -3381,6 +3389,27 @@ async def educator_insights_websocket(websocket: WebSocket):
                     combined_text = "\n\n".join(combined) if combined else "No analysis data available."
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Provide teaching recommendations.")
                     system_prompt = system_prompt_template.replace("{data}", combined_text)
+
+                    # Inject teacher metrics context for metric-aware recommendations
+                    try:
+                        import teacher_metrics_service
+                        metrics_snapshot = teacher_metrics_service.compute_composite_score(teacher_id, all_data)
+                        phase_info = metrics_snapshot.get("phase", {})
+                        dims = metrics_snapshot.get("dimensions", {})
+                        metric_lines = [
+                            f"\nTEACHER METRICS CONTEXT:",
+                            f"Current school phase: {phase_info.get('phase_label', 'Unknown')} ({phase_info.get('phase', 'mid_year')})",
+                            f"Composite score: {metrics_snapshot.get('composite_score', 0)}/100 ({metrics_snapshot.get('composite_grade', 'N/A')})",
+                        ]
+                        for dim_key in ("curriculum", "performance", "content", "attendance", "achievements"):
+                            d = dims.get(dim_key, {})
+                            weight_pct = round(d.get("weight", 0.2) * 100)
+                            priority = " ← PRIORITY" if d.get("score", 100) < 60 else ""
+                            metric_lines.append(f"- {dim_key.capitalize()}: {d.get('score', 0)}/100 ({d.get('grade', '?')}) [weight: {weight_pct}%]{priority}")
+                        metric_lines.append(f"\nPrioritize recommendations for the LOWEST scoring dimensions, especially those with HIGH weight in the current '{phase_info.get('phase_label', '')}' phase.")
+                        system_prompt += "\n".join(metric_lines)
+                    except Exception as e:
+                        logger.warning(f"Could not inject metrics into recommendations: {e}")
 
                     # Add previous recommendations for comparison
                     prev_recs = prev_pass_outputs.get("recommendations", "")
@@ -3627,6 +3656,15 @@ async def educator_insights_websocket(websocket: WebSocket):
                 logger.error(f"Reminders detection error: {e}")
                 report["reminders"] = []
 
+            # Auto-snapshot teacher metrics on report generation
+            try:
+                import teacher_metrics_service
+                metrics_snapshot = teacher_metrics_service.compute_composite_score(teacher_id, all_data)
+                teacher_metrics_service.save_metric_snapshot(teacher_id, metrics_snapshot)
+                report["metrics"] = metrics_snapshot
+            except Exception as e:
+                logger.warning(f"Failed to auto-snapshot teacher metrics: {e}")
+
             # Save to disk
             try:
                 from routes.insights import save_report
@@ -3648,6 +3686,214 @@ async def educator_insights_websocket(websocket: WebSocket):
         logger.info("Educator Insights WebSocket disconnected")
     except Exception as e:
         logger.error(f"Educator Insights WebSocket error: {e}")
+
+
+# ── Educator Coach WebSocket ─────────────────────────────────────────────────
+
+@app.websocket("/ws/consultant")
+async def websocket_consultant(websocket: WebSocket):
+    """Educator Coach — streaming chat with metric context injection."""
+    await websocket.accept()
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            msg = json.loads(data)
+            user_message = msg.get("message", "")
+            chat_id = msg.get("chat_id")
+            metrics_context = msg.get("metrics_context")
+            trigger_dimension = msg.get("trigger_dimension")
+            teacher_id = msg.get("teacher_id", "default_teacher")
+
+            if not user_message:
+                continue
+
+            from consultant_memory import get_consultant_memory
+            from tier1_prompts import TIER1_PROMPTS, get_tier1_gen_params
+            from inference_factory import resolve_inference_for_task
+
+            memory = get_consultant_memory()
+
+            # Create conversation if needed
+            if not chat_id:
+                chat_id = memory.create_conversation(teacher_id, trigger_dimension)
+                try:
+                    await websocket.send_json({"type": "chat_id", "chat_id": chat_id})
+                except:
+                    pass
+
+            # Build system prompt
+            base_prompt = TIER1_PROMPTS.get("consultant", "You are a helpful teaching consultant.")
+
+            # Inject metric context
+            metric_block = ""
+            if metrics_context:
+                phase = metrics_context.get("phase", {})
+                dims = metrics_context.get("dimensions", {})
+                metric_lines = [
+                    f"\nTEACHER METRICS:",
+                    f"Composite score: {metrics_context.get('composite_score', 0)}/100 ({metrics_context.get('composite_grade', '?')})",
+                    f"School phase: {phase.get('phase_label', 'Unknown')}",
+                ]
+                for dk in ("curriculum", "performance", "content", "attendance", "achievements"):
+                    d = dims.get(dk, {})
+                    metric_lines.append(f"- {dk.capitalize()}: {d.get('score', 0)}/100 ({d.get('grade', '?')}) — {d.get('description', '')}")
+                metric_block = "\n".join(metric_lines)
+
+            # Inject latest recommendations if available
+            rec_block = ""
+            try:
+                from routes.insights import _load_reports
+                reports = _load_reports()
+                if reports:
+                    latest = reports[-1]
+                    rec_pass = next((p for p in latest.get("passes", []) if p.get("key") == "recommendations"), None)
+                    if rec_pass and rec_pass.get("output"):
+                        rec_block = f"\n\nLATEST RECOMMENDATIONS:\n{rec_pass['output'][:500]}"
+                    synth_pass = next((p for p in latest.get("passes", []) if p.get("key") == "synthesis"), None)
+                    if synth_pass and synth_pass.get("output"):
+                        rec_block += f"\n\nLATEST REPORT SUMMARY:\n{synth_pass['output'][:400]}"
+            except:
+                pass
+
+            # Build conversation context from memory
+            summary_block, history = memory.build_context(chat_id, n_pairs=4)
+
+            # Trigger dimension context
+            trigger_block = ""
+            if trigger_dimension and metrics_context:
+                d = metrics_context.get("dimensions", {}).get(trigger_dimension, {})
+                trigger_block = (
+                    f"\n\nThe teacher opened this conversation because their {trigger_dimension} score is "
+                    f"{d.get('score', 0)} ({d.get('grade', '?')}). Start by acknowledging this and asking "
+                    f"diagnostic questions to understand why it's low."
+                )
+
+            system_prompt = base_prompt + metric_block + rec_block + trigger_block
+            if summary_block:
+                system_prompt += f"\n\n{summary_block}"
+
+            # Save user message
+            memory.save_message(chat_id, str(uuid.uuid4()), "user", user_message)
+
+            # Build prompt (same multi-turn format as /ws/chat)
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            inference = resolve_inference_for_task("consultant")
+            prompt_fmt = getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
+
+            # Build multi-turn prompt
+            if prompt_fmt == "chatml":
+                prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n"
+                for m in history:
+                    prompt += f"<|im_start|>{m['role']}\n{m['content']}<|im_end|>\n"
+                prompt += f"<|im_start|>user\n{user_message}<|im_end|>\n<|im_start|>assistant\n"
+            elif prompt_fmt == "phi":
+                prompt = f"<|system|>{system_prompt}<|end|>\n"
+                for m in history:
+                    prompt += f"<|{m['role']}|>{m['content']}<|end|>\n"
+                prompt += f"<|user|>{user_message}<|end|>\n<|assistant|>"
+            else:
+                prompt = "<|begin_of_text|>"
+                prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+                for m in history:
+                    role = m["role"]
+                    prompt += f"<|start_header_id|>{role}<|end_header_id|>\n\n{m['content']}<|eot_id|>"
+                prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_message}<|eot_id|>"
+                prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+            gen_params = get_tier1_gen_params("consultant")
+
+            # Stream response
+            token_buffer = []
+            full_tokens = []
+            last_send = time.time()
+            import re as _re
+
+            try:
+                stream = inference.generate_stream(
+                    tool_name="consultant",
+                    input_data=user_message,
+                    prompt_template=prompt,
+                    max_tokens=gen_params["max_tokens"],
+                    temperature=gen_params["temperature"],
+                    repeat_penalty=gen_params.get("repeat_penalty", 1.3),
+                )
+
+                async for chunk in stream:
+                    if chunk.get("error"):
+                        await websocket.send_json({"type": "error", "message": chunk["error"]})
+                        break
+
+                    if chunk["finished"]:
+                        if token_buffer:
+                            await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                        await websocket.send_json({"type": "done"})
+
+                        # Save assistant response
+                        full_text = "".join(full_tokens)
+                        full_text = _re.sub(r'<think>[\s\S]*?</think>\s*', '', full_text).strip()
+                        memory.save_message(chat_id, str(uuid.uuid4()), "assistant", full_text)
+
+                        # Trigger summary update if needed
+                        if memory.needs_summary_update(chat_id):
+                            try:
+                                msgs = memory.get_messages_for_summary(chat_id)
+                                summary_text = " ".join(m["content"][:100] for m in msgs[-10:])
+                                memory.update_summary(chat_id, summary_text[:500])
+                            except:
+                                pass
+                        break
+
+                    if chunk.get("token"):
+                        token_buffer.append(chunk["token"])
+                        full_tokens.append(chunk["token"])
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
+                            await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                            token_buffer = []
+                            last_send = time.time()
+                            await asyncio.sleep(0)
+
+            except Exception as e:
+                logger.error(f"Consultant generation error: {e}")
+                try:
+                    await websocket.send_json({"type": "error", "message": str(e)})
+                except:
+                    pass
+
+    except WebSocketDisconnect:
+        logger.info("Educator Coach WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Educator Coach WebSocket error: {e}")
+
+
+# ── Educator Coach REST endpoints ────────────────────────────────────────────
+
+@app.get("/api/consultant/conversations")
+async def list_consultant_conversations(teacher_id: str = "default_teacher"):
+    try:
+        from consultant_memory import get_consultant_memory
+        memory = get_consultant_memory()
+        return {"conversations": memory.list_conversations(teacher_id)}
+    except Exception as e:
+        logger.error(f"Error listing consultant conversations: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/consultant/conversation/{chat_id}")
+async def get_consultant_conversation(chat_id: str):
+    try:
+        from consultant_memory import get_consultant_memory
+        memory = get_consultant_memory()
+        conv = memory.get_conversation(chat_id)
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        return {"conversation": conv}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting consultant conversation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/quiz-history")
@@ -6058,7 +6304,8 @@ def scan_models_directory():
     model_extensions = ['.gguf', '.bin', '.ggml']
     
     # Vision projector files are auxiliary — hide them from the selector
-    vision_keywords = ["vision", "mmproj", "clip-model"]
+    # Note: "vision" is intentionally NOT excluded here since model filenames now use it (e.g. Gemma4-E2B-Vision.gguf)
+    projector_keywords = ["mmproj", "clip-model"]
 
     # OCR models belong in the OCR section, not the main model dropdown
     tier_config = get_tier_config()
@@ -6071,7 +6318,7 @@ def scan_models_directory():
             if file_path.is_file() and file_path.suffix.lower() in model_extensions:
                 # Skip vision projector files
                 name_lower = file_path.name.lower()
-                if any(kw in name_lower for kw in vision_keywords):
+                if any(kw in name_lower for kw in projector_keywords):
                     continue
 
                 # Skip OCR models (by tier config list + keyword fallback)
@@ -6083,8 +6330,15 @@ def scan_models_directory():
                 file_size_mb = file_path.stat().st_size / (1024 * 1024)
 
                 family_config = LlamaInference.detect_model_family(str(file_path))
+
+                # Look up registry for tier/type metadata
+                registry_entry = LLM_MODEL_REGISTRY.get(file_path.name, {})
+
                 model_info = {
                     "name": file_path.name,
+                    "display_name": registry_entry.get("display_name", file_path.stem),
+                    "tier": registry_entry.get("tier", 0),
+                    "model_type": registry_entry.get("model_type", "text"),
                     "path": str(file_path),
                     "size_mb": round(file_size_mb, 2),
                     "extension": file_path.suffix,

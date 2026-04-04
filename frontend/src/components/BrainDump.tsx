@@ -194,9 +194,9 @@ function saveEntries(entries: BrainDumpEntry[]) {
 
 // ─── Task Sets: Auto-splitting by tier ──────────────────────────
 const TASK_SET_CHAR_LIMITS: Record<number, number> = {
-  1: 6000,   // ~1,500 tokens — small models, tight context
-  2: 10000,  // ~2,500 tokens — vision-capable, larger context
-  3: 12000,  // ~3,000 tokens — full capability models
+  1: 3000,   // ~750 tokens — small models, CPU-first, faster per batch
+  2: 6000,   // ~1,500 tokens — larger model, still CPU-friendly
+  3: 8000,   // ~2,000 tokens — full capability, more headroom
 };
 
 function getTaskSetCharLimit(tier: number): number {

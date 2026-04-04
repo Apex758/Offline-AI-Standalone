@@ -74,4 +74,63 @@ export interface InsightsReport {
   passes: InsightsPassResult[];
   synthesis: string;
   reminders?: InsightsReminder[];
+  metrics?: TeacherMetrics;
+}
+
+// ── Teacher Performance Metrics ──────────────────────────────────────────────
+
+export type SchoolPhase =
+  | 'start_of_year' | 'early_year' | 'mid_year' | 'pre_exam'
+  | 'exam_period' | 'post_exam' | 'vacation' | 'reopening';
+
+export interface DimensionMetric {
+  score: number;
+  grade: string;
+  weight: number;
+  weighted_score: number;
+  description: string;
+  components: { label: string; value: number; max: number }[];
+  tips: string[];
+  trend?: 'up' | 'down' | 'neutral';
+}
+
+export interface TeacherMetrics {
+  composite_score: number;
+  composite_grade: string;
+  phase: { phase: SchoolPhase; phase_label: string; next_event: string | null; days_until: number | null };
+  dimensions: Record<'curriculum' | 'performance' | 'content' | 'attendance' | 'achievements', DimensionMetric>;
+  computed_at: string;
+}
+
+export interface MetricSnapshot {
+  id: string;
+  computed_at: string;
+  phase: SchoolPhase;
+  phase_label: string;
+  composite_score: number;
+  composite_grade: string;
+  curriculum_score: number;
+  performance_score: number;
+  content_score: number;
+  attendance_score: number;
+  achievements_score: number;
+  weights_json?: string;
+}
+
+// ── Educator Coach ───────────────────────────────────────────────────────────
+
+export interface ConsultantConversation {
+  id: string;
+  teacher_id: string;
+  title: string | null;
+  dimension_focus: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConsultantMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
 }

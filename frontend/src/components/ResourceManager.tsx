@@ -61,6 +61,8 @@ const LayersIcon: React.FC<{ className?: string; style?: React.CSSProperties }> 
 const ExternalLinkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LinkSquare01IconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
+import ResourceDistributionChart from './charts/ResourceDistributionChart';
+import type { DistributionData } from '../types/analytics';
 
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
@@ -73,6 +75,8 @@ interface ResourceManagerProps {
   onEditResource?: (type: string, resource: any) => void;
   onViewResource?: (type: string, resource: any) => void;
   isActive?: boolean;
+  distributionData?: DistributionData[];
+  tabColors?: { [key: string]: string };
 }
 
 interface Resource {
@@ -107,12 +111,15 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   onDataChange,
   onViewResource,
   onEditResource,
-  isActive = true
+  isActive = true,
+  distributionData = [],
+  tabColors = {},
 }) => {
   const { startTutorial } = useTutorials();
   const { settings } = useSettings();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDistChart, setShowDistChart] = useState(true);
 
   // Restore persisted state from savedData
   const [searchQuery, setSearchQuery] = useState(savedData?.searchQuery || '');
@@ -782,6 +789,33 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       ) : (
       /* ── "In App" Tab Content (original) ── */
       <div className="flex-1 flex min-h-0">
+
+      {/* ── Right Panel: Distribution Chart (collapsible) ── */}
+      {distributionData.length > 0 && (
+        <div className={`flex-shrink-0 border-l border-theme bg-theme-surface transition-all duration-300 overflow-hidden ${showDistChart ? 'w-72' : 'w-0'}`}>
+          <div className="w-72 h-full flex flex-col p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-theme-heading uppercase tracking-wider">Distribution</span>
+              <button onClick={() => setShowDistChart(false)} className="p-1 rounded hover:bg-theme-hover transition-colors">
+                <ChevronRight className="w-3.5 h-3.5 text-theme-muted" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ResourceDistributionChart data={distributionData} tabColors={tabColors} />
+            </div>
+          </div>
+        </div>
+      )}
+      {!showDistChart && distributionData.length > 0 && (
+        <button
+          onClick={() => setShowDistChart(true)}
+          className="flex-shrink-0 w-8 border-l border-theme bg-theme-surface flex items-center justify-center hover:bg-theme-hover transition-colors"
+          title="Show distribution chart"
+        >
+          <ChevronDown className="w-3.5 h-3.5 text-theme-muted -rotate-90" />
+        </button>
+      )}
+
       {/* ── Left Sidebar: Category Filters ── */}
       <div className="w-60 flex-shrink-0 bg-theme-surface border-r border-theme flex flex-col h-full">
         {/* Sidebar Header */}

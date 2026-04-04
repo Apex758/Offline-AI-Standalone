@@ -17,9 +17,12 @@ import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
 import CalendarCheckIn01IconData from '@hugeicons/core-free-icons/CalendarCheckIn01Icon';
 import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import axios from 'axios';
-import type { InsightsData, InsightsReport, InsightsPassResult } from '../types/insights';
+import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useNotification } from '../contexts/NotificationContext';
+import TeacherMetricsPanel from './TeacherMetricsPanel';
+import MetricsNudgeBanner from './MetricsNudgeBanner';
+import EducatorCoachDrawer from './EducatorCoachDrawer';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -76,6 +79,18 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [historyOpen, setHistoryOpen] = useState(false);
   const [error, setError] = useState('');
   const [dataLoading, setDataLoading] = useState(false);
+
+  // Teacher metrics state
+  const [teacherMetrics, setTeacherMetrics] = useState<TeacherMetrics | null>(savedData?.teacherMetrics || null);
+  const [metricsHistory, setMetricsHistory] = useState<MetricSnapshot[]>(savedData?.metricsHistory || []);
+  const [previousMetrics, setPreviousMetrics] = useState<TeacherMetrics | null>(savedData?.previousMetrics || null);
+  const [metricsExpanded, setMetricsExpanded] = useState<boolean>(savedData?.metricsExpanded || false);
+
+  // Educator Coach state
+  const [coachOpen, setCoachOpen] = useState(false);
+  const [coachChatId, setCoachChatId] = useState<string | null>(savedData?.coachChatId || null);
+  const [coachTriggerDimension, setCoachTriggerDimension] = useState<string | undefined>();
+  const [nudgeDismissed, setNudgeDismissed] = useState<boolean>(savedData?.nudgeDismissed || false);
 
   // Settings panel state
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -256,6 +271,33 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     }
   }, []);
 
+  // Load teacher metrics on mount
+  useEffect(() => {
+    if (!teacherMetrics) {
+      axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+        .then(res => {
+          const m = res.data?.metrics;
+          if (m) {
+            setTeacherMetrics(m);
+            persistState({ teacherMetrics: m });
+          }
+        })
+        .catch(() => {});
+    }
+    // Load metrics history
+    if (metricsHistory.length === 0) {
+      axios.get(`/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
+        .then(res => {
+          const h = res.data?.history;
+          if (Array.isArray(h)) {
+            setMetricsHistory(h);
+            persistState({ metricsHistory: h });
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
   // Generate insights via WebSocket
   const handleGenerate = useCallback(() => {
     if (guardOffline()) return;
@@ -269,21 +311,28 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     accumulatedTokensRef.current = '';
     streamingPassRef.current = '';
 
+    notify('Generating educator insights report…', 'info', tabId);
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(`${protocol}//localhost:8000/ws/educator-insights`);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      // Include registrationDate for first-report date context
+      // Include registrationDate and gradeSubjects from teacher profile settings
       let registrationDate: string | null = null;
+      let gradeSubjects: Record<string, string[]> | null = null;
       try {
         const settingsRaw = localStorage.getItem('app-settings-main');
         if (settingsRaw) {
           const settingsParsed = JSON.parse(settingsRaw);
           registrationDate = settingsParsed?.profile?.registrationDate || null;
+          const gs = settingsParsed?.profile?.gradeSubjects;
+          if (gs && typeof gs === 'object' && Object.keys(gs).length > 0) {
+            gradeSubjects = gs;
+          }
         }
       } catch {}
-      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId, userId, registrationDate }));
+      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId, userId, registrationDate, gradeSubjects }));
     };
 
     ws.onmessage = (event) => {
@@ -350,7 +399,30 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           // Update history — persist is handled by the useEffect below
           setReportHistory(prev => [...prev, msg.report]);
 
-          // Fire notifications for reminders
+          // Refresh metrics after report generation (backend auto-snapshots)
+          if (msg.report?.metrics) {
+            setPreviousMetrics(teacherMetrics);
+            setTeacherMetrics(msg.report.metrics);
+          }
+          axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+            .then(res => { if (res.data?.metrics) { setPreviousMetrics(teacherMetrics); setTeacherMetrics(res.data.metrics); } }).catch(() => {});
+          axios.get(`/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
+            .then(res => { if (Array.isArray(res.data?.history)) setMetricsHistory(res.data.history); }).catch(() => {});
+
+          // Reset nudge dismiss so it re-evaluates after new report
+          setNudgeDismissed(false);
+          persistState({ nudgeDismissed: false });
+
+          // Completion notification with composite score if available
+          const score = msg.report?.metrics?.composite_score;
+          const grade = msg.report?.metrics?.composite_grade;
+          if (score !== undefined) {
+            notify(`Insights report ready — score: ${Math.round(score)}/100 (${grade ?? ''})`, 'success', tabId);
+          } else {
+            notify('Educator insights report generated successfully', 'success', tabId);
+          }
+
+          // Fire additional notifications for reminders
           const reminders = msg.report?.reminders || [];
           if (reminders.length === 1) {
             notify(`Insight reminder: ${reminders[0].suggestion}`, 'info', tabId);
@@ -364,6 +436,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         if (msg.type === 'error') {
           setError(msg.message);
           setIsGenerating(false);
+          notify(`Insights generation failed: ${msg.message || 'unknown error'}`, 'error', tabId);
           ws.close();
         }
       } catch (e) {
@@ -374,6 +447,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     ws.onerror = () => {
       setError('WebSocket connection failed. Is the backend running?');
       setIsGenerating(false);
+      notify('Insights generation failed — backend connection error', 'error', tabId);
     };
 
     ws.onclose = () => {
@@ -755,6 +829,54 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             />
           </div>
 
+          {/* Teacher Metrics Panel */}
+          {(teacherMetrics || dataLoading) && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <TeacherMetricsPanel
+                  metrics={teacherMetrics}
+                  history={metricsHistory}
+                  previousMetrics={previousMetrics}
+                  loading={dataLoading && !teacherMetrics}
+                  expanded={metricsExpanded}
+                  onToggleExpanded={(val) => {
+                    setMetricsExpanded(val);
+                    persistState({ metricsExpanded: val });
+                  }}
+                  onDimensionClick={(dim) => {
+                    setCoachTriggerDimension(dim);
+                    setCoachOpen(true);
+                  }}
+                />
+              </div>
+              {/* Talk to Coach button */}
+              {teacherMetrics && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => { setCoachTriggerDimension(undefined); setCoachOpen(true); }}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
+                  >
+                    Talk to Coach
+                  </button>
+                </div>
+              )}
+              {/* Nudge banner */}
+              <MetricsNudgeBanner
+                metrics={teacherMetrics}
+                previousMetrics={previousMetrics}
+                dismissed={nudgeDismissed}
+                onDismiss={() => {
+                  setNudgeDismissed(true);
+                  persistState({ nudgeDismissed: true });
+                }}
+                onTalkToCoach={(dim) => {
+                  setCoachTriggerDimension(dim);
+                  setCoachOpen(true);
+                }}
+              />
+            </div>
+          )}
+
           {/* No data prompt */}
           {!hasAnyData && !dataLoading && (
             <div className="text-center py-12 text-theme-secondary">
@@ -890,6 +1012,20 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           </div>
         </div>
       </div>
+
+      {/* Educator Coach Drawer */}
+      <EducatorCoachDrawer
+        isOpen={coachOpen}
+        onClose={() => setCoachOpen(false)}
+        metrics={teacherMetrics}
+        triggerDimension={coachTriggerDimension}
+        teacherId={teacherId}
+        currentChatId={coachChatId}
+        onChatIdChange={(id) => {
+          setCoachChatId(id || null);
+          persistState({ coachChatId: id || null });
+        }}
+      />
     </div>
   );
 };

@@ -37,6 +37,9 @@ rembg
 # --- Text-to-Speech (offline) ---
 piper-tts>=1.2.0
 
+# --- Calendar Import ---
+icalendar>=5.0.0
+
 # --- Document / Rendering ---
 python-docx>=1.0.0
 python-pptx>=0.6.21
