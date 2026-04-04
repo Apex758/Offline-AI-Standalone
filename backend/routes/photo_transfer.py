@@ -38,6 +38,22 @@ def _get_photos_dir() -> Path:
     return base
 
 
+# ── Phone connection tracking ────────────────────────────────────────────────
+
+_phone_last_seen: dict[str, float] = {}  # ip → timestamp
+
+
+def _track_phone(ip: str):
+    """Record that a phone at this IP is active."""
+    _phone_last_seen[ip] = time.time()
+
+
+def get_connected_phone_count() -> int:
+    """Count phones active in the last 60 seconds."""
+    cutoff = time.time() - 60
+    return sum(1 for t in _phone_last_seen.values() if t > cutoff)
+
+
 # ── SSE (Server-Sent Events) ────────────────────────────────────────────────
 
 _sse_subscribers: list[asyncio.Queue] = []
@@ -91,29 +107,62 @@ async def photo_stream(request: Request):
     )
 
 
-# ── Sessions ─────────────────────────────────────────────────────────────────
+# ── Sessions (persisted to disk) ─────────────────────────────────────────────
 
 _sessions: dict[str, dict] = {}
 
 
+def _sessions_file() -> Path:
+    return _get_photos_dir() / "sessions.json"
+
+
+def _save_sessions():
+    """Persist sessions to disk."""
+    try:
+        _sessions_file().write_text(json.dumps(list(_sessions.values()), default=str), encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"Could not save sessions: {e}")
+
+
+def _load_sessions():
+    """Load sessions from disk on startup."""
+    global _sessions
+    sf = _sessions_file()
+    if sf.exists():
+        try:
+            data = json.loads(sf.read_text(encoding="utf-8"))
+            for s in data:
+                # Backwards compat: migrate class_name → session_name
+                if "class_name" in s and "session_name" not in s:
+                    s["session_name"] = s.pop("class_name")
+                _sessions[s["id"]] = s
+            logger.info(f"Loaded {len(_sessions)} photo transfer session(s) from disk")
+        except Exception as e:
+            logger.warning(f"Could not load sessions: {e}")
+
+
+# Load on import
+_load_sessions()
+
+
 @router.post("/sessions")
 async def create_session(request: Request):
-    """Create a new photo-capture session (class name + optional date)."""
+    """Create a new photo-capture session (session name + optional date)."""
     body = await request.json()
-    class_name = body.get("class_name", "").strip() or "Unnamed Class"
+    session_name = (body.get("session_name") or body.get("class_name", "")).strip() or "Unnamed Session"
     date_str = body.get("date", datetime.now().strftime("%Y-%m-%d"))
     session_id = str(uuid.uuid4())[:8]
 
     # Sanitise for folder name
-    safe_class = re.sub(r'[^\w\s-]', '', class_name).strip().replace(' ', '_')
-    folder_name = f"{safe_class}_{date_str}_{session_id}"
+    safe_name = re.sub(r'[^\w\s-]', '', session_name).strip().replace(' ', '_')
+    folder_name = f"{safe_name}_{date_str}_{session_id}"
 
     session_dir = _get_photos_dir() / folder_name
     session_dir.mkdir(parents=True, exist_ok=True)
 
     session = {
         "id": session_id,
-        "class_name": class_name,
+        "session_name": session_name,
         "date": date_str,
         "folder_name": folder_name,
         "folder_path": str(session_dir),
@@ -122,6 +171,7 @@ async def create_session(request: Request):
         "photos": [],
     }
     _sessions[session_id] = session
+    _save_sessions()
     logger.info(f"Photo session created: {folder_name}")
 
     await _broadcast("session_created", session)
@@ -147,11 +197,14 @@ async def get_session(session_id: str):
 
 @router.post("/upload")
 async def upload_photo(
+    request: Request,
     file: UploadFile = File(...),
     session_id: str = Form(...),
     student_name: str = Form(""),
 ):
     """Receive a photo from the phone PWA and save it to the session folder."""
+    _track_phone(request.client.host if request.client else "unknown")
+
     session = _sessions.get(session_id)
     if not session:
         raise HTTPException(404, "Session not found — start a session first")
@@ -184,6 +237,7 @@ async def upload_photo(
 
     session["photo_count"] = idx
     session["photos"].append(photo_entry)
+    _save_sessions()
 
     logger.info(f"Photo uploaded: {filename} ({len(contents)} bytes) → session {session_id}")
 
@@ -192,6 +246,7 @@ async def upload_photo(
         "session_id": session_id,
         "photo": photo_entry,
         "total_count": idx,
+        "phones_connected": get_connected_phone_count(),
     })
 
     return {"ok": True, "photo": photo_entry, "total_count": idx}
@@ -256,8 +311,8 @@ async def export_pdf(session_id: str):
         )
         pdf_buffer.seek(0)
 
-        safe_class = session["class_name"].replace(" ", "_")
-        pdf_name = f"{safe_class}_{session['date']}.pdf"
+        safe_name = session.get("session_name", session.get("class_name", "Session")).replace(" ", "_")
+        pdf_name = f"{safe_name}_{session['date']}.pdf"
 
         return StreamingResponse(
             pdf_buffer,
@@ -359,6 +414,7 @@ async def delete_photo(session_id: str, photo_id: str):
         fpath.unlink()
 
     session["photos"].remove(photo)
+    _save_sessions()
 
     await _broadcast("photo_deleted", {
         "session_id": session_id,
@@ -366,6 +422,24 @@ async def delete_photo(session_id: str, photo_id: str):
     })
 
     return {"ok": True}
+
+
+# ── Student roster (for phone dropdown) ──────────────────────────────────────
+
+@router.get("/students")
+async def get_students_for_phone(class_name: Optional[str] = None):
+    """Return student names for the phone dropdown picker."""
+    try:
+        import student_service
+        students = student_service.list_students(class_name)
+        # Return only what the phone needs: id, name, class
+        return [
+            {"id": s.get("id", ""), "name": s.get("full_name", ""), "class_name": s.get("class_name", "")}
+            for s in students
+        ]
+    except Exception as e:
+        logger.warning(f"Could not load students: {e}")
+        return []
 
 
 # ── HTTPS management ─────────────────────────────────────────────────────────
@@ -483,6 +557,42 @@ async def stop_hotspot():
     except Exception as e:
         logger.error(f"Hotspot stop failed: {e}")
         return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
+
+
+# ── Theme sync (laptop → phone) ─────────────────────────────────────────────
+
+_current_theme: str = "light"
+
+
+@router.get("/theme")
+async def get_theme():
+    """Return the current theme setting (synced from the desktop app)."""
+    return {"theme": _current_theme}
+
+
+@router.post("/theme")
+async def set_theme(request: Request):
+    """Set the current theme (called by the React frontend)."""
+    global _current_theme
+    body = await request.json()
+    _current_theme = body.get("theme", "light")
+    return {"ok": True, "theme": _current_theme}
+
+
+# ── Serve OECS logo ─────────────────────────────────────────────────────────
+
+@router.get("/logo")
+async def serve_logo():
+    """Serve the OECS logo PNG for the phone page."""
+    # Try multiple known locations
+    candidates = [
+        Path(__file__).parent.parent / "static" / "OECS.png",
+        Path(__file__).parent.parent.parent / "frontend" / "public" / "OECS.png",
+    ]
+    for p in candidates:
+        if p.exists():
+            return FileResponse(p, media_type="image/png")
+    raise HTTPException(404, "Logo not found")
 
 
 @router.get("/hotspot/status")

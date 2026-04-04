@@ -343,6 +343,10 @@ app.include_router(scene_router)
 from routes.photo_transfer import router as photo_transfer_router
 app.include_router(photo_transfer_router)
 
+# Include school year calendar routes
+from routes.school_year import router as school_year_router
+app.include_router(school_year_router)
+
 
 # ── Serve the phone PWA page at /phone ──────────────────────────────────────
 @app.get("/phone", response_class=HTMLResponse)

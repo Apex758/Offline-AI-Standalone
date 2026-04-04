@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { API_CONFIG } from '../config/api.config';
+import { useSettings } from '../contexts/SettingsContext';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,7 +17,7 @@ interface Photo {
 
 interface Session {
   id: string;
-  class_name: string;
+  session_name: string;
   date: string;
   folder_name: string;
   folder_path: string;
@@ -46,11 +47,13 @@ interface NetworkInfo {
 }
 
 const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+  const { settings } = useSettings();
   const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [connected, setConnected] = useState(false);
+  const [phonesConnected, setPhonesConnected] = useState(0);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [newClassName, setNewClassName] = useState('');
   const [showNewSession, setShowNewSession] = useState(true);
@@ -142,8 +145,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
     es.addEventListener('photo_uploaded', (e) => {
       const data = JSON.parse(e.data);
       setPhotos(prev => [...prev, data.photo]);
-      // Update session photo count
       setActiveSession(prev => prev ? { ...prev, photo_count: data.total_count } : prev);
+      if (data.phones_connected !== undefined) setPhonesConnected(data.phones_connected);
     });
 
     es.addEventListener('session_created', (e) => {
@@ -168,6 +171,19 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
     };
   }, []);
 
+  // ── Sync theme to backend for phone page ──
+  const resolvedTheme = settings.theme === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : settings.theme;
+
+  useEffect(() => {
+    fetch(`${BASE}/api/photo-transfer/theme`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme: resolvedTheme }),
+    }).catch(() => {});
+  }, [resolvedTheme]);
+
   // ── Cleanup: stop hotspot when component unmounts ──
   useEffect(() => {
     return () => {
@@ -180,12 +196,12 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
 
   // ── Create session from desktop ──
   const createSession = async () => {
-    const className = newClassName.trim() || 'Unnamed Class';
+    const sessionName = newClassName.trim() || 'Unnamed Session';
     try {
       const res = await fetch(`${BASE}/api/photo-transfer/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ class_name: className }),
+        body: JSON.stringify({ session_name: sessionName }),
       });
       const session = await res.json();
       setSessions(prev => [...prev, session]);
@@ -206,7 +222,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${activeSession.class_name.replace(/\s+/g, '_')}_${activeSession.date}.pdf`;
+      a.download = `${activeSession.session_name.replace(/\s+/g, '_')}_${activeSession.date}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {}
@@ -275,7 +291,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               background: connected ? '#22c55e' : '#ef4444',
             }} />
             <span style={{ fontSize: 13, fontWeight: 600, color: connected ? '#16a34a' : '#dc2626' }}>
-              {connected ? 'Ready' : 'Connecting...'}
+              {connected ? (phonesConnected > 0 ? `${phonesConnected} phone${phonesConnected !== 1 ? 's' : ''}` : 'Ready') : 'Connecting...'}
             </span>
           </div>
 
@@ -327,7 +343,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 border: '2px solid #e2e8f0',
                 display: 'inline-block',
               }}>
-                <QRCodeSVG value={networkInfo.phone_url} size={200} level="M" />
+                <QRCodeSVG value={`${networkInfo.phone_url}?theme=${resolvedTheme}`} size={200} level="M" />
               </div>
               <div style={{
                 marginTop: 12,
@@ -445,7 +461,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   type="text"
                   value={newClassName}
                   onChange={e => setNewClassName(e.target.value)}
-                  placeholder="Class name (e.g. Math Grade 5)"
+                  placeholder="Session name (e.g. Mrs. Johnson - Math)"
                   onKeyDown={e => e.key === 'Enter' && createSession()}
                   style={{
                     width: '100%', padding: '10px 12px', borderRadius: 8,
@@ -488,7 +504,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   transition: 'all 0.15s',
                 }}
               >
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>{s.class_name}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>{s.session_name}</div>
                 <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
                   {s.date} &middot; {s.photo_count} photo{s.photo_count !== 1 ? 's' : ''}
                 </div>
@@ -510,12 +526,32 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: 0 }}>
-                    {activeSession.class_name}
+                    {activeSession.session_name}
                   </h3>
                   <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
                     {activeSession.date} &middot; {photos.length} photo{photos.length !== 1 ? 's' : ''}
                   </p>
                 </div>
+                <button
+                  onClick={() => {
+                    // Open the session folder in file explorer
+                    const w = window as any;
+                    if (w.electronAPI?.openFileExternal) {
+                      w.electronAPI.openFileExternal(activeSession.folder_path);
+                    }
+                  }}
+                  style={{
+                    padding: '6px 12px', borderRadius: 8,
+                    background: '#f1f5f9', border: '1px solid #e2e8f0',
+                    fontSize: 12, fontWeight: 600, color: '#475569',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                  </svg>
+                  Open Folder
+                </button>
               </div>
 
               {photos.length === 0 ? (
