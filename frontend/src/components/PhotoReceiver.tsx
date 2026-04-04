@@ -25,6 +25,30 @@ interface Session {
   photos: Photo[];
 }
 
+interface ScanMatch {
+  photo_id: string;
+  student_id: string;
+  student_name: string;
+  doc_type: string;
+  doc_id: string;
+  doc_title: string;
+  doc_subject: string;
+  doc_grade: string;
+  timestamp: string;
+}
+
+interface ExpectedStudent {
+  student_id: string;
+  full_name: string;
+}
+
+interface ScanToast {
+  id: string;
+  message: string;
+  detail: string;
+  timestamp: number;
+}
+
 interface PhotoReceiverProps {
   tabId: string;
   savedData?: any;
@@ -71,6 +95,16 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
   const [isGrading, setIsGrading] = useState(false);
   const [gradingResults, setGradingResults] = useState<any[] | null>(null);
   const [gradingSummary, setGradingSummary] = useState<{ total: number; graded: number; failed: number; class_average: number } | null>(null);
+
+  // Scan tracker state
+  const [scanMatches, setScanMatches] = useState<ScanMatch[]>([]);
+  const [showScanPanel, setShowScanPanel] = useState(false);
+  const [expectedStudents, setExpectedStudents] = useState<Map<string, ExpectedStudent[]>>(new Map());
+  const [scanToasts, setScanToasts] = useState<ScanToast[]>([]);
+  const expectedStudentsRef = useRef<Map<string, ExpectedStudent[]>>(new Map());
+
+  // Keep ref in sync with state for use inside SSE callback
+  useEffect(() => { expectedStudentsRef.current = expectedStudents; }, [expectedStudents]);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -174,6 +208,37 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       setActiveSession(prev => prev?.id === data.session_id ? null : prev);
     });
 
+    es.addEventListener('photo_matched', (e) => {
+      const data = JSON.parse(e.data);
+      const match: ScanMatch = { ...data, timestamp: new Date().toISOString() };
+      setScanMatches(prev => [...prev, match]);
+
+      // Show toast notification
+      const docLabel = data.doc_title
+        ? `${data.doc_title}${data.doc_subject ? ` (${data.doc_subject})` : ''}`
+        : `${data.doc_type} identified`;
+      const toastId = `${data.photo_id}_${Date.now()}`;
+      setScanToasts(prev => [...prev, {
+        id: toastId,
+        message: docLabel,
+        detail: data.student_name || data.student_id || '',
+        timestamp: Date.now(),
+      }]);
+      setTimeout(() => {
+        setScanToasts(prev => prev.filter(t => t.id !== toastId));
+      }, 3500);
+
+      // Fetch expected students for this doc if not already fetched
+      if (data.doc_id && !expectedStudentsRef.current.has(data.doc_id)) {
+        fetch(`${BASE}/api/photo-transfer/doc-students/${data.doc_id}`)
+          .then(r => r.json())
+          .then((students: ExpectedStudent[]) => {
+            setExpectedStudents(prev => new Map(prev).set(data.doc_id, students));
+          })
+          .catch(() => {});
+      }
+    });
+
     es.onerror = () => setConnected(false);
     es.onopen = () => setConnected(true);
 
@@ -206,6 +271,14 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
     };
   }, [hotspotActive]);
 
+  // ── Reset scan tracker when session changes ──
+  const resetScanTracker = useCallback(() => {
+    setScanMatches([]);
+    setExpectedStudents(new Map());
+    setShowScanPanel(false);
+    setScanToasts([]);
+  }, []);
+
   // ── Create session from desktop ──
   const createSession = async () => {
     const sessionName = newClassName.trim() || 'Unnamed Session';
@@ -221,6 +294,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       setPhotos([]);
       setNewClassName('');
       setShowNewSession(false);
+      resetScanTracker();
     } catch {}
   };
 
@@ -300,6 +374,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
         setActiveSession(null);
         setPhotos([]);
         setSelectedPhoto(null);
+        resetScanTracker();
       }
     } catch {}
   };
@@ -451,6 +526,32 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               }}
             >
               {isGrading ? 'Grading...' : `Grade All (${photos.length})`}
+            </button>
+          )}
+
+          {/* Scan Tracker Badge */}
+          {gradeMode && scanMatches.length > 0 && (
+            <button
+              onClick={() => setShowScanPanel(prev => !prev)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px',
+                borderRadius: 20,
+                background: showScanPanel ? '#ede9fe' : '#f0fdf4',
+                border: `1px solid ${showScanPanel ? '#c4b5fd' : '#bbf7d0'}`,
+                cursor: 'pointer',
+                fontSize: 13,
+                fontWeight: 600,
+                color: showScanPanel ? '#7c3aed' : '#16a34a',
+                position: 'relative',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                <path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                <line x1="7" y1="12" x2="17" y2="12" />
+              </svg>
+              {scanMatches.length} scanned
             </button>
           )}
         </div>
@@ -634,6 +735,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   setPhotos(s.photos || []);
                   setShowNewSession(false);
                   setSelectedPhoto(null);
+                  resetScanTracker();
                 }}
                 onDelete={(e) => deleteSession(s, e)}
               />
@@ -873,7 +975,189 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             </div>
           </div>
         )}
+        {/* ── Scan Tracker Panel ── */}
+        {gradeMode && showScanPanel && scanMatches.length > 0 && !gradingResults && (
+          <div style={{
+            width: 360,
+            minWidth: 360,
+            background: 'white',
+            borderLeft: '1px solid #e2e8f0',
+            overflow: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <div style={{ padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>Scan Tracker</h3>
+                <button
+                  onClick={() => setShowScanPanel(false)}
+                  style={{
+                    width: 28, height: 28, borderRadius: 6,
+                    border: '1px solid #e2e8f0', background: 'white',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Summary */}
+              <div style={{
+                padding: 12, borderRadius: 8,
+                background: 'linear-gradient(135deg, #16a34a, #15803d)',
+                color: 'white', marginBottom: 16,
+              }}>
+                <div style={{ fontSize: 24, fontWeight: 700 }}>{scanMatches.length}</div>
+                <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>Documents Scanned</div>
+                <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
+                  {(() => {
+                    const docIds = new Set(scanMatches.map(m => m.doc_id));
+                    return `${docIds.size} unique document${docIds.size !== 1 ? 's' : ''}`;
+                  })()}
+                </div>
+              </div>
+
+              {/* Document groups */}
+              {(() => {
+                const groups = new Map<string, ScanMatch[]>();
+                for (const m of scanMatches) {
+                  const key = m.doc_id || 'unknown';
+                  if (!groups.has(key)) groups.set(key, []);
+                  groups.get(key)!.push(m);
+                }
+
+                return Array.from(groups.entries()).map(([docId, matches]) => {
+                  const first = matches[0];
+                  const expected = expectedStudents.get(docId) || [];
+                  const scannedIds = new Set(matches.map(m => m.student_id));
+                  const title = first.doc_title || docId;
+                  const subtitle = [first.doc_subject, first.doc_grade ? `Grade ${first.doc_grade}` : ''].filter(Boolean).join(' - ');
+                  const progressPct = expected.length > 0 ? Math.round((scannedIds.size / expected.length) * 100) : 0;
+
+                  return (
+                    <div key={docId} style={{
+                      marginBottom: 16, padding: 12, borderRadius: 8,
+                      border: '1px solid #e2e8f0', background: '#fafafa',
+                    }}>
+                      {/* Doc header */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span style={{
+                          padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                          background: first.doc_type === 'quiz' ? '#eff6ff' : '#f0fdf4',
+                          color: first.doc_type === 'quiz' ? '#2563eb' : '#16a34a',
+                          border: `1px solid ${first.doc_type === 'quiz' ? '#bfdbfe' : '#bbf7d0'}`,
+                        }}>
+                          {first.doc_type}
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {title}
+                          </div>
+                          {subtitle && <div style={{ fontSize: 11, color: '#64748b' }}>{subtitle}</div>}
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      {expected.length > 0 && (
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginBottom: 4 }}>
+                            <span>{scannedIds.size} of {expected.length} students</span>
+                            <span>{progressPct}%</span>
+                          </div>
+                          <div style={{ height: 6, borderRadius: 3, background: '#e2e8f0', overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%', borderRadius: 3,
+                              background: progressPct === 100 ? '#16a34a' : '#2563eb',
+                              width: `${progressPct}%`,
+                              transition: 'width 0.3s ease',
+                            }} />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Student list */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {/* Scanned students */}
+                        {matches.map((m, idx) => (
+                          <div key={`${m.student_id}-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            <span style={{ fontSize: 12, color: '#1e293b', fontWeight: 500 }}>
+                              {m.student_name || m.student_id}
+                            </span>
+                          </div>
+                        ))}
+
+                        {/* Pending students (not yet scanned) */}
+                        {expected
+                          .filter(s => !scannedIds.has(s.student_id))
+                          .map(s => (
+                            <div key={s.student_id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', opacity: 0.45 }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10" />
+                              </svg>
+                              <span style={{ fontSize: 12, color: '#64748b' }}>
+                                {s.full_name || s.student_id}
+                              </span>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* ── Scan Toast Notifications ── */}
+      {scanToasts.length > 0 && (
+        <div style={{
+          position: 'fixed', top: 16, right: 16,
+          display: 'flex', flexDirection: 'column', gap: 8,
+          zIndex: 1000, pointerEvents: 'none',
+        }}>
+          {scanToasts.map(toast => (
+            <div key={toast.id} style={{
+              padding: '10px 16px', borderRadius: 10,
+              background: 'white', border: '1px solid #bbf7d0',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              display: 'flex', alignItems: 'center', gap: 10,
+              animation: 'slideIn 0.3s ease',
+              minWidth: 280,
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 8,
+                background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                  <path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{toast.message}</div>
+                {toast.detail && <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{toast.detail}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Toast slide-in animation */}
+      <style>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(40px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -58,7 +58,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   searchFiles: (query, folders, extensions) => ipcRenderer.invoke('search-files', { query, folders, extensions }),
   createFolder: (folderPath) => ipcRenderer.invoke('create-folder', { folderPath }),
   moveFile: (sourcePath, destPath) => ipcRenderer.invoke('move-file', { sourcePath, destPath }),
-  moveFilesBatch: (moves) => ipcRenderer.invoke('move-files-batch', { moves })
+  moveFilesBatch: (moves) => ipcRenderer.invoke('move-files-batch', { moves }),
+
+  // Desktop notifications
+  showNotification: (title, body) =>
+    ipcRenderer.invoke('show-notification', { title, body })
 });
 
 // Expose IPC communication for splashscreen

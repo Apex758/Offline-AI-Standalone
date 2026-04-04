@@ -6388,6 +6388,31 @@ async def open_models_folder():
 
 
 # ============================================================================
+# HARDWARE-AWARE MODEL RECOMMENDATIONS
+# ============================================================================
+
+@app.get("/api/recommendations")
+async def get_model_recommendations():
+    """Return hardware-aware model recommendations based on system specs."""
+    try:
+        from metrics_service import _get_system_specs
+        from model_recommender import get_hardware_profile, recommend_models
+
+        specs = _get_system_specs()
+        hw_profile = get_hardware_profile(specs)
+
+        available_llms = scan_models_directory()
+        available_diffusion = scan_diffusion_models()
+        available_ocr = scan_ocr_models()
+
+        result = recommend_models(hw_profile, available_llms, available_diffusion, available_ocr, specs)
+        return result
+    except Exception as e:
+        logger.error(f"Error generating recommendations: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating recommendations: {str(e)}")
+
+
+# ============================================================================
 # DIFFUSION MODEL MANAGEMENT ENDPOINTS
 # ============================================================================
 

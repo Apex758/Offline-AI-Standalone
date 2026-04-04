@@ -1,8 +1,9 @@
 import sqlite3
 import uuid
 import os
+import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def _get_db_path() -> str:
@@ -68,6 +69,15 @@ def init_tables():
             CREATE INDEX IF NOT EXISTS idx_sye_date
             ON school_year_events(event_date)
         ''')
+        # Migrations for reminder columns
+        for col, definition in [
+            ('reminders_enabled', 'INTEGER DEFAULT 0'),
+            ('reminder_offsets',  "TEXT DEFAULT '[]'"),
+        ]:
+            try:
+                conn.execute(f'ALTER TABLE school_year_events ADD COLUMN {col} {definition}')
+            except Exception:
+                pass  # Column already exists
         conn.commit()
     finally:
         conn.close()
@@ -161,8 +171,9 @@ def save_event(data: dict) -> dict:
 
         conn.execute('''
             INSERT INTO school_year_events (id, config_id, teacher_id, title, description,
-                event_date, end_date, event_type, color, subject, grade_level, all_day, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                event_date, end_date, event_type, color, subject, grade_level, all_day,
+                reminders_enabled, reminder_offsets, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 title = excluded.title,
                 description = excluded.description,
@@ -172,7 +183,9 @@ def save_event(data: dict) -> dict:
                 color = excluded.color,
                 subject = excluded.subject,
                 grade_level = excluded.grade_level,
-                all_day = excluded.all_day
+                all_day = excluded.all_day,
+                reminders_enabled = excluded.reminders_enabled,
+                reminder_offsets = excluded.reminder_offsets
         ''', (
             event_id,
             data['config_id'],
@@ -186,6 +199,8 @@ def save_event(data: dict) -> dict:
             data.get('subject'),
             data.get('grade_level'),
             data.get('all_day', 1),
+            data.get('reminders_enabled', 0),
+            data.get('reminder_offsets', '[]'),
             now
         ))
         conn.commit()
@@ -236,3 +251,58 @@ def bulk_save_events(events: list[dict]) -> list[dict]:
     for event in events:
         results.append(save_event(event))
     return results
+
+
+# ── Reminder Logic ──
+
+OFFSET_LABELS = {
+    0:     'now',
+    30:    '30 minutes before',
+    60:    '1 hour before',
+    1440:  '1 day before',
+    10080: '1 week before',
+}
+
+
+def get_due_reminders(teacher_id: str, window_minutes: int = 1) -> list[dict]:
+    """Return reminders that should fire within [now - window, now + window]."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            '''SELECT id, title, event_type, event_date, reminder_offsets
+               FROM school_year_events
+               WHERE teacher_id = ? AND reminders_enabled = 1''',
+            (teacher_id,)
+        ).fetchall()
+    finally:
+        conn.close()
+
+    now = datetime.now()
+    window = timedelta(minutes=window_minutes)
+    due = []
+
+    for row in rows:
+        event_date_str = row['event_date']
+        try:
+            # Support both date-only (YYYY-MM-DD) and datetime strings
+            if 'T' in event_date_str or ' ' in event_date_str:
+                event_dt = datetime.fromisoformat(event_date_str.replace('Z', ''))
+            else:
+                event_dt = datetime.fromisoformat(event_date_str + 'T00:00:00')
+        except ValueError:
+            continue
+
+        offsets = json.loads(row['reminder_offsets'] or '[]')
+        for offset in offsets:
+            trigger_time = event_dt - timedelta(minutes=int(offset))
+            if abs((trigger_time - now).total_seconds()) <= window.total_seconds() * 60:
+                due.append({
+                    'event_id':      row['id'],
+                    'title':         row['title'],
+                    'event_type':    row['event_type'],
+                    'event_date':    event_date_str,
+                    'offset_minutes': int(offset),
+                    'trigger_label': OFFSET_LABELS.get(int(offset), f'{offset} min before'),
+                })
+
+    return due

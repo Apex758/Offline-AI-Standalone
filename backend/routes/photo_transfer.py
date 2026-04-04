@@ -265,13 +265,38 @@ async def upload_photo(
     }
     if qr_info:
         event_data["qr_data"] = qr_info
-        # Also send a separate match event for the UI
+        # Look up student name and doc metadata for richer UI feedback
+        student_name = ""
+        doc_title = ""
+        doc_subject = ""
+        doc_grade = ""
+        try:
+            import student_service
+            student = student_service.get_student(qr_info["student_id"])
+            if student:
+                student_name = student.get("full_name", "")
+            if qr_info["type"] == "quiz":
+                key = student_service.get_quiz_answer_key(qr_info["doc_id"])
+                doc_title = key.get("quiz_title", "") if key else ""
+            else:
+                key = student_service.get_worksheet_answer_key(qr_info["doc_id"])
+                doc_title = key.get("worksheet_title", "") if key else ""
+            if key:
+                doc_subject = key.get("subject", "")
+                doc_grade = key.get("grade_level", "")
+        except Exception as e:
+            logger.debug(f"Could not enrich photo_matched event: {e}")
+
         await _broadcast("photo_matched", {
             "session_id": session_id,
             "photo_id": photo_entry["id"],
             "student_id": qr_info["student_id"],
+            "student_name": student_name,
             "doc_type": qr_info["type"],
             "doc_id": qr_info["doc_id"],
+            "doc_title": doc_title,
+            "doc_subject": doc_subject,
+            "doc_grade": doc_grade,
         })
 
     await _broadcast("photo_uploaded", event_data)
@@ -708,6 +733,38 @@ async def serve_logo():
         if p.exists():
             return FileResponse(p, media_type="image/png")
     raise HTTPException(404, "Logo not found")
+
+
+@router.get("/doc-info/{doc_id}")
+async def get_doc_info(doc_id: str):
+    """Return title, subject, grade level for a quiz or worksheet by ID."""
+    try:
+        import student_service
+        key = student_service.get_quiz_answer_key(doc_id)
+        if key:
+            return {"doc_type": "quiz", "doc_id": doc_id, "title": key.get("quiz_title", ""),
+                    "subject": key.get("subject", ""), "grade_level": key.get("grade_level", "")}
+        key = student_service.get_worksheet_answer_key(doc_id)
+        if key:
+            return {"doc_type": "worksheet", "doc_id": doc_id, "title": key.get("worksheet_title", ""),
+                    "subject": key.get("subject", ""), "grade_level": key.get("grade_level", "")}
+    except Exception as e:
+        logger.warning(f"Could not look up doc info for {doc_id}: {e}")
+    return {"doc_type": "unknown", "doc_id": doc_id, "title": "", "subject": "", "grade_level": ""}
+
+
+@router.get("/doc-students/{doc_id}")
+async def get_doc_students(doc_id: str):
+    """Return the list of students who have printed instances for this document."""
+    try:
+        import student_service
+        instances = student_service.list_quiz_instances(doc_id)
+        if not instances:
+            instances = student_service.list_worksheet_instances(doc_id)
+        return [{"student_id": i["student_id"], "full_name": i.get("full_name", "")} for i in instances]
+    except Exception as e:
+        logger.warning(f"Could not look up doc students for {doc_id}: {e}")
+        return []
 
 
 @router.get("/hotspot/status")

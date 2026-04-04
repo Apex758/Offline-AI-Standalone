@@ -88,7 +88,9 @@
       "Bash(npm view:*)",
       "Bash(grep -l \"scan.grade\\\\|scan-grade\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)",
       "Bash(grep -n \"results.append\\\\|results\\\\\\\\.push\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/main.py\")",
-      "Bash(grep -l \"export-class-pack\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\"/*.tsx)"
+      "Bash(grep -l \"export-class-pack\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\"/*.tsx)",
+      "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/\"*.gguf)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

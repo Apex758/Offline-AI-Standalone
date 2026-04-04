@@ -49,6 +49,8 @@ interface SchoolYearEvent {
   subject: string | null;
   grade_level: string | null;
   all_day: number;
+  reminders_enabled: number;
+  reminder_offsets: string;
   created_at: string;
 }
 
@@ -111,6 +113,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     event_type: 'custom',
     subject: '',
     grade_level: '',
+    reminders_enabled: 0,
+    reminder_offsets: '[]',
   });
 
   // ── Data Loading ──
@@ -250,6 +254,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       event_type: type || 'custom',
       subject: '',
       grade_level: '',
+      reminders_enabled: 0,
+      reminder_offsets: '[]',
     });
     setShowEventForm(true);
   };
@@ -264,6 +270,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       event_type: event.event_type,
       subject: event.subject || '',
       grade_level: event.grade_level || '',
+      reminders_enabled: event.reminders_enabled ?? 0,
+      reminder_offsets: event.reminder_offsets ?? '[]',
     });
     setShowEventForm(true);
   };
@@ -281,6 +289,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
         event_type: eventForm.event_type,
         subject: eventForm.subject || null,
         grade_level: eventForm.grade_level || null,
+        reminders_enabled: eventForm.reminders_enabled,
+        reminder_offsets: eventForm.reminder_offsets,
       };
       if (editingEvent) {
         payload.id = editingEvent.id;
@@ -616,6 +626,52 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                   onChange={(e) => setEventForm({ ...eventForm, grade_level: e.target.value })}
                 />
               </label>
+              {/* Reminders */}
+              <div className="syc-form-label">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span>Reminders</span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={eventForm.reminders_enabled === 1}
+                      onChange={(e) =>
+                        setEventForm({ ...eventForm, reminders_enabled: e.target.checked ? 1 : 0, reminder_offsets: e.target.checked ? eventForm.reminder_offsets : '[]' })
+                      }
+                    />
+                    <span style={{ fontSize: '12px', fontWeight: 'normal' }}>Enable</span>
+                  </label>
+                </div>
+                {eventForm.reminders_enabled === 1 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '4px' }}>
+                    {([
+                      { label: 'At event time', value: 0 },
+                      { label: '30 minutes before', value: 30 },
+                      { label: '1 hour before', value: 60 },
+                      { label: '1 day before', value: 1440 },
+                      { label: '1 week before', value: 10080 },
+                    ] as const).map(({ label, value }) => {
+                      const offsets: number[] = JSON.parse(eventForm.reminder_offsets || '[]');
+                      const checked = offsets.includes(value);
+                      return (
+                        <label key={value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) => {
+                              const next = e.target.checked
+                                ? [...offsets, value]
+                                : offsets.filter((o) => o !== value);
+                              setEventForm({ ...eventForm, reminder_offsets: JSON.stringify(next) });
+                            }}
+                          />
+                          {label}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               <div className="syc-form-actions">
                 <button className="syc-btn-primary" onClick={handleSaveEvent}>
                   <HugeiconsIcon icon={Tick01IconData} size={14} />

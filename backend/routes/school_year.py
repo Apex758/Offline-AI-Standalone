@@ -34,6 +34,8 @@ class SchoolYearEventCreate(BaseModel):
     subject: Optional[str] = None
     grade_level: Optional[str] = None
     all_day: int = 1
+    reminders_enabled: int = 0
+    reminder_offsets: Optional[str] = '[]'
 
 
 class BulkEventsCreate(BaseModel):
@@ -136,4 +138,16 @@ async def delete_event(event_id: str):
         raise
     except Exception as e:
         logger.error(f"Failed to delete event: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Reminder Endpoints ──
+
+@router.get("/reminders/due")
+async def get_due_reminders(teacher_id: str):
+    try:
+        reminders = school_year_service.get_due_reminders(teacher_id)
+        return {"reminders": reminders}
+    except Exception as e:
+        logger.error(f"Failed to get due reminders: {e}")
         raise HTTPException(status_code=500, detail=str(e))

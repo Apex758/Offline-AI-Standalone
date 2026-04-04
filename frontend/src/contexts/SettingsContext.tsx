@@ -74,6 +74,22 @@ export const DEFAULT_SIDEBAR_ORDER: SidebarItemConfig[] = [
 // All valid reorderable IDs
 const CANONICAL_IDS = DEFAULT_SIDEBAR_ORDER.map(i => i.id);
 
+export interface NotificationPreferences {
+  desktopEnabled: boolean;
+  inAppEnabled: boolean;
+  quietHoursEnabled: boolean;
+  quietHoursStart: string;   // "HH:MM"
+  quietHoursEnd: string;     // "HH:MM"
+  persistentDesktop: boolean;
+  enabledEventTypes: {
+    exam: boolean;
+    midterm: boolean;
+    grading_deadline: boolean;
+    report_card: boolean;
+    custom: boolean;
+  };
+}
+
 export interface Settings {
   fontSize: number; // Percentage (100 = default)
   tabColors: TabColors;
@@ -112,6 +128,8 @@ export interface Settings {
   warmToneEnabled: boolean;
   // Trophy showcase
   showTrophiesByDefault: boolean;
+  // Notifications & reminders
+  notifications: NotificationPreferences;
 }
 
 export interface SettingsContextValue {
@@ -211,6 +229,22 @@ export const DEFAULT_SETTINGS: Settings = {
   warmToneEnabled: false,
   // Trophy showcase
   showTrophiesByDefault: false,
+  // Notifications & reminders
+  notifications: {
+    desktopEnabled: true,
+    inAppEnabled: true,
+    quietHoursEnabled: false,
+    quietHoursStart: '22:00',
+    quietHoursEnd: '07:00',
+    persistentDesktop: false,
+    enabledEventTypes: {
+      exam: true,
+      midterm: true,
+      grading_deadline: true,
+      report_card: true,
+      custom: true,
+    },
+  },
 };
 
 // localStorage key

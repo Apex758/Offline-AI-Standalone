@@ -236,7 +236,7 @@ interface ModelInfo {
 
 const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
-  const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, supportsThinking, dualModel, refreshCapabilities } = useCapabilities();
+  const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, supportsThinking, dualModel, refreshCapabilities, recommendations } = useCapabilities();
   const { getActiveStreams } = useWebSocket();
   const { queue } = useQueue();
   const FEATURE_MODULE_LIST = FEATURE_MODULES;
@@ -1965,6 +1965,55 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <p className="text-sm text-theme-muted mt-1">Manage language and image generation models</p>
                 </div>
 
+                {/* Hardware Tier Banner */}
+                {recommendations && (
+                  <div className={`rounded-xl border p-4 ${
+                    recommendations.hardware_tier === 'ultra' ? 'bg-purple-50 border-purple-200 dark:bg-purple-950/30 dark:border-purple-800' :
+                    recommendations.hardware_tier === 'high'  ? 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800' :
+                    recommendations.hardware_tier === 'mid'   ? 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800' :
+                                                                'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800'
+                  }`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                            recommendations.hardware_tier === 'ultra' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                            recommendations.hardware_tier === 'high'  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                            recommendations.hardware_tier === 'mid'   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                                                        'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+                          }`}>
+                            {recommendations.hardware_label} Hardware
+                          </span>
+                          <span className="text-xs text-theme-muted">
+                            {recommendations.ram_gb.toFixed(0)} GB RAM
+                            {recommendations.has_gpu && recommendations.vram_mb > 0
+                              ? ` · ${(recommendations.vram_mb / 1024).toFixed(0)} GB VRAM (${recommendations.gpu_name ?? 'GPU'})`
+                              : ' · CPU-only'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-theme-hint mt-1">{recommendations.hardware_description}</p>
+                        {recommendations.warnings.length > 0 && (
+                          <ul className="mt-2 space-y-1">
+                            {recommendations.warnings.map((w, i) => (
+                              <li key={i} className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
+                                <span className="mt-px shrink-0">⚠</span>
+                                <span>{w}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <span className={`shrink-0 text-xs font-bold px-2 py-1 rounded-md ${
+                        recommendations.supported_capability_tier === 3 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                        recommendations.supported_capability_tier === 2 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                                                                          'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      }`}>
+                        Tier {recommendations.supported_capability_tier} Ready
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Language Model */}
                 <Card data-search-section="ai-model">
                   <CardHeader>
@@ -1992,7 +2041,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           ) : (
                             availableModels.map((model) => (
                               <option key={model.name} value={model.name}>
-                                {model.name} ({model.size_mb.toFixed(2)} MB)
+                                {model.name} ({model.size_mb.toFixed(2)} MB){recommendations?.recommended_llm?.name === model.name ? ' ★ Recommended' : ''}
                               </option>
                             ))
                           )}
@@ -2008,6 +2057,39 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           {loadingModels ? <HeartbeatLoader className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
                         </Button>
                       </div>
+
+                      {/* Recommended LLM callout */}
+                      {recommendations?.recommended_llm && selectedModel !== recommendations.recommended_llm.name && !loadingModels && (
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
+                          <span className="text-blue-500 mt-0.5 shrink-0 text-base">★</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Recommended for your hardware</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 break-words">{recommendations.recommended_llm.name}</p>
+                            <p className="text-xs text-blue-500 dark:text-blue-500 mt-0.5">{recommendations.recommended_llm.reason}</p>
+                          </div>
+                          <button
+                            onClick={() => handleModelSelect(recommendations.recommended_llm!.name)}
+                            disabled={isSelectingModel}
+                            className="shrink-0 text-xs px-2.5 py-1 rounded-md bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 font-medium transition-colors disabled:opacity-50"
+                          >
+                            Switch
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Incompatibility warning for currently selected LLM */}
+                      {recommendations?.llm_compatibility && selectedModel && recommendations.llm_compatibility[selectedModel] && !recommendations.llm_compatibility[selectedModel].comfortable && !loadingModels && (
+                        <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
+                          <span className="text-amber-500 mt-0.5 shrink-0">⚠</span>
+                          <p className="text-xs text-amber-700 dark:text-amber-400">
+                            {recommendations.llm_compatibility[selectedModel].fits
+                              ? `This model (~${recommendations.llm_compatibility[selectedModel].estimated_ram_gb} GB) uses most of your available RAM. Performance may be reduced.`
+                              : `This model (~${recommendations.llm_compatibility[selectedModel].estimated_ram_gb} GB) may exceed your available RAM (${recommendations.ram_gb.toFixed(0)} GB).${recommendations.recommended_llm ? ` Consider ${recommendations.recommended_llm.name} instead.` : ''}`
+                            }
+                          </p>
+                        </div>
+                      )}
+
                       {modelChangeMessage && (
                         <div className={`mt-2 p-3 rounded-lg text-sm ${
                           modelChangeMessage.startsWith('\u2705')
@@ -2116,7 +2198,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                               <option value="">None (disabled)</option>
                               {availableDiffusionModels.map((model) => (
                                 <option key={model.name} value={model.name}>
-                                  {model.name} ({model.size_mb.toFixed(0)} MB)
+                                  {model.name} ({model.size_mb.toFixed(0)} MB){recommendations?.recommended_diffusion?.name === model.name ? ' ★ Recommended' : ''}
                                 </option>
                               ))}
                             </>
@@ -2133,6 +2215,26 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           {loadingDiffusionModels ? <HeartbeatLoader className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
                         </Button>
                       </div>
+
+                      {/* Recommended diffusion model callout */}
+                      {recommendations?.recommended_diffusion && selectedDiffusionModel !== recommendations.recommended_diffusion.name && availableDiffusionModels.length > 0 && !loadingDiffusionModels && (
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
+                          <span className="text-blue-500 mt-0.5 shrink-0 text-base">★</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Recommended for your hardware</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 break-words">{recommendations.recommended_diffusion.name}</p>
+                            <p className="text-xs text-blue-500 dark:text-blue-500 mt-0.5">{recommendations.recommended_diffusion.reason}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDiffusionModelSelect(recommendations.recommended_diffusion!.name)}
+                            disabled={isSelectingDiffusionModel}
+                            className="shrink-0 text-xs px-2.5 py-1 rounded-md bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 font-medium transition-colors disabled:opacity-50"
+                          >
+                            Switch
+                          </button>
+                        </div>
+                      )}
+
                       {diffusionModelChangeMessage && (
                         <div className={`mt-2 p-3 rounded-lg text-sm ${
                           diffusionModelChangeMessage.startsWith('Model changed')
@@ -2201,6 +2303,18 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
                         />
                       </label>
+
+                      {/* OCR hardware compatibility note */}
+                      {recommendations?.recommended_ocr && (
+                        <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs ${
+                          recommendations.recommended_ocr.compatible
+                            ? 'bg-green-50 border border-green-200 text-green-700 dark:bg-green-950/30 dark:border-green-800 dark:text-green-400'
+                            : 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-400'
+                        }`}>
+                          <span className="mt-px shrink-0">{recommendations.recommended_ocr.compatible ? '✓' : '⚠'}</span>
+                          <span>{recommendations.recommended_ocr.reason}</span>
+                        </div>
+                      )}
 
                       {ocrEnabled && availableOcrModels.length > 0 && (
                         <div className="flex gap-2">
@@ -2873,6 +2987,159 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
                         />
                       </label>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Notifications & Reminders */}
+                <Card data-search-section="notifications">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <svg className="w-4.5 h-4.5 text-theme-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      Notifications &amp; Reminders
+                    </CardTitle>
+                    <CardDescription>Control how and when you receive reminders for calendar events</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-1">
+
+                      {/* Desktop notifications */}
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <svg className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H4a2 2 0 01-2-2V6a2 2 0 012-2h16a2 2 0 012 2v9a2 2 0 01-2 2h-1" />
+                          </svg>
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Desktop Notifications</p>
+                            <p className="text-xs text-theme-hint">Show Windows toast notifications for upcoming events</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications?.desktopEnabled ?? true}
+                          onChange={(e) => updateSettings({ notifications: { ...settings.notifications, desktopEnabled: e.target.checked } })}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
+
+                      {/* In-app notifications */}
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <svg className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">In-App Notifications</p>
+                            <p className="text-xs text-theme-hint">Show reminder toasts inside the app</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications?.inAppEnabled ?? true}
+                          onChange={(e) => updateSettings({ notifications: { ...settings.notifications, inAppEnabled: e.target.checked } })}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
+
+                      {/* Persistent desktop */}
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <svg className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Persistent In-App Alerts</p>
+                            <p className="text-xs text-theme-hint">Keep reminder toasts on screen until you dismiss them manually</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications?.persistentDesktop ?? false}
+                          onChange={(e) => updateSettings({ notifications: { ...settings.notifications, persistentDesktop: e.target.checked } })}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
+
+                      {/* Quiet hours */}
+                      <div className="p-3 rounded-lg">
+                        <label className="flex items-center justify-between gap-3 cursor-pointer">
+                          <div className="flex items-start gap-3">
+                            <svg className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                            <div>
+                              <p className="text-sm font-medium text-theme-label">Quiet Hours</p>
+                              <p className="text-xs text-theme-hint">Suppress reminders during these hours</p>
+                            </div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={settings.notifications?.quietHoursEnabled ?? false}
+                            onChange={(e) => updateSettings({ notifications: { ...settings.notifications, quietHoursEnabled: e.target.checked } })}
+                            className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                          />
+                        </label>
+                        {settings.notifications?.quietHoursEnabled && (
+                          <div className="mt-3 ml-7 flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-theme-hint">From</span>
+                              <input
+                                type="time"
+                                value={settings.notifications?.quietHoursStart ?? '22:00'}
+                                onChange={(e) => updateSettings({ notifications: { ...settings.notifications, quietHoursStart: e.target.value } })}
+                                className="text-sm px-2 py-1 rounded border border-theme-strong bg-theme-surface text-theme-label"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-theme-hint">To</span>
+                              <input
+                                type="time"
+                                value={settings.notifications?.quietHoursEnd ?? '07:00'}
+                                onChange={(e) => updateSettings({ notifications: { ...settings.notifications, quietHoursEnd: e.target.value } })}
+                                className="text-sm px-2 py-1 rounded border border-theme-strong bg-theme-surface text-theme-label"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Event type filters */}
+                      <div className="p-3 rounded-lg">
+                        <p className="text-sm font-medium text-theme-label mb-2">Notify me for</p>
+                        <div className="space-y-1 ml-1">
+                          {([
+                            { key: 'exam',             label: 'Exams',             color: '#E53E3E' },
+                            { key: 'midterm',          label: 'Midterms',          color: '#3B82F6' },
+                            { key: 'grading_deadline', label: 'Grading Deadlines', color: '#F2A631' },
+                            { key: 'report_card',      label: 'Report Cards',      color: '#8B5CF6' },
+                            { key: 'custom',           label: 'Custom Events',     color: '#0D9488' },
+                          ] as const).map(({ key, label, color }) => (
+                            <label key={key} className="flex items-center gap-3 cursor-pointer py-1">
+                              <input
+                                type="checkbox"
+                                checked={settings.notifications?.enabledEventTypes?.[key] ?? true}
+                                onChange={(e) => updateSettings({
+                                  notifications: {
+                                    ...settings.notifications,
+                                    enabledEventTypes: {
+                                      ...settings.notifications?.enabledEventTypes,
+                                      [key]: e.target.checked,
+                                    },
+                                  },
+                                })}
+                                className="w-4 h-4 rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                              />
+                              <span className="flex items-center gap-2 text-sm text-theme-label">
+                                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                                {label}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
                     </div>
                   </CardContent>
                 </Card>

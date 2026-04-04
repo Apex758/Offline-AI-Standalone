@@ -174,6 +174,8 @@ IMAGE_MODEL_REGISTRY = {
         "guidance":    0.0,
         "supports_negative_prompt": True,
         "supports_img2img":        True,
+        "ram_required_gb":  6,
+        "vram_required_mb": 0,   # CPU-only via OpenVINO
     },
     "sdxl-turbo-int8": {
         "folder":      "sdxl-turbo-int8",
@@ -185,6 +187,8 @@ IMAGE_MODEL_REGISTRY = {
         "max_height":  512,
         "supports_negative_prompt": True,
         "supports_img2img":        True,
+        "ram_required_gb":  4,
+        "vram_required_mb": 0,   # CPU-only via OpenVINO INT8
     },
     "flux-schnell": {
         "folder":      "flux-schnell",
@@ -194,6 +198,8 @@ IMAGE_MODEL_REGISTRY = {
         "guidance":    0.0,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
+        "ram_required_gb":  8,
+        "vram_required_mb": 0,   # OpenVINO INT4, CPU-optimized
     },
     "flux-schnell-gguf-q5": {
         "folder":      "flux-schnell-gguf",
@@ -204,6 +210,8 @@ IMAGE_MODEL_REGISTRY = {
         "guidance":    1.0,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
+        "ram_required_gb":  12,
+        "vram_required_mb": 8192,  # benefits from GPU VRAM
     },
     "flux-schnell-gguf-q4": {
         "folder":      "flux-schnell-gguf",
@@ -214,6 +222,8 @@ IMAGE_MODEL_REGISTRY = {
         "guidance":    1.0,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
+        "ram_required_gb":  10,
+        "vram_required_mb": 6144,
     },
 }
 

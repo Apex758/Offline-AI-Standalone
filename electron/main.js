@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, shell, Notification } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -793,6 +793,15 @@ ipcMain.handle('set-start-on-boot', (event, enabled) => {
     openAtLogin: enabled,
     path: app.getPath('exe')
   });
+  return true;
+});
+
+// IPC: show Windows desktop notification
+ipcMain.handle('show-notification', (event, { title, body }) => {
+  if (Notification.isSupported()) {
+    const n = new Notification({ title, body, silent: false });
+    n.show();
+  }
   return true;
 });
 

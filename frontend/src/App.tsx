@@ -11,6 +11,7 @@ import { TabBusyProvider } from './contexts/TabBusyContext';
 import { StickyNoteProvider } from './contexts/StickyNoteContext';
 import { CapabilitiesProvider } from './contexts/CapabilitiesContext';
 import { LicenseProvider } from './contexts/LicenseContext';
+import { ReminderProvider } from './contexts/ReminderContext';
 import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
@@ -80,6 +81,7 @@ function App() {
         <SettingsProvider>
           <CapabilitiesProvider>
             <NotificationProvider>
+              <ReminderProvider>
               <EngineStatusProvider>
               <WebSocketProvider>
                 <QueueProvider>
@@ -92,6 +94,7 @@ function App() {
                 </QueueProvider>
               </WebSocketProvider>
               </EngineStatusProvider>
+              </ReminderProvider>
             </NotificationProvider>
           </CapabilitiesProvider>
         </SettingsProvider>
