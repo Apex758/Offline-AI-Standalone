@@ -501,31 +501,43 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
     setAnalyzerError(null);
     try {
       const res = await axios.get(`${API}/generate-tier-analyzer`, {
-        responseType: 'blob',
+        responseType: 'arraybuffer',
         timeout: 200_000,
       });
       const disposition = res.headers['content-disposition'] || '';
       const match = disposition.match(/filename="?([^"]+)"?/);
       const filename = match ? match[1] : 'OLH_Tier_Analyzer.exe';
-      const url = URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+
+      // Use Electron's Node.js fs layer to write the file directly —
+      // this bypasses the browser download pipeline so Windows never
+      // adds a Zone.Identifier stream, meaning no SmartScreen warning.
+      const electronAPI = (window as any).electronAPI;
+      if (electronAPI?.downloadFile) {
+        const result = await electronAPI.downloadFile(res.data, filename);
+        if (!result?.success) {
+          throw new Error(result?.message || 'Save cancelled');
+        }
+      } else {
+        // Fallback for non-Electron contexts (browser dev)
+        const blob = new Blob([res.data]);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
       setAnalyzerStatus('done');
       setTimeout(() => setAnalyzerStatus('idle'), 4000);
     } catch (err: any) {
       console.error('Analyzer generation failed:', err);
       let msg = 'Build failed.';
       try {
-        const blob: Blob = err?.response?.data;
-        if (blob instanceof Blob) {
-          const text = await blob.text();
+        if (err?.response?.data) {
+          const text = new TextDecoder().decode(err.response.data);
           const parsed = JSON.parse(text);
           if (parsed?.detail) msg = parsed.detail;
-        } else if (err?.response?.data?.detail) {
-          msg = err.response.data.detail;
         } else if (err?.message) {
           msg = err.message;
         }

@@ -223,19 +223,21 @@ def _score(tier_num, specs):
 
 # ── GUI ──────────────────────────────────────────────────────────────────────
 
-# Palette
-BG       = "#0f1117"
-SURFACE  = "#1a1d27"
-BORDER   = "#2a2d3a"
-ACCENT   = "#6366f1"
-GREEN    = "#22c55e"
+# Palette — matches the app's warm dark theme
+BG       = "#211f1d"
+SURFACE  = "#2a2926"
+SURFACE2 = "#2f2d2a"
+BORDER   = "#3d3b37"
+ACCENT   = "#63d72a"   # app green accent
+GREEN    = "#63d72a"
 RED      = "#ef4444"
 YELLOW   = "#f59e0b"
-MUTED    = "#6b7280"
-TEXT     = "#f1f5f9"
-TEXT_DIM = "#94a3b8"
+MUTED    = "#8a8884"
+TEXT     = "#f9f8f6"
+TEXT_DIM = "#a8a6a2"
+TEXT_SEC = "#d5d4d1"
 
-TIER_COLORS = {1: "#3b82f6", 2: "#8b5cf6", 3: "#f59e0b", 4: "#10b981"}
+TIER_COLORS = {1: "#63d72a", 2: "#3b82f6", 3: "#f59e0b", 4: "#8b5cf6"}
 
 
 def _bar(pct, width=18):
@@ -281,12 +283,13 @@ def build_window(specs, results, best_tier):
     wrap.pack(fill="both", expand=True)
 
     # ── Header ───────────────────────────────────────────────────────────
-    hdr = frame(wrap, bg=ACCENT, pad=0)
+    hdr = frame(wrap, bg=SURFACE2, pad=0)
     hdr.pack(fill="x")
-    hdr_inner = frame(hdr, bg=ACCENT, pad=0)
+    tk.Frame(hdr, bg=ACCENT, height=3).pack(fill="x")   # green top stripe
+    hdr_inner = frame(hdr, bg=SURFACE2, pad=0)
     hdr_inner.pack(padx=20, pady=12)
-    lbl(hdr_inner, "OECS Learning Hub", fg="white", bg=ACCENT, f=F_HEAD).pack(anchor="w")
-    lbl(hdr_inner, "Tier Analyzer — System Compatibility Report", fg="#e0e7ff", bg=ACCENT, f=F_SUB).pack(anchor="w")
+    lbl(hdr_inner, "OECS Learning Hub", fg=ACCENT, bg=SURFACE2, f=F_HEAD).pack(anchor="w")
+    lbl(hdr_inner, "Tier Analyzer — System Compatibility Report", fg=TEXT_DIM, bg=SURFACE2, f=F_SUB).pack(anchor="w")
 
     content = frame(wrap, bg=BG, pad=0)
     content.pack(fill="both", expand=True, padx=20, pady=16)
@@ -294,11 +297,11 @@ def build_window(specs, results, best_tier):
     # ── System specs ─────────────────────────────────────────────────────
     spec_frame = tk.Frame(content, bg=SURFACE, highlightbackground=BORDER,
                           highlightthickness=1)
-    spec_frame.pack(fill="x", pady=(0, 12))
+    spec_frame.pack(fill="x", pady=(0, 10))
     sf = frame(spec_frame, bg=SURFACE, pad=0)
     sf.pack(padx=14, pady=10, fill="x")
 
-    lbl(sf, "System Specs", fg=TEXT_DIM, bg=SURFACE, f=F_LABEL).pack(anchor="w", pady=(0, 6))
+    lbl(sf, "SYSTEM SPECS", fg=MUTED, bg=SURFACE, f=F_LABEL).pack(anchor="w", pady=(0, 6))
 
     spec_grid = frame(sf, bg=SURFACE)
     spec_grid.pack(fill="x")
@@ -307,7 +310,7 @@ def build_window(specs, results, best_tier):
         row = frame(parent, bg=SURFACE)
         row.pack(fill="x", pady=1)
         lbl(row, f"{label:<12}", fg=MUTED, bg=SURFACE, f=F_MONO).pack(side="left")
-        lbl(row, value, fg=TEXT, bg=SURFACE, f=F_MONO).pack(side="left")
+        lbl(row, value, fg=TEXT_SEC, bg=SURFACE, f=F_MONO).pack(side="left")
 
     spec_row(spec_grid, "OS",        f"{specs['os']} ({specs['arch']})")
     spec_row(spec_grid, "CPU",       specs["cpu"][:52])
@@ -323,11 +326,11 @@ def build_window(specs, results, best_tier):
     # ── Tier results ─────────────────────────────────────────────────────
     tier_frame = tk.Frame(content, bg=SURFACE, highlightbackground=BORDER,
                           highlightthickness=1)
-    tier_frame.pack(fill="x", pady=(0, 12))
+    tier_frame.pack(fill="x", pady=(0, 10))
     tf = frame(tier_frame, bg=SURFACE, pad=0)
     tf.pack(padx=14, pady=10, fill="x")
 
-    lbl(tf, "Tier Scores", fg=TEXT_DIM, bg=SURFACE, f=F_LABEL).pack(anchor="w", pady=(0, 8))
+    lbl(tf, "TIER SCORES", fg=MUTED, bg=SURFACE, f=F_LABEL).pack(anchor="w", pady=(0, 8))
 
     for t in [1, 2, 3, 4]:
         passed, pct, missing = results[t]
@@ -363,7 +366,7 @@ def build_window(specs, results, best_tier):
                 lbl(miss_row, f"↳ {m}", fg=YELLOW, bg=SURFACE, f=F_MONO).pack(anchor="w")
 
     # ── Recommendation ────────────────────────────────────────────────────
-    rec_bg = SURFACE
+    rec_bg = SURFACE2
     rec_frame = tk.Frame(content, bg=rec_bg, highlightbackground=ACCENT,
                          highlightthickness=2)
     rec_frame.pack(fill="x", pady=(0, 16))
@@ -403,7 +406,7 @@ def build_window(specs, results, best_tier):
     close_btn = tk.Button(
         btn_frame, text="Close",
         command=root.destroy,
-        bg=ACCENT, fg="white", activebackground="#4f46e5",
+        bg=ACCENT, fg="#1a1a1a", activebackground="#4fc31a",
         relief="flat", padx=24, pady=8, cursor="hand2",
         font=F_LABEL, bd=0,
     )
