@@ -565,7 +565,9 @@ DEFAULT_TIER_CONFIG = {
     "tier1_models": ["PEARL_AI.gguf"],
     "tier2_models": [],
     "ocr_models": ["PaddleOCR-VL-1.5-Q4_K_M"],
-    "tier3_diffusion_models": ["sdxl-turbo-openvino", "sdxl-turbo-int8", "flux-schnell", "flux-schnell-gguf-q5", "flux-schnell-gguf-q4"],
+    "tier2_diffusion_models": ["sdxl-turbo-int8"],
+    "tier3_diffusion_models": ["sdxl-turbo-openvino"],
+    "tier4_diffusion_models": ["flux-schnell", "flux-schnell-gguf-q5", "flux-schnell-gguf-q4"],
     "dual_model": {
         "enabled": False,
         "fast_model": None,
@@ -667,14 +669,24 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     has_ocr_model = ocr_main.exists() and len(ocr_mmproj_matches) > 0
     has_ocr = has_ocr_model and get_ocr_enabled()
 
-    # Diffusion check
+    # Diffusion check - tier based on model quality class
     diffusion_model = get_selected_diffusion_model()
-    diffusion_models_list = tier_config.get("tier3_diffusion_models", [])
+    tier2_diff = tier_config.get("tier2_diffusion_models", [])
+    tier3_diff = tier_config.get("tier3_diffusion_models", [])
+    tier4_diff = tier_config.get("tier4_diffusion_models", [])
+    all_diffusion = tier2_diff + tier3_diff + tier4_diff
     available_diffusion = scan_diffusion_models()
-    has_diffusion = (
-        diffusion_model in diffusion_models_list
-        and any(m["name"] == diffusion_model for m in available_diffusion)
-    )
+    available_names = {m["name"] for m in available_diffusion}
+    has_diffusion = diffusion_model in all_diffusion and diffusion_model in available_names
+
+    diffusion_tier = 0
+    if has_diffusion:
+        if diffusion_model in tier4_diff:
+            diffusion_tier = 4
+        elif diffusion_model in tier3_diff:
+            diffusion_tier = 3
+        else:
+            diffusion_tier = 2
 
     # LaMa inpainting model check
     has_lama = LAMA_MODEL_PATH.exists()
@@ -687,8 +699,8 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     tier = llm_tier
     if has_vision:
         tier = max(tier, 2)
-    if has_diffusion:
-        tier = max(tier, 3)
+    if diffusion_tier > 0:
+        tier = max(tier, diffusion_tier)
 
     # Dual model info
     dual_model = tier_config.get("dual_model", DEFAULT_TIER_CONFIG["dual_model"])
@@ -709,6 +721,7 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
         "has_vision": has_vision,
         "has_ocr": has_ocr,
         "has_diffusion": has_diffusion,
+        "diffusion_tier": diffusion_tier,
         "has_lama": has_lama,
         "has_ocr_model": has_ocr_model,
         "selected_llm": selected_llm,

@@ -37,8 +37,8 @@ from tkinter import ttk, font as tkfont
 # ── Tier requirements ────────────────────────────────────────────────────────
 TIER_REQUIREMENTS = {
     1: {
-        "name": "Text Only",
-        "description": "AI lesson generation, quiz & worksheet creation",
+        "name": "Essentials",
+        "description": "AI lesson planning, quizzes & worksheets",
         "ram_gb": 4,
         "cpu_cores": 4,
         "gpu_vram_gb": 0,
@@ -47,30 +47,30 @@ TIER_REQUIREMENTS = {
     },
     2: {
         "name": "Vision",
-        "description": "Scan grading, image understanding, handwriting recognition",
+        "description": "Scan grading, image understanding & handwriting recognition",
         "ram_gb": 8,
         "cpu_cores": 6,
         "gpu_vram_gb": 0,
         "disk_free_gb": 8,
-        "models": "Gemma 4 E2B Vision",
+        "models": "Gemma 4 Vision 2B",
     },
     3: {
-        "name": "Vision + Image Gen",
-        "description": "All Vision features plus AI image generation",
+        "name": "Vision + Image Studio",
+        "description": "All Vision features plus fast AI image generation",
         "ram_gb": 12,
         "cpu_cores": 8,
         "gpu_vram_gb": 4,
         "disk_free_gb": 20,
-        "models": "Gemma 4 E4B Vision · SDXL-Turbo · FLUX Schnell",
+        "models": "Gemma 4 Vision · SDXL Turbo",
     },
     4: {
-        "name": "Full Suite",
-        "description": "Complete AI suite with advanced 7B vision model",
+        "name": "Vision + Flux",
+        "description": "All Vision features plus high-quality AI image generation",
         "ram_gb": 16,
         "cpu_cores": 8,
         "gpu_vram_gb": 8,
         "disk_free_gb": 40,
-        "models": "Qwen 2.5 VL 7B · FLUX Schnell",
+        "models": "Qwen 2.5 Vision 7B · Flux Schnell",
     },
 }
 
