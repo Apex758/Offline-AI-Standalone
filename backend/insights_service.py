@@ -188,11 +188,24 @@ def aggregate_curriculum_data(teacher_id: str = "default", from_date: str | None
 
     lines.append("")
     lines.append("Breakdown by grade/subject:")
-    for b in breakdown:
-        b_total = b.get("total", 0)
-        b_completed = b.get("completed", 0)
-        b_pct = round(b_completed / b_total * 100) if b_total else 0
-        lines.append(f"- {b.get('grade', '?')} {b.get('subject', '?')}: {b_completed}/{b_total} ({b_pct}%)")
+    if len(breakdown) <= 10:
+        # Small enough — show all
+        for b in breakdown:
+            b_total = b.get("total", 0)
+            b_completed = b.get("completed", 0)
+            b_pct = round(b_completed / b_total * 100) if b_total else 0
+            lines.append(f"- {b.get('grade', '?')} {b.get('subject', '?')}: {b_completed}/{b_total} ({b_pct}%)")
+    else:
+        # Balanced mix: 4 lowest + 4 highest so insights cover both gaps and wins
+        sorted_bd = sorted(breakdown, key=lambda b: (b.get("completed", 0) / max(b.get("total", 1), 1)))
+        selected = sorted_bd[:4] + sorted_bd[-4:]
+        lines.append("(Showing top 4 strongest and 4 weakest areas)")
+        for b in selected:
+            b_total = b.get("total", 0)
+            b_completed = b.get("completed", 0)
+            b_pct = round(b_completed / b_total * 100) if b_total else 0
+            lines.append(f"- {b.get('grade', '?')} {b.get('subject', '?')}: {b_completed}/{b_total} ({b_pct}%)")
+        lines.append(f"  ... and {len(breakdown) - 8} more grade/subject combos")
 
     if gaps:
         lines.append(f"\nGaps (under 20% completion): {', '.join(gaps)}")
@@ -300,8 +313,17 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
             "",
             "Average by subject:"
         ])
-        for s in by_subject:
-            lines.append(f"- {s['subject']}: {s['avg']}% ({s['count']} assessments)")
+        if len(by_subject) <= 10:
+            for s in by_subject:
+                lines.append(f"- {s['subject']}: {s['avg']}% ({s['count']} assessments)")
+        else:
+            # Balanced: 4 lowest avg + 4 highest avg so insights cover struggles and strengths
+            sorted_subjects = sorted(by_subject, key=lambda s: s['avg'])
+            selected = sorted_subjects[:4] + sorted_subjects[-4:]
+            lines.append("(Showing 4 strongest and 4 weakest subjects)")
+            for s in selected:
+                lines.append(f"- {s['subject']}: {s['avg']}% ({s['count']} assessments)")
+            lines.append(f"  ... and {len(by_subject) - 8} more subjects")
 
         return {
             "has_data": True,
@@ -509,9 +531,19 @@ def aggregate_attendance_engagement(from_date: str | None = None, to_date: str |
 
         if class_records:
             lines.append("\nBy class:")
-            for cls, data in sorted(class_records.items()):
-                rate = round(data["present"] / data["total"] * 100, 1) if data["total"] else 0
-                lines.append(f"- {cls}: {rate}% attendance ({data['total']} records)")
+            if len(class_records) <= 10:
+                for cls, data in sorted(class_records.items()):
+                    rate = round(data["present"] / data["total"] * 100, 1) if data["total"] else 0
+                    lines.append(f"- {cls}: {rate}% attendance ({data['total']} records)")
+            else:
+                # Balanced: 4 lowest rate + 4 highest rate so insights cover both concerns and wins
+                sorted_classes = sorted(class_records.items(), key=lambda x: x[1]["present"] / max(x[1]["total"], 1))
+                selected = sorted_classes[:4] + sorted_classes[-4:]
+                lines.append("(Showing 4 best and 4 worst attendance classes)")
+                for cls, data in selected:
+                    rate = round(data["present"] / data["total"] * 100, 1) if data["total"] else 0
+                    lines.append(f"- {cls}: {rate}% attendance ({data['total']} records)")
+                lines.append(f"  ... and {len(class_records) - 8} more classes")
 
         return {
             "has_data": True,

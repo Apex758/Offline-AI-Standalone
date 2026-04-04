@@ -3368,12 +3368,16 @@ async def educator_insights_websocket(websocket: WebSocket):
                         )
 
                 elif pass_key == "recommendations":
-                    # Combine outputs from passes 1-5
+                    # Combine outputs from passes 1-5, trimmed to save tokens
+                    per_pass_limit = 300 if _is_tier1 else 600
                     combined = []
                     for key in ("curriculum", "performance", "content", "attendance", "achievements"):
                         output = pass_outputs.get(key, "")
                         if output:
-                            combined.append(f"[{key.upper()}]\n{output}")
+                            trimmed = output[:per_pass_limit]
+                            if len(output) > per_pass_limit:
+                                trimmed = trimmed.rsplit("\n", 1)[0]  # cut at last full line
+                            combined.append(f"[{key.upper()}]\n{trimmed}")
                     combined_text = "\n\n".join(combined) if combined else "No analysis data available."
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Provide teaching recommendations.")
                     system_prompt = system_prompt_template.replace("{data}", combined_text)
@@ -3387,15 +3391,15 @@ async def educator_insights_websocket(websocket: WebSocket):
                         )
 
                 elif pass_key == "synthesis":
-                    # Combine all prior outputs
+                    # Combine all prior outputs, trimmed to save tokens
+                    synth_limit = 400 if _is_tier1 else 800
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Write a summary report.")
                     system_prompt = system_prompt_template
-                    system_prompt = system_prompt.replace("{curriculum}", pass_outputs.get("curriculum", "No data"))
-                    system_prompt = system_prompt.replace("{performance}", pass_outputs.get("performance", "No data"))
-                    system_prompt = system_prompt.replace("{content}", pass_outputs.get("content", "No data"))
-                    system_prompt = system_prompt.replace("{attendance}", pass_outputs.get("attendance", "No data"))
-                    system_prompt = system_prompt.replace("{achievements}", pass_outputs.get("achievements", "No data"))
-                    system_prompt = system_prompt.replace("{recommendations}", pass_outputs.get("recommendations", "No data"))
+                    for synth_key in ("curriculum", "performance", "content", "attendance", "achievements", "recommendations"):
+                        raw = pass_outputs.get(synth_key, "No data")
+                        if raw and raw != "No data" and len(raw) > synth_limit:
+                            raw = raw[:synth_limit].rsplit("\n", 1)[0]  # cut at last full line
+                        system_prompt = system_prompt.replace("{" + synth_key + "}", raw)
 
                     # Add previous synthesis for progression narrative
                     prev_synthesis = prev_pass_outputs.get("synthesis", "")

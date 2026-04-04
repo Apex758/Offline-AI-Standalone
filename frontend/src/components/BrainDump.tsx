@@ -192,8 +192,16 @@ function saveEntries(entries: BrainDumpEntry[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
-// ─── Task Sets: Auto-splitting for Tier 1 ──────────────────────
-const TASK_SET_CHAR_LIMIT = 6000; // ~1,500 tokens at ~4 chars/token
+// ─── Task Sets: Auto-splitting by tier ──────────────────────────
+const TASK_SET_CHAR_LIMITS: Record<number, number> = {
+  1: 6000,   // ~1,500 tokens — small models, tight context
+  2: 10000,  // ~2,500 tokens — vision-capable, larger context
+  3: 12000,  // ~3,000 tokens — full capability models
+};
+
+function getTaskSetCharLimit(tier: number): number {
+  return TASK_SET_CHAR_LIMITS[tier] ?? TASK_SET_CHAR_LIMITS[2];
+}
 
 /** Split text into sentences at . ! ? boundaries followed by whitespace or end-of-string. */
 function splitIntoSentences(text: string): string[] {
@@ -205,7 +213,7 @@ function splitIntoSentences(text: string): string[] {
 }
 
 /** Group sentences into sets that stay under the character limit. */
-function groupSentencesIntoSets(sentences: string[], limit: number = TASK_SET_CHAR_LIMIT): string[][] {
+function groupSentencesIntoSets(sentences: string[], limit: number = TASK_SET_CHAR_LIMITS[1]): string[][] {
   const sets: string[][] = [];
   let currentSet: string[] = [];
   let currentLength = 0;
@@ -1101,10 +1109,11 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     const text = getPlainText();
     if (!text || loading) return;
 
-    // Tier 1: check if text needs splitting into sets
-    if (tier === 1 && text.length > TASK_SET_CHAR_LIMIT) {
+    // Check if text needs splitting into sets (tier-aware limits)
+    const charLimit = getTaskSetCharLimit(tier);
+    if (text.length > charLimit) {
       const sentences = splitIntoSentences(text);
-      const sets = groupSentencesIntoSets(sentences);
+      const sets = groupSentencesIntoSets(sentences, charLimit);
       if (sets.length > 1) {
         setTaskSets(sets);
         setShowReviewSets(true);
@@ -1511,8 +1520,9 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
 
   const hasContent = getPlainText().length > 0;
   const charCount = getPlainText().length;
-  const needsSplitting = tier === 1 && charCount > TASK_SET_CHAR_LIMIT;
-  const estimatedSets = needsSplitting ? groupSentencesIntoSets(splitIntoSentences(getPlainText())).length : 1;
+  const tierCharLimit = getTaskSetCharLimit(tier);
+  const needsSplitting = charCount > tierCharLimit;
+  const estimatedSets = needsSplitting ? groupSentencesIntoSets(splitIntoSentences(getPlainText()), tierCharLimit).length : 1;
 
   // Strip HTML for preview text
   const stripHtml = useCallback((html: string) => {
@@ -1732,7 +1742,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         </div>
                       </div>
                     </div>
-                  ) : showReviewSets && tier === 1 ? (
+                  ) : showReviewSets ? (
                     <ReviewSetsPanel
                       taskSets={taskSets}
                       onUpdateSets={setTaskSets}
@@ -1787,16 +1797,16 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                               {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                             </button>
                           </div>
-                          {/* Tier 1: Character count badge */}
-                          {tier === 1 && charCount > 0 && (
+                          {/* Character count badge */}
+                          {charCount > 0 && (
                             <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-mono font-medium transition-all ${
                               needsSplitting
                                 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20'
-                                : charCount > TASK_SET_CHAR_LIMIT * 0.8
+                                : charCount > tierCharLimit * 0.8
                                 ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'
                                 : 'bg-theme-tertiary text-theme-muted'
                             }`}>
-                              {charCount.toLocaleString()} / {TASK_SET_CHAR_LIMIT.toLocaleString()}
+                              {charCount.toLocaleString()} / {tierCharLimit.toLocaleString()}
                               {needsSplitting && (
                                 <span className="ml-1.5 text-amber-500">
                                   · {estimatedSets} sets

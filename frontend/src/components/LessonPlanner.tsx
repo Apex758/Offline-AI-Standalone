@@ -701,6 +701,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         endpoint: ENDPOINT,
         prompt,
         generationMode: settings.generationMode,
+        extraMessageData: { formData },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -717,6 +718,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     try {
       ws.send(JSON.stringify({
         prompt,
+        formData,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
