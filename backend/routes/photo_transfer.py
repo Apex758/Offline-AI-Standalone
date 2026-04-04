@@ -213,12 +213,8 @@ async def upload_photo(
 
     # Build filename
     idx = session["photo_count"] + 1
-    safe_name = ""
-    if student_name.strip():
-        safe_name = re.sub(r'[^\w\s-]', '', student_name.strip()).replace(' ', '_') + "_"
-
     ext = Path(file.filename or "photo.jpg").suffix or ".jpg"
-    filename = f"{safe_name}{idx:03d}{ext}"
+    filename = f"{idx:03d}{ext}"
     file_path = session_dir / filename
 
     # Save file
@@ -228,7 +224,6 @@ async def upload_photo(
     photo_entry = {
         "id": str(uuid.uuid4())[:8],
         "filename": filename,
-        "student_name": student_name.strip(),
         "index": idx,
         "size_bytes": len(contents),
         "uploaded_at": datetime.now().isoformat(),

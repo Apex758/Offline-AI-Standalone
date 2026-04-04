@@ -823,50 +823,6 @@
     }
   }, 5000);
 
-  // ── Student roster ──
-  const $studentPicker = $('student-picker');
-  const $pickerGroup = $('student-picker-group');
-
-  async function loadStudentRoster(className) {
-    try {
-      const url = className && className !== 'Unnamed Class'
-        ? BASE_URL + '/api/photo-transfer/students?class_name=' + encodeURIComponent(className)
-        : BASE_URL + '/api/photo-transfer/students';
-      const res = await fetch(url);
-      const students = await res.json();
-      if (students.length > 0) {
-        $studentPicker.innerHTML = '<option value="">-- Pick a student --</option>';
-        students.forEach(function(s) {
-          const opt = document.createElement('option');
-          opt.value = s.name;
-          opt.textContent = s.name + (s.class_name ? ' (' + s.class_name + ')' : '');
-          $studentPicker.appendChild(opt);
-        });
-        $pickerGroup.style.display = 'block';
-        $('name-hint').textContent = '(or type manually)';
-      }
-    } catch (e) {}
-  }
-
-  $studentPicker.addEventListener('change', function() {
-    if (this.value) $studentName.value = this.value;
-  });
-
-  $studentName.addEventListener('input', function() {
-    $studentPicker.value = '';
-  });
-
-  function advanceStudentPicker() {
-    const idx = $studentPicker.selectedIndex;
-    if (idx >= 0 && idx < $studentPicker.options.length - 1) {
-      $studentPicker.selectedIndex = idx + 1;
-      $studentName.value = $studentPicker.value;
-    } else {
-      $studentPicker.value = '';
-      $studentName.value = '';
-    }
-  }
-
   // ── Auto-focus ──
   setTimeout(() => $className.focus(), 300);
 
