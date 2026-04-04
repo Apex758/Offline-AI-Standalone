@@ -528,6 +528,11 @@ def build_prompt(system_prompt: str, user_prompt: str, prompt_format: str = None
             f"<|im_start|>user\n{user_prompt}<|im_end|>\n"
             f"<|im_start|>assistant\n"
         )
+    elif prompt_format == "gemma":
+        return (
+            f"<start_of_turn>user\n{system_prompt}\n\n{user_prompt}<end_of_turn>\n"
+            f"<start_of_turn>model\n"
+        )
     else:
         return (
             f"<|begin_of_text|>"
@@ -3454,26 +3459,10 @@ async def educator_insights_websocket(websocket: WebSocket):
                 system_prompt = tone_prefix + system_prompt
 
                 user_prompt = "Analyze the data provided and generate your response."
-                full_prompt = build_prompt(system_prompt, user_prompt)
 
                 _t1_params = get_tier1_gen_params(task_type) if _is_tier1 else {}
                 max_tokens = _t1_params.get("max_tokens", 1000) if _is_tier1 else 1500
                 temperature = _t1_params.get("temperature", 0.5) if _is_tier1 else 0.5
-
-                # Debug: send prompt being fed to the LLM
-                try:
-                    await websocket.send_json({
-                        "type": "debug",
-                        "stage": "llm_input",
-                        "passKey": pass_key,
-                        "passName": pass_name,
-                        "promptLength": len(full_prompt),
-                        "prompt": full_prompt,
-                        "maxTokens": max_tokens,
-                        "temperature": temperature,
-                    })
-                except Exception:
-                    pass
 
                 # Acquire slot and generate
                 slot_mode = None
@@ -3482,6 +3471,25 @@ async def educator_insights_websocket(websocket: WebSocket):
                     slot_mode = await acquire_generation_slot(websocket, generation_mode, f"insights-{pass_key}")
                     from inference_factory import get_inference_instance, resolve_inference_for_task
                     inference = resolve_inference_for_task(task_type) if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+
+                    # Build prompt AFTER acquiring inference so we use the model's actual format
+                    prompt_format = getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
+                    full_prompt = build_prompt(system_prompt, user_prompt, prompt_format=prompt_format)
+
+                    # Debug: send prompt being fed to the LLM
+                    try:
+                        await websocket.send_json({
+                            "type": "debug",
+                            "stage": "llm_input",
+                            "passKey": pass_key,
+                            "passName": pass_name,
+                            "promptLength": len(full_prompt),
+                            "prompt": full_prompt,
+                            "maxTokens": max_tokens,
+                            "temperature": temperature,
+                        })
+                    except Exception:
+                        pass
 
                     token_buffer = []
                     last_send = time.time()
@@ -6525,6 +6533,8 @@ async def update_dual_model_config(request: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+_preload_lock: asyncio.Lock = None
+
 @app.post("/api/model/preload")
 async def preload_model():
     """Preload the LLM model in the background.
@@ -6532,35 +6542,57 @@ async def preload_model():
     This triggers lazy loading of the model when a user opens
     an AI-powered tab, so the model is ready by the time they
     click Generate.
+
+    Concurrent calls are deduplicated — only one load runs at a time,
+    others wait and share the result.
     """
     import traceback
     from inference_factory import get_inference_instance
+    global _preload_lock
+    if _preload_lock is None:
+        _preload_lock = asyncio.Lock()
 
-    def _load_model():
-        """Run model loading in a thread so it doesn't block the event loop."""
-        return get_inference_instance()
+    # If model is already loaded, return immediately without acquiring the lock
+    try:
+        import inference_factory as _inf_mod
+        if _inf_mod._local_instance is not None and _inf_mod._local_instance.is_loaded:
+            return {"status": "loaded", "has_vision": getattr(_inf_mod._local_instance, 'has_vision', False)}
+    except Exception:
+        pass
 
-    last_error = None
-    for attempt in range(2):
+    async with _preload_lock:
+        # Re-check after acquiring lock — another waiter may have loaded it already
         try:
-            if attempt > 0:
-                logger.info(f"Retrying model preload (attempt {attempt + 1})...")
-                await asyncio.sleep(2)
-            else:
-                logger.info("Preloading LLM model...")
-            loop = asyncio.get_event_loop()
-            inference = await loop.run_in_executor(None, _load_model)
-            if inference.is_loaded:
-                logger.info("LLM model preloaded successfully")
-                return {"status": "loaded", "has_vision": getattr(inference, 'has_vision', False)}
-            else:
-                last_error = "Model loaded but is_loaded=False"
-                logger.error(f"Failed to preload LLM model (attempt {attempt + 1})")
-        except Exception as e:
-            last_error = str(e)
-            logger.error(f"Error preloading model (attempt {attempt + 1}): {e}\n{traceback.format_exc()}")
+            import inference_factory as _inf_mod
+            if _inf_mod._local_instance is not None and _inf_mod._local_instance.is_loaded:
+                return {"status": "loaded", "has_vision": getattr(_inf_mod._local_instance, 'has_vision', False)}
+        except Exception:
+            pass
 
-    return JSONResponse(status_code=500, content={"status": "error", "error": last_error or "Unknown error"})
+        def _load_model():
+            return get_inference_instance()
+
+        last_error = None
+        for attempt in range(2):
+            try:
+                if attempt > 0:
+                    logger.info(f"Retrying model preload (attempt {attempt + 1})...")
+                    await asyncio.sleep(2)
+                else:
+                    logger.info("Preloading LLM model...")
+                loop = asyncio.get_event_loop()
+                inference = await loop.run_in_executor(None, _load_model)
+                if inference.is_loaded:
+                    logger.info("LLM model preloaded successfully")
+                    return {"status": "loaded", "has_vision": getattr(inference, 'has_vision', False)}
+                else:
+                    last_error = "Model loaded but is_loaded=False"
+                    logger.error(f"Failed to preload LLM model (attempt {attempt + 1})")
+            except Exception as e:
+                last_error = str(e)
+                logger.error(f"Error preloading model (attempt {attempt + 1}): {e}\n{traceback.format_exc()}")
+
+        return JSONResponse(status_code=500, content={"status": "error", "error": last_error or "Unknown error"})
 
 
 @app.get("/api/vision/status")

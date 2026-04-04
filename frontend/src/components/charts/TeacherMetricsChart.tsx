@@ -7,10 +7,18 @@ import { useContainerSize } from '../../hooks/useContainerSize';
 import { format, parseISO } from 'date-fns';
 import type { MetricSnapshot, SchoolPhase } from '../../types/insights';
 
+const PHASE_COLORS_SOLID: Partial<Record<SchoolPhase, string>> = {
+  start_of_year: '#3b82f6', early_year: '#22c55e', mid_year: '#6b7280',
+  pre_exam: '#f97316', exam_period: '#ef4444', post_exam: '#a855f7',
+  vacation: '#eab308', reopening: '#06b6d4',
+};
+
 interface TeacherMetricsChartProps {
   data: MetricSnapshot[];
   height?: number;
   compact?: boolean; // compact mode hides dimension overlays + legend
+  phaseBadgeRef?: React.Ref<HTMLButtonElement>;
+  onPhaseClick?: () => void;
 }
 
 const GRADE_COLORS: Record<string, string> = {
@@ -18,6 +26,7 @@ const GRADE_COLORS: Record<string, string> = {
   B: '#3b82f6',
   C: '#eab308',
   D: '#f97316',
+  E: '#f43f5e',
   F: '#ef4444',
 };
 
@@ -53,6 +62,7 @@ function getGradeColor(score: number): string {
   if (score >= 80) return GRADE_COLORS.B;
   if (score >= 70) return GRADE_COLORS.C;
   if (score >= 60) return GRADE_COLORS.D;
+  if (score >= 50) return GRADE_COLORS.E;
   return GRADE_COLORS.F;
 }
 
@@ -74,8 +84,10 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   data,
   height = 340,
   compact = false,
+  phaseBadgeRef,
+  onPhaseClick,
 }) => {
-  const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
+  const { ref: chartContainerRef, width: chartWidth, height: chartContainerHeight } = useContainerSize();
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
   const toggleSeries = (key: string) =>
@@ -113,20 +125,9 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
     return bands;
   }, [chartData]);
 
-  // Dynamic gradient based on score at each data point
-  const gradientStops = useMemo(() => {
-    if (chartData.length === 0) return [];
-    if (chartData.length === 1) {
-      const color = getGradeColor(chartData[0].composite_score);
-      return [
-        { offset: '0%', color },
-        { offset: '100%', color },
-      ];
-    }
-    return chartData.map((d, i) => ({
-      offset: `${(i / (chartData.length - 1)) * 100}%`,
-      color: getGradeColor(d.composite_score),
-    }));
+  const latestGradeColor = useMemo(() => {
+    if (chartData.length === 0) return '#6b7280';
+    return getGradeColor(chartData[chartData.length - 1].composite_score);
   }, [chartData]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -184,8 +185,27 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
     if (value >= 80) return 'B';
     if (value >= 70) return 'C';
     if (value >= 60) return 'D';
+    if (value >= 50) return 'E';
     if (value === 0) return 'F';
     return '';
+  };
+
+  const CustomYAxisTick = ({ x, y, payload }: any) => {
+    const label = formatYAxis(payload.value);
+    if (!label) return null;
+    return (
+      <text
+        x={x}
+        y={y}
+        dy={4}
+        textAnchor="end"
+        fontSize={11}
+        fontWeight={700}
+        fill={getGradeColor(payload.value)}
+      >
+        {label}
+      </text>
+    );
   };
 
   if (chartData.length === 0) {
@@ -203,28 +223,40 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
   return (
     <div
-      className="rounded-2xl p-6 h-full flex flex-col"
+      className="rounded-2xl px-4 pt-3 pb-20 h-full flex flex-col"
       style={{ backgroundColor: 'var(--dash-card-bg)', boxShadow: '0 4px 16px var(--dash-card-shadow)' }}
     >
       {!compact && (
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="flex items-center gap-2 mb-2">
           <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Teaching Effectiveness</h3>
+          {chartData.length > 0 && onPhaseClick && (
+            <button
+              ref={phaseBadgeRef}
+              onClick={onPhaseClick}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-opacity hover:opacity-80"
+              style={{
+                backgroundColor: 'var(--dash-card-bg)',
+                borderColor: 'var(--dash-border)',
+                color: 'var(--dash-text-sub)',
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: PHASE_COLORS_SOLID[chartData[chartData.length - 1].phase] || '#6b7280' }}
+              />
+              {chartData[chartData.length - 1].phase_label}
+            </button>
+          )}
         </div>
       )}
 
-      <div ref={chartContainerRef} style={{ width: '100%', height }}>
-        {chartWidth > 0 && (
-          <AreaChart width={chartWidth} height={height} data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
+      <div ref={chartContainerRef} className="flex-1" style={{ width: '100%' }}>
+        {chartWidth > 0 && chartContainerHeight > 0 && (
+          <AreaChart width={chartWidth} height={chartContainerHeight} data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
             <defs>
-              <linearGradient id="tmcGradient" x1="0" y1="0" x2="1" y2="0">
-                {gradientStops.map((stop, i) => (
-                  <stop key={i} offset={stop.offset} stopColor={stop.color} stopOpacity={0.45} />
-                ))}
-              </linearGradient>
-              <linearGradient id="tmcGradientFill" x1="0" y1="0" x2="1" y2="0">
-                {gradientStops.map((stop, i) => (
-                  <stop key={i} offset={stop.offset} stopColor={stop.color} stopOpacity={0.15} />
-                ))}
+              <linearGradient id="tmcGradientFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor={latestGradeColor} stopOpacity={0.45} />
+                <stop offset="95%" stopColor={latestGradeColor} stopOpacity={0.04} />
               </linearGradient>
             </defs>
 
@@ -238,12 +270,11 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
                 x2={band.x2}
                 fill={PHASE_COLORS[band.phase] || 'transparent'}
                 fillOpacity={1}
-                label={!compact ? { value: band.label, position: 'insideTopLeft', fontSize: 10, fill: 'var(--dash-text-sub)' } : undefined}
               />
             ))}
 
             {/* Grade boundary reference lines */}
-            {[60, 70, 80, 90].map(boundary => (
+            {[50, 60, 70, 80, 90].map(boundary => (
               <ReferenceLine
                 key={boundary}
                 y={boundary}
@@ -262,9 +293,8 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
             />
             <YAxis
               domain={[0, 100]}
-              ticks={[0, 60, 70, 80, 90, 100]}
-              tickFormatter={formatYAxis}
-              tick={{ fontSize: 11, fill: 'var(--dash-axis-tick)' }}
+              ticks={[0, 50, 60, 70, 80, 90]}
+              tick={<CustomYAxisTick />}
               axisLine={false}
               tickLine={false}
             />
@@ -275,11 +305,11 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               type="monotone"
               dataKey="composite_score"
               name="Composite"
-              stroke="url(#tmcGradient)"
-              strokeWidth={2.5}
+              stroke={latestGradeColor}
+              strokeWidth={3}
               fill="url(#tmcGradientFill)"
-              dot={{ r: 4, fill: 'var(--dash-card-bg)', strokeWidth: 2 }}
-              activeDot={{ r: 6, strokeWidth: 2 }}
+              dot={{ r: 4, fill: latestGradeColor, strokeWidth: 0 }}
+              activeDot={{ r: 6, fill: latestGradeColor, strokeWidth: 0 }}
             />
 
             {/* Dimension overlay lines (only in non-compact mode) */}
@@ -303,7 +333,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
       {/* Toggleable legend for dimension overlays */}
       {!compact && (
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 px-1">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2 px-1">
           {DIMENSION_SERIES.map(s => {
             const hidden = hiddenSeries.has(s.key);
             return (

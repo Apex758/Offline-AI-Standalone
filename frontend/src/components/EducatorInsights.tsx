@@ -93,6 +93,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [nudgeDismissed, setNudgeDismissed] = useState<boolean>(savedData?.nudgeDismissed || false);
 
   // Settings panel state
+  const [graphExpanded, setGraphExpanded] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const settingsBtnRef = useRef<HTMLDivElement>(null);
@@ -225,6 +226,11 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
   // Ref to prevent setState during render
   const hasInitialized = useRef(false);
+
+  // Preload LLM model on mount (so it's ready by the time user clicks Generate)
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
+  }, []);
 
   // Load data summary on mount
   useEffect(() => {
@@ -587,6 +593,51 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         }
         .ei-sched-save:hover:not(:disabled) { opacity: 0.85; }
         .ei-sched-save:disabled { opacity: 0.6; cursor: default; }
+
+        @keyframes ei-arrow-pulse {
+          0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
+          50%       { opacity: 0.85; transform: translateX(-50%) scale(1.18); }
+        }
+        .ei-graph-toggle-arrow {
+          position: absolute; bottom: 14px; left: 50%;
+          transform: translateX(-50%); z-index: 20;
+          width: 36px; height: 36px;
+          border: none; background: transparent;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; outline: none;
+          animation: ei-arrow-pulse 2.4s ease-in-out infinite;
+          transition: background 0.2s ease;
+          color: var(--dash-text, #374151);
+        }
+        .ei-graph-toggle-arrow:focus { outline: none; }
+        .ei-graph-toggle-arrow:hover {
+          animation: none;
+          transform: translateX(-50%) scale(1);
+          background: transparent;
+          color: #d97706;
+        }
+        .ei-graph-toggle-arrow svg {
+          transition: transform 0.3s ease, filter 0.2s ease, color 0.2s ease;
+        }
+        .ei-graph-toggle-arrow:hover svg {
+          filter: drop-shadow(0 0 4px #d97706) drop-shadow(0 0 10px rgba(217,119,6,0.55));
+        }
+        .ei-graph-fade-overlay {
+          position: absolute; bottom: 0; left: 0; right: 0;
+          height: 72px; pointer-events: none; z-index: 10;
+          background: linear-gradient(to bottom, transparent 0%, var(--bg-secondary, #f9fafb) 100%);
+        }
+        .dark .ei-graph-fade-overlay {
+          background: linear-gradient(to bottom, transparent 0%, var(--bg-secondary, #2a2926) 100%);
+        }
+        .ei-graph-fade-overlay-top {
+          position: absolute; top: 0; left: 0; right: 0;
+          height: 72px; pointer-events: none; z-index: 10;
+          background: linear-gradient(to top, transparent 0%, var(--bg-secondary, #f9fafb) 100%);
+        }
+        .dark .ei-graph-fade-overlay-top {
+          background: linear-gradient(to top, transparent 0%, var(--bg-secondary, #2a2926) 100%);
+        }
       `}</style>
         {/* Header */}
         <div className="flex-none px-6 py-4 border-b border-theme-border bg-theme-bg-secondary">
@@ -774,22 +825,77 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         </div>
 
       {/* ── Row 1: Performance Graph ── */}
-      <InsightsGraphRow
-        metrics={teacherMetrics}
-        metricsHistory={metricsHistory}
-        previousMetrics={previousMetrics}
-        insightsData={insightsData}
-        loading={dataLoading && !teacherMetrics}
-        onDimensionClick={(dim) => {
-          setCoachTriggerDimension(dim);
-          setCoachCollapsed(false);
-        }}
-      />
+      <div
+        className={`relative overflow-hidden transition-all duration-300 ease-in-out ${
+          graphExpanded ? 'flex-1 min-h-0' : 'flex-none h-0'
+        }`}
+      >
+        <InsightsGraphRow
+          metrics={teacherMetrics}
+          metricsHistory={metricsHistory}
+          previousMetrics={previousMetrics}
+          insightsData={insightsData}
+          loading={dataLoading && !teacherMetrics}
+          onDimensionClick={(dim) => {
+            setCoachTriggerDimension(dim);
+            setCoachCollapsed(false);
+          }}
+        />
+        <div className="ei-graph-fade-overlay" aria-hidden="true" />
+        <button
+          className="ei-graph-toggle-arrow"
+          onClick={() => setGraphExpanded(e => !e)}
+          title="Collapse graph"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            overflow="visible"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            style={{ transition: 'transform 0.3s ease' }}
+          >
+            <path d="M-16 5 L12 19 L40 5" />
+          </svg>
+        </button>
+      </div>
 
       {/* ── Row 2: Analysis + Coach ── */}
-      <div className="flex flex-1 min-h-0">
+      <div className={`relative flex overflow-hidden transition-all duration-300 ease-in-out ${
+        graphExpanded ? 'flex-none h-0' : 'flex-1 min-h-0'
+      }`}>
+        {!graphExpanded && (
+          <>
+            <div className="ei-graph-fade-overlay-top" aria-hidden="true" />
+            <button
+              className="ei-graph-toggle-arrow"
+              style={{ bottom: 'auto', top: 14 }}
+              onClick={() => setGraphExpanded(e => !e)}
+              title="Expand graph"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                overflow="visible"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                style={{ transform: 'rotate(180deg)', transition: 'transform 0.3s ease' }}
+              >
+                <path d="M-16 5 L12 19 L40 5" />
+              </svg>
+            </button>
+          </>
+        )}
         {/* Analysis section */}
-        <div className="flex-[3] overflow-y-auto px-6 py-4 space-y-4 min-w-0">
+        <div className="flex-[3] overflow-y-auto px-6 pt-20 pb-4 space-y-4 min-w-0">
           {/* Error */}
           {error && (
             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
@@ -797,50 +903,6 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               {error}
             </div>
           )}
-
-          {/* Data Summary Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <SummaryCard
-              icon={BookOpen01IconData}
-              label="Curriculum"
-              value={insightsData?.curriculum?.has_data ? `${insightsData.curriculum.pct}%` : '--'}
-              sub={insightsData?.curriculum?.has_data ? `${insightsData.curriculum.completed}/${insightsData.curriculum.total} milestones` : 'No milestones tracked'}
-              color="blue"
-              loading={dataLoading}
-            />
-            <SummaryCard
-              icon={UserIconData}
-              label="Performance"
-              value={insightsData?.performance?.has_data ? `${insightsData.performance.avgScore}%` : '--'}
-              sub={insightsData?.performance?.has_data ? `${insightsData.performance.totalStudents} students tracked` : 'No grades recorded'}
-              color="green"
-              loading={dataLoading}
-            />
-            <SummaryCard
-              icon={File01IconData}
-              label="Content"
-              value={insightsData?.content?.has_data ? `${insightsData.content.totalResources}` : '--'}
-              sub={insightsData?.content?.has_data ? `Top: ${insightsData.content.topType}` : 'No content created'}
-              color="purple"
-              loading={dataLoading}
-            />
-            <SummaryCard
-              icon={Calendar01IconData}
-              label="Attendance"
-              value={insightsData?.attendance?.has_data ? `${insightsData.attendance.avgRate}%` : '--'}
-              sub={insightsData?.attendance?.has_data ? `${insightsData.attendance.atRiskCount} at-risk students` : 'No attendance recorded'}
-              color="orange"
-              loading={dataLoading}
-            />
-            <SummaryCard
-              icon={Award01IconData}
-              label="Achievements"
-              value={insightsData?.achievements?.has_data ? `${insightsData.achievements.totalEarned}/${insightsData.achievements.totalAvailable}` : '--'}
-              sub={insightsData?.achievements?.has_data ? `${insightsData.achievements.rank?.title || 'Newcomer'} · ${insightsData.achievements.streakDays}d streak` : 'No achievements yet'}
-              color="yellow"
-              loading={dataLoading}
-            />
-          </div>
 
           {/* Nudge banner */}
           <MetricsNudgeBanner

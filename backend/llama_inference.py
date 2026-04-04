@@ -173,6 +173,12 @@ class LlamaInference:
             "prompt_format": "llama",
             "supports_thinking": False,
         },
+        "gemma4": {
+            "handler_class": "Llava15ChatHandler",
+            "stop_tokens": ["<end_of_turn>", "<eos>"],
+            "prompt_format": "gemma",
+            "supports_thinking": False,
+        },
     }
 
     @staticmethod

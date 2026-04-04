@@ -132,7 +132,13 @@
       "WebFetch(domain:buttondown.com)",
       "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\" -m pip install \"llama-cpp-python==0.3.20\" --find-links \"c:/Users/LG/AppData/Local/pip/cache/wheels/69/92/e3/\")",
       "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/bin/Release/\"*.dll)",
-      "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/Lib/site-packages/llama_cpp/lib/\"*.dll)"
+      "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/Lib/site-packages/llama_cpp/lib/\"*.dll)",
+      "Bash(ls -la *.py)",
+      "Bash(python -c ':*)",
+      "Bash(tasklist)",
+      "Bash(taskkill /F /IM python.exe)",
+      "Bash(python -c \"import psutil; m = psutil.virtual_memory\\(\\); print\\(f'Available: {m.available/1024**3:.2f} GB'\\)\")",
+      "Read(//tmp/**)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

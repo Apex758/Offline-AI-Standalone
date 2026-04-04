@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import UserIconData from '@hugeicons/core-free-icons/UserIcon';
@@ -10,6 +10,7 @@ import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import type { TeacherMetrics, MetricSnapshot, InsightsData } from '../types/insights';
 import TeacherMetricsChart from './charts/TeacherMetricsChart';
+import YearPhasePopover from './charts/YearPhasePopover';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -59,11 +60,13 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
   onDimensionClick,
 }) => {
   const [panelOpen, setPanelOpen] = useState(false);
+  const [phasePopoverOpen, setPhasePopoverOpen] = useState(false);
+  const phaseBadgeRef = useRef<HTMLButtonElement>(null);
 
   // Loading skeleton
   if (loading && !metrics) {
     return (
-      <div className="flex-none border-b border-theme-border bg-theme-bg-secondary" style={{ height: 300 }}>
+      <div className="flex-none bg-theme-bg-secondary" style={{ height: 300 }}>
         <div className="h-full flex items-center justify-center animate-pulse">
           <div className="w-full h-full bg-theme-bg-tertiary rounded" />
         </div>
@@ -77,12 +80,33 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
     : [];
 
   return (
-    <div className="flex-none border-b border-theme-border bg-theme-bg-secondary overflow-hidden" style={{ height: 300 }}>
+    <div className="bg-theme-bg-secondary overflow-hidden h-full">
       <div className="flex h-full">
         {/* ── Graph area ── */}
         <div className="flex-1 relative min-w-0 px-2 pt-2 pb-1">
+          {/* Year phase popover */}
+          {phasePopoverOpen && metrics && phaseBadgeRef.current && (() => {
+            const btn = phaseBadgeRef.current;
+            const container = btn.closest('.relative') as HTMLElement | null;
+            if (!container) return null;
+            const btnRect = btn.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            return (
+              <YearPhasePopover
+                currentPhase={metrics.phase.phase}
+                onClose={() => setPhasePopoverOpen(false)}
+                anchorTop={btnRect.top - containerRect.top}
+                anchorLeft={btnRect.right - containerRect.left}
+              />
+            );
+          })()}
+
           {metricsHistory.length > 0 ? (
-            <TeacherMetricsChart data={metricsHistory} height={268} />
+            <TeacherMetricsChart
+              data={metricsHistory}
+              phaseBadgeRef={phaseBadgeRef}
+              onPhaseClick={() => setPhasePopoverOpen(p => !p)}
+            />
           ) : (
             <div className="flex items-center justify-center h-full text-sm text-theme-secondary">
               {metrics
