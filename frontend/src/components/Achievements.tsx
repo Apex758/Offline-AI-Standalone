@@ -220,7 +220,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
     <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--tab-content-bg, var(--dash-bg))' }}>
       <div className="max-w-[90rem] mx-auto px-4 py-6 space-y-6">
 
-        {/* ========== TEMPORARY TROPHY PREVIEW — DELETE THIS BLOCK ========== */}
+        {/* ========== TEMPORARY TROPHY PREVIEW — UNCOMMENT TO USE ==========
         <div style={{ background: '#111', borderRadius: 16, padding: 24 }}>
           <h2 style={{ color: '#fff', marginBottom: 16, fontSize: 18, fontWeight: 700 }}>Trophy Image Preview (TEMP)</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
@@ -242,7 +242,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
             ).flat()}
           </div>
         </div>
-        {/* ========== END TEMPORARY TROPHY PREVIEW ========== */}
+        ========== END TEMPORARY TROPHY PREVIEW ========== */}
 
         {/* Header + collapsible filters */}
         <div
