@@ -6,7 +6,7 @@ import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
 import type { NewlyEarnedAchievement, AchievementRarity, AchievementCategory } from '../../types/achievement';
 import { getTrophyType } from '../../config/trophyMap';
-import { getTrophyImageForTier, type TrophyTier } from '../../assets/trophyImages';
+import { getTrophyImageForTier, type TrophyTier } from '../../assets/trophyImagesLazy';
 
 /* ─── Inspirational teaching quotes ─── */
 const TEACHING_QUOTES: string[] = [
@@ -154,6 +154,14 @@ interface AchievementUnlockModalProps {
 
 export default function AchievementUnlockModal({ achievement, onDismiss, viewOnly }: AchievementUnlockModalProps) {
   const [phase, setPhase] = useState<'idle' | 'entering' | 'visible' | 'exiting'>('idle');
+  const [trophySrc, setTrophySrc] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!achievement) { setTrophySrc(undefined); return; }
+    const tType = getTrophyType(achievement.achievement_id);
+    if (!tType) { setTrophySrc(undefined); return; }
+    getTrophyImageForTier(tType, (achievement.tier ?? 'gold') as TrophyTier).then(src => setTrophySrc(src));
+  }, [achievement?.achievement_id, achievement?.tier]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Stable quote per achievement (doesn't change on re-renders)
   const quote = useMemo(() => {
@@ -452,12 +460,9 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               justifyContent: 'center',
               animation: show ? 'ach-icon-entrance 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.15s both' : 'none',
             }}>
-              {(() => {
-                const tType = getTrophyType(achievement.achievement_id);
-                const tSrc = tType ? getTrophyImageForTier(tType, (achievement.tier ?? 'gold') as TrophyTier) : undefined;
-                return tSrc ? (
+              {trophySrc ? (
                   <img
-                    src={tSrc}
+                    src={trophySrc}
                     alt={achievement.name}
                     style={{
                       width: 100,
@@ -488,8 +493,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
                       }}
                     />
                   </div>
-                );
-              })()}
+                )}
             </div>
           </div>
 

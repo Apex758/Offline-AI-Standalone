@@ -11,6 +11,7 @@ import type { Milestone } from '../types/milestone';
 import type { AcademicPhase } from '../types/insights';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
+import { TreeBrowserSkeleton } from './ui/TreeBrowserSkeleton';
 
 const Icon: React.FC<{ icon: any; size?: number; style?: React.CSSProperties }> = ({ icon, size = 16, style }) => (
   <HugeiconsIcon icon={icon} size={size} style={style} />
@@ -162,11 +163,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
   };
 
   if (phasesLoading || loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)' }}>
-        Loading curriculum plan...
-      </div>
-    );
+    return <TreeBrowserSkeleton accentColor={accentColor} />;
   }
 
   if (allPhases.length === 0) {

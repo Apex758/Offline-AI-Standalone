@@ -20,6 +20,7 @@ import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { TreeBrowserSkeleton } from './ui/TreeBrowserSkeleton';
 
 interface CurriculumViewerProps {
   tabId: string;
@@ -175,12 +176,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <HeartbeatLoader className="w-12 h-12 mx-auto mb-4" />
-            <p className="text-theme-muted">Loading page...</p>
-          </div>
-        </div>
+        <TreeBrowserSkeleton contentOnly />
       );
     }
 

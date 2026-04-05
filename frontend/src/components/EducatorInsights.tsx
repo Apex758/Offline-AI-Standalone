@@ -28,6 +28,7 @@ import SchoolYearSetupModal from './SchoolYearSetupModal';
 import PhaseHistoryNav from './PhaseHistoryNav';
 import PhaseBreakdownModal from './PhaseBreakdownModal';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
+import { DashboardSkeleton } from './ui/DashboardSkeleton';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -585,6 +586,10 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     insightsData.attendance?.has_data ||
     insightsData.achievements?.has_data
   );
+
+  if (dataLoading && !teacherMetrics) {
+    return <DashboardSkeleton accentColor={tabColor} />;
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">

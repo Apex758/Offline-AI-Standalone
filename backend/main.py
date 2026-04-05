@@ -317,7 +317,8 @@ async def lifespan(app):
     if _scheduler and _scheduler.running:
         _scheduler.shutdown(wait=False)
 
-app = FastAPI(lifespan=lifespan)
+from fastapi.responses import ORJSONResponse
+app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 
 # Add CORS middleware FIRST, before routers
 # allow_origins=["*"] is needed so phones on the local network (e.g.
@@ -330,6 +331,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from starlette.middleware.gzip import GZipMiddleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Catch-all exception handler so error responses go through CORSMiddleware
 @app.exception_handler(Exception)
@@ -548,6 +552,12 @@ def build_prompt(system_prompt: str, user_prompt: str, prompt_format: str = None
             f"<|im_start|>system\n{system_prompt}<|im_end|>\n"
             f"<|im_start|>user\n{user_prompt}<|im_end|>\n"
             f"<|im_start|>assistant\n"
+        )
+    elif prompt_format == "gemma4":
+        return (
+            f"<|turn>system\n{system_prompt}<turn|>\n"
+            f"<|turn>user\n{user_prompt}<turn|>\n"
+            f"<|turn>model\n"
         )
     elif prompt_format == "gemma":
         return (
@@ -901,6 +911,7 @@ async def smart_search(request: SmartSearchRequest):
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
+    print("[ws/chat] Connection accepted, entering receive loop")
     from config import LLAMA_PARAMS
     import os
 
@@ -919,8 +930,17 @@ async def websocket_chat(websocket: WebSocket):
                 prompt += f"<|{msg['role']}|>{msg['content']}<|end|>\n"
             prompt += f"<|user|>{user_message}<|end|>\n"
             prompt += "<|assistant|>"
+        elif prompt_format == "gemma4":
+            # Gemma 4 format: <|turn>role\n...<turn|>
+            prompt = f"<|turn>system\n{system_prompt}<turn|>\n"
+            for msg in history:
+                if msg["role"] == "user":
+                    prompt += f"<|turn>user\n{msg['content']}<turn|>\n"
+                elif msg["role"] == "assistant":
+                    prompt += f"<|turn>model\n{msg['content']}<turn|>\n"
+            prompt += f"<|turn>user\n{user_message}<turn|>\n<|turn>model\n"
         elif prompt_format == "gemma":
-            # Gemma format (no system role — prepend system prompt to first user turn)
+            # Gemma 2/3 format (no system role — prepend system prompt to first user turn)
             prompt = ""
             system_injected = False
             for msg in history:
@@ -952,9 +972,11 @@ async def websocket_chat(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
+            print(f"[ws/chat] Received message (len={len(data)})")
             message_data = json.loads(data)
             user_message = message_data.get("message", "")
             chat_id = message_data.get("chat_id", None)
+            print(f"[ws/chat] user_message={user_message[:100]!r}, chat_id={chat_id}")
             # Support custom system prompt from AI assistant panel
             custom_system_prompt = message_data.get("system_prompt", None)
             # Support conversation history sent from frontend (for panels without chat_id)
@@ -1188,6 +1210,8 @@ async def websocket_chat(websocket: WebSocket):
                     # Double max_tokens when thinking is enabled (think block uses extra tokens)
                     _base_max = _t1_params["max_tokens"] if _is_tier1 else LLAMA_PARAMS["max_tokens"]
                     effective_max_tokens = _base_max * 2 if (thinking_enabled and model_supports_thinking) else _base_max
+                    print(f"[ws/chat] Starting text-only stream, max_tokens={effective_max_tokens}, prompt_format={prompt_fmt}")
+                    print(f"[ws/chat] Prompt preview: {prompt[:500]!r}")
                     stream_gen = inference.generate_stream(
                         tool_name="chat",
                         input_data=user_message,

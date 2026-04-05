@@ -27,6 +27,11 @@ def _get_db_path() -> str:
 def _get_conn() -> sqlite3.Connection:
     conn = sqlite3.connect(_get_db_path())
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA synchronous = NORMAL")
+    conn.execute("PRAGMA cache_size = 10000")
+    conn.execute("PRAGMA mmap_size = 30000000")
+    conn.execute("PRAGMA temp_store = MEMORY")
     return conn
 
 
@@ -54,6 +59,8 @@ def init_db():
                 UNIQUE(teacher_id, activity_date)
             )
         ''')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_earned_achievements_teacher ON earned_achievements(teacher_id)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_activity_log_teacher ON achievement_activity_log(teacher_id)')
         conn.commit()
     finally:
         conn.close()

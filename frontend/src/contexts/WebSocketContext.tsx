@@ -152,7 +152,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const conn = connectionsRef.current.get(key);
         if (conn) {
           conn.isStreaming = false;
+          // Notify listeners so components know the connection dropped
+          conn.listeners.forEach(listener => listener());
+          forceUpdate({});
         }
+        // Remove dead connection so getConnection creates a fresh one
+        connectionsRef.current.delete(key);
       };
     }
 
@@ -206,9 +211,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const closeConnection = useCallback((tabId: string, endpoint: string) => {
     const key = getConnectionKey(tabId, endpoint);
     const conn = connectionsRef.current.get(key);
-    if (conn && conn.ws.readyState === WebSocket.OPEN) {
+    if (conn && (conn.ws.readyState === WebSocket.OPEN || conn.ws.readyState === WebSocket.CONNECTING)) {
       conn.ws.close();
-      connectionsRef.current.delete(key);
+      // onclose handler will delete from map and notify listeners
       console.log(`[WebSocket] Closed connection for ${key}`);
     }
   }, []);

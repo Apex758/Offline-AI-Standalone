@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { ResourceGridSkeleton } from './ui/ResourceGridSkeleton';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
@@ -1832,6 +1833,8 @@ ${tabScript}
   );
 
   // ── ROOT ──────────────────────────────────────────────────────────────────
+
+  if (loading) return <ResourceGridSkeleton variant="roster" accentColor={accentColor} />;
 
   return (
     <div

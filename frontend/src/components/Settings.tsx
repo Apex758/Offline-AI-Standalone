@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { SettingsPanelSkeleton } from './ui/SettingsPanelSkeleton';
 import { resetStepsCache } from '../lib/imageApi';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
@@ -821,6 +822,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const [spectrumBase, setSpectrumBase] = useState('#3b82f6');
   const [showGradientPicker, setShowGradientPicker] = useState(false);
   const [showSpectrumPicker, setShowSpectrumPicker] = useState(false);
+
+  const [initialLoad, setInitialLoad] = React.useState(true);
+  React.useEffect(() => { setInitialLoad(false); }, []);
+
+  if (initialLoad) return <SettingsPanelSkeleton />;
 
   // Convert hex to HSL
   const hexToHSL = (hex: string): [number, number, number] => {

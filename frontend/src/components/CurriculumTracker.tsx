@@ -19,6 +19,7 @@ import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
 import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquare02Icon';
 import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
+import { TreeBrowserSkeleton } from './ui/TreeBrowserSkeleton';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -987,91 +988,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   };
 
   if (loading) {
-    return (
-      <div className="h-full flex flex-col bg-theme-secondary">
-        {/* Header Skeleton */}
-        <div className="px-6 py-4" style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}bb)` }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded animate-pulse bg-white/20" />
-              <div className="space-y-2">
-                <div className="h-7 w-48 rounded animate-pulse bg-white/20" />
-                <div className="h-4 w-64 rounded animate-pulse bg-white/15" />
-              </div>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 space-y-1">
-              <div className="h-3 w-24 rounded animate-pulse bg-white/20" />
-              <div className="h-7 w-12 rounded animate-pulse bg-white/25" />
-            </div>
-          </div>
-        </div>
-
-        {/* Filters Skeleton */}
-        <div className="bg-theme-surface border-b border-theme px-6 py-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-5 h-5 rounded animate-pulse bg-theme-tertiary" />
-            <div className="h-9 w-32 rounded-lg animate-pulse bg-theme-tertiary" />
-            <div className="h-9 w-32 rounded-lg animate-pulse bg-theme-tertiary" />
-            <div className="h-9 w-32 rounded-lg animate-pulse bg-theme-tertiary" />
-            <div className="ml-auto flex items-center space-x-2">
-              <div className="h-9 w-24 rounded-lg animate-pulse bg-theme-tertiary" />
-              <div className="h-9 w-28 rounded-lg animate-pulse bg-theme-tertiary" />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Skeleton - Tree + Skill Panel */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left Tree View Skeleton */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-5xl mx-auto rounded-xl p-6 widget-glass space-y-3">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="space-y-2">
-                  {/* Grade level row */}
-                  <div className="flex items-center space-x-3 p-3 rounded-lg" style={{ backgroundColor: `${accentColor}08` }}>
-                    <div className="w-5 h-5 rounded animate-pulse" style={{ backgroundColor: `${accentColor}20` }} />
-                    <div className="h-5 rounded animate-pulse" style={{ width: `${140 + i * 20}px`, backgroundColor: `${accentColor}15` }} />
-                    <div className="ml-auto flex items-center space-x-2">
-                      <div className="h-2 w-24 rounded-full animate-pulse" style={{ backgroundColor: `${accentColor}15` }} />
-                      <div className="h-4 w-8 rounded animate-pulse" style={{ backgroundColor: `${accentColor}15` }} />
-                    </div>
-                  </div>
-                  {/* Subject rows */}
-                  {i <= 3 && [1, 2].map(j => (
-                    <div key={j} className="ml-8 flex items-center space-x-3 p-2.5 rounded-lg">
-                      <div className="w-4 h-4 rounded animate-pulse bg-theme-tertiary" />
-                      <div className="h-4 rounded animate-pulse bg-theme-tertiary" style={{ width: `${100 + j * 30}px` }} />
-                      <div className="ml-auto flex items-center space-x-2">
-                        <div className="h-5 w-16 rounded-full animate-pulse bg-theme-tertiary" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="flex-shrink-0 w-px" style={{ backgroundColor: `${accentColor}30` }} />
-
-          {/* Right Skill Tree Skeleton */}
-          <div className="w-80 flex-shrink-0 bg-theme-surface p-6 space-y-4">
-            <div className="h-6 w-28 rounded animate-pulse bg-theme-tertiary" />
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full animate-pulse" style={{ backgroundColor: `${accentColor}15` }} />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-3.5 rounded animate-pulse bg-theme-tertiary" style={{ width: `${60 + i * 10}%` }} />
-                    <div className="h-2.5 w-1/3 rounded animate-pulse bg-theme-tertiary" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <TreeBrowserSkeleton accentColor={accentColor} />;
   }
 
   return (

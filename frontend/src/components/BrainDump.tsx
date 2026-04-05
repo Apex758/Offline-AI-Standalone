@@ -65,6 +65,7 @@ import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType, BrainDumpSuggestion } from '../types/brainDump';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { Skeleton } from './ui/skeleton';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; strokeWidth?: number }> = ({ icon, className = '', style, strokeWidth }) => {
@@ -1536,6 +1537,53 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     { id: 'stopwatch' as const, icon: Clock, label: 'Stopwatch', color: 'text-amber-500', bg: 'bg-amber-500/12 hover:bg-amber-500/20' },
     { id: 'timer' as const, icon: Timer, label: 'Timer', color: 'text-green-500', bg: 'bg-green-500/12 hover:bg-green-500/20' },
   ];
+
+  const [initialLoad, setInitialLoad] = useState(true);
+  useEffect(() => { setInitialLoad(false); }, []);
+
+  if (initialLoad) {
+    return (
+      <div className="h-full overflow-hidden p-4 md:p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-9 h-9 rounded-lg" />
+            <div className="space-y-1">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-20 rounded-lg" />
+            <Skeleton className="h-8 w-28 rounded-lg" />
+          </div>
+        </div>
+        {/* Editor area */}
+        <div className="rounded-2xl bg-theme-surface ring-1 ring-theme-border overflow-hidden">
+          {/* Toolbar */}
+          <div className="border-b border-theme px-4 py-2 flex gap-1">
+            {Array(8).fill(0).map((_, i) => (
+              <Skeleton key={i} className="w-8 h-8 rounded" />
+            ))}
+          </div>
+          {/* Editor body */}
+          <div className="p-6 space-y-3 min-h-[400px]">
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-4 w-3/5" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/5" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+        {/* Footer */}
+        <div className="flex items-center justify-between">
+          <Skeleton className="w-10 h-10 rounded-full" />
+          <Skeleton className="h-10 w-32 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-hidden">

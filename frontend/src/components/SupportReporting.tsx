@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { SettingsPanelSkeleton } from './ui/SettingsPanelSkeleton';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
@@ -396,6 +397,11 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
     persistState();
     return () => { if (persistTimer.current) clearTimeout(persistTimer.current); };
   }, [persistState]);
+
+  const [initialLoad, setInitialLoad] = React.useState(true);
+  React.useEffect(() => { setInitialLoad(false); }, []);
+
+  if (initialLoad) return <SettingsPanelSkeleton sectionCount={4} />;
 
   // ── Support handlers ──
   const toggleCategory = (categoryId: string) => {

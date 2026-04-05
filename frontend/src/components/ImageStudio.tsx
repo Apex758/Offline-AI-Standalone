@@ -65,6 +65,7 @@ import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import { Skeleton } from './ui/skeleton';
 
 interface ImageStudioProps {
   tabId: string;
@@ -1067,6 +1068,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     }
   }, [generationState]);
 
+  const [initialLoad, setInitialLoad] = useState(true);
+  useEffect(() => { setInitialLoad(false); }, []);
+
   // ========================================
   // COMIC: Generate Comic Page
   // ========================================
@@ -1962,6 +1966,52 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // ========================================
   // RENDER
   // ========================================
+  if (initialLoad) {
+    return (
+      <div className="h-full tab-content-bg flex flex-col">
+        {/* Tab toggle */}
+        <div className="flex justify-end p-4 border-b border-theme">
+          <div className="flex bg-theme-tertiary rounded-lg p-1 gap-1">
+            <Skeleton className="h-8 w-28 rounded-md" />
+            <Skeleton className="h-8 w-24 rounded-md" />
+          </div>
+        </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-3xl mx-auto space-y-6">
+            {/* Style grid */}
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-24" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {Array(8).fill(0).map((_, i) => (
+                  <Skeleton key={i} className="h-24 rounded-xl" />
+                ))}
+              </div>
+            </div>
+            {/* Prompt */}
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+            </div>
+            {/* Options row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
+            </div>
+            {/* Generate button */}
+            <Skeleton className="h-11 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full tab-content-bg flex flex-col" data-tutorial="image-studio-root">
       {/* Top Right Sliding Toggle */}

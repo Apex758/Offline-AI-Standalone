@@ -127,6 +127,19 @@ If ANY fail → retry or escalate
 
 ---
 
+## Debugging Strategy
+
+When the root cause of a bug is unclear:
+1. Add targeted log statements around the suspected area to isolate the problem
+2. Use the logs to eliminate possibilities — narrow down which code path is/isn't executing
+3. Repeat: move logs closer to the actual failure point based on what you learned
+4. Only attempt a fix once you have concrete evidence of the root cause
+5. Remove debug logs after the issue is resolved
+
+Do NOT guess at fixes without evidence. Logs are cheap, bad fixes are expensive.
+
+---
+
 ## Execution Strategy
 
 1. Understand task  

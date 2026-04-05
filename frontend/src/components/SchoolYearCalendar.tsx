@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { ResourceGridSkeleton } from './ui/ResourceGridSkeleton';
 import {
   format,
   startOfMonth,
@@ -428,7 +429,12 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     return counts;
   }, [events]);
 
+  const [initialLoad, setInitialLoad] = React.useState(true);
+  React.useEffect(() => { setInitialLoad(false); }, []);
+
   // ── Render ──
+
+  if (initialLoad) return <ResourceGridSkeleton variant="calendar" />;
 
   return (
     <div

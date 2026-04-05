@@ -201,7 +201,8 @@
       "Bash(ls -lh \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/\"*gemma* \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/\"*Gemma*)",
       "Bash(find \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\" -type f -name \"*.tsx\" -exec wc -l {} +)",
       "Bash(find \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/public\" -type f -size +500k -exec ls -lh {} \\\\;)",
-      "Bash(du -h \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/public\"/*)"
+      "Bash(du -h \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/public\"/*)",
+      "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/dist/assets/\"*.js)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

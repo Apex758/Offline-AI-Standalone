@@ -1,4 +1,4 @@
-import type { TrophyType } from '../assets/trophyImages';
+import type { TrophyType } from '../assets/trophyImagesLazy';
 
 /**
  * Maps achievement IDs to their trophy type.

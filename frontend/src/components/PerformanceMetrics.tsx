@@ -13,6 +13,7 @@ import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Cell } from 'recharts';
 import { useContainerSize } from '../hooks/useContainerSize';
 import axios from 'axios';
+import { DashboardSkeleton } from './ui/DashboardSkeleton';
 
 const API = 'http://localhost:8000/api';
 const POLL_INTERVAL = 2500;
@@ -559,11 +560,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
   };
 
   if (loading && !summary) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse text-theme-muted">Loading metrics...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const specs = summary?.system_specs;

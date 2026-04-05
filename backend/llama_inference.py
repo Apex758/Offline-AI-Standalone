@@ -177,14 +177,14 @@ class LlamaInference:
         },
         "gemma4": {
             "handler_class": "Llava15ChatHandler",
-            "stop_tokens": ["<end_of_turn>", "<eos>"],
-            "prompt_format": "gemma",
+            "stop_tokens": ["<turn|>", "<eos>"],
+            "prompt_format": "gemma4",
             "supports_thinking": False,
         },
         "gemma-4": {
             "handler_class": "Llava15ChatHandler",
-            "stop_tokens": ["<end_of_turn>", "<eos>"],
-            "prompt_format": "gemma",
+            "stop_tokens": ["<turn|>", "<eos>"],
+            "prompt_format": "gemma4",
             "supports_thinking": False,
         },
     }
@@ -257,6 +257,7 @@ class LlamaInference:
                     n_threads=n_threads,
                     n_batch=self.gpu_info["n_batch"],
                     n_gpu_layers=self.gpu_info["n_gpu_layers"],
+                    use_mmap=True,
                     **({"chat_handler": chat_handler} if chat_handler else {}),
                 )
             self.n_ctx = n_ctx
@@ -270,14 +271,12 @@ class LlamaInference:
 
     @property
     def _use_chat_completion(self) -> bool:
-        """Whether this model needs create_chat_completion for proper special token handling.
+        """Whether this model needs create_chat_completion.
 
-        Gemma was previously routed here because <start_of_turn>/<end_of_turn>
-        are special tokens, but llama-cpp-python >=0.3.x tokenizes with
-        special=True by default in create_completion, so the raw prompt path
-        handles them correctly.  Routing through create_chat_completion
-        conflicts with the Llava15ChatHandler (vision projector) which
-        reformats prompts into LLaVA format that Gemma doesn't understand.
+        Gemma models use the raw completion path with special=True tokenization
+        to correctly handle special tokens (<|turn>, <turn|>, etc.).
+        The Llava15ChatHandler would hijack create_chat_completion and reformat
+        the prompt into LLaVA format, which breaks Gemma.
         """
         return False
 
@@ -291,21 +290,27 @@ class LlamaInference:
         """
         fmt = self.model_config.get("prompt_format", "llama")
 
-        if fmt == "gemma":
-            # Gemma format (single or multi-turn):
-            #   <start_of_turn>user\n{content}<end_of_turn>\n
-            #   <start_of_turn>model\n{content}<end_of_turn>\n
-            #   ...
-            #   <start_of_turn>model\n  (trailing, for generation)
+        if fmt == "gemma4":
+            # Gemma 4 format: <|turn>role\n{content}<turn|>
+            messages = []
+            for role_tag, content in re.findall(
+                r'<\|turn>(system|user|model)\n(.*?)<turn\|>', prompt, re.DOTALL
+            ):
+                if role_tag == "model":
+                    role = "assistant"
+                else:
+                    role = role_tag  # "system" or "user"
+                messages.append({"role": role, "content": content.strip()})
+            if messages:
+                return messages
+        elif fmt == "gemma":
+            # Gemma 2/3 format: <start_of_turn>role\n{content}<end_of_turn>
             messages = []
             for role_tag, content in re.findall(
                 r'<start_of_turn>(user|model)\n(.*?)<end_of_turn>', prompt, re.DOTALL
             ):
                 role = "assistant" if role_tag == "model" else "user"
                 messages.append({"role": role, "content": content.strip()})
-            # If the prompt ends with <start_of_turn>user\n...<end_of_turn>\n<start_of_turn>model\n
-            # the last user turn before the trailing model tag may not have matched above
-            # if it's the final (unclosed) user turn — but findall handles complete turns fine.
             if messages:
                 return messages
         elif fmt == "chatml":
@@ -367,6 +372,17 @@ class LlamaInference:
             use_chat = self._use_chat_completion
             chat_messages = self._parse_prompt_to_messages(prompt) if use_chat else None
 
+            # Gemma models need special=True tokenization for turn markers
+            _needs_special = self.model_config.get("prompt_format") in ("gemma", "gemma4")
+            prompt_token_ids = None
+            if not use_chat and _needs_special:
+                try:
+                    prompt_token_ids = self.model.tokenize(
+                        prompt.encode("utf-8"), add_bos=True, special=True
+                    )
+                except Exception:
+                    prompt_token_ids = None
+
             def blocking_generate():
                 with SilenceOutput():
                     if use_chat and chat_messages:
@@ -379,8 +395,9 @@ class LlamaInference:
                             stop=stop,
                         )
                     else:
+                        raw_prompt = prompt_token_ids if prompt_token_ids else prompt
                         result = self.model(
-                            prompt,
+                            raw_prompt,
                             max_tokens=max_tokens,
                             temperature=temperature,
                             top_p=top_p,
@@ -481,11 +498,26 @@ class LlamaInference:
             use_chat = self._use_chat_completion
             chat_messages = self._parse_prompt_to_messages(prompt) if use_chat else None
 
-            # Safety: check prompt token count before sending to native code
-            if not use_chat:
+            # Gemma models use special tokens (<|turn>, <turn|>, <start_of_turn>, etc.)
+            # that must be tokenized with special=True to get correct token IDs.
+            _needs_special = self.model_config.get("prompt_format") in ("gemma", "gemma4")
+            prompt_token_ids = None
+            if not use_chat and _needs_special:
+                try:
+                    prompt_token_ids = self.model.tokenize(
+                        prompt.encode("utf-8"), add_bos=True, special=True
+                    )
+                    max_prompt_tokens = self.n_ctx - max_tokens - 64
+                    if len(prompt_token_ids) > max_prompt_tokens:
+                        logger.warning(f"Prompt too long: {len(prompt_token_ids)} tokens (max {max_prompt_tokens}). Truncating.")
+                        prompt_token_ids = prompt_token_ids[:max_prompt_tokens]
+                except Exception as te:
+                    logger.warning(f"Special tokenization failed: {te}")
+                    prompt_token_ids = None
+            elif not use_chat:
                 try:
                     prompt_tokens = self.model.tokenize(prompt.encode("utf-8"))
-                    max_prompt_tokens = self.n_ctx - max_tokens - 64  # leave margin
+                    max_prompt_tokens = self.n_ctx - max_tokens - 64
                     if len(prompt_tokens) > max_prompt_tokens:
                         logger.warning(f"Prompt too long: {len(prompt_tokens)} tokens (max {max_prompt_tokens}). Truncating.")
                         prompt_tokens = prompt_tokens[:max_prompt_tokens]
@@ -505,8 +537,9 @@ class LlamaInference:
             def stream_in_thread():
                 """Runs in thread - puts tokens in queue AS they're generated."""
                 try:
-                    logger.info(f"[stream] use_chat={use_chat}, prompt_len={len(prompt)}, max_tokens={max_tokens}")
-                    logger.info(f"[stream] prompt_preview: {prompt[:300]!r}")
+                    _tok_info = f"token_ids={len(prompt_token_ids)}" if prompt_token_ids else f"prompt_len={len(prompt)}"
+                    print(f"[stream] use_chat={use_chat}, special_tokens={_needs_special}, {_tok_info}, max_tokens={max_tokens}")
+                    print(f"[stream] prompt_preview: {prompt[:300]!r}")
                     with SilenceOutput():
                         if use_chat and chat_messages:
                             stream = self.model.create_chat_completion(
@@ -529,9 +562,10 @@ class LlamaInference:
                                     token_count[0] += 1
                                     token_queue.put(token)
                         else:
-                            logger.info("[stream] Creating raw completion stream...")
+                            print("[stream] Creating raw completion stream...")
+                            raw_prompt = prompt_token_ids if prompt_token_ids else prompt
                             stream = self.model(
-                                prompt,
+                                raw_prompt,
                                 max_tokens=max_tokens,
                                 temperature=temperature,
                                 top_p=top_p,
@@ -540,14 +574,14 @@ class LlamaInference:
                                 echo=False,
                                 stream=True,
                             )
-                            logger.info("[stream] Stream created, iterating tokens...")
+                            print("[stream] Stream created, iterating tokens...")
                             for output in stream:
                                 if cancel_event and cancel_event.is_set():
                                     break
                                 token = output["choices"][0]["text"]
                                 if first_token_time[0] is None:
                                     first_token_time[0] = time.perf_counter()
-                                    logger.info(f"[stream] First token received: {token!r}")
+                                    print(f"[stream] First token received: {token!r}")
                                 token_count[0] += 1
                                 token_queue.put(token)  # Put immediately!
                 except Exception as e:
@@ -579,6 +613,7 @@ class LlamaInference:
                         )
                     except Exception as _me:
                         logger.debug(f"Metrics recording skipped: {_me}")
+                    print(f"[stream] DONE: {token_count[0]} tokens in {_total_ms:.0f}ms, ttft={_ttft_ms:.0f}ms")
                     token_queue.put(DONE)  # Signal completion
 
             # ✅ Start streaming in background thread

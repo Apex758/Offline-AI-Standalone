@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Lock01IconData from '@hugeicons/core-free-icons/LockIcon';
@@ -24,10 +24,11 @@ import { useSettings } from '../contexts/SettingsContext';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import TrophyDetailCard from './TrophyDetailCard';
-import { getTrophyImageForTier, type TrophyTier } from '../assets/trophyImages';
+import { getTrophyImageForTier, type TrophyTier } from '../assets/trophyImagesLazy';
 import { getTrophyType } from '../config/trophyMap';
 import LevelJourneyPath from './LevelJourneyPath';
 import type { AchievementDefinition, AchievementCategory, AchievementRarity, AchievementTier, NewlyEarnedAchievement } from '../types/achievement';
+import { DashboardSkeleton } from './ui/DashboardSkeleton';
 
 const RARITY_COLORS: Record<AchievementRarity, string> = {
   common: '#9ca3af',
@@ -157,6 +158,15 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [headerHovered, setHeaderHovered] = useState(false);
   const [viewingAchievement, setViewingAchievement] = useState<NewlyEarnedAchievement | null>(null);
+  const [viewingTrophySrc, setViewingTrophySrc] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!viewingAchievement) { setViewingTrophySrc(undefined); return; }
+    const tType = getTrophyType(viewingAchievement.achievement_id);
+    if (!tType) { setViewingTrophySrc(undefined); return; }
+    getTrophyImageForTier(tType, (viewingAchievement.tier ?? 'gold') as TrophyTier)
+      .then(src => setViewingTrophySrc(src));
+  }, [viewingAchievement?.achievement_id, viewingAchievement?.tier]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const earnedIds = useMemo(() => new Set(earned.map(e => e.achievement_id)), [earned]);
   const earnedMap = useMemo(() => {
@@ -209,11 +219,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse" style={{ color: 'var(--dash-text-sub)' }}>Loading achievements...</div>
-      </div>
-    );
+    return <DashboardSkeleton accentColor={tabColor} />;
   }
 
   return (
@@ -574,24 +580,20 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
         </div>
 
         {/* View achievement detail — use TrophyDetailCard when image available, else fallback */}
-        {viewingAchievement && (() => {
-          const tType = getTrophyType(viewingAchievement.achievement_id);
-          const tSrc = tType ? getTrophyImageForTier(tType, (viewingAchievement.tier ?? 'gold') as TrophyTier) : undefined;
-          return tSrc ? (
-            <TrophyDetailCard
-              achievement={viewingAchievement}
-              trophyImageSrc={tSrc}
-              earnedAt={viewingAchievement.earned_at}
-              onClose={() => setViewingAchievement(null)}
-            />
-          ) : (
-            <AchievementUnlockModal
-              achievement={viewingAchievement}
-              onDismiss={() => setViewingAchievement(null)}
-              viewOnly
-            />
-          );
-        })()}
+        {viewingAchievement && (viewingTrophySrc ? (
+          <TrophyDetailCard
+            achievement={viewingAchievement}
+            trophyImageSrc={viewingTrophySrc}
+            earnedAt={viewingAchievement.earned_at}
+            onClose={() => setViewingAchievement(null)}
+          />
+        ) : (
+          <AchievementUnlockModal
+            achievement={viewingAchievement}
+            onDismiss={() => setViewingAchievement(null)}
+            viewOnly
+          />
+        ))}
 
         {sortedDefinitions.length === 0 && (
           <div className="text-center py-12" style={{ color: 'var(--dash-text-sub)' }}>

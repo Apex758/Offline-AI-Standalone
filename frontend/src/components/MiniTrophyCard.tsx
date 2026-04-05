@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react';
 import type { AchievementDefinition, AchievementRarity } from '../types/achievement';
 import { getTrophyType } from '../config/trophyMap';
-import { getTrophyImageForTier, type TrophyTier } from '../assets/trophyImages';
+import { getTrophyImageForTier, type TrophyTier } from '../assets/trophyImagesLazy';
 
 const RARITY_THEME: Record<AchievementRarity, {
   primary: string; accent: string; glow: string; label: string;
@@ -43,7 +44,12 @@ export default function MiniTrophyCard({ definition, onClick }: MiniTrophyCardPr
   const theme = RARITY_THEME[definition.rarity];
   const trophyType = getTrophyType(definition.id);
   const tier = (definition.tier ?? 'gold') as TrophyTier;
-  const trophyImg = trophyType ? (getTrophyImageForTier(trophyType, tier) ?? null) : null;
+  const [trophyImg, setTrophyImg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!trophyType) return;
+    getTrophyImageForTier(trophyType, tier).then(src => setTrophyImg(src ?? null));
+  }, [trophyType, tier]);
 
   const words = definition.name.split(' ');
   const midpoint = Math.ceil(words.length / 2);

@@ -30,6 +30,7 @@ import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import axios from 'axios';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 import { useCapabilities } from '../contexts/CapabilitiesContext';
+import { Skeleton } from './ui/skeleton';
 import { filterGrades, filterSubjects } from '../data/teacherConstants';
 // pptxgenjs is dynamically imported in exportPPTX() to avoid bundling upfront
 
@@ -2194,12 +2195,68 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
   }, [subjects, grades, filterOn]);
 
+  const [initialLoad, setInitialLoad] = useState(true);
+  useEffect(() => { setInitialLoad(false); }, []);
+
   const selectedPlan = lessonPlans.find(p => p.id === selectedPlanId);
   const filteredPlans = lessonPlans.filter(p => {
     if (!lessonSearchQuery) return true;
     const q = lessonSearchQuery.toLowerCase();
     return p.title?.toLowerCase().includes(q) || p.formData?.subject?.toLowerCase().includes(q) || p.formData?.topic?.toLowerCase().includes(q);
   });
+
+  if (initialLoad) {
+    return (
+      <div className="h-full flex bg-theme-primary">
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header */}
+          <div className="border-b border-theme p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-8 h-8 rounded-lg" />
+              <div className="space-y-1">
+                <Skeleton className="h-5 w-36" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="w-8 h-8 rounded-lg" />
+          </div>
+          {/* Form area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
+              {/* Mode toggle */}
+              <div className="flex justify-center">
+                <div className="flex bg-theme-tertiary rounded-lg p-1 gap-1">
+                  <Skeleton className="h-9 w-28 rounded-md" />
+                  <Skeleton className="h-9 w-32 rounded-md" />
+                  <Skeleton className="h-9 w-28 rounded-md" />
+                </div>
+              </div>
+              {/* Form fields */}
+              <div className="grid grid-cols-2 gap-4">
+                {Array(6).fill(0).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-full rounded-lg" />
+                  </div>
+                ))}
+              </div>
+              {/* Style section */}
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-28" />
+                <div className="grid grid-cols-3 gap-3">
+                  {Array(6).fill(0).map((_, i) => (
+                    <Skeleton key={i} className="h-20 rounded-xl" />
+                  ))}
+                </div>
+              </div>
+              {/* Generate button */}
+              <Skeleton className="h-11 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ═══════════════════════════════════════
      INPUT VIEW
