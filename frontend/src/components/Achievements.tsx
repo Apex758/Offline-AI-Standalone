@@ -220,6 +220,30 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
     <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--tab-content-bg, var(--dash-bg))' }}>
       <div className="max-w-[90rem] mx-auto px-4 py-6 space-y-6">
 
+        {/* ========== TEMPORARY TROPHY PREVIEW — DELETE THIS BLOCK ========== */}
+        <div style={{ background: '#111', borderRadius: 16, padding: 24 }}>
+          <h2 style={{ color: '#fff', marginBottom: 16, fontSize: 18, fontWeight: 700 }}>Trophy Image Preview (TEMP)</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+            {(['scroll','quill','mortarboard','scale','clipboard','milestone','compass','flame','chat-bubble','brain','bar-chart','owl','lightning'] as const).map(tType => (
+              ['bronze','silver','gold','diamond'] as const).map(tier => {
+                const src = getTrophyImageForTier(tType, tier);
+                return (
+                  <div key={`${tType}-${tier}`} style={{ textAlign: 'center', background: '#1a1a1e', borderRadius: 12, padding: 12 }}>
+                    {src ? (
+                      <img src={src} alt={`${tType} ${tier}`} style={{ width: 100, height: 100, objectFit: 'contain', margin: '0 auto' }} />
+                    ) : (
+                      <div style={{ width: 100, height: 100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>N/A</div>
+                    )}
+                    <div style={{ color: '#aaa', fontSize: 11, marginTop: 6 }}>{tType}</div>
+                    <div style={{ color: tier === 'diamond' ? '#b9f2ff' : tier === 'gold' ? '#fbbf24' : tier === 'silver' ? '#c0c0c0' : '#cd7f32', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>{tier}</div>
+                  </div>
+                );
+              })
+            ).flat()}
+          </div>
+        </div>
+        {/* ========== END TEMPORARY TROPHY PREVIEW ========== */}
+
         {/* Header + collapsible filters */}
         <div
           className="rounded-2xl overflow-hidden shadow-lg"

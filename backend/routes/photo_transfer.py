@@ -223,7 +223,8 @@ async def upload_photo(
     auto_cropped = False
     try:
         from document_processor import process_document_image
-        contents, auto_cropped = process_document_image(contents)
+        loop = asyncio.get_running_loop()
+        contents, auto_cropped = await loop.run_in_executor(None, process_document_image, contents)
     except Exception as e:
         logger.debug(f"Document processing skipped: {e}")
     file_path.write_bytes(contents)
@@ -592,21 +593,21 @@ async def start_hotspot(request: Request):
         import subprocess
 
         # Configure the hosted network
-        subprocess.run(
+        await asyncio.get_running_loop().run_in_executor(None, lambda: subprocess.run(
             ["netsh", "wlan", "set", "hostednetwork",
              "mode=allow", f"ssid={ssid}", f"key={password}"],
             capture_output=True, text=True, check=True,
-        )
+        ))
 
         # Start it
-        result = subprocess.run(
+        result = await asyncio.get_running_loop().run_in_executor(None, lambda: subprocess.run(
             ["netsh", "wlan", "start", "hostednetwork"],
             capture_output=True, text=True,
-        )
+        ))
 
         if result.returncode != 0:
             # Fallback: try Windows Mobile Hotspot via PowerShell
-            ps_start = subprocess.run(
+            ps_start = await asyncio.get_running_loop().run_in_executor(None, lambda: subprocess.run(
                 ["powershell", "-Command",
                  "[Windows.Networking.NetworkOperators.NetworkOperatorTetheringManager,"
                  "Windows.Networking.NetworkOperators,ContentType=WindowsRuntime];"
@@ -615,7 +616,7 @@ async def start_hotspot(request: Request):
                  "::GetInternetConnectionProfile());"
                  "$tm.StartTetheringAsync().GetResults()"],
                 capture_output=True, text=True, timeout=15,
-            )
+            ))
             if "Successful" not in ps_start.stdout and ps_start.returncode != 0:
                 return JSONResponse(status_code=500, content={
                     "ok": False,
@@ -624,8 +625,7 @@ async def start_hotspot(request: Request):
                 })
 
         # Wait a moment then detect the new IP
-        import time
-        time.sleep(2)
+        await asyncio.sleep(2)
         ip = get_local_ip()
 
         logger.info(f"Hotspot started — SSID: {ssid}, IP: {ip}")
@@ -775,10 +775,10 @@ async def hotspot_status():
 
     try:
         import subprocess
-        result = subprocess.run(
+        result = await asyncio.get_running_loop().run_in_executor(None, lambda: subprocess.run(
             ["netsh", "wlan", "show", "hostednetwork"],
             capture_output=True, text=True, timeout=5,
-        )
+        ))
         active = "Started" in result.stdout
         return {"active": active, "supported": True, "detail": result.stdout}
     except Exception:

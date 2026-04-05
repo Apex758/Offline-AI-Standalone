@@ -282,7 +282,7 @@ async def lifespan(app):
         logger.info("Image service initialized")
 
         # Start IOPaint on startup
-        image_service.start_iopaint()
+        asyncio.get_running_loop().run_in_executor(None, image_service.start_iopaint)
     except Exception as e:
         logger.error(f"Failed to initialize image service: {e}")
 
@@ -913,6 +913,23 @@ async def websocket_chat(websocket: WebSocket):
                 prompt += f"<|{msg['role']}|>{msg['content']}<|end|>\n"
             prompt += f"<|user|>{user_message}<|end|>\n"
             prompt += "<|assistant|>"
+        elif prompt_format == "gemma":
+            # Gemma format (no system role — prepend system prompt to first user turn)
+            prompt = ""
+            system_injected = False
+            for msg in history:
+                if msg["role"] == "user":
+                    prompt += "<start_of_turn>user\n"
+                    if not system_injected:
+                        prompt += f"{system_prompt}\n\n"
+                        system_injected = True
+                    prompt += f"{msg['content']}<end_of_turn>\n"
+                elif msg["role"] == "assistant":
+                    prompt += f"<start_of_turn>model\n{msg['content']}<end_of_turn>\n"
+            prompt += "<start_of_turn>user\n"
+            if not system_injected:
+                prompt += f"{system_prompt}\n\n"
+            prompt += f"{user_message}<end_of_turn>\n<start_of_turn>model\n"
         else:
             # Llama format
             prompt = "<|begin_of_text|>"
@@ -2987,12 +3004,12 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
 
 
 async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperature,
-                        token_type="token", done_type="done"):
+                        token_type="token", done_type="done", tool_name="brain-dump"):
     """Shared streaming helper for brain dump websocket responses."""
     token_buffer = []
     last_send = time.time()
     async for chunk in inference.generate_stream(
-        tool_name="brain-dump",
+        tool_name=tool_name,
         input_data=text,
         prompt_template=prompt,
         max_tokens=max_tokens,
@@ -3076,7 +3093,8 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
                     inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                     await _stream_to_ws(websocket, inference, suggest_full, unmatched_text,
                                         max_tokens=500, temperature=0.3,
-                                        token_type="suggestion_token", done_type="suggestions_done")
+                                        token_type="suggestion_token", done_type="suggestions_done",
+                                        tool_name="brain-dump-suggest")
                 except Exception as e:
                     logger.error(f"Brain dump suggestion error: {e}")
                     try:
@@ -3138,7 +3156,8 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
                     inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                     await _stream_to_ws(websocket, inference, gen_full, action_text,
                                         max_tokens=500, temperature=0.3,
-                                        token_type="action_token", done_type="action_done")
+                                        token_type="action_token", done_type="action_done",
+                                        tool_name="brain-dump-action")
                 except Exception as e:
                     logger.error(f"Brain dump generate-action error: {e}")
                     try:
@@ -4278,7 +4297,6 @@ Return ONLY valid JSON:
     "2": "student's answer for Q2"
   }}
 }}"""
-            extracted = await ocr_service.extract_text(processed)
             # Try structured extraction
             import re as _re
             # Run OCR with structured prompt
@@ -7764,13 +7782,14 @@ async def generate_image(request: Request):
         image_service = get_image_service()
         
         # Generate image
-        image_bytes = image_service.generate_image(
+        loop = asyncio.get_running_loop()
+        image_bytes = await loop.run_in_executor(None, lambda: image_service.generate_image(
             prompt=prompt,
             negative_prompt=negative_prompt,
             width=width,
             height=height,
             num_inference_steps=num_steps
-        )
+        ))
         
         if image_bytes is None:
             return JSONResponse(
@@ -7840,7 +7859,8 @@ async def generate_image_base64(request: Request):
         image_service = get_image_service()
 
         # Generate image (text-to-image or image-to-image)
-        image_bytes = image_service.generate_image(
+        loop = asyncio.get_running_loop()
+        image_bytes = await loop.run_in_executor(None, lambda: image_service.generate_image(
             prompt=prompt,
             negative_prompt=negative_prompt,
             width=width,
@@ -7848,7 +7868,7 @@ async def generate_image_base64(request: Request):
             num_inference_steps=num_steps,
             init_image=init_image_bytes,
             strength=strength
-        )
+        ))
 
         if image_bytes is None:
             return JSONResponse(
@@ -7926,14 +7946,15 @@ async def generate_batch_images_base64(request: Request):
         image_service = get_image_service()
 
         # Generate batch images
-        batch_results = image_service.generate_batch_images(
+        loop = asyncio.get_running_loop()
+        batch_results = await loop.run_in_executor(None, lambda: image_service.generate_batch_images(
             prompt=prompt,
             negative_prompt=negative_prompt,
             width=width,
             height=height,
             num_inference_steps=num_steps,
             num_images=num_images
-        )
+        ))
 
         if not batch_results:
             return JSONResponse(
@@ -8029,7 +8050,8 @@ async def generate_image_from_seed(request: Request):
         image_service = get_image_service()
 
         # Generate image with seed and optional init image
-        image_bytes = image_service.generate_image(
+        loop = asyncio.get_running_loop()
+        image_bytes = await loop.run_in_executor(None, lambda: image_service.generate_image(
             prompt=prompt,
             negative_prompt=negative_prompt,
             width=width,
@@ -8038,7 +8060,7 @@ async def generate_image_from_seed(request: Request):
             seed=seed,
             init_image=init_image_bytes,
             strength=strength
-        )
+        ))
 
         if image_bytes is None:
             return JSONResponse(
@@ -8102,18 +8124,19 @@ async def inpaint_image(
         image_service = get_image_service()
         
         # Perform inpainting
-        result_bytes = image_service.inpaint_image(
+        loop = asyncio.get_running_loop()
+        result_bytes = await loop.run_in_executor(None, lambda: image_service.inpaint_image(
             image_data=image_data,
             mask_data=mask_data,
             seed=seed
-        )
-        
+        ))
+
         if result_bytes is None:
             return JSONResponse(
                 status_code=500,
                 content={"error": "Inpainting failed"}
             )
-        
+
         # Return result image
         return Response(
             content=result_bytes,
@@ -8211,11 +8234,12 @@ async def inpaint_image_base64(request: Request):
 
         # Perform inpainting
         logger.info("Calling inpaint_image...")
-        result_bytes = image_service.inpaint_image(
+        loop = asyncio.get_running_loop()
+        result_bytes = await loop.run_in_executor(None, lambda: image_service.inpaint_image(
             image_data=image_data,
             mask_data=mask_data,
             seed=seed
-        )
+        ))
 
         if result_bytes is None:
             logger.error("inpaint_image returned None")
@@ -9018,7 +9042,7 @@ async def export_class_pack(request: Request):
     """
     import zipfile
     from qr_service import generate_page_qr, compute_version_hash
-    from export_utils import export_to_pdf, export_to_docx, add_alignment_markers_to_html, inject_qr_into_html
+    from export_utils import export_to_pdf, export_to_pdf_async, export_to_docx, add_alignment_markers_to_html, inject_qr_into_html
 
     body = await request.json()
     doc_type = body["doc_type"]
@@ -9067,7 +9091,7 @@ async def export_class_pack(request: Request):
                 # Export to requested format
                 data_payload = {"rawHtml": html}
                 if fmt == "pdf":
-                    file_bytes = export_to_pdf(data_payload, title=f"{name}")
+                    file_bytes = await export_to_pdf_async(data_payload, title=f"{name}")
                     ext = "pdf"
                 else:
                     file_bytes = export_to_docx(data_payload, title=f"{name}")

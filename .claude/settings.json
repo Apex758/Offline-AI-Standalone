@@ -171,7 +171,14 @@
       "Bash(wait bp2feuzaj:*)",
       "Bash(find \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\" -name \"*history.json\" -exec wc -l {} \\\\;)",
       "Bash(grep -l \"api/model/preload\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\"/*.tsx)",
-      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/8ef867c6-8a8b-4bf9-80ef-ebf8810a8a27/tasks/**)"
+      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/8ef867c6-8a8b-4bf9-80ef-ebf8810a8a27/tasks/**)",
+      "Bash(ls \"C:/Users/LG/Desktop/Projects/Offline AI Standalone/\"*.ps1)",
+      "Bash(wc -l \"C:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/routes/\"*.py)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(node -e ':*)",
+      "Bash(npm list:*)",
+      "Bash(magick --version)",
+      "Bash(pip show:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

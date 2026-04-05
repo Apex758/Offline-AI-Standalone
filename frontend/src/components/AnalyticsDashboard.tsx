@@ -496,6 +496,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
       if (image) {
         localStorage.setItem('user-profile-image', image);
+        window.dispatchEvent(new Event('profile-image-changed'));
       } else {
         localStorage.removeItem('user-profile-image');
       }

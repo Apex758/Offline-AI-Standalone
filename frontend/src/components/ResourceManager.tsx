@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
@@ -254,7 +254,10 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
 
   // Persist filter/sort state to tab data
   useEffect(() => {
-    onDataChange({ searchQuery, filterType, sortBy, sortOrder, activeTab });
+    const timer = setTimeout(() => {
+      onDataChange({ searchQuery, filterType, sortBy, sortOrder, activeTab });
+    }, 300);
+    return () => clearTimeout(timer);
   }, [searchQuery, filterType, sortBy, sortOrder, activeTab]);
 
   const loadAllResources = async () => {
@@ -466,7 +469,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     return colors[type] || 'bg-gray-500';
   };
 
-  const filteredAndSortedResources = resources
+  const filteredAndSortedResources = useMemo(() => resources
     .filter(r => filterType === 'all' || r.type === filterType)
     .filter(r =>
       searchQuery === '' ||
@@ -484,9 +487,9 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       }
 
       return sortOrder === 'asc' ? -comparison : comparison;
-    });
+    }), [resources, filterType, searchQuery, sortBy, sortOrder]);
 
-  const favoriteResources = filteredAndSortedResources.filter(r => r.favorite);
+  const favoriteResources = useMemo(() => filteredAndSortedResources.filter(r => r.favorite), [filteredAndSortedResources]);
 
   // Count resources per type
   const getCountForType = (key: string) => {

@@ -403,6 +403,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       const dataUrl = event.target?.result as string;
       setUserProfileImage(dataUrl);
       localStorage.setItem('user-profile-image', dataUrl);
+      window.dispatchEvent(new Event('profile-image-changed'));
     };
     reader.readAsDataURL(file);
   };
@@ -1067,7 +1068,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
         const s = filteredData['settings'] as Record<string, unknown>;
         if (s.appSettings) updateSettings(s.appSettings as Record<string, unknown>);
         if (s.user) localStorage.setItem('user', JSON.stringify(s.user));
-        if (s.profileImage) localStorage.setItem('user-profile-image', s.profileImage as string);
+        if (s.profileImage) { localStorage.setItem('user-profile-image', s.profileImage as string); window.dispatchEvent(new Event('profile-image-changed')); }
         if (s.dashboardTabs) localStorage.setItem('dashboard-tabs', JSON.stringify(s.dashboardTabs));
         if (s.dashboardActiveTab) localStorage.setItem('dashboard-active-tab', s.dashboardActiveTab as string);
         if (s.dashboardSplitView) localStorage.setItem('dashboard-split-view', JSON.stringify(s.dashboardSplitView));

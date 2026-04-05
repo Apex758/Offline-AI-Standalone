@@ -77,6 +77,7 @@ interface LessonPlanHistory {
   generatedPlan: string;
   parsedLesson?: ParsedLesson;
   curriculumMatches?: CurriculumReference[]; // ✅ Related curriculum section
+  edit_count?: number;
 }
 
 interface Draft {
@@ -746,6 +747,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         ? `${formData.subject || 'General'} - ${formData.topic} (Grade ${formData.gradeLevel || 'Unknown'})`
         : `Lesson Plan - ${formData.subject || 'General'} (Grade ${formData.gradeLevel || 'Unknown'})`;
       
+      // Track edit count: increment if re-saving an existing plan
+      let editCount = 1;
+      if (currentPlanId) {
+        const existing = lessonPlanHistories.find(h => h.id === currentPlanId);
+        editCount = (existing?.edit_count ?? 1) + 1;
+      }
+
       const planData = {
         id: currentPlanId || `plan_${Date.now()}`,
         title: title,
@@ -753,7 +761,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         formData: formData,
         generatedPlan: generatedPlan,  // ✅ Save original clean text
         parsedLesson: parsedLesson || undefined,
-        curriculumMatches: curriculumMatches // ✅ Save related curriculum section
+        curriculumMatches: curriculumMatches, // ✅ Save related curriculum section
+        edit_count: editCount,
       };
 
       await axios.post('http://localhost:8000/api/lesson-plan-history', planData);

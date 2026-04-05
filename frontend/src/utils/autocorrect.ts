@@ -11,11 +11,11 @@ export const AUTOCORRECT_MAP: Record<string, string> = {
   'arent': "aren't", 'wont': "won't", 'cant': "can't", 'couldnt': "couldn't",
   'shouldnt': "shouldn't", 'wouldnt': "wouldn't", 'hasnt': "hasn't",
   'havent': "haven't", 'hadnt': "hadn't", 'youre': "you're", 'theyre': "they're",
-  'were': "we're", 'hes': "he's", 'shes': "she's", 'its': "it's",
+  'hes': "he's", 'shes': "she's",
   'whos': "who's", 'whats': "what's", 'thats': "that's", 'theres': "there's",
   'heres': "here's", 'wheres': "where's", 'lets': "let's", 'ive': "I've",
   'youve': "you've", 'weve': "we've", 'theyve': "they've",
-  'im': "I'm", 'youll': "you'll", 'well': "we'll", 'theyll': "they'll",
+  'im': "I'm", 'youll': "you'll", 'theyll': "they'll",
   'ill': "I'll", 'itll': "it'll", 'thatll': "that'll", 'wholl': "who'll",
 
   // Common misspellings
@@ -73,7 +73,8 @@ export const AUTOCORRECT_MAP: Record<string, string> = {
   'studens': 'students', 'studnets': 'students', 'studnet': 'student',
 
   // Capitalization fixes
-  'i': 'I', 'monday': 'Monday', 'tuesday': 'Tuesday', 'wednesday': 'Wednesday',
+  'i': 'I',
+  'monday': 'Monday', 'tuesday': 'Tuesday', 'wednesday': 'Wednesday',
   'thursday': 'Thursday', 'friday': 'Friday', 'saturday': 'Saturday',
   'sunday': 'Sunday', 'january': 'January', 'february': 'February',
   'march': 'March', 'april': 'April', 'june': 'June', 'july': 'July',
@@ -100,9 +101,11 @@ export function applyAutocorrect(text: string, cursorPos: number): { text: strin
     corrected = correction.charAt(0).toUpperCase() + correction.slice(1);
   }
 
-  const wordStart = cursorPos - word.length - 1; // -1 for the space
+  // Calculate exact word boundaries: the matched word ends right before the trailing space
+  const wordEnd = cursorPos - 1; // position of the space char
+  const wordStart = wordEnd - word.length;
   const newText = text.slice(0, wordStart) + corrected + text.slice(wordStart + word.length);
-  const newCursorPos = cursorPos + (corrected.length - word.length);
+  const newCursorPos = wordStart + corrected.length + 1; // +1 for the space
 
   return { text: newText, newCursorPos };
 }

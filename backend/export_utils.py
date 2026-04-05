@@ -348,6 +348,12 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
         raise RuntimeError(f"Failed to export PDF: {e}")
 
 
+async def export_to_pdf_async(data, title: str = "Export") -> bytes:
+    """Async wrapper for export_to_pdf — runs in a thread to avoid blocking the event loop."""
+    import asyncio
+    return await asyncio.get_running_loop().run_in_executor(None, lambda: export_to_pdf(data, title))
+
+
 def export_to_docx_from_html(html: str, accent_color: str, form_data: dict) -> bytes:
     """
     Convert HTML to DOCX while preserving formatting.

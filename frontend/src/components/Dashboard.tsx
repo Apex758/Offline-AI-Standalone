@@ -1495,20 +1495,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-
-    // Also check periodically since storage event doesn't fire in same tab
-    const interval = setInterval(() => {
-      const storedImage = localStorage.getItem('user-profile-image');
-      if (storedImage !== userProfileImage) {
-        setUserProfileImage(storedImage);
-      }
-    }, 1000);
+    window.addEventListener('profile-image-changed', handleStorageChange);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener('profile-image-changed', handleStorageChange);
     };
-  }, [userProfileImage]);
+  }, []);
 
   const updateTabData = useCallback((tabId: string, data: Partial<Tab['data']>) => {
     setTabs(prev => prev.map(tab =>

@@ -1149,7 +1149,7 @@ app.whenReady().then(async () => {
     createWindow();
 
     // === Setup image generation models (first run only) ===
-    await setupImageGenerationModels();
+    setupImageGenerationModels().catch(err => log.error('Image model setup error (non-blocking):', err));
 
     // === Start backend ===
     await startBackend();

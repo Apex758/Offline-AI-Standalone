@@ -433,9 +433,9 @@ def _get_brain_dump_counts() -> Dict[str, int]:
         uses = conn.execute(
             "SELECT COUNT(*) as c FROM inference_metrics WHERE task_type = 'brain-dump'"
         ).fetchone()["c"]
-        # Action generations are separate brain-dump calls (approximated by total)
+        # Action generations use distinct task_type 'brain-dump-action'
         actions = conn.execute(
-            "SELECT COUNT(*) as c FROM inference_metrics WHERE task_type = 'brain-dump'"
+            "SELECT COUNT(*) as c FROM inference_metrics WHERE task_type = 'brain-dump-action'"
         ).fetchone()["c"]
         return {"brain_dump_uses": uses, "brain_dump_actions": actions}
     except Exception:
@@ -511,6 +511,9 @@ def _get_time_based_counts() -> Dict[str, int]:
     }
     types_today = 0
     resources_today = 0
+    # Session approximation: count resources created in the last 4 hours
+    session_cutoff = (now - timedelta(hours=4)).isoformat()
+    resources_in_session = 0
     for _key, fname in files_map.items():
         items = _load_json_history(fname)
         today_items = [
@@ -521,8 +524,14 @@ def _get_time_based_counts() -> Dict[str, int]:
         if today_items:
             types_today += 1
             resources_today += len(today_items)
+        # Count items within the session window (last 4 hours)
+        for i in items:
+            if isinstance(i, dict):
+                ts = i.get("created_at", "") or i.get("timestamp", "") or i.get("date", "")
+                if ts >= session_cutoff:
+                    resources_in_session += 1
     counts["types_today"] = types_today
-    counts["resources_in_session"] = resources_today
+    counts["resources_in_session"] = resources_in_session
 
     # Perfectionist: check max edits on any lesson plan
     lesson_plans = _load_json_history("lesson_plan_history.json")

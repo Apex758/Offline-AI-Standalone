@@ -75,7 +75,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import FilePreviewModal from './FilePreviewModal';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP, GRADE_LEVELS } from '../data/teacherConstants';
-import curriculumIndex from '../data/curriculumIndex.json';
+import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
 
 // ── File API abstraction (works in Electron & dev/browser) ──
 const fileAPI = {
@@ -261,6 +261,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // Curriculum tab state
   const [expandedCurriculumNodes, setExpandedCurriculumNodes] = useState<Set<string>>(new Set());
+  const [curriculumLoaded, setCurriculumLoaded] = useState(false);
+
+  useEffect(() => {
+    preloadAllCurriculum().then(() => setCurriculumLoaded(true));
+  }, []);
 
   // Drag-and-drop state
   const [isDragOver, setIsDragOver] = useState(false);
@@ -1065,25 +1070,58 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   }
 
   const getFilteredCurriculumTree = useCallback((): CurriculumGradeNode[] => {
-    const pages = (curriculumIndex as any).indexedPages as any[];
-    if (!pages) return [];
+    if (!curriculumLoaded) return [];
+    const files = getAllCurriculumFiles();
 
     const mapping = settings.profile.gradeSubjects || {};
     const teacherGrades = getTeacherGrades(mapping);
     const teacherSubjects = getTeacherSubjects(mapping);
     const filterEnabled = settings.profile.filterContentByProfile;
 
-    // Filter pages by teacher profile
-    const filtered = pages.filter(page => {
-      if (!page.grade || !page.subject) return false;
-      if (filterEnabled && teacherGrades.length > 0 && !teacherGrades.includes(page.grade)) return false;
-      if (filterEnabled && teacherSubjects.length > 0 && !teacherSubjects.includes(page.subject)) return false;
-      return true;
-    });
+    // Build flat pages from curriculum files (same shape as old indexedPages)
+    const pages: Array<{
+      id: string; grade: string; subject: string; strand: string;
+      displayName: string; route: string;
+      essentialOutcomes: { id: string; text: string }[];
+      specificOutcomes: { id: string; text: string; eloRef?: string }[];
+    }> = [];
+
+    for (const file of files) {
+      const grade = file.metadata.grade;
+      const subject = file.metadata.subject;
+
+      // Apply teacher profile filter
+      if (filterEnabled && teacherGrades.length > 0 && !teacherGrades.includes(grade)) continue;
+      if (filterEnabled && teacherSubjects.length > 0 && !teacherSubjects.includes(subject)) continue;
+
+      for (const strand of file.strands) {
+        const strandSlug = strand.strand_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const subjectSlug = subject.toLowerCase().replace(/\s+/g, '-');
+        pages.push({
+          id: `grade${grade}-${subjectSlug}-${strandSlug}`,
+          grade,
+          subject,
+          strand: strandSlug,
+          displayName: strand.strand_name,
+          route: `/curriculum/grade${grade}-subjects/${subjectSlug}/${strandSlug}`,
+          essentialOutcomes: strand.essential_learning_outcomes.map(elo => ({
+            id: elo.elo_code || '',
+            text: elo.elo_description,
+          })),
+          specificOutcomes: strand.essential_learning_outcomes.flatMap(elo =>
+            elo.specific_curriculum_outcomes.map(sco => ({
+              id: sco.sco_code,
+              text: sco.description,
+              eloRef: elo.elo_code,
+            }))
+          ),
+        });
+      }
+    }
 
     // Group: grade -> subject -> strands
     const gradeMap = new Map<string, Map<string, CurriculumStrandNode[]>>();
-    for (const page of filtered) {
+    for (const page of pages) {
       if (!gradeMap.has(page.grade)) gradeMap.set(page.grade, new Map());
       const subjectMap = gradeMap.get(page.grade)!;
       if (!subjectMap.has(page.subject)) subjectMap.set(page.subject, []);
@@ -1092,12 +1130,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         displayName: page.displayName,
         route: page.route,
         strand: page.strand,
-        essentialOutcomes: (page.essentialOutcomes || []).map((e: any) =>
-          typeof e === 'string' ? { id: '', text: e } : { id: e.id || '', text: e.text || '' }
-        ),
-        specificOutcomes: (page.specificOutcomes || []).map((s: any) =>
-          typeof s === 'string' ? { id: '', text: s } : { id: s.id || '', text: s.text || '', eloRef: s.eloRef }
-        ),
+        essentialOutcomes: page.essentialOutcomes,
+        specificOutcomes: page.specificOutcomes,
       });
     }
 
@@ -1124,7 +1158,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
 
     return result;
-  }, [settings.profile.gradeSubjects, settings.profile.filterContentByProfile]);
+  }, [curriculumLoaded, settings.profile.gradeSubjects, settings.profile.filterContentByProfile]);
 
   const buildCurriculumContext = (strand: CurriculumStrandNode, gradeLabel: string, subjectLabel: string): string => {
     let content = `Curriculum: ${strand.displayName}\nGrade: ${gradeLabel}\nSubject: ${subjectLabel}\nStrand: ${strand.strand}\n`;

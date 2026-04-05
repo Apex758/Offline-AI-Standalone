@@ -71,7 +71,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const conn = connectionsRef.current.get(key);
       if (conn) {
         conn.listeners.forEach(listener => listener());
-        forceUpdate({});
       }
       updateTimersRef.current.delete(key);
     }, 16);

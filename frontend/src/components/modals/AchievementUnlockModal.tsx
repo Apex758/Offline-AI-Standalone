@@ -5,6 +5,8 @@ import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
 import type { NewlyEarnedAchievement, AchievementRarity, AchievementCategory } from '../../types/achievement';
+import { getTrophyType } from '../../config/trophyMap';
+import { getTrophyImageForTier, type TrophyTier } from '../../assets/trophyImages';
 
 /* ─── Inspirational teaching quotes ─── */
 const TEACHING_QUOTES: string[] = [
@@ -441,7 +443,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               />
             </svg>
 
-            {/* Center icon */}
+            {/* Center icon — trophy image when available, generic icon fallback */}
             <div style={{
               position: 'absolute',
               inset: 0,
@@ -450,27 +452,44 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               justifyContent: 'center',
               animation: show ? 'ach-icon-entrance 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.15s both' : 'none',
             }}>
-              <div style={{
-                width: 80,
-                height: 80,
-                borderRadius: 20,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: `linear-gradient(135deg, ${theme.primary}30 0%, ${theme.primary}10 100%)`,
-                border: `1.5px solid ${theme.primary}40`,
-                backdropFilter: 'blur(8px)',
-                boxShadow: `0 8px 32px ${theme.primary}30, inset 0 1px 0 ${theme.accent}20`,
-              }}>
-                <HugeiconsIcon
-                  icon={achievement.rarity === 'legendary' ? Trophy01IconData : Medal01IconData}
-                  size={38}
-                  style={{
-                    color: theme.accent,
-                    filter: `drop-shadow(0 0 8px ${theme.primary}80)`,
-                  }}
-                />
-              </div>
+              {(() => {
+                const tType = getTrophyType(achievement.achievement_id);
+                const tSrc = tType ? getTrophyImageForTier(tType, (achievement.tier ?? 'gold') as TrophyTier) : undefined;
+                return tSrc ? (
+                  <img
+                    src={tSrc}
+                    alt={achievement.name}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: 'contain',
+                      filter: `drop-shadow(0 4px 20px ${theme.primary}60)`,
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `linear-gradient(135deg, ${theme.primary}30 0%, ${theme.primary}10 100%)`,
+                    border: `1.5px solid ${theme.primary}40`,
+                    backdropFilter: 'blur(8px)',
+                    boxShadow: `0 8px 32px ${theme.primary}30, inset 0 1px 0 ${theme.accent}20`,
+                  }}>
+                    <HugeiconsIcon
+                      icon={achievement.rarity === 'legendary' ? Trophy01IconData : Medal01IconData}
+                      size={38}
+                      style={{
+                        color: theme.accent,
+                        filter: `drop-shadow(0 0 8px ${theme.primary}80)`,
+                      }}
+                    />
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
