@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { HugeiconsIcon } from '@hugeicons/react';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
@@ -398,6 +399,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [currentWorksheetId, setCurrentWorksheetId] = useState<string | null>(null);
   const [worksheetHistories, setWorksheetHistories] = useState<WorksheetHistory[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const { matchCount, matchedHistories, sortedHistories: sortedWorksheetHistories } = useHistoryMatching(formData, worksheetHistories);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [draftsExpanded, setDraftsExpanded] = useState(true);
   const [viewMode, setViewMode] = useState<'student' | 'teacher'>(() => {
@@ -538,10 +540,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     getConnection(tabId || '', ENDPOINT);
   }, [tabId]);
 
-  // Preload LLM model in background when tab opens
-  useEffect(() => {
-    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
-  }, []);
 
   useEffect(() => {
     loadWorksheetHistory();
@@ -2020,11 +2018,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           <div className="flex items-center gap-2">
             <button
               onClick={() => setHistoryOpen(!historyOpen)}
-              className="p-2 rounded-lg hover:bg-theme-hover transition"
+              className="relative p-2 rounded-lg hover:bg-theme-hover transition"
               title="Worksheet History"
               data-tutorial="worksheet-generator-history-toggle"
             >
               <History className="w-5 h-5 text-theme-muted" />
+              {matchCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+              )}
             </button>
             {(generatedWorksheet || parsedWorksheet) && (
               <>
@@ -2612,34 +2613,41 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   <p className="text-sm">No saved worksheets yet</p>
                 </div>
               ) : (
-                worksheetHistories.map((history) => (
-                  <div
-                    key={history.id}
-                    onClick={() => loadWorksheetFromHistory(history)}
-                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                      currentWorksheetId === history.id ? 'bg-blue-50 border border-blue-200' : 'bg-theme-secondary border border-theme'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                          {history.title}
-                        </p>
-                        <p className="text-xs text-theme-hint mt-1">
-                          {new Date(history.timestamp).toLocaleDateString()}{' '}
-                          {new Date(history.timestamp).toLocaleTimeString()}
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => deleteWorksheetHistory(history.id, e)}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                        title="Delete worksheet"
+                <>
+                  {matchCount > 0 && <div className="mb-2"><span className="text-xs font-medium text-blue-400">Matching ({matchCount})</span></div>}
+                  {(matchCount > 0 ? sortedWorksheetHistories : worksheetHistories).map((history, idx) => (
+                    <React.Fragment key={history.id}>
+                      {matchCount > 0 && idx === matchedHistories.length && (
+                        <div className="my-2 border-t border-theme pt-2"><span className="text-xs font-medium text-theme-muted">Other</span></div>
+                      )}
+                      <div
+                        onClick={() => loadWorksheetFromHistory(history)}
+                        className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                          currentWorksheetId === history.id ? 'bg-blue-50 border border-blue-200' : 'bg-theme-secondary border border-theme'
+                        }`}
                       >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </button>
-                    </div>
-                  </div>
-                ))
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                              {history.title}
+                            </p>
+                            <p className="text-xs text-theme-hint mt-1">
+                              {new Date(history.timestamp).toLocaleDateString()}{' '}
+                              {new Date(history.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => deleteWorksheetHistory(history.id, e)}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                            title="Delete worksheet"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </>
               )}
             </div>
           </div>

@@ -3241,6 +3241,12 @@ async def educator_insights_websocket(websocket: WebSocket):
             if grade_subjects and not isinstance(grade_subjects, dict):
                 grade_subjects = None
 
+            # Phase scoping (optional)
+            insights_phase_id = data.get("phaseId") or None
+            insights_phase_label = data.get("phaseLabel") or None
+            insights_phase_start = data.get("phaseStartDate") or None
+            insights_phase_end = data.get("phaseEndDate") or None
+
             # Create cancellation event for this insights run
             cancel_event = threading.Event()
             _active_cancel_events[job_id] = cancel_event
@@ -3255,7 +3261,7 @@ async def educator_insights_websocket(websocket: WebSocket):
 
             # Aggregate all data with date range filtering (and teacher grade/subject filter)
             try:
-                all_data = insights_service.aggregate_all(teacher_id, user_id, date_context.get("from_date"), date_context.get("to_date"), grade_subjects)
+                all_data = insights_service.aggregate_all(teacher_id, user_id, date_context.get("from_date"), date_context.get("to_date"), grade_subjects, phase_id=insights_phase_id)
             except Exception as e:
                 logger.error(f"Insights data aggregation error: {e}")
                 await websocket.send_json({"type": "error", "message": f"Data aggregation failed: {e}"})
@@ -3498,6 +3504,13 @@ async def educator_insights_websocket(websocket: WebSocket):
                 else:
                     tone_prefix = "This is an experienced user. Be concise and data-driven. Skip explanations of metrics — focus on actionable deltas and trends. "
                 system_prompt = tone_prefix + system_prompt
+
+                # Inject phase context header if phase-scoped
+                if insights_phase_label and insights_phase_start and insights_phase_end:
+                    from tier1_prompts import get_phase_context_header
+                    phase_header = get_phase_context_header(insights_phase_label, insights_phase_start, insights_phase_end)
+                    if phase_header:
+                        system_prompt = phase_header + system_prompt
 
                 user_prompt = "Analyze the data provided and generate your response."
 

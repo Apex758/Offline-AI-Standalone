@@ -326,11 +326,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
   }, [tts.isSpeaking]);
 
-  // Preload LLM and TTS models in background when tab opens
-  useEffect(() => {
-    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
-    axios.post('http://localhost:8000/api/tts/preload').catch(() => {});
-  }, []);
 
   // Auto-dismiss thinking suggestion after 10 seconds
   useEffect(() => {

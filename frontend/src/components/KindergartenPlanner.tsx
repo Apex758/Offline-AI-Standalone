@@ -47,6 +47,7 @@ import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useHistoryMatching } from '../hooks/useHistoryMatching';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface KindergartenPlannerProps {
@@ -477,11 +478,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
+  const { matchCount, matchedHistories, sortedHistories: sortedKindergartenHistories } = useHistoryMatching(formData, kindergartenHistories, { subject: 'curriculumSubject', gradeLevel: null });
 
-  // Preload LLM model in background when tab opens
-  useEffect(() => {
-    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
-  }, []);
 
   // ✅ ADDED: Restore state from localStorage when switching tabs
   useEffect(() => {
@@ -1034,15 +1032,18 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-theme-hover transition"
+                        className="relative p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Kindergarten Plan History"
                       >
                         <History className="w-5 h-5 text-theme-muted" />
+                        {matchCount > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+                        )}
                       </button>
                       <button
                         onClick={() => {
                           setGeneratedPlan('');
-                          clearStreaming(tabId, ENDPOINT); 
+                          clearStreaming(tabId, ENDPOINT);
                           setParsedPlan(null);
                           setIsEditing(false);
                         }}
@@ -1157,10 +1158,13 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-theme-hover transition"
+                className="relative p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Kindergarten Plan History"
               >
                 <History className="w-5 h-5 text-theme-muted" />
+                {matchCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+                )}
               </button>
             </div>
 
@@ -1532,33 +1536,42 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 <p className="text-sm">No saved kindergarten plans yet</p>
               </div>
             ) : (
-              kindergartenHistories.map((history) => (
-                <div
-                  key={history.id}
-                  onClick={() => loadKindergartenHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                    currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                        {history.title}
-                      </p>
-                      <p className="text-xs text-theme-hint mt-1">
-                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => deleteKindergartenHistory(history.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                      title="Delete kindergarten plan"
+              <>
+                {matchCount > 0 && <div className="mb-2"><span className="text-xs font-medium text-blue-400">Matching ({matchCount})</span></div>}
+                {(matchCount > 0 ? sortedKindergartenHistories : kindergartenHistories).map((history, idx) => (
+                  <React.Fragment key={history.id}>
+                    {matchCount > 0 && idx === matchedHistories.length && (
+                      <div className="my-3 border-b border-theme">
+                        <span className="text-xs font-medium text-theme-hint">Other</span>
+                      </div>
+                    )}
+                    <div
+                      onClick={() => loadKindergartenHistory(history)}
+                      className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                        currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                      }`}
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
-                  </div>
-                </div>
-              ))
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                            {history.title}
+                          </p>
+                          <p className="text-xs text-theme-hint mt-1">
+                            {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => deleteKindergartenHistory(history.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                          title="Delete kindergarten plan"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </>
             )}
           </div>
         </div>

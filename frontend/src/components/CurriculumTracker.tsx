@@ -56,6 +56,8 @@ import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
 import CurriculumSkillTree from './CurriculumSkillTree';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
+import { useCurrentPhase } from '../hooks/useCurrentPhase';
+import PhaseContextBanner from './PhaseContextBanner';
 
 interface EloGroup {
   elo: string;
@@ -131,11 +133,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const [filters, setFilters] = useState({
     grade: '',
     subject: '',
-    status: ''
+    status: '',
+    phase: '',  // '' = all, '__unassigned__' = unassigned, or phase_id
   });
   const [expandedChecklists, setExpandedChecklists] = useState<Set<string>>(new Set());
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
   const highlightTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [progressView, setProgressView] = useState<'overall' | 'phase'>('overall');
 
   // Completion warning modal state
   const [completionWarning, setCompletionWarning] = useState<{
@@ -205,9 +210,12 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     ? JSON.parse(localStorage.getItem('user')!).username
     : 'default_teacher';
 
+  // Phase awareness
+  const { currentPhase: ctPhase, allPhases: ctAllPhases } = useCurrentPhase(teacherId);
+
   useEffect(() => {
     loadMilestones();
-  }, [filters]);
+  }, [filters, progressView, ctPhase?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useRefetchOnActivation(isActive, useCallback(() => { loadMilestones(); }, []));
 
@@ -241,10 +249,16 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         setHasSynced(true);
       }
 
+      // Determine phase filter: explicit dropdown takes priority, then toggle
+      const effectivePhaseId = filters.phase
+        ? filters.phase
+        : (progressView === 'phase' && ctPhase) ? ctPhase.id : undefined;
+
       const data = await milestoneApi.getMilestones(teacherId, {
         grade: filters.grade || undefined,
         subject: filters.subject || undefined,
-        status: filters.status || undefined
+        status: filters.status || undefined,
+        phase_id: effectivePhaseId || undefined,
       });
       setMilestones(data);
     } catch (error: any) {
@@ -562,6 +576,50 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     }
   };
 
+  // Phase tag badge for a milestone
+  const getPhaseTag = (milestone: Milestone): React.ReactNode => {
+    if (!milestone.phase_id) {
+      return (
+        <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: '#f59e0b18', color: '#f59e0b', border: '1px solid #f59e0b30' }}>
+          Unassigned
+        </span>
+      );
+    }
+    const phase = ctAllPhases.find(p => p.id === milestone.phase_id);
+    if (!phase) return null;
+    const isCurrent = ctPhase?.id === phase.id;
+    if (isCurrent) return null; // current phase = no tag needed
+
+    const today = new Date();
+    const phaseEnd = new Date(phase.end_date);
+    const phaseStart = new Date(phase.start_date);
+    const isPast = phaseEnd < today;
+    const isFuture = phaseStart > today;
+
+    if (isPast && milestone.status === 'completed') {
+      return (
+        <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, background: '#6b728018', color: '#6b7280' }}>
+          Previous
+        </span>
+      );
+    }
+    if (isPast && milestone.status !== 'completed') {
+      return (
+        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#ef444418', color: '#ef4444', border: '1px solid #ef444440' }}>
+          Overdue
+        </span>
+      );
+    }
+    if (isFuture) {
+      return (
+        <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, background: '#6b728018', color: '#9ca3af', fontStyle: 'italic' }}>
+          Upcoming
+        </span>
+      );
+    }
+    return null;
+  };
+
   const renderMilestone = (milestone: Milestone) => {
     const checklist = milestone.checklist || [];
     const checkedCount = checklist.filter(c => c.checked).length;
@@ -597,7 +655,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             )}
             {getStatusIcon(milestone.status)}
             <div className="flex-1">
-              <h4 className="font-semibold text-theme-title">{milestone.topic_title}</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-theme-title">{milestone.topic_title}</h4>
+                {getPhaseTag(milestone)}
+              </div>
               {milestone.notes && (
                 <p className="text-sm text-theme-muted mt-1">{milestone.notes}</p>
               )}
@@ -1035,9 +1096,12 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               <Clock className="w-5 h-5" />
             </button>
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2" data-tutorial="overall-progress">
-              <div className="text-sm text-white/80">Overall Progress</div>
+              <div className="text-sm text-white/80">
+                {progressView === 'phase' ? 'Phase Progress' : 'Overall Progress'}
+              </div>
               <div className="text-2xl font-bold">
                 {(() => {
+                  // Until phase assignment is built, both views show same data
                   const active = filteredMilestones.filter(m => m.status !== 'skipped');
                   let total = 0, done = 0;
                   for (const m of active) {
@@ -1052,6 +1116,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   return total > 0 ? Math.round((done / total) * 10000) / 100 : 0;
                 })()}%
               </div>
+              {progressView === 'phase' && (
+                <div className="text-xs text-white/60 mt-0.5">
+                  {ctPhase ? ctPhase.phase_label : 'No active phase'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1060,6 +1129,41 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       {/* Filters */}
       <div className="bg-theme-surface border-b border-theme px-6 py-4" data-tutorial="filters-section">
         <div className="flex items-center space-x-4">
+          {/* Overall / Phase toggle */}
+          <div
+            style={{
+              display: 'inline-flex',
+              borderRadius: 8,
+              border: '1px solid var(--border-color, #e5e7eb)',
+              overflow: 'hidden',
+              flexShrink: 0,
+            }}
+          >
+            {(['overall', 'phase'] as const).map(mode => {
+              const active = progressView === mode;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setProgressView(mode)}
+                  style={{
+                    padding: '6px 14px',
+                    fontSize: 13,
+                    fontWeight: active ? 600 : 400,
+                    background: active ? accentColor : 'transparent',
+                    color: active ? '#fff' : 'var(--text-secondary, #6b7280)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {mode === 'overall' ? 'Overall' : 'Phase'}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="w-px h-6" style={{ backgroundColor: 'var(--border-color, #e5e7eb)' }} />
+
           <Filter className="w-5 h-5 text-theme-muted" />
 
           <select
@@ -1102,9 +1206,25 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             <option value="skipped">Skipped</option>
           </select>
 
+          {/* Phase filter dropdown */}
+          {ctAllPhases.length > 0 && (
+            <select
+              value={filters.phase}
+              onChange={(e) => setFilters({ ...filters, phase: e.target.value })}
+              className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme-surface text-theme-label"
+              style={{ '--tw-ring-color': accentColor } as any}
+            >
+              <option value="">All Phases</option>
+              {ctAllPhases.map(p => (
+                <option key={p.id} value={p.id}>{p.phase_label}</option>
+              ))}
+              <option value="__unassigned__">Unassigned</option>
+            </select>
+          )}
+
           <div className="ml-auto flex items-center space-x-2">
             <button
-              onClick={() => setFilters({ grade: '', subject: '', status: '' })}
+              onClick={() => setFilters({ grade: '', subject: '', status: '', phase: '' })}
               className="px-4 py-2 bg-theme-tertiary hover:bg-theme-hover text-theme-label rounded-lg font-medium transition-colors"
               data-tutorial="clear-filters"
             >
@@ -1122,6 +1242,41 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Unassigned ELO warning */}
+      {ctAllPhases.length > 0 && milestones.some(m => !m.phase_id) && filters.phase === '' && progressView === 'overall' && (
+        <div
+          className="px-6 py-2 border-b border-theme"
+          style={{ background: '#f59e0b0a', display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <AlertCircle className="w-4 h-4" style={{ color: '#f59e0b' }} />
+          <span style={{ fontSize: 12, color: '#f59e0b', fontWeight: 600 }}>
+            {milestones.filter(m => !m.phase_id).length} ELO{milestones.filter(m => !m.phase_id).length !== 1 ? 's' : ''} not assigned to any phase
+          </span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            — assign them in Curriculum Plan
+          </span>
+        </div>
+      )}
+
+      {/* Phase context banner */}
+      {progressView === 'phase' && ctPhase && (
+        <PhaseContextBanner phase={ctPhase} onClear={() => setProgressView('overall')} />
+      )}
+      {progressView === 'phase' && !ctPhase && (
+        <div className="px-6 py-2 border-b border-theme text-sm" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
+          No active phase. Set up your school year to use phase filtering.
+        </div>
+      )}
+      {filters.phase && filters.phase !== '__unassigned__' && progressView !== 'phase' && (() => {
+        const fp = ctAllPhases.find(p => p.id === filters.phase);
+        if (!fp) return null;
+        // Build a minimal CurrentPhaseInfo-compatible object
+        const PHASE_C: Record<string, string> = { midterm_1: '#f97316', midterm_2: '#f97316', midterm_1_prep: '#fbbf24', midterm_2_prep: '#fbbf24', inter_semester_break: '#eab308', end_of_year_exam: '#ef4444' };
+        const SEM_C: Record<string, string> = { 'Semester 1': '#3b82f6', 'Semester 2': '#22c55e' };
+        const c = PHASE_C[fp.phase_key] || (fp.semester ? SEM_C[fp.semester] || '#6b7280' : '#6b7280');
+        return <PhaseContextBanner phase={{ id: fp.id, phase_key: fp.phase_key, phase_label: fp.phase_label, semester: fp.semester, start_date: fp.start_date, end_date: fp.end_date, days_remaining: 0, color: c }} onClear={() => setFilters(f => ({ ...f, phase: '' }))} />;
+      })()}
 
       {/* Main content: Left tree + draggable divider + Right progress tree */}
       <div className="flex-1 flex overflow-hidden" ref={containerRef}>

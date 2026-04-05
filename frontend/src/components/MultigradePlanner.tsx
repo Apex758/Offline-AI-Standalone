@@ -52,6 +52,7 @@ import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useHistoryMatching } from '../hooks/useHistoryMatching';
 // Curriculum data is loaded on demand by MultigradeAlignmentFields
 
 interface MultigradePlannerProps {
@@ -315,10 +316,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [displayStep, setDisplayStep] = useState(step);
   const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
 
-  // Preload LLM model in background when tab opens
-  useEffect(() => {
-    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (flipPhase === 'idle') setDisplayStep(step);
@@ -387,6 +384,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
     return getDefaultFormData();
   });
+  const { matchCount, matchedHistories, sortedHistories: sortedMultigradeHistories } = useHistoryMatching(formData, multigradeHistories, { gradeLevel: 'gradeRange', essentialOutcomes: 'essentialLearningOutcomes', specificOutcomes: 'specificLearningObjectives' });
+
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.generatedPlan && typeof savedData.generatedPlan === 'string') {
@@ -919,10 +918,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-theme-hover transition"
+                        className="p-2 rounded-lg hover:bg-theme-hover transition relative"
                         title="Multigrade Plan History"
                       >
                         <History className="w-5 h-5 text-theme-muted" />
+                        {matchCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{matchCount}</span>
+                        )}
                       </button>
                       <button
                         onClick={() => {
@@ -1046,10 +1048,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-theme-hover transition"
+                className="p-2 rounded-lg hover:bg-theme-hover transition relative"
                 title="Multigrade Plan History"
               >
                 <History className="w-5 h-5 text-theme-muted" />
+                {matchCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{matchCount}</span>
+                )}
               </button>
             </div>
 
@@ -1512,33 +1517,46 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 <p className="text-sm">No saved multigrade plans yet</p>
               </div>
             ) : (
-              multigradeHistories.map((history) => (
-                <div
-                  key={history.id}
-                  onClick={() => loadMultigradeHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                    currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                        {history.title}
-                      </p>
-                      <p className="text-xs text-theme-hint mt-1">
-                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => deleteMultigradeHistory(history.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                      title="Delete multigrade plan"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
+              <>
+                {matchCount > 0 && (
+                  <div className="mb-1">
+                    <span className="text-xs font-semibold text-blue-500 uppercase tracking-wide">Matching ({matchCount})</span>
                   </div>
-                </div>
-              ))
+                )}
+                {sortedMultigradeHistories.map((history, idx) => (
+                  <React.Fragment key={history.id}>
+                    {matchCount > 0 && idx === matchCount && (
+                      <div className="mt-3 mb-1">
+                        <span className="text-xs font-semibold text-theme-hint uppercase tracking-wide">Other</span>
+                      </div>
+                    )}
+                    <div
+                      onClick={() => loadMultigradeHistory(history)}
+                      className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                        currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                            {history.title}
+                          </p>
+                          <p className="text-xs text-theme-hint mt-1">
+                            {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => deleteMultigradeHistory(history.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                          title="Delete multigrade plan"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </>
             )}
           </div>
         </div>

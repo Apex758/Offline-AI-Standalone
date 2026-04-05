@@ -126,6 +126,7 @@ const PresentationBuilder = React.lazy(() => import('./PresentationBuilder'));
 const StoryBookCreator = React.lazy(() => import('./StoryBookCreator'));
 const Achievements = React.lazy(() => import('./Achievements'));
 const EducatorInsights = React.lazy(() => import('./EducatorInsights'));
+const CurriculumPlan = React.lazy(() => import('./CurriculumPlan'));
 const PhotoReceiver = React.lazy(() => import('./PhotoReceiver'));
 const SchoolYearCalendar = React.lazy(() => import('./SchoolYearCalendar'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
@@ -190,6 +191,14 @@ const tools: Tool[] = [
     icon: 'TrendingUp',
     type: 'curriculum-tracker',
     description: 'Monitor your curriculum progress',
+    group: 'my-classroom'
+  },
+  {
+    id: 'curriculum-plan',
+    name: 'Curriculum Plan',
+    icon: 'CalendarRange',
+    type: 'curriculum-plan',
+    description: 'Assign milestones to academic phases',
     group: 'my-classroom'
   },
   {
@@ -521,7 +530,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 
 const MAX_TABS_PER_TYPE = 3;
 const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook', 'educator-insights', 'photo-transfer', 'school-year-calendar']);
-const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook']);
+const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'curriculum-plan', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook']);
 
 const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
   'lesson-planner': { storagePrefix: 'lesson_state_', plannerType: 'lesson', generatedKey: 'generatedPlan' },
@@ -970,7 +979,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool, initialData?: Record<string, any>) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights', 'school-year-calendar'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'curriculum-plan', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights', 'school-year-calendar'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -1740,6 +1749,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         );
       case 'curriculum-tracker':
         return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
+      case 'curriculum-plan':
+        return <CurriculumPlan tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'chat':
         return (
           <Chat

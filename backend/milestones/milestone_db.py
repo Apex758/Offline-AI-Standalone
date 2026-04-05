@@ -83,6 +83,36 @@ class MilestoneDB:
         except sqlite3.OperationalError:
             pass  # Column already exists
 
+        # Migration: add phase_id column for phase assignment
+        try:
+            conn.execute("ALTER TABLE milestones ADD COLUMN phase_id TEXT DEFAULT NULL")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+
+        # Index for phase-based queries
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_milestone_phase
+            ON milestones(teacher_id, phase_id)
+            WHERE phase_id IS NOT NULL
+        """)
+
+        # Phase SCO overrides — granular per-SCO phase exclusion
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS phase_sco_overrides (
+                id TEXT PRIMARY KEY,
+                phase_id TEXT NOT NULL,
+                milestone_id TEXT NOT NULL,
+                sco_key TEXT NOT NULL,
+                enabled INTEGER DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (milestone_id) REFERENCES milestones(id) ON DELETE CASCADE
+            )
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_phase_sco_overrides_lookup
+            ON phase_sco_overrides(phase_id, milestone_id)
+        """)
+
         conn.commit()
         conn.close()
         logger.info(f"Milestone database initialized at {self.db_path}")
@@ -192,31 +222,39 @@ class MilestoneDB:
         grade: Optional[str] = None,
         subject: Optional[str] = None,
         status: Optional[str] = None,
+        phase_id: Optional[str] = None,
         include_hidden: bool = False
     ) -> List[Dict[str, Any]]:
         """Get milestones with optional filters"""
         conn = self.get_connection()
-        
+
         query = "SELECT * FROM milestones WHERE teacher_id = ?"
         params = [teacher_id]
-        
+
         if not include_hidden:
             query += " AND is_hidden = 0"
-        
+
         if grade:
             query += " AND grade = ?"
             params.append(grade)
-        
+
         if subject:
             query += " AND subject = ?"
             params.append(subject)
-        
+
         if status:
             query += " AND status = ?"
             params.append(status)
-        
+
+        if phase_id:
+            if phase_id == '__unassigned__':
+                query += " AND phase_id IS NULL"
+            else:
+                query += " AND phase_id = ?"
+                params.append(phase_id)
+
         query += " ORDER BY grade, subject, strand, topic_title"
-        
+
         try:
             rows = conn.execute(query, params).fetchall()
             return [dict(row) for row in rows]
@@ -230,7 +268,8 @@ class MilestoneDB:
         notes: Optional[str] = None,
         due_date: Optional[str] = None,
         is_hidden: Optional[bool] = None,
-        checklist_json: Optional[str] = None
+        checklist_json: Optional[str] = None,
+        phase_id: Optional[str] = "__UNSET__"
     ) -> Dict[str, Any]:
         """Update milestone fields"""
         conn = self.get_connection()
@@ -275,6 +314,10 @@ class MilestoneDB:
             if checklist_json is not None:
                 updates.append("checklist_json = ?")
                 params.append(checklist_json)
+
+            if phase_id != "__UNSET__":
+                updates.append("phase_id = ?")
+                params.append(phase_id)  # None = unassign, string = assign
 
             if updates:
                 updates.append("updated_at = CURRENT_TIMESTAMP")
@@ -520,6 +563,76 @@ class MilestoneDB:
             return {"added": added, "updated": updated, "removed": removed}
         finally:
             conn.close()
+
+    def get_unassigned_milestones(self, teacher_id: str) -> List[Dict[str, Any]]:
+        """Return milestones where phase_id IS NULL (not assigned to any phase)."""
+        conn = self.get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM milestones WHERE teacher_id = ? AND phase_id IS NULL AND is_hidden = 0 ORDER BY grade, subject, strand",
+                (teacher_id,)
+            ).fetchall()
+            return [dict(r) for r in rows]
+        finally:
+            conn.close()
+
+    def get_phase_progress(self, teacher_id: str, phase_id: Optional[str] = None) -> Dict[str, Any]:
+        """Compute progress for a phase (or overall if phase_id is None).
+        Returns milestone-level and SCO-level completion percentages."""
+        conn = self.get_connection()
+        try:
+            query = "SELECT * FROM milestones WHERE teacher_id = ? AND is_hidden = 0 AND status != 'skipped'"
+            params: list = [teacher_id]
+            if phase_id:
+                query += " AND phase_id = ?"
+                params.append(phase_id)
+
+            rows = conn.execute(query, params).fetchall()
+            milestones = [dict(r) for r in rows]
+
+            total_milestones = len(milestones)
+            completed_milestones = sum(1 for m in milestones if m['status'] == 'completed')
+
+            total_scos = 0
+            checked_scos = 0
+            for m in milestones:
+                import json
+                checklist = json.loads(m.get('checklist_json', '[]') or '[]')
+                if checklist:
+                    total_scos += len(checklist)
+                    checked_scos += sum(1 for c in checklist if c.get('checked'))
+                else:
+                    total_scos += 1
+                    checked_scos += 1 if m['status'] == 'completed' else 0
+
+            return {
+                "phase_id": phase_id,
+                "total_milestones": total_milestones,
+                "completed_milestones": completed_milestones,
+                "milestone_pct": round(completed_milestones / total_milestones * 100, 2) if total_milestones > 0 else 0,
+                "total_scos": total_scos,
+                "checked_scos": checked_scos,
+                "sco_pct": round(checked_scos / total_scos * 100, 2) if total_scos > 0 else 0,
+            }
+        finally:
+            conn.close()
+
+    def bulk_assign_phase(self, milestone_ids: List[str], phase_id: Optional[str]) -> int:
+        """Assign multiple milestones to a phase (or unassign if phase_id is None)."""
+        conn = self.get_connection()
+        try:
+            count = 0
+            for mid in milestone_ids:
+                res = conn.execute(
+                    "UPDATE milestones SET phase_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                    (phase_id, mid)
+                )
+                count += res.rowcount
+            conn.commit()
+            return count
+        finally:
+            conn.close()
+
 
 # Global instance
 _milestone_db = None

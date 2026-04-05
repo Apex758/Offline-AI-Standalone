@@ -41,6 +41,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import ImageModeSelector from './ui/ImageModeSelector';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import KidsStorybookSkeletonDay from './KidsStorybookSkeletonDay';
@@ -249,12 +250,16 @@ function HistorySidePanel({
   onClose,
   accentColor,
   currentDraftId,
+  formData: parentFormData,
+  onMatchCount,
 }: {
   open: boolean;
   onLoad: (saved: SavedStorybook) => void;
   onClose: () => void;
   accentColor: string;
   currentDraftId: string | null;
+  formData?: Record<string, any>;
+  onMatchCount?: (count: number) => void;
 }) {
   const [items, setItems] = React.useState<SavedStorybook[]>(() => getSavedStorybooks());
   const [draftsExpanded, setDraftsExpanded] = React.useState(true);
@@ -264,6 +269,20 @@ function HistorySidePanel({
     if (open) setItems(getSavedStorybooks());
   }, [open]);
 
+  // History matching
+  const itemsWithTimestamp = React.useMemo(
+    () => items.map(i => ({ ...i, timestamp: i.savedAt })),
+    [items]
+  );
+  const { matchCount, matchedHistories, sortedHistories } = useHistoryMatching(
+    parentFormData || {},
+    itemsWithTimestamp
+  );
+
+  React.useEffect(() => {
+    onMatchCount?.(matchCount);
+  }, [matchCount, onMatchCount]);
+
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     deleteSavedStorybook(id);
@@ -271,7 +290,8 @@ function HistorySidePanel({
   };
 
   const drafts = items.filter(i => i.status === 'draft');
-  const completed = items.filter(i => i.status === 'completed');
+  const completedSorted = sortedHistories.filter(i => i.status === 'completed');
+  const matchedCompletedIds = new Set(matchedHistories.filter(i => i.status === 'completed').map(i => i.id));
 
   return (
     <div
@@ -344,50 +364,63 @@ function HistorySidePanel({
           )}
 
           {/* Completed / Saved section */}
-          {drafts.length === 0 && completed.length === 0 ? (
+          {drafts.length === 0 && completedSorted.length === 0 ? (
             <div className="text-center text-theme-hint mt-8">
               <Icon icon={BookOpen01IconData} className="w-12 mx-auto mb-2 text-theme-hint" />
               <p className="text-sm">No saved storybooks yet</p>
             </div>
           ) : (
-            completed.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => onLoad(item)}
-                className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                  currentDraftId === item.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                        {item.formData.title || 'Untitled'}
-                      </p>
-                      {item.hasImages && (
-                        <span title="Images saved" className="shrink-0 text-green-500"><Icon icon={Image01IconData} className="w-3.5" /></span>
-                      )}
-                      {item.hasAudio && (
-                        <span title="Audio saved" className="shrink-0 text-blue-500"><Icon icon={Mic01IconData} className="w-3.5" /></span>
-                      )}
-                    </div>
-                    <p className="text-xs text-theme-hint mt-1">
-                      {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
-                      {item.formData.subject && ` · ${item.formData.subject}`}
-                      {item.parsedBook && ` · ${item.parsedBook.pages.length} pages`}
-                      {' · '}{new Date(item.savedAt).toLocaleDateString()} {new Date(item.savedAt).toLocaleTimeString()}
-                    </p>
-                  </div>
-                  <button
-                    onClick={(e) => handleDelete(item.id, e)}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                    title="Delete storybook"
-                  >
-                    <Icon icon={Delete02IconData} className="w-4 text-red-600" />
-                  </button>
+            <>
+              {matchCount > 0 && completedSorted.some(i => matchedCompletedIds.has(i.id)) && (
+                <div className="mb-2">
+                  <span className="text-xs font-medium text-blue-400">Matching ({matchedCompletedIds.size})</span>
                 </div>
-              </div>
-            ))
+              )}
+              {completedSorted.map((item, idx) => (
+                <React.Fragment key={item.id}>
+                  {matchCount > 0 && idx > 0 && matchedCompletedIds.has(completedSorted[idx - 1].id) && !matchedCompletedIds.has(item.id) && (
+                    <div className="border-b border-theme my-3">
+                      <span className="text-xs text-theme-muted">Other</span>
+                    </div>
+                  )}
+                  <div
+                    onClick={() => onLoad(item)}
+                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                      currentDraftId === item.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                            {item.formData.title || 'Untitled'}
+                          </p>
+                          {item.hasImages && (
+                            <span title="Images saved" className="shrink-0 text-green-500"><Icon icon={Image01IconData} className="w-3.5" /></span>
+                          )}
+                          {item.hasAudio && (
+                            <span title="Audio saved" className="shrink-0 text-blue-500"><Icon icon={Mic01IconData} className="w-3.5" /></span>
+                          )}
+                        </div>
+                        <p className="text-xs text-theme-hint mt-1">
+                          {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
+                          {item.formData.subject && ` · ${item.formData.subject}`}
+                          {item.parsedBook && ` · ${item.parsedBook.pages.length} pages`}
+                          {' · '}{new Date(item.savedAt).toLocaleDateString()} {new Date(item.savedAt).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => handleDelete(item.id, e)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                        title="Delete storybook"
+                      >
+                        <Icon icon={Delete02IconData} className="w-4 text-red-600" />
+                      </button>
+                    </div>
+                  </div>
+                </React.Fragment>
+              ))}
+            </>
           )}
         </div>
       </div>
@@ -1241,11 +1274,6 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
   const accentColor = (settings.tabColors as any)['storybook'] || '#a855f7';
 
-  // ── Preload LLM model in background when tab opens ─────────────────────────
-  useEffect(() => {
-    fetch('http://localhost:8000/api/model/preload', { method: 'POST' }).catch(() => {});
-  }, []);
-
   // ── Dark mode detection ───────────────────────────────────────────────────
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   useEffect(() => {
@@ -1271,6 +1299,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const [exportProgress, setExportProgress] = useState<AnimatedHTMLProgress | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [storyMatchCount, setStoryMatchCount] = useState(0);
   const [showExportSettings, setShowExportSettings] = useState(false);
   const [exportSettings, setExportSettingsState] = useState<StorybookExportSettings>(() => getExportSettings());
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
@@ -1987,10 +2016,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             </div>
             <button
               onClick={() => setShowHistory(prev => !prev)}
-              className="p-2 rounded-lg hover:bg-theme-hover transition"
+              className="relative p-2 rounded-lg hover:bg-theme-hover transition"
               title="Storybook History"
             >
               <Icon icon={Clock01IconData} className="w-5 text-theme-muted" />
+              {storyMatchCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{storyMatchCount}</span>
+              )}
             </button>
           </div>
 
@@ -2346,6 +2378,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         onClose={() => setShowHistory(false)}
         accentColor={accentColor}
         currentDraftId={currentDraftId}
+        formData={formData as unknown as Record<string, any>}
+        onMatchCount={setStoryMatchCount}
       />
       </div>
     );
@@ -2451,10 +2485,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* History */}
           {!isStreaming && <button
             onClick={() => setShowHistory(prev => !prev)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
+            className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
             title="Storybook history"
           >
             <Icon icon={Clock01IconData} className="w-4" />
+            {storyMatchCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{storyMatchCount}</span>
+            )}
           </button>}
           {/* Generate All Images */}
           {!isStreaming && hasDiffusion && formData.imageMode === 'ai' && (
@@ -3345,6 +3382,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       onClose={() => setShowHistory(false)}
       accentColor={accentColor}
       currentDraftId={currentDraftId}
+      formData={formData as unknown as Record<string, any>}
+      onMatchCount={setStoryMatchCount}
     />
     </div>
   );

@@ -22,6 +22,7 @@ import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import axios from 'axios';
+import { useCurrentPhase } from '../hooks/useCurrentPhase';
 
 // ── Types ──
 
@@ -94,6 +95,25 @@ function getTeacherId(): string {
 
 const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedData, onDataChange, isActive }) => {
   const teacherId = getTeacherId();
+  const { currentPhase, allPhases: calPhases } = useCurrentPhase(teacherId);
+
+  // Phase progress data for completion rings
+  const [phaseProgress, setPhaseProgress] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (calPhases.length === 0) return;
+    // Fetch progress for each phase
+    Promise.all(
+      calPhases.map(p =>
+        axios.get(`http://localhost:8000/api/milestones/${teacherId}/phase-progress?phase_id=${encodeURIComponent(p.id)}`)
+          .then(res => ({ id: p.id, pct: res.data.sco_pct || 0 }))
+          .catch(() => ({ id: p.id, pct: 0 }))
+      )
+    ).then(results => {
+      const map: Record<string, number> = {};
+      for (const r of results) map[r.id] = r.pct;
+      setPhaseProgress(map);
+    });
+  }, [calPhases, teacherId]);
 
   // Single config state
   const [config, setConfig] = useState<SchoolYearConfig | null>(null);
@@ -510,10 +530,29 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
             </div>
           </div>
         </div>
-        <div className="syc-header-actions">
-          <button className="syc-today-btn" onClick={() => setSelectedDate(new Date())}>
-            Today
-          </button>
+        <div className="syc-header-right">
+          {currentPhase && (
+            <div
+              className="syc-phase-badge"
+              style={{
+                background: `${currentPhase.color}20`,
+                borderColor: `${currentPhase.color}60`,
+                color: currentPhase.color,
+              }}
+            >
+              <span className="syc-phase-dot" style={{ background: currentPhase.color }} />
+              {currentPhase.phase_label}
+              <span className="syc-phase-sep">&bull;</span>
+              {format(parseISO(currentPhase.start_date), 'MMM d')} &ndash; {format(parseISO(currentPhase.end_date), 'MMM d')}
+              <span className="syc-phase-sep">&bull;</span>
+              {currentPhase.days_remaining}d left
+            </div>
+          )}
+          <div className="syc-header-actions">
+            <button className="syc-today-btn" onClick={() => setSelectedDate(new Date())}>
+              Today
+            </button>
+          </div>
         </div>
       </div>
 
@@ -529,6 +568,40 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
               {count} {EVENT_TYPE_CONFIG[type]?.label || type}
             </span>
           ))}
+        </div>
+      )}
+
+      {/* Phase completion rings */}
+      {calPhases.length > 0 && Object.keys(phaseProgress).length > 0 && (
+        <div className="syc-phase-rings">
+          {calPhases.map(p => {
+            const pct = phaseProgress[p.id] || 0;
+            const PHASE_COLORS_MAP: Record<string, string> = {
+              midterm_1: '#f97316', midterm_2: '#f97316',
+              midterm_1_prep: '#fbbf24', midterm_2_prep: '#fbbf24',
+              inter_semester_break: '#eab308', end_of_year_exam: '#ef4444',
+            };
+            const SEM_COLORS: Record<string, string> = { 'Semester 1': '#3b82f6', 'Semester 2': '#22c55e' };
+            const color = PHASE_COLORS_MAP[p.phase_key] || (p.semester ? SEM_COLORS[p.semester] || '#6b7280' : '#6b7280');
+            const r = 14; // ring radius
+            const circumference = 2 * Math.PI * r;
+            const offset = circumference * (1 - pct / 100);
+            return (
+              <div key={p.id} className="syc-ring-item" style={{ color }}>
+                <svg width="36" height="36" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r={r} fill="none" stroke={`${color}25`} strokeWidth="3" />
+                  <circle
+                    cx="18" cy="18" r={r} fill="none" stroke={color} strokeWidth="3"
+                    strokeDasharray={circumference} strokeDashoffset={offset}
+                    strokeLinecap="round" transform="rotate(-90 18 18)"
+                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                  />
+                </svg>
+                <span className="syc-ring-label">{p.phase_label.split(' ').map(w => w[0]).join('').slice(0, 3)}</span>
+                <span className="syc-ring-pct">{Math.round(pct)}%</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -969,6 +1042,69 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           font-size: 0.75rem;
           color: rgba(248, 229, 157, 0.6);
           font-weight: 500;
+        }
+
+        .syc-phase-rings {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 0.5rem 1.5rem;
+          border-bottom: 1px solid #e5e7eb;
+          background: #f9fafb;
+          overflow-x: auto;
+          flex-shrink: 0;
+        }
+        .dark .syc-phase-rings {
+          background: #1e1e1e;
+          border-color: #333;
+        }
+
+        .syc-ring-item {
+          display: flex;
+          align-items: center;
+          gap: 0.375rem;
+          white-space: nowrap;
+        }
+
+        .syc-ring-label {
+          font-size: 0.7rem;
+          font-weight: 600;
+        }
+
+        .syc-ring-pct {
+          font-size: 0.65rem;
+          font-weight: 700;
+          opacity: 0.8;
+        }
+
+        .syc-header-right {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .syc-phase-badge {
+          display: flex;
+          align-items: center;
+          gap: 0.375rem;
+          padding: 0.3rem 0.75rem;
+          border-radius: 9999px;
+          border: 1px solid;
+          font-size: 0.7rem;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .syc-phase-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .syc-phase-sep {
+          opacity: 0.5;
+          margin: 0 0.1rem;
         }
 
         .syc-header-actions {

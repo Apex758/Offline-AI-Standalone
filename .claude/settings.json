@@ -158,7 +158,20 @@
       "Bash(grep -E \"\\\\.\\(js|ts|json\\)$\")",
       "Bash(python -c \"import llama_cpp; print\\('system llama-cpp-python:', llama_cpp.__version__\\)\")",
       "Bash(grep -E \"\\\\.py$\")",
-      "Bash(grep -rn \"def.*ocr\\\\|def.*parse\\\\|def.*validate\\\\|def.*grade\" backend/*.py)"
+      "Bash(grep -rn \"def.*ocr\\\\|def.*parse\\\\|def.*validate\\\\|def.*grade\" backend/*.py)",
+      "Bash(xargs wc:*)",
+      "Bash(ls -lhS \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/\"*.tsx)",
+      "Bash(npx.cmd tsc:*)",
+      "Bash(node_modules/.bin/tsc --noEmit --skipLibCheck)",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/node_modules/.bin/tsc\" --noEmit --skipLibCheck --project \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/tsconfig.json\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('milestones/milestone_db.py', doraise=True\\); print\\('milestone_db.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('routes/milestones.py', doraise=True\\); print\\('routes/milestones.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('tier1_prompts.py', doraise=True\\); print\\('tier1_prompts.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('insights_service.py', doraise=True\\); print\\('insights_service.py OK'\\)\")",
+      "Bash(wait bp2feuzaj:*)",
+      "Bash(find \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\" -name \"*history.json\" -exec wc -l {} \\\\;)",
+      "Bash(grep -l \"api/model/preload\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\"/*.tsx)",
+      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/8ef867c6-8a8b-4bf9-80ef-ebf8810a8a27/tasks/**)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

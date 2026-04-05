@@ -11,7 +11,7 @@ interface EngineStatusContextValue {
 
 const EngineStatusContext = createContext<EngineStatusContextValue | undefined>(undefined);
 
-const POLL_INTERVAL = 10_000;
+const POLL_INTERVAL = 30_000;
 
 export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { notify, toastOnly } = useNotification();

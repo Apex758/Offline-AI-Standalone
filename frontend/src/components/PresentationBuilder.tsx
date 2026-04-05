@@ -26,6 +26,7 @@ import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson, bui
 import type { PresentationFormData, ParsedLessonInput } from '../utils/presentationPromptBuilder';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import axios from 'axios';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 import { useCapabilities } from '../contexts/CapabilitiesContext';
@@ -1571,6 +1572,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [showHistory, setShowHistory] = useState(false);
   const [presentationHistory, setPresentationHistory] = useState<any[]>([]);
+  const { matchCount, matchedHistories, sortedHistories: sortedPresentationHistory } = useHistoryMatching(formData, presentationHistory);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [draftsExpanded, setDraftsExpanded] = useState(true);
@@ -2218,10 +2220,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setShowHistory(!showHistory); if (!showHistory) { loadPresentationHistory(); loadDrafts(); } }}
-              className="p-2 rounded-lg hover:bg-theme-hover transition"
+              className="relative p-2 rounded-lg hover:bg-theme-hover transition"
               title="Presentation History"
             >
               <Icon icon={Clock01Icon} className="w-5" style={{ color: 'var(--sidebar-text-muted)' }} />
+              {matchCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+              )}
             </button>
           </div>
         </div>
@@ -2709,33 +2714,70 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       )}
                     </>
                   )}
-                  {[...presentationHistory].reverse().map(pres => (
-                    <div
-                      key={pres.id}
-                      onClick={() => loadPresentation(pres)}
-                      className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                        currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                            {pres.title}
-                          </p>
-                          <p className="text-xs text-theme-muted mt-1">
-                            {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <button
-                          onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
-                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                          title="Delete"
+                  {matchCount > 0 && matchedHistories.length > 0 && (
+                    <>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 px-1 pt-1">Matching ({matchCount})</p>
+                      {sortedPresentationHistory.filter(pres => matchedHistories.includes(pres)).map(pres => (
+                        <div
+                          key={pres.id}
+                          onClick={() => loadPresentation(pres)}
+                          className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ring-1 ring-blue-500/30 ${
+                            currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                          }`}
                         >
-                          <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                                {pres.title}
+                              </p>
+                              <p className="text-xs text-theme-muted mt-1">
+                                {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <button
+                              onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                              title="Delete"
+                            >
+                              <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).length > 0 && (
+                    <>
+                      {matchCount > 0 && <p className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted px-1 pt-2">Other</p>}
+                      {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).map(pres => (
+                        <div
+                          key={pres.id}
+                          onClick={() => loadPresentation(pres)}
+                          className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                            currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                                {pres.title}
+                              </p>
+                              <p className="text-xs text-theme-muted mt-1">
+                                {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <button
+                              onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                              title="Delete"
+                            >
+                              <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -2774,10 +2816,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setShowHistory(!showHistory); if (!showHistory) { loadPresentationHistory(); loadDrafts(); } }}
-              className="p-2 rounded-lg hover:bg-theme-hover transition"
+              className="relative p-2 rounded-lg hover:bg-theme-hover transition"
               title="Presentation History"
             >
               <Icon icon={Clock01Icon} className="w-5" style={{ color: 'var(--sidebar-text-muted)' }} />
+              {matchCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+              )}
             </button>
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-theme-secondary border border-theme rounded-lg">
               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{
@@ -3232,33 +3277,70 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     )}
                   </>
                 )}
-                {[...presentationHistory].reverse().map(pres => (
-                  <div
-                    key={pres.id}
-                    onClick={() => loadPresentation(pres)}
-                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                      currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                          {pres.title}
-                        </p>
-                        <p className="text-xs text-theme-muted mt-1">
-                          {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <button
-                        onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                        title="Delete"
+                {matchCount > 0 && matchedHistories.length > 0 && (
+                  <>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 px-1 pt-1">Matching ({matchCount})</p>
+                    {sortedPresentationHistory.filter(pres => matchedHistories.includes(pres)).map(pres => (
+                      <div
+                        key={pres.id}
+                        onClick={() => loadPresentation(pres)}
+                        className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ring-1 ring-blue-500/30 ${
+                          currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                        }`}
                       >
-                        <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                              {pres.title}
+                            </p>
+                            <p className="text-xs text-theme-muted mt-1">
+                              {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                            title="Delete"
+                          >
+                            <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).length > 0 && (
+                  <>
+                    {matchCount > 0 && <p className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted px-1 pt-2">Other</p>}
+                    {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).map(pres => (
+                      <div
+                        key={pres.id}
+                        onClick={() => loadPresentation(pres)}
+                        className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                          currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                              {pres.title}
+                            </p>
+                            <p className="text-xs text-theme-muted mt-1">
+                              {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                            title="Delete"
+                          >
+                            <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </>
             )}
           </div>

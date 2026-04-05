@@ -137,19 +137,38 @@ def _normalize_grade(g: str) -> str:
 
 
 def aggregate_curriculum_data(teacher_id: str = "default", from_date: str | None = None, to_date: str | None = None,
-                               grade_subjects: dict | None = None) -> dict:
+                               grade_subjects: dict | None = None, phase_id: str | None = None) -> dict:
     """Analyze milestone completion rates by subject/grade.
 
     When from_date/to_date are provided, shows both overall totals AND
     milestones completed within the period (totals + delta approach).
     If grade_subjects is provided (e.g. {"1": ["Math"], "3": ["Science"]}),
     only grades/subjects the teacher actually teaches are included.
+    If phase_id is provided, only milestones assigned to that phase are counted.
     """
     try:
         from milestones.milestone_db import get_milestone_db
         db = get_milestone_db()
-        summary = db.get_progress_summary(teacher_id)
-        breakdown = db.get_progress_by_grade_subject(teacher_id)
+        if phase_id:
+            # Use phase-scoped progress for both summary and breakdown
+            phase_progress = db.get_phase_progress(teacher_id, phase_id)
+            milestones = db.get_milestones(teacher_id, phase_id=phase_id)
+            # Build breakdown from phase milestones
+            gs_map = {}
+            for m in milestones:
+                key = f"{m['grade']}|{m['subject']}"
+                if key not in gs_map:
+                    gs_map[key] = {"grade": m["grade"], "subject": m["subject"], "total": 0, "completed": 0, "in_progress": 0}
+                gs_map[key]["total"] += 1
+                if m.get("status") == "completed":
+                    gs_map[key]["completed"] += 1
+                elif m.get("status") == "in_progress":
+                    gs_map[key]["in_progress"] += 1
+            summary = {"total": phase_progress["total_milestones"], "completed": phase_progress["completed_milestones"]}
+            breakdown = sorted(gs_map.values(), key=lambda x: (x["grade"], x["subject"]))
+        else:
+            summary = db.get_progress_summary(teacher_id)
+            breakdown = db.get_progress_by_grade_subject(teacher_id)
     except Exception:
         return {"has_data": False, "llm_text": "", "total": 0, "completed": 0, "pct": 0, "gaps": [], "breakdown": []}
 
@@ -713,18 +732,38 @@ def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str
 
 def aggregate_all(teacher_id: str = "default_teacher", user_id: str | None = None,
                   from_date: str | None = None, to_date: str | None = None,
-                  grade_subjects: dict | None = None) -> dict:
+                  grade_subjects: dict | None = None,
+                  phase_id: str | None = None) -> dict:
     """Aggregate all data sources. Returns both raw data and LLM text summaries.
 
     When from_date/to_date are provided, each aggregate function includes
     both overall totals and period-specific deltas in its llm_text.
     If grade_subjects is provided (e.g. {"1": ["Math"], "k": ["Language Arts"]}),
     curriculum/performance/content data is restricted to what the teacher teaches.
+    If phase_id is provided, curriculum data is scoped to milestones in that phase,
+    and date-sensitive queries use the phase date range.
     """
+    # When phase-scoped, override date range with phase dates if not already set
+    effective_from = from_date
+    effective_to = to_date
+    if phase_id:
+        try:
+            from school_year_service import SchoolYearService
+            svc = SchoolYearService()
+            config = svc.get_active_config(teacher_id)
+            if config:
+                phases = svc.list_academic_phases(config["id"])
+                phase = next((p for p in phases if p["id"] == phase_id), None)
+                if phase:
+                    effective_from = effective_from or phase["start_date"]
+                    effective_to = effective_to or phase["end_date"]
+        except Exception as e:
+            logger.warning(f"Failed to resolve phase dates for {phase_id}: {e}")
+
     return {
-        "curriculum": aggregate_curriculum_data(teacher_id, from_date, to_date, grade_subjects),
-        "performance": aggregate_student_performance(from_date, to_date, grade_subjects),
-        "content": aggregate_content_creation(from_date, to_date, grade_subjects),
-        "attendance": aggregate_attendance_engagement(from_date, to_date),
-        "achievements": aggregate_achievement_data(teacher_id, user_id, from_date, to_date),
+        "curriculum": aggregate_curriculum_data(teacher_id, effective_from, effective_to, grade_subjects, phase_id=phase_id),
+        "performance": aggregate_student_performance(effective_from, effective_to, grade_subjects),
+        "content": aggregate_content_creation(effective_from, effective_to, grade_subjects),
+        "attendance": aggregate_attendance_engagement(effective_from, effective_to),
+        "achievements": aggregate_achievement_data(teacher_id, user_id, effective_from, effective_to),
     }

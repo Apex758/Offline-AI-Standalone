@@ -16,6 +16,7 @@ import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { useDisplayFilters } from './hooks/useDisplayFilters';
+import { usePreload } from './hooks/usePreload';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 import { EngineStatusProvider } from './contexts/EngineStatusContext';
 
@@ -37,6 +38,8 @@ function AppContent() {
   // Apply theme & display filters (brightness / warm tone)
   useTheme();
   useDisplayFilters();
+  // Preload LLM and TTS models once at app startup
+  usePreload();
   // Engine status polling is now handled by EngineStatusProvider
 
   // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally

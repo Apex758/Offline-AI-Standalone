@@ -17,10 +17,15 @@ class MilestoneUpdate(BaseModel):
     due_date: Optional[str] = None
     is_hidden: Optional[bool] = None
     checklist_json: Optional[str] = None
+    phase_id: Optional[str] = "__UNSET__"
 
 class BulkResetRequest(BaseModel):
     teacher_id: str
     archive: bool = True
+
+class BulkPhaseAssignRequest(BaseModel):
+    milestone_ids: List[str]
+    phase_id: Optional[str] = None  # None = unassign
 
 # Initialize curriculum matcher for milestone generation
 curriculum_matcher = None
@@ -94,27 +99,29 @@ async def get_milestones(
     grade: Optional[str] = None,
     subject: Optional[str] = None,
     status: Optional[str] = None,
+    phase_id: Optional[str] = None,
     include_hidden: bool = False
 ):
-    """Get milestones with optional filters"""
+    """Get milestones with optional filters (including phase_id)"""
     db = get_milestone_db()
     milestones = db.get_milestones(
         teacher_id=teacher_id,
         grade=grade,
         subject=subject,
         status=status,
+        phase_id=phase_id,
         include_hidden=include_hidden
     )
     return {"milestones": milestones, "count": len(milestones)}
 
 @router.get("/{teacher_id}/progress")
-async def get_progress(teacher_id: str):
-    """Get overall progress statistics with SCO-level breakdown"""
+async def get_progress(teacher_id: str, phase_id: Optional[str] = None):
+    """Get progress statistics with SCO-level breakdown, optionally scoped to a phase"""
     db = get_milestone_db()
     summary = db.get_progress_summary(teacher_id)
 
     # Build SCO-level breakdown by grade/subject
-    all_milestones = db.get_milestones(teacher_id)
+    all_milestones = db.get_milestones(teacher_id, phase_id=phase_id)
     gs_map: Dict[str, Dict[str, Any]] = {}
     for m in all_milestones:
         if m.get('status') == 'skipped':
@@ -173,7 +180,8 @@ async def update_milestone(milestone_id: str, update: MilestoneUpdate):
         notes=update.notes,
         due_date=update.due_date,
         is_hidden=update.is_hidden,
-        checklist_json=update.checklist_json
+        checklist_json=update.checklist_json,
+        phase_id=update.phase_id
     )
     
     if not updated:
@@ -235,3 +243,27 @@ async def get_stats(teacher_id: str):
         "completionPercentage": percentage,
         "upcomingThisWeek": len(upcoming)
     }
+
+
+@router.get("/{teacher_id}/unassigned")
+async def get_unassigned(teacher_id: str):
+    """Return milestones with no phase assignment."""
+    db = get_milestone_db()
+    milestones = db.get_unassigned_milestones(teacher_id)
+    return {"milestones": milestones, "count": len(milestones)}
+
+
+@router.get("/{teacher_id}/phase-progress")
+async def get_phase_progress(teacher_id: str, phase_id: Optional[str] = None):
+    """Get phase-scoped progress (milestone + SCO level). Omit phase_id for overall."""
+    db = get_milestone_db()
+    result = db.get_phase_progress(teacher_id, phase_id=phase_id)
+    return result
+
+
+@router.post("/bulk-assign-phase")
+async def bulk_assign_phase(request: BulkPhaseAssignRequest):
+    """Assign multiple milestones to a phase at once."""
+    db = get_milestone_db()
+    count = db.bulk_assign_phase(request.milestone_ids, request.phase_id)
+    return {"success": True, "updated": count}

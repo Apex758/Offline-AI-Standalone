@@ -755,8 +755,8 @@ class LlamaInference:
             logger.error(f"❌ Vision streaming error: {e}")
             yield {"token": None, "finished": True, "error": str(e)}
 
-    async def cleanup(self):
-        """Cleanup model."""
+    def cleanup_sync(self):
+        """Synchronous cleanup for use outside async context."""
         if self.model:
             try:
                 with SilenceOutput():
@@ -766,6 +766,10 @@ class LlamaInference:
                 logger.info("✅ Local model cleaned up")
             except Exception as e:
                 logger.error(f"❌ Cleanup error: {e}")
+
+    async def cleanup(self):
+        """Async cleanup wrapper."""
+        self.cleanup_sync()
 
 
 # Process pool function (if needed for old code)

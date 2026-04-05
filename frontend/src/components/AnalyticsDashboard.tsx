@@ -78,6 +78,7 @@ import { getTrophyType } from '../config/trophyMap';
 import { getTrophyImageForTier, type TrophyTier } from '../assets/trophyImages';
 import type { NewlyEarnedAchievement } from '../types/achievement';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
+import { useCurrentPhase } from '../hooks/useCurrentPhase';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -130,7 +131,39 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [latestInsightsReport, setLatestInsightsReport] = useState<InsightsReport | null>(null);
+  const [dashProgressScope, setDashProgressScope] = useState<'overall' | 'phase'>('overall');
   const [metricsHistory, setMetricsHistory] = useState<import('../types/insights').MetricSnapshot[]>([]);
+
+  // Stable teacherId for hooks
+  const dashTeacherId = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) { const u = JSON.parse(raw); return u.username || u.id || 'default_teacher'; }
+    } catch {}
+    return 'default_teacher';
+  }, []);
+  const { currentPhase: dashPhase, allPhases: dashAllPhases } = useCurrentPhase(dashTeacherId);
+
+  // Phase progress for summary card
+  const [dashPhaseProgress, setDashPhaseProgress] = useState<Array<{ id: string; label: string; key: string; semester: string | null; pct: number }>>([]);
+  const [dashUnassignedCount, setDashUnassignedCount] = useState(0);
+  useEffect(() => {
+    if (dashAllPhases.length === 0) return;
+    Promise.all([
+      ...dashAllPhases.map(p =>
+        axios.get(`http://localhost:8000/api/milestones/${dashTeacherId}/phase-progress?phase_id=${encodeURIComponent(p.id)}`)
+          .then(res => ({ id: p.id, label: p.phase_label, key: p.phase_key, semester: p.semester, pct: res.data.sco_pct || 0 }))
+          .catch(() => ({ id: p.id, label: p.phase_label, key: p.phase_key, semester: p.semester, pct: 0 }))
+      ),
+      axios.get(`http://localhost:8000/api/milestones/${dashTeacherId}/unassigned`)
+        .then(res => res.data.count || 0)
+        .catch(() => 0),
+    ]).then(results => {
+      const unassigned = results.pop() as number;
+      setDashPhaseProgress(results as any);
+      setDashUnassignedCount(unassigned);
+    });
+  }, [dashAllPhases, dashTeacherId]);
 
   useEffect(() => {
     setShowShowcase(settings.showTrophiesByDefault);
@@ -787,6 +820,30 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 Tasks Done
               </div>
             </div>
+            {dashPhase && (
+              <>
+                <div
+                  className="w-px h-10"
+                  style={{ backgroundColor: 'var(--dash-border)' }}
+                />
+                <div
+                  className="text-center"
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: 10,
+                    background: `${dashPhase.color}12`,
+                    border: `1px solid ${dashPhase.color}30`,
+                  }}
+                >
+                  <div className="text-xs font-semibold" style={{ color: dashPhase.color }}>
+                    {dashPhase.phase_label}
+                  </div>
+                  <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
+                    {dashPhase.days_remaining}d left
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -821,13 +878,98 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             />
 
             {/* Curriculum Progress */}
-            <CurriculumProgressWidget
-              stats={milestoneStats}
-              upcomingMilestones={upcomingMilestones}
-              progressBreakdown={progressBreakdown}
-              view={curriculumView}
-              onViewChange={setCurriculumView}
-            />
+            <div>
+              {/* Progress scope toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 12, color: 'var(--dash-text-sub)', fontWeight: 500 }}>Progress View:</span>
+                <div style={{ display: 'inline-flex', borderRadius: 6, border: '1px solid var(--dash-border)', overflow: 'hidden' }}>
+                  {(['overall', 'phase'] as const).map(mode => {
+                    const active = dashProgressScope === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setDashProgressScope(mode)}
+                        style={{
+                          padding: '3px 12px',
+                          fontSize: 12,
+                          fontWeight: active ? 600 : 400,
+                          background: active ? 'var(--dash-primary)' : 'transparent',
+                          color: active ? '#fff' : 'var(--dash-text-sub)',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {mode === 'overall' ? 'Overall' : 'Phase'}
+                      </button>
+                    );
+                  })}
+                </div>
+                {dashProgressScope === 'phase' && dashPhase && (
+                  <span style={{ fontSize: 11, color: dashPhase.color, fontWeight: 600 }}>
+                    Viewing: {dashPhase.phase_label}
+                  </span>
+                )}
+                {dashProgressScope === 'phase' && !dashPhase && (
+                  <span style={{ fontSize: 11, color: 'var(--dash-text-sub)', fontStyle: 'italic' }}>
+                    No active phase
+                  </span>
+                )}
+              </div>
+              <CurriculumProgressWidget
+                stats={milestoneStats}
+                upcomingMilestones={upcomingMilestones}
+                progressBreakdown={progressBreakdown}
+                view={curriculumView}
+                onViewChange={setCurriculumView}
+              />
+            </div>
+
+            {/* Phase Progress Summary */}
+            {dashPhaseProgress.length > 0 && (
+              <div style={{
+                background: 'var(--dash-card)',
+                borderRadius: 12,
+                border: '1px solid var(--dash-border)',
+                padding: 16,
+              }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--dash-text)', marginBottom: 12 }}>
+                  Phase Progress Summary
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {dashPhaseProgress.map(p => {
+                    const PHASE_C: Record<string, string> = {
+                      midterm_1: '#f97316', midterm_2: '#f97316',
+                      midterm_1_prep: '#fbbf24', midterm_2_prep: '#fbbf24',
+                      inter_semester_break: '#eab308', end_of_year_exam: '#ef4444',
+                    };
+                    const SEM_C: Record<string, string> = { 'Semester 1': '#3b82f6', 'Semester 2': '#22c55e' };
+                    const color = PHASE_C[p.key] || (p.semester ? SEM_C[p.semester] || '#6b7280' : '#6b7280');
+                    return (
+                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--dash-text-sub)', width: 100, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {p.label}
+                        </span>
+                        <div style={{ flex: 1, height: 8, borderRadius: 4, background: `${color}20`, overflow: 'hidden' }}>
+                          <div style={{
+                            width: `${p.pct}%`, height: '100%', borderRadius: 4,
+                            background: color, transition: 'width 0.5s ease',
+                          }} />
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 700, color, width: 40, textAlign: 'right' }}>
+                          {Math.round(p.pct)}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {dashUnassignedCount > 0 && (
+                  <div style={{ marginTop: 10, fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>
+                    Unassigned: {dashUnassignedCount} ELOs
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Recent Activity Timeline */}
             <div data-tutorial="analytics-recent-activity">

@@ -48,6 +48,7 @@ import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useHistoryMatching } from '../hooks/useHistoryMatching';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 const ENDPOINT = '/ws/rubric';
@@ -535,6 +536,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     return getDefaultFormData();
   });
 
+  const { matchCount, matchedHistories, sortedHistories: sortedRubricHistories } = useHistoryMatching(formData, rubricHistories);
+
   const [generatedRubric, setGeneratedRubric] = useState<string>(() => {
     // ✅ First check savedData (for resource manager view/edit)
     if (savedData?.generatedRubric && typeof savedData.generatedRubric === 'string') {
@@ -670,10 +673,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // Preload LLM model in background when tab opens
-  useEffect(() => {
-    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
-  }, []);
 
   // Subscribe to streaming updates
   useEffect(() => {
@@ -989,10 +988,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-theme-hover transition"
+                        className="relative p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Rubric History"
                       >
                         <History className="w-5 h-5 text-theme-muted" />
+                        {matchCount > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+                        )}
                       </button>
                       <button
                         onClick={() => {
@@ -1108,11 +1110,14 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-theme-hover transition"
+                className="relative p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Rubric History"
                 data-tutorial="rubric-generator-history"
               >
                 <History className="w-5 h-5 text-theme-muted" />
+                {matchCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+                )}
               </button>
             </div>
 
@@ -1414,33 +1419,44 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 <p className="text-sm">No saved rubrics yet</p>
               </div>
             ) : (
-              rubricHistories.map((history) => (
-                <div
-                  key={history.id}
-                  onClick={() => loadRubricHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                    currentRubricId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                        {history.title}
-                      </p>
-                      <p className="text-xs text-theme-hint mt-1">
-                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => deleteRubricHistory(history.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                      title="Delete rubric"
+              <>
+                {matchCount > 0 && (
+                  <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide px-1 mb-1">Matching ({matchCount})</p>
+                )}
+                {(matchCount > 0 ? sortedRubricHistories : rubricHistories).map((history, idx) => (
+                  <React.Fragment key={history.id}>
+                    {matchCount > 0 && idx === matchedHistories.length && (
+                      <div className="border-b border-theme my-2">
+                        <p className="text-xs font-semibold text-theme-hint uppercase tracking-wide px-1 mb-1">Other</p>
+                      </div>
+                    )}
+                    <div
+                      onClick={() => loadRubricHistory(history)}
+                      className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                        currentRubricId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                      }`}
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
-                  </div>
-                </div>
-              ))
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                            {history.title}
+                          </p>
+                          <p className="text-xs text-theme-hint mt-1">
+                            {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => deleteRubricHistory(history.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                          title="Delete rubric"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </>
             )}
           </div>
         </div>

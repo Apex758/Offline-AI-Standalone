@@ -27,6 +27,7 @@ import InsightsCoachPanel from './InsightsCoachPanel';
 import SchoolYearSetupModal from './SchoolYearSetupModal';
 import PhaseHistoryNav from './PhaseHistoryNav';
 import PhaseBreakdownModal from './PhaseBreakdownModal';
+import { useCurrentPhase } from '../hooks/useCurrentPhase';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -93,6 +94,10 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     } catch {}
     return null;
   })();
+
+  // Current phase awareness
+  const { currentPhase: activePhase } = useCurrentPhase(teacherId);
+
   // State
   const [insightsData, setInsightsData] = useState<InsightsData | null>(savedData?.insightsData || null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -150,6 +155,9 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     } catch {}
     return { ...DEFAULT_PASS_TOGGLES };
   });
+
+  // Phase scoping for insights
+  const [insightsPhaseScope, setInsightsPhaseScope] = useState<string | null>(null); // null = full, or phase_id
 
   // Schedule form state
   const [schedMode, setSchedMode] = useState<'manual' | 'daily' | 'interval'>('manual');
@@ -266,10 +274,6 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   // Ref to prevent setState during render
   const hasInitialized = useRef(false);
 
-  // Preload LLM model on mount (so it's ready by the time user clicks Generate)
-  useEffect(() => {
-    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
-  }, []);
 
   // Load data summary on mount
   useEffect(() => {
@@ -393,7 +397,16 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           }
         }
       } catch {}
-      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId, userId, registrationDate, gradeSubjects }));
+      // Include phase scoping data if active
+      const phasePayload: Record<string, string | null> = {};
+      if (insightsPhaseScope && activePhase) {
+        // Find the matching phase from allPhases (via the hook)
+        phasePayload.phaseId = insightsPhaseScope;
+        phasePayload.phaseLabel = activePhase.phase_label;
+        phasePayload.phaseStartDate = activePhase.start_date;
+        phasePayload.phaseEndDate = activePhase.end_date;
+      }
+      ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId, userId, registrationDate, gradeSubjects, ...phasePayload }));
     };
 
     ws.onmessage = (event) => {
@@ -711,6 +724,33 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 <h1 className="text-xl font-semibold text-theme-primary">Educator Insights</h1>
                 <p className="text-sm text-theme-secondary">AI-powered analysis of your teaching data</p>
               </div>
+              {activePhase && (
+                <div
+                  onClick={() => setInsightsPhaseScope(insightsPhaseScope ? null : activePhase.id)}
+                  title={insightsPhaseScope ? 'Click to clear phase scope' : 'Click to scope insights to this phase'}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '4px 12px',
+                    borderRadius: 9999,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    background: insightsPhaseScope ? `${activePhase.color}25` : `${activePhase.color}15`,
+                    border: `1px solid ${insightsPhaseScope ? activePhase.color : `${activePhase.color}40`}`,
+                    color: activePhase.color,
+                    marginLeft: 12,
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: activePhase.color, flexShrink: 0 }} />
+                  Currently in: {activePhase.phase_label}
+                  <span style={{ opacity: 0.5 }}>&bull;</span>
+                  {activePhase.days_remaining}d left
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {report && (
@@ -898,6 +938,38 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             </div>
           )}
         </div>
+
+      {/* Phase scoping banner */}
+      {insightsPhaseScope && activePhase && (
+        <div
+          className="flex-none px-6 py-2 border-b border-theme-border"
+          style={{
+            background: `${activePhase.color}08`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: 12,
+          }}
+        >
+          <span style={{ color: activePhase.color, fontWeight: 700 }}>
+            Insights scoped to: {activePhase.phase_label} ({new Date(activePhase.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – {new Date(activePhase.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })})
+          </span>
+          <button
+            onClick={() => setInsightsPhaseScope(null)}
+            style={{
+              marginLeft: 8,
+              fontSize: 11,
+              color: 'var(--text-secondary)',
+              textDecoration: 'underline',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Switch to full view
+          </button>
+        </div>
+      )}
 
       {/* ── Row 1: Performance Graph ── */}
       <div

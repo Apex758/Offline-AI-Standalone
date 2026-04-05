@@ -121,8 +121,7 @@ def reload_local_model():
         if _local_instance is not None:
             logger.info("Releasing old local model...")
             try:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(_local_instance.cleanup())
+                _local_instance.cleanup_sync()
             except Exception:
                 pass
             _local_instance = None
@@ -177,8 +176,7 @@ def _get_fast_model_singleton(model_name: str):
         if _fast_model_instance is not None:
             logger.info(f"Releasing old fast model ({_fast_model_name})...")
             try:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(_fast_model_instance.cleanup())
+                _fast_model_instance.cleanup_sync()
             except Exception:
                 pass
 
@@ -200,8 +198,7 @@ def reload_fast_model():
         if _fast_model_instance is not None:
             logger.info("Releasing fast model...")
             try:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(_fast_model_instance.cleanup())
+                _fast_model_instance.cleanup_sync()
             except Exception:
                 pass
             _fast_model_instance = None

@@ -69,6 +69,7 @@ import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useHistoryMatching } from '../hooks/useHistoryMatching';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface QuizGeneratorProps {
@@ -306,6 +307,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     return getDefaultFormData();
   });
 
+  const { matchCount, matchedHistories, sortedHistories: sortedQuizHistories } = useHistoryMatching(formData, quizHistories);
+
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
   
   // ✅ Read streaming content from context (read-only, no setter!)
@@ -404,10 +407,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // Preload LLM model in background when tab opens
-  useEffect(() => {
-    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
-  }, []);
 
   useEffect(() => {
     const LOCAL_STORAGE_KEY = `quiz_state_${tabId}`;
@@ -977,10 +976,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-theme-hover transition"
+                        className="relative p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Quiz History"
                       >
                         <History className="w-5 h-5 text-theme-muted" />
+                        {matchCount > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+                        )}
                       </button>
                       <button
                         onClick={() => {
@@ -1277,11 +1279,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </button>
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
-                    className="p-2 rounded-lg hover:bg-theme-hover transition"
+                    className="relative p-2 rounded-lg hover:bg-theme-hover transition"
                     title="Quiz History"
                     data-tutorial="quiz-generator-history"
                   >
                     <History className="w-5 h-5 text-theme-muted" />
+                    {matchCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none px-1">{matchCount}</span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -1699,33 +1704,46 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 <p className="text-sm">No saved quizzes yet</p>
               </div>
             ) : (
-              quizHistories.map((history) => (
-                <div
-                  key={history.id}
-                  onClick={() => loadQuizHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                    currentQuizId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                        {history.title}
-                      </p>
-                      <p className="text-xs text-theme-hint mt-1">
-                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => deleteQuizHistory(history.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                      title="Delete quiz"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
+              <>
+                {matchCount > 0 && (
+                  <div className="mb-2">
+                    <span className="text-xs font-medium text-blue-400">Matching ({matchCount})</span>
                   </div>
-                </div>
-              ))
+                )}
+                {(matchCount > 0 ? sortedQuizHistories : quizHistories).map((history, idx) => (
+                  <React.Fragment key={history.id}>
+                    {matchCount > 0 && idx === matchedHistories.length && matchedHistories.length > 0 && (
+                      <div className="border-b border-theme my-3">
+                        <span className="text-xs text-theme-muted">Other</span>
+                      </div>
+                    )}
+                    <div
+                      onClick={() => loadQuizHistory(history)}
+                      className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                        currentQuizId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                            {history.title}
+                          </p>
+                          <p className="text-xs text-theme-hint mt-1">
+                            {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => deleteQuizHistory(history.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                          title="Delete quiz"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </>
             )}
           </div>
         </div>

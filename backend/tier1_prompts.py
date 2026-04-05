@@ -368,3 +368,15 @@ def get_tier1_gen_params(task_type: str) -> dict:
         **TIER1_GEN_PARAMS,
         "max_tokens": TIER1_MAX_TOKENS.get(task_type, 1500),
     }
+
+
+def get_phase_context_header(phase_label: str | None = None, start_date: str | None = None,
+                              end_date: str | None = None) -> str:
+    """Return an LLM prompt header that scopes analysis to a specific academic phase.
+    Returns empty string if no phase info is provided."""
+    if not phase_label or not start_date or not end_date:
+        return ""
+    return (
+        f"IMPORTANT CONTEXT: This analysis covers {phase_label} ({start_date} – {end_date}) only.\n"
+        f"All data below is scoped to this phase. Do not reference content outside this period.\n\n"
+    )

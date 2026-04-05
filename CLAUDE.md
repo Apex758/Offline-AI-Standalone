@@ -139,6 +139,15 @@ If ANY fail → retry or escalate
 
 ## Context & Sub-Agent Rules
 
+### Opus = Planner, Sonnet = Executor
+- **Opus** handles high-level planning, architecture decisions, and precision coordination
+- **Sonnet** handles all digestible implementation tasks via sub-agents
+- Always use Sonnet (`model: "sonnet"`) for sub-agents
+- Break work into small, digestible chunks that Sonnet sub-agents can execute independently
+- Use sub-agents liberally — file edits, searches, simple fixes, CRUD, styling, boilerplate
+- Opus should focus on **what** and **why**; Sonnet sub-agents handle the **how**
+
+### Sub-Agent Guidelines
 - For tasks requiring **3+ lines of reasoning** or **multi-file analysis**:  
   - Spawn a **sub-agent** to explore/research the task  
   - Sub-agent output **must be summarized**  

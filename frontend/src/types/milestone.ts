@@ -17,6 +17,7 @@ export interface Milestone {
   status: 'not_started' | 'in_progress' | 'completed' | 'skipped';
   notes: string | null;
   due_date: string | null;
+  phase_id: string | null;
   is_hidden: number;
   completed_at: string | null;
   created_at: string;
@@ -30,6 +31,7 @@ export interface MilestoneUpdate {
   due_date?: string | null;
   is_hidden?: boolean;
   checklist_json?: string;
+  phase_id?: string | null;
 }
 
 export interface ProgressSummary {
