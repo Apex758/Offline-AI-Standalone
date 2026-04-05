@@ -1008,11 +1008,13 @@ async def websocket_chat(websocket: WebSocket):
 
             if chat_id:
                 try:
+                    print(f"[ws/chat] Loading history for {chat_id}...")
                     memory = get_chat_memory()
                     N = LLAMA_PARAMS.get("conversation_history_length", 4)
                     summary_block, history = memory.build_context(chat_id, n_pairs=N)
+                    print(f"[ws/chat] History loaded: {len(history)} messages")
                 except Exception as e:
-                    logger.error(f"Error loading chat context: {e}")
+                    print(f"[ws/chat] Error loading chat context: {e}")
             elif client_history:
                 # Use conversation history sent from the client (for AI assistant panel)
                 history = client_history[-8:]  # Cap at last 8 messages to avoid context overflow
@@ -1059,15 +1061,18 @@ async def websocket_chat(websocket: WebSocket):
                             "type": "curriculum_refs",
                             "references": chat_refs
                         })
-                        # Add curriculum context to system prompt
-                        context_blocks = []
-                        for m in chat_matches:
+                        # Add brief curriculum context to system prompt (keep it short
+                        # to avoid inflating prompt tokens on CPU inference)
+                        brief_refs = []
+                        for m in chat_matches[:2]:  # max 2 refs
                             if m.get("matchScore", 0) >= 0.15:
-                                ctx = curriculum_matcher.get_curriculum_context(m.get("id"))
-                                if ctx:
-                                    context_blocks.append(ctx)
-                        if context_blocks:
-                            system_prompt += "\n\nRelated Curriculum:\n" + "\n\n".join(context_blocks)
+                                name = m.get("displayName", "")
+                                grade = m.get("grade", "")
+                                subject = m.get("subject", "")
+                                if name:
+                                    brief_refs.append(f"- {name} (Grade {grade}, {subject})")
+                        if brief_refs:
+                            system_prompt += "\n\nRelated Curriculum:\n" + "\n".join(brief_refs)
                 except Exception as e:
                     logger.error(f"Error matching curriculum in chat: {e}")
 
@@ -1099,8 +1104,10 @@ async def websocket_chat(websocket: WebSocket):
             if image_files:
                 logger.info(f"Attached {len(image_files)} image(s) to chat message — using vision model")
 
+            print("[ws/chat] Resolving inference...")
             from inference_factory import get_inference_instance, resolve_inference_for_task
             inference = resolve_inference_for_task("chat")
+            print("[ws/chat] Inference resolved")
 
             # Detect prompt format and thinking support from the loaded model
             prompt_fmt = getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
@@ -1111,7 +1118,9 @@ async def websocket_chat(websocket: WebSocket):
                 thinking_directive = "/think" if thinking_enabled else "/no_think"
                 system_prompt = system_prompt + f"\n{thinking_directive}"
 
+            print(f"[ws/chat] Building prompt (format={prompt_fmt}, history={len(history)} msgs)...")
             prompt = build_multi_turn_prompt(system_prompt, history, effective_user_message, prompt_format=prompt_fmt)
+            print(f"[ws/chat] Prompt built ({len(prompt)} chars)")
 
             # Safety: truncate prompt if it's too long to prevent llama.cpp crash
             # Rough estimate: 1 token ≈ 4 chars. Leave room for max_tokens response.
@@ -1280,20 +1289,23 @@ async def websocket_chat(websocket: WebSocket):
                                 break
 
             except Exception as e:
-                logger.error(f"Chat generation error: {e}")
+                import traceback
+                print(f"[ws/chat] ERROR: {e}")
+                traceback.print_exc()
                 try:
                     await websocket.send_json({
                         "type": "error",
                         "message": str(e)
                     })
                 except:
-                    # Connection already closed, just log
-                    logger.error("Could not send error message - connection closed")
+                    print("[ws/chat] Could not send error message - connection closed")
 
     except WebSocketDisconnect:
-        logger.info("WebSocket disconnected")
+        print("[ws/chat] WebSocket disconnected")
     except Exception as e:
-        logger.error(f"WebSocket error: {str(e)}")
+        import traceback
+        print(f"[ws/chat] WebSocket error: {e}")
+        traceback.print_exc()
 
 class LessonPlanRequest(BaseModel):
     prompt: str
