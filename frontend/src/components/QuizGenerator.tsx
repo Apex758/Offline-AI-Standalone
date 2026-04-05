@@ -244,7 +244,7 @@ const ENDPOINT = '/ws/quiz';
 const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
   const triggerCheck = useAchievementTrigger();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
-  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   const tabColor = settings.tabColors['quiz-generator'];
   const [showTutorial, setShowTutorial] = useState(false);
@@ -312,8 +312,18 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
   
   // ✅ Read streaming content from context (read-only, no setter!)
+  const [, forceRender] = useState({});
   const streamingQuiz = getStreamingContent(tabId, ENDPOINT);
   const contextLoading = getIsStreaming(tabId, ENDPOINT);
+
+  // Subscribe to streaming updates so component re-renders as tokens arrive
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId, ENDPOINT, () => {
+      forceRender({});
+    });
+    return unsubscribe;
+  }, [tabId, subscribe]);
+
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);

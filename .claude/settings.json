@@ -202,7 +202,9 @@
       "Bash(find \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\" -type f -name \"*.tsx\" -exec wc -l {} +)",
       "Bash(find \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/public\" -type f -size +500k -exec ls -lh {} \\\\;)",
       "Bash(du -h \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/public\"/*)",
-      "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/dist/assets/\"*.js)"
+      "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/dist/assets/\"*.js)",
+      "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/\"*tier*)",
+      "Bash(wc -l \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/\"*.tsx)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

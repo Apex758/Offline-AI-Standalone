@@ -102,6 +102,10 @@ const CalendarRange: React.FC<{ className?: string; style?: React.CSSProperties 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
+import TrophyDetailCard from './TrophyDetailCard';
+import { getTrophyType } from '../config/trophyMap';
+import { getTrophyImageForTier } from '../assets/trophyImagesLazy';
+import type { TrophyTier } from '../assets/trophyImages';
 
 // Lazy-load all tab components (only downloaded when user opens that tab)
 const Chat = React.lazy(() => import('./Chat'));
@@ -3049,9 +3053,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
 function AchievementUnlockModalBridge() {
   const { pendingUnlocks, dismissUnlock } = useAchievementContext();
+  const [trophySrc, setTrophySrc] = React.useState<string | undefined>(undefined);
+
+  const current = pendingUnlocks.length > 0 ? pendingUnlocks[0] : null;
+
+  React.useEffect(() => {
+    if (!current) { setTrophySrc(undefined); return; }
+    const tType = getTrophyType(current.achievement_id);
+    if (!tType) { setTrophySrc(undefined); return; }
+    getTrophyImageForTier(tType, (current.tier ?? 'gold') as TrophyTier)
+      .then(src => setTrophySrc(src));
+  }, [current?.achievement_id, current?.tier]);
+
+  if (!current) return null;
+
+  if (trophySrc) {
+    return (
+      <TrophyDetailCard
+        achievement={current}
+        trophyImageSrc={trophySrc}
+        earnedAt={current.earned_at}
+        onClose={dismissUnlock}
+      />
+    );
+  }
+
   return (
     <AchievementUnlockModal
-      achievement={pendingUnlocks.length > 0 ? pendingUnlocks[0] : null}
+      achievement={current}
       onDismiss={dismissUnlock}
     />
   );

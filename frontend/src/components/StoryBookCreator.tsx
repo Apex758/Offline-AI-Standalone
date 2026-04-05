@@ -37,6 +37,8 @@ const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSPropertie
 };
 
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useQueue } from '../contexts/QueueContext';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useTTS, useSTT } from '../hooks/useVoice';
@@ -1269,6 +1271,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const { settings } = useSettings();
   const { hasDiffusion, hasVision, tier } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
+  const { enqueue, queueEnabled } = useQueue();
   const { speak, stop: stopTTS, isSpeaking } = useTTS();
   const { guardOffline } = useOfflineGuard();
 
@@ -1419,6 +1422,20 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     setLivePages([]);
     setGenerationPhase('idle');
     setView('streaming');
+
+    if (queueEnabled) {
+      const prompt = buildStorybookPrompt(formData);
+      enqueue({
+        label: `Storybook - ${formData.title.slice(0, 40)}`,
+        toolType: 'Storybook',
+        tabId,
+        endpoint: WS_ENDPOINT,
+        prompt,
+        generationMode: 'queued',
+        extraMessageData: { grade: formData.gradeLevel },
+      });
+      return;
+    }
 
     const ws = getConnection(tabId, WS_ENDPOINT);
     wsRef.current = ws;

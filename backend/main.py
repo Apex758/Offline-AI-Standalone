@@ -1145,9 +1145,7 @@ async def websocket_chat(websocket: WebSocket):
             try:
 
                 # Choose streaming method based on whether images are attached
-                token_buffer = []
                 full_response_tokens = []  # Accumulate full response for memory
-                last_send = time.time()
 
                 if image_files and hasattr(inference, 'generate_stream_vision') and getattr(inference, 'has_vision', False):
                     # Vision path: use create_chat_completion with images
@@ -1243,19 +1241,9 @@ async def websocket_chat(websocket: WebSocket):
                         break
 
                     if chunk["finished"]:
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
 
@@ -1269,24 +1257,18 @@ async def websocket_chat(websocket: WebSocket):
 
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
                         full_response_tokens.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 import traceback
@@ -1649,9 +1631,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("lesson-plan") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
-                # Stream tokens in real-time (works with both Gemma API and local models)
-                token_buffer = []
-                last_send = time.time()
+                # Stream tokens in real-time
                 async for chunk in inference.generate_stream(
                     tool_name="lesson_plan",
                     input_data=prompt,
@@ -1677,16 +1657,6 @@ async def websocket_lesson_plan(websocket: WebSocket):
                         break
 
                     if chunk.get("finished"):
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)
@@ -1694,23 +1664,17 @@ async def websocket_lesson_plan(websocket: WebSocket):
                             logger.error("Could not send done message - connection closed")
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Lesson plan generation error: {e}")
@@ -1806,8 +1770,6 @@ async def quiz_websocket(websocket: WebSocket):
                 inference = resolve_inference_for_task("quiz") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Stream tokens as they are generated
-                token_buffer = []
-                last_send = time.time()
                 async for chunk in inference.generate_stream(
                     tool_name="quiz",
                     input_data=prompt,
@@ -1833,16 +1795,6 @@ async def quiz_websocket(websocket: WebSocket):
                         break
 
                     if chunk.get("finished"):
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)
@@ -1850,23 +1802,17 @@ async def quiz_websocket(websocket: WebSocket):
                             logger.error("Could not send done message - connection closed")
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Quiz generation error: {e}")
@@ -1960,9 +1906,7 @@ async def rubric_websocket(websocket: WebSocket):
                 inference = resolve_inference_for_task("rubric") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                 logger.info("Starting rubric generation...")
 
-                # Use streaming method for real-time generation
-                token_buffer = []
-                last_send = time.time()
+                # Stream tokens in real-time
                 async for chunk in inference.generate_stream(
                     tool_name="rubric",
                     input_data=prompt,
@@ -1982,47 +1926,31 @@ async def rubric_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
 
                     if chunk.get("finished"):
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         logger.info("Rubric generation complete")
                         try:
                             await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Rubric generation error: {e}")
@@ -2092,9 +2020,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("kindergarten") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
-                # Use streaming method for real-time generation
-                token_buffer = []
-                last_send = time.time()
+                # Stream tokens in real-time
                 async for chunk in inference.generate_stream(
                     tool_name="kindergarten",
                     input_data=prompt,
@@ -2114,46 +2040,30 @@ async def kindergarten_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
 
                     if chunk.get("finished"):
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Kindergarten generation error: {e}")
@@ -2221,10 +2131,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("multigrade") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
-                # Use streaming method for real-time generation
-                token_buffer = []
-                last_send = time.time()
-                chunk_count = 0
+                # Stream tokens in real-time
                 async for chunk in inference.generate_stream(
                     tool_name="multigrade",
                     input_data=prompt,
@@ -2234,7 +2141,6 @@ async def multigrade_websocket(websocket: WebSocket):
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                     cancel_event=cancel_event,
                 ):
-                    chunk_count += 1
                     if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
@@ -2245,47 +2151,30 @@ async def multigrade_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
 
                     if chunk.get("finished"):
-                        logger.info(f"Generation finished for job {job_id}, total chunks: {chunk_count}")
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Multigrade generation error: {e}")
@@ -2355,9 +2244,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("cross-curricular") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
-                # Use streaming method for real-time generation
-                token_buffer = []
-                last_send = time.time()
+                # Stream tokens in real-time
                 async for chunk in inference.generate_stream(
                     tool_name="cross_curricular",
                     input_data=prompt,
@@ -2377,46 +2264,30 @@ async def cross_curricular_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
 
                     if chunk.get("finished"):
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Cross-curricular generation error: {e}")
@@ -2516,10 +2387,7 @@ async def worksheet_websocket(websocket: WebSocket):
                 inference = resolve_inference_for_task("worksheet") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                 logger.info("Got inference instance, starting generation...")
 
-                # Use streaming method for real-time generation
-                token_buffer = []
-                last_send = time.time()
-                chunk_count = 0
+                # Stream tokens in real-time
                 async for chunk in inference.generate_stream(
                     tool_name="worksheet",
                     input_data=prompt,
@@ -2529,9 +2397,6 @@ async def worksheet_websocket(websocket: WebSocket):
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                     cancel_event=cancel_event,
                 ):
-                    chunk_count += 1
-                    if chunk_count <= 5:  # Log first few chunks
-                        logger.info(f"Received chunk {chunk_count}: {chunk}")
                     if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
@@ -2548,40 +2413,24 @@ async def worksheet_websocket(websocket: WebSocket):
                         break
 
                     if chunk.get("finished"):
-                        # Send any remaining tokens
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
 
-                    # Batch tokens before sending
+                    # Send each token immediately for smooth streaming
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-
-                        # Send every 100ms or 10 tokens (whichever comes first)
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": "".join(token_buffer)
-                                })
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": chunk["token"]
+                            })
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Worksheet generation error for job {job_id}: {e}")
@@ -2657,8 +2506,6 @@ async def presentation_websocket(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("presentation") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
-                token_buffer = []
-                last_send = time.time()
                 async for chunk in inference.generate_stream(
                     tool_name="presentation",
                     input_data=prompt,
@@ -2681,12 +2528,6 @@ async def presentation_websocket(websocket: WebSocket):
                         break
 
                     if chunk.get("finished"):
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending final tokens: {e}")
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)
@@ -2695,16 +2536,12 @@ async def presentation_websocket(websocket: WebSocket):
                         break
 
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except Exception as e:
-                                logger.error(f"Error sending token: {e}")
-                                break
+                        try:
+                            await websocket.send_json({"type": "token", "content": chunk["token"]})
+                            await asyncio.sleep(0)
+                        except Exception as e:
+                            logger.error(f"Error sending token: {e}")
+                            break
 
             except Exception as e:
                 logger.error(f"Presentation generation error: {e}")
@@ -2739,8 +2576,6 @@ async def storybook_websocket(websocket: WebSocket):
         """Run a generation pass. If stream_tokens is False, collect internally and return the text.
         token_type controls the WebSocket message type (e.g. 'narrative_token' for Pass 1 preview)."""
         collected = []
-        token_buffer = []
-        last_send = time.time()
         async for chunk in inference.generate_stream(
             tool_name="storybook",
             input_data=prompt_text,
@@ -2762,27 +2597,17 @@ async def storybook_websocket(websocket: WebSocket):
                 return None
 
             if chunk.get("finished"):
-                if stream_tokens and token_buffer:
-                    try:
-                        await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
-                        await asyncio.sleep(0)
-                    except Exception as e:
-                        logger.error(f"Error sending final tokens: {e}")
                 return "".join(collected)
 
             if chunk.get("token"):
                 collected.append(chunk["token"])
                 if stream_tokens:
-                    token_buffer.append(chunk["token"])
-                    if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                        try:
-                            await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
-                            token_buffer = []
-                            last_send = time.time()
-                            await asyncio.sleep(0)
-                        except Exception as e:
-                            logger.error(f"Error sending token: {e}")
-                            return None
+                    try:
+                        await websocket.send_json({"type": token_type, "content": chunk["token"]})
+                        await asyncio.sleep(0)
+                    except Exception as e:
+                        logger.error(f"Error sending token: {e}")
+                        return None
         return "".join(collected)
 
     try:
@@ -3053,8 +2878,6 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
 async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperature,
                         token_type="token", done_type="done", tool_name="brain-dump"):
     """Shared streaming helper for brain dump websocket responses."""
-    token_buffer = []
-    last_send = time.time()
     async for chunk in inference.generate_stream(
         tool_name=tool_name,
         input_data=text,
@@ -3071,12 +2894,6 @@ async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperat
             break
 
         if chunk.get("finished"):
-            if token_buffer:
-                try:
-                    await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
-                    await asyncio.sleep(0)
-                except:
-                    pass
             try:
                 await websocket.send_json({"type": done_type})
                 await asyncio.sleep(0)
@@ -3085,15 +2902,11 @@ async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperat
             break
 
         if chunk.get("token"):
-            token_buffer.append(chunk["token"])
-            if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                try:
-                    await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
-                    token_buffer = []
-                    last_send = time.time()
-                    await asyncio.sleep(0)
-                except:
-                    break
+            try:
+                await websocket.send_json({"type": token_type, "content": chunk["token"]})
+                await asyncio.sleep(0)
+            except:
+                break
 
 
 @app.websocket("/ws/brain-dump")
@@ -3611,8 +3424,6 @@ async def educator_insights_websocket(websocket: WebSocket):
                     except Exception:
                         pass
 
-                    token_buffer = []
-                    last_send = time.time()
                     async for chunk in inference.generate_stream(
                         tool_name=f"insights_{pass_key}",
                         input_data=user_prompt,
@@ -3632,35 +3443,19 @@ async def educator_insights_websocket(websocket: WebSocket):
                             break
 
                         if chunk.get("finished"):
-                            if token_buffer:
-                                text_chunk = "".join(token_buffer)
-                                accumulated_text.append(text_chunk)
-                                try:
-                                    await websocket.send_json({
-                                        "type": "token",
-                                        "pass": pass_num,
-                                        "content": text_chunk
-                                    })
-                                    await asyncio.sleep(0)
-                                except Exception:
-                                    pass
                             break
 
                         if chunk.get("token"):
-                            token_buffer.append(chunk["token"])
                             accumulated_text.append(chunk["token"])
-                            if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                                try:
-                                    await websocket.send_json({
-                                        "type": "token",
-                                        "pass": pass_num,
-                                        "content": "".join(token_buffer)
-                                    })
-                                    token_buffer = []
-                                    last_send = time.time()
-                                    await asyncio.sleep(0)
-                                except Exception:
-                                    break
+                            try:
+                                await websocket.send_json({
+                                    "type": "token",
+                                    "pass": pass_num,
+                                    "content": chunk["token"]
+                                })
+                                await asyncio.sleep(0)
+                            except Exception:
+                                break
 
                 except Exception as e:
                     logger.error(f"Insights pass {pass_name} error: {e}")
@@ -3816,6 +3611,13 @@ async def educator_insights_websocket(websocket: WebSocket):
                     "type": "complete",
                     "report": report
                 })
+                await asyncio.sleep(0)
+            except Exception:
+                pass
+
+            # Send done so WebSocketContext / queue system detect end of streaming
+            try:
+                await websocket.send_json({"type": "done"})
                 await asyncio.sleep(0)
             except Exception:
                 pass
@@ -3997,9 +3799,7 @@ async def websocket_consultant(websocket: WebSocket):
             gen_params = get_tier1_gen_params("consultant")
 
             # Stream response
-            token_buffer = []
             full_tokens = []
-            last_send = time.time()
             import re as _re
 
             try:
@@ -4018,8 +3818,6 @@ async def websocket_consultant(websocket: WebSocket):
                         break
 
                     if chunk["finished"]:
-                        if token_buffer:
-                            await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
                         await websocket.send_json({"type": "done"})
 
                         # Save assistant response
@@ -4038,13 +3836,9 @@ async def websocket_consultant(websocket: WebSocket):
                         break
 
                     if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
                         full_tokens.append(chunk["token"])
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
-                            token_buffer = []
-                            last_send = time.time()
-                            await asyncio.sleep(0)
+                        await websocket.send_json({"type": "token", "content": chunk["token"]})
+                        await asyncio.sleep(0)
 
             except Exception as e:
                 logger.error(f"Consultant generation error: {e}")

@@ -21,6 +21,8 @@ import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, 
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useNotification } from '../contexts/NotificationContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useQueue } from '../contexts/QueueContext';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import MetricsNudgeBanner from './MetricsNudgeBanner';
 import InsightsGraphRow, { type DimensionClickContext } from './InsightsGraphRow';
 import InsightsCoachPanel from './InsightsCoachPanel';
@@ -64,6 +66,8 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const { guardOffline } = useOfflineGuard();
   const { notify } = useNotification();
   const { settings } = useSettings();
+  const { enqueue, queueEnabled } = useQueue();
+  const { getConnection } = useWebSocket();
   const tabColor = settings.tabColors['educator-insights'] ?? '#d97706';
 
   // Resolve teacher ID (username for milestones) and user ID (for achievements)
@@ -371,6 +375,42 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     accumulatedTokensRef.current = '';
     streamingPassRef.current = '';
 
+    // Build payload data (used by both queue and raw WebSocket paths)
+    let registrationDate: string | null = null;
+    let gradeSubjects: Record<string, string[]> | null = null;
+    try {
+      const settingsRaw = localStorage.getItem('app-settings-main');
+      if (settingsRaw) {
+        const settingsParsed = JSON.parse(settingsRaw);
+        registrationDate = settingsParsed?.profile?.registrationDate || null;
+        const gs = settingsParsed?.profile?.gradeSubjects;
+        if (gs && typeof gs === 'object' && Object.keys(gs).length > 0) {
+          gradeSubjects = gs;
+        }
+      }
+    } catch {}
+    const phasePayload: Record<string, string | null> = {};
+    if (insightsPhaseScope && activePhase) {
+      phasePayload.phaseId = insightsPhaseScope;
+      phasePayload.phaseLabel = activePhase.phase_label;
+      phasePayload.phaseStartDate = activePhase.start_date;
+      phasePayload.phaseEndDate = activePhase.end_date;
+    }
+
+    if (queueEnabled) {
+      enqueue({
+        label: 'Educator Insights',
+        toolType: 'Educator Insights',
+        tabId,
+        endpoint: '/ws/educator-insights',
+        prompt: JSON.stringify({ action: 'generate', teacherId, userId, registrationDate, gradeSubjects, ...phasePayload }),
+        generationMode: 'queued',
+        extraMessageData: { action: 'generate', teacherId, userId, registrationDate, gradeSubjects, ...phasePayload },
+      });
+      setIsGenerating(false);
+      return;
+    }
+
     notify('Generating educator insights report…', 'info', tabId);
 
     // Collapse graph and scroll to analysis row so user can watch progress
@@ -384,29 +424,6 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     wsRef.current = ws;
 
     ws.onopen = () => {
-      // Include registrationDate and gradeSubjects from teacher profile settings
-      let registrationDate: string | null = null;
-      let gradeSubjects: Record<string, string[]> | null = null;
-      try {
-        const settingsRaw = localStorage.getItem('app-settings-main');
-        if (settingsRaw) {
-          const settingsParsed = JSON.parse(settingsRaw);
-          registrationDate = settingsParsed?.profile?.registrationDate || null;
-          const gs = settingsParsed?.profile?.gradeSubjects;
-          if (gs && typeof gs === 'object' && Object.keys(gs).length > 0) {
-            gradeSubjects = gs;
-          }
-        }
-      } catch {}
-      // Include phase scoping data if active
-      const phasePayload: Record<string, string | null> = {};
-      if (insightsPhaseScope && activePhase) {
-        // Find the matching phase from allPhases (via the hook)
-        phasePayload.phaseId = insightsPhaseScope;
-        phasePayload.phaseLabel = activePhase.phase_label;
-        phasePayload.phaseStartDate = activePhase.start_date;
-        phasePayload.phaseEndDate = activePhase.end_date;
-      }
       ws.send(JSON.stringify({ action: 'generate', generationMode: 'queued', teacherId, userId, registrationDate, gradeSubjects, ...phasePayload }));
     };
 
@@ -536,6 +553,112 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       wsRef.current = null;
     };
   }, [guardOffline, isGenerating, persistState]);
+
+  // When queue-managed, listen on the shared WebSocket for insights-specific messages
+  useEffect(() => {
+    if (!queueEnabled) return;
+
+    const WS_ENDPOINT = '/ws/educator-insights';
+    let ws: WebSocket;
+    try {
+      ws = getConnection(tabId, WS_ENDPOINT);
+    } catch {
+      return;
+    }
+
+    const handler = (event: MessageEvent) => {
+      try {
+        const msg = JSON.parse(event.data);
+
+        // Debug logging (same as raw WS path)
+        if (msg.type === 'debug') {
+          if (msg.stage === 'aggregation') {
+            console.group('[Insights] Aggregation Data');
+            console.log('Date context:', msg.dateContext);
+            console.table(msg.summary);
+            console.groupEnd();
+          } else if (msg.stage === 'pass_skipped') {
+            console.log(`[Insights] SKIPPED: ${msg.passName} -- ${msg.reason}`);
+          } else if (msg.stage === 'llm_input') {
+            console.group(`[Insights] LLM INPUT: ${msg.passName}`);
+            console.log(`Prompt length: ${msg.promptLength} | Max tokens: ${msg.maxTokens} | Temperature: ${msg.temperature}`);
+            console.log(msg.prompt);
+            console.groupEnd();
+          } else if (msg.stage === 'llm_output') {
+            console.group(`[Insights] LLM OUTPUT: ${msg.passName}`);
+            console.log(`Output length: ${msg.outputLength}`);
+            console.log(msg.output);
+            console.groupEnd();
+          }
+        }
+
+        if (msg.type === 'status' && msg.pass !== undefined) {
+          setCurrentPass(msg.pass);
+          setTotalPasses(msg.total);
+          setCurrentPassName(msg.passName);
+          setIsGenerating(true);
+          const passKey = PASS_NAMES[msg.pass - 1]?.key || '';
+          streamingPassRef.current = passKey;
+          accumulatedTokensRef.current = '';
+        }
+
+        if (msg.type === 'token') {
+          accumulatedTokensRef.current += msg.content;
+          const passKey = streamingPassRef.current;
+          if (passKey) {
+            const currentText = accumulatedTokensRef.current;
+            setPassResults(prev => ({
+              ...prev,
+              [passKey]: { output: '', streaming: currentText }
+            }));
+          }
+        }
+
+        if (msg.type === 'pass_complete') {
+          const passKey = PASS_NAMES[msg.pass - 1]?.key || '';
+          setPassResults(prev => ({
+            ...prev,
+            [passKey]: { output: msg.result, streaming: '', skipped: msg.skipped, noChange: msg.noChange }
+          }));
+          accumulatedTokensRef.current = '';
+          streamingPassRef.current = '';
+        }
+
+        if (msg.type === 'complete') {
+          setReport(msg.report);
+          setIsGenerating(false);
+          setReportHistory(prev => [...prev, msg.report]);
+
+          if (msg.report?.metrics) {
+            setPreviousMetrics(teacherMetrics);
+            setTeacherMetrics(msg.report.metrics);
+          }
+          axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+            .then(res => { if (res.data?.metrics) { setPreviousMetrics(teacherMetrics); setTeacherMetrics(res.data.metrics); } }).catch(() => {});
+          axios.get(`/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
+            .then(res => { if (Array.isArray(res.data?.history)) setMetricsHistory(res.data.history); }).catch(() => {});
+
+          setNudgeDismissed(false);
+          persistState({ nudgeDismissed: false });
+
+          setGraphExpanded(false);
+          setTimeout(() => {
+            row2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 50);
+        }
+
+        if (msg.type === 'error') {
+          setError(msg.message);
+          setIsGenerating(false);
+        }
+      } catch {
+        // ignore parse errors
+      }
+    };
+
+    ws.addEventListener('message', handler);
+    return () => ws.removeEventListener('message', handler);
+  }, [queueEnabled, tabId, getConnection, teacherId, userId]);
 
   // Delete a report from history
   const handleDeleteReport = useCallback((reportId: string) => {

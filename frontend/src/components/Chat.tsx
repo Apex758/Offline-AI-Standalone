@@ -871,7 +871,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       if (teacherGrades.length > 0 || teacherSubjects.length > 0) {
         const gradeLabels = teacherGrades.map(g => GRADE_LABEL_MAP[g] || g).join(', ');
         const subjectList = teacherSubjects.join(', ');
-        profileContext = `\n\nTeacher Profile: This teacher teaches ${gradeLabels}. Subjects: ${subjectList}. Tailor all responses to be grade-appropriate and relevant to these subjects.`;
+        profileContext = `\n\nTeacher Profile: Teaches ${gradeLabels} — ${subjectList}. Use this context naturally when relevant, but do not repeat it back in every response.`;
       }
     }
 
