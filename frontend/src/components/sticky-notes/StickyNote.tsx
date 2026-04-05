@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import PinIconData from '@hugeicons/core-free-icons/PinIcon';
 import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
@@ -35,6 +36,7 @@ interface StickyNoteProps {
 const COLOR_OPTIONS = ['#fef08a', '#bbf7d0', '#bfdbfe', '#fecaca', '#e9d5ff', '#fed7aa'];
 
 export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabId, onDragOverNote, onDragEndNote }) => {
+  const { t } = useTranslation();
   const { updateNote, closeNote, bringToFront, toggleChecklistItem, createNote } = useStickyNotes();
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -351,7 +353,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
             autoFocus
             onChange={e => updateNote(note.id, { title: e.target.value })}
             onKeyDown={e => { if (e.key === 'Enter') setShowColorPicker(false); }}
-            placeholder="Note title..."
+            placeholder={t('stickyNotes.noteTitle')}
             style={{
               color: '#1a1a1a',
               background: 'rgba(255,255,255,0.45)',
@@ -405,7 +407,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
             suppressContentEditableWarning
             onInput={handleEditorInput}
             onFocus={() => bringToFront(note.id)}
-            data-placeholder="Type anything to remember"
+            data-placeholder={t('stickyNotes.typeAnything')}
             style={{
               color: '#1a1a1a',
               minHeight: '100%',

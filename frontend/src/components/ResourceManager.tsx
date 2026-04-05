@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ResourceGridSkeleton } from './ui/ResourceGridSkeleton';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -94,16 +95,16 @@ interface Resource {
 }
 
 const resourceTypes = [
-  { key: 'all', label: 'All Resources', icon: FileText },
-  { key: 'lesson', label: 'Lesson Plans', icon: BookMarked },
-  { key: 'quiz', label: 'Quizzes', icon: ListChecks },
-  { key: 'worksheet', label: 'Worksheets', icon: FileSpreadsheet },
-  { key: 'rubric', label: 'Rubrics', icon: FileText },
-  { key: 'kindergarten', label: 'Kindergarten', icon: GraduationCap },
-  { key: 'multigrade', label: 'Multigrade', icon: Users },
-  { key: 'cross-curricular', label: 'Cross-Curricular', icon: Link2 },
-  { key: 'images', label: 'Images', icon: Image },
-  { key: 'presentation', label: 'Presentations', icon: Presentation }
+  { key: 'all', labelKey: 'resources.allResources', icon: FileText },
+  { key: 'lesson', labelKey: 'resources.lessonPlans', icon: BookMarked },
+  { key: 'quiz', labelKey: 'resources.quizzes', icon: ListChecks },
+  { key: 'worksheet', labelKey: 'resources.worksheets', icon: FileSpreadsheet },
+  { key: 'rubric', labelKey: 'resources.rubrics', icon: FileText },
+  { key: 'kindergarten', labelKey: 'resources.kindergarten', icon: GraduationCap },
+  { key: 'multigrade', labelKey: 'resources.multigrade', icon: Users },
+  { key: 'cross-curricular', labelKey: 'resources.crossCurricular', icon: Link2 },
+  { key: 'images', labelKey: 'resources.images', icon: Image },
+  { key: 'presentation', labelKey: 'resources.presentations', icon: Presentation }
 ];
 
 const ResourceManager: React.FC<ResourceManagerProps> = ({
@@ -116,6 +117,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   distributionData = [],
   tabColors = {},
 }) => {
+  const { t } = useTranslation();
   const { startTutorial } = useTutorials();
   const { settings } = useSettings();
   const [resources, setResources] = useState<Resource[]>([]);
@@ -759,7 +761,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
 
         {/* Category List */}
         <nav className="flex-1 overflow-y-auto p-2 space-y-0.5" data-tutorial="resource-filters">
-          {resourceTypes.map(({ key, label, icon: Icon }) => {
+          {resourceTypes.map(({ key, labelKey, icon: Icon }) => {
             const count = getCountForType(key);
             const isActive = filterType === key;
 
@@ -774,7 +776,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                 }`}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1 text-left truncate">{label}</span>
+                <span className="flex-1 text-left truncate">{t(labelKey)}</span>
                 <span className={`text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${
                   isActive
                     ? 'bg-white/20 text-white'
@@ -809,7 +811,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
           <div className="flex items-center justify-between mb-3">
             <div>
               <h1 className="text-xl font-bold text-theme-title">
-                {filterType === 'all' ? 'All Resources' : resourceTypes.find(t => t.key === filterType)?.label}
+                {t(resourceTypes.find(rt => rt.key === filterType)?.labelKey ?? 'resources.allResources')}
               </h1>
               <p className="text-xs text-theme-hint mt-0.5">
                 {filteredAndSortedResources.length} resource{filteredAndSortedResources.length !== 1 ? 's' : ''}
@@ -824,7 +826,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                     : 'bg-theme-tertiary text-theme-label hover:bg-theme-hover'
                 }`}
               >
-                {selectionMode ? 'Cancel' : 'Select'}
+                {selectionMode ? t('common.cancel') : t('resources.select')}
               </button>
               <button
                 onClick={loadAllResources}
@@ -844,7 +846,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search resources..."
+                placeholder={t('resources.searchResources')}
                 className="w-full pl-9 pr-4 py-2 text-sm border border-theme-strong rounded-lg bg-theme-surface text-theme-title placeholder:text-theme-hint focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {searchQuery && (
@@ -966,7 +968,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                 <FileText className="w-14 h-14 text-theme-hint mx-auto mb-3 opacity-40" />
                 <p className="text-theme-muted font-medium">No resources found</p>
                 <p className="text-sm text-theme-hint mt-1">
-                  {searchQuery ? 'Try adjusting your search query' : 'Start creating resources to see them here'}
+                  {searchQuery ? t('resources.noResultsHint') : t('resources.emptyState')}
                 </p>
               </div>
             ) : (
@@ -1024,7 +1026,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                 onClick={() => setShowDeleteConfirm(null)}
                 className="px-4 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover transition text-theme-label"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={() => {
@@ -1033,7 +1035,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                 }}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
               >
-                Delete
+                {t('common.delete')}
               </button>
             </div>
           </div>
@@ -1212,7 +1214,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
               onDelete();
             }}
             className="p-1.5 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-            title="Delete"
+            title={t('common.delete')}
           >
             <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
           </button>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
@@ -36,6 +37,7 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
   onCancel,
   accentColor = '#3b82f6' // Blue for worksheets
 }) => {
+  const { t } = useTranslation();
   const [worksheet, setWorksheet] = useState<ParsedWorksheet>(
     JSON.parse(JSON.stringify(initialWorksheet))
   );
@@ -129,7 +131,7 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
     <div className="rounded-lg max-w-5xl mx-auto max-h-[90vh] flex flex-col widget-glass">
       {/* Gradient Header - BLUE theme for worksheets */}
       <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Worksheet</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('planEditors.editWorksheet')}</h2>
         
         {/* Metadata Grid */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-4">
@@ -141,7 +143,7 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
               value={worksheet.metadata.title}
               onChange={(val) => updateMetadata('title', val)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-              placeholder="Enter worksheet title"
+              placeholder={t('planEditors.enterWorksheetTitle')}
             />
           </div>
 
@@ -222,13 +224,13 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
 
             {/* Question text */}
             <div className="mb-3">
-              <label className="block text-sm text-gray-600 mb-1">Question Text</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('planEditors.questionText')}</label>
               <SmartTextArea
                 value={question.question}
                 onChange={(val) => updateQuestion(index, { question: val })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={2}
-                placeholder="Enter question text..."
+                placeholder={t('planEditors.enterQuestionText')}
               />
             </div>
 
@@ -290,7 +292,7 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
           className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5 text-blue-600" />
-          <span className="text-blue-600 font-medium">Add Question</span>
+          <span className="text-blue-600 font-medium">{t('planEditors.addQuestion')}</span>
         </button>
       </div>
 
@@ -301,7 +303,7 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
           className="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium flex items-center gap-2"
         >
           <X className="w-4 h-4" />
-          Cancel
+          {t('common.cancel')}
         </button>
         <button
           onClick={() => onSave(worksheet)}
@@ -309,7 +311,7 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
           style={{ backgroundColor: accentColor }}
         >
           <Check className="w-4 h-4" />
-          Save Changes
+          {t('common.save')}
         </button>
       </div>
     </div>

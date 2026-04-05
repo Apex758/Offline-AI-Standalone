@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ImageMode } from '../types';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -1495,6 +1496,7 @@ function tryParsePartialSlides(raw: string): Slide[] {
 ═══════════════════════════════════════ */
 
 export default function PresentationBuilder({ tabId, savedData, onDataChange }: PresentationBuilderProps) {
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   const { hasDiffusion, hasVision } = useCapabilities();
   // Input mode
@@ -2652,12 +2654,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 {loading ? (
                   <>
                     <Icon icon={Loading02Icon} className="w-5 inline mr-2 animate-spin" />
-                    Generating...
+                    {t('generators.generatingPresentation')}
                   </>
                 ) : (
                   <>
                     <Icon icon={Presentation01Icon} className="w-5 inline mr-2" />
-                    Generate Presentation
+                    {t('generators.generatePresentation')}
                   </>
                 )}
               </button>

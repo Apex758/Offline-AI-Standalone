@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getCurriculumTree } from '../data/curriculumLoader';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -48,6 +49,7 @@ interface CurriculumNavigatorProps {
 }
 
 const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate }) => {
+  const { t } = useTranslation();
   const [tree, setTree] = useState<TreeNode>({});
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['kindergarten', 'grade1-subjects']));
   const [loading, setLoading] = useState(true);
@@ -306,7 +308,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
                   }`}
                     style={isCurrentPath(indexRoute) ? { color: accentColor } : {}}
                   />
-                  <span className="truncate">Overview</span>
+                  <span className="truncate">{t('curriculum.overview')}</span>
                   {isCurrentPath(indexRoute) && (
                     <span
                       className="ml-auto w-1.5 h-1.5 rounded-full shrink-0"
@@ -331,7 +333,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     return (
       <div className="p-6 text-center text-theme-hint">
         <HeartbeatLoader className="w-8 h-8 mx-auto mb-2" />
-        <p className="text-sm">Loading curriculum...</p>
+        <p className="text-sm">{t('curriculum.loadingCurriculum')}</p>
       </div>
     );
   }
@@ -340,7 +342,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     return (
       <div className="p-6 text-center text-theme-hint">
         <BookOpen className="w-10 h-10 mx-auto mb-2 opacity-30" />
-        <p className="text-sm">No curriculum content found</p>
+        <p className="text-sm">{t('curriculum.noContentFound')}</p>
       </div>
     );
   }
@@ -376,7 +378,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
                 setExpandedNodes(allPaths);
               }
             }}
-            placeholder="Search topics..."
+            placeholder={t('curriculum.searchTopics')}
             className="w-full pl-8 pr-8 py-1.5 text-sm rounded-lg border border-theme bg-theme-surface text-theme-title placeholder:text-theme-hint focus:outline-none focus:ring-1 transition"
             style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
           />
@@ -399,7 +401,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
         <button
           onClick={handleCollapseAll}
           className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded text-theme-hint hover:text-theme-muted hover:bg-theme-hover transition"
-          title="Collapse all"
+          title={t('curriculum.collapseAll')}
         >
           <ChevronsDownUp className="w-3 h-3" />
         </button>

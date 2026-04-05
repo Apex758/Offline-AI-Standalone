@@ -11,6 +11,7 @@ import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrol
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import { useTranslation } from 'react-i18next';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -50,18 +51,19 @@ interface WorksheetEditorProps {
   onDataChange?: (data: Record<string, unknown>) => void;
 }
 
-const questionTypes = [
-  'Multiple Choice',
-  'Calculations',
-  'True / False',
-  'Word Bank',
-  'Fill in the Blank',
-  'Short Answer',
-  'Matching',
-  'Comprehension'
+const QUESTION_TYPE_KEYS = [
+  { value: 'Multiple Choice', labelKey: 'grader.multipleChoice' },
+  { value: 'Calculations', labelKey: 'editor.calculations' },
+  { value: 'True / False', labelKey: 'True / False' },
+  { value: 'Word Bank', labelKey: 'editor.wordBank' },
+  { value: 'Fill in the Blank', labelKey: 'grader.fillInBlank' },
+  { value: 'Short Answer', labelKey: 'editor.shortAnswer' },
+  { value: 'Matching', labelKey: 'editor.matching' },
+  { value: 'Comprehension', labelKey: 'editor.comprehension' },
 ];
 
 const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onDataChange }) => {
+  const { t } = useTranslation();
   const LOCAL_STORAGE_KEY = `worksheet_editor_${tabId}`;
 
   const getDefaultWorksheetData = (): WorksheetData => ({
@@ -198,7 +200,7 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                 value={worksheetData.title}
                 onChange={(val) => handleWorksheetChange('title', val)}
                 className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Worksheet Title"
+                placeholder={t('editor.worksheetTitle')}
               />
             </div>
 
@@ -248,8 +250,8 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                       onChange={(e) => updateQuestion(question.id, { type: e.target.value })}
                       className="px-2 py-1 text-xs border border-theme-strong rounded"
                     >
-                      {questionTypes.map(type => (
-                        <option key={type} value={type}>{type}</option>
+                      {QUESTION_TYPE_KEYS.map(({ value, labelKey }) => (
+                        <option key={value} value={value}>{t(labelKey)}</option>
                       ))}
                     </select>
                   </div>
@@ -290,7 +292,7 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                     onChange={(val) => updateQuestion(question.id, { text: val })}
                     rows={2}
                     className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your question here..."
+                    placeholder={t('editor.enterQuestion')}
                   />
                 </div>
 

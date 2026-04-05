@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import ArrowUpRight01IconData from '@hugeicons/core-free-icons/ArrowUpRight01Icon';
 import { useStickyNotes, StickyNoteGroup } from '../../contexts/StickyNoteContext';
+import { useTranslation } from 'react-i18next';
 
 const SIcon: React.FC<{ icon: any; size?: number; style?: React.CSSProperties }> = ({ icon, size = 14, style }) => (
   <HugeiconsIcon icon={icon} size={size} style={style} />
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export const StickyNoteGroupExpanded: React.FC<Props> = ({ group, zIndex, activeTabId, onNavigateAction, onClose, animState = 'idle' }) => {
+  const { t } = useTranslation();
   const {
     notes, updateGroup, toggleGroupExpanded, dissolveGroup,
     removeNoteFromGroup, openNote, createNote, addNoteToGroup,
@@ -145,7 +147,7 @@ export const StickyNoteGroupExpanded: React.FC<Props> = ({ group, zIndex, active
         {/* Dissolve confirmation */}
         {showDissolveConfirm && (
           <div className="relative mx-5 mt-3 p-3 rounded-xl" style={{ background: subtleBg, border: `1px solid ${subtleBorder}` }}>
-            <p className="text-xs mb-2" style={{ color: textSecondary }}>Ungroup these notes?</p>
+            <p className="text-xs mb-2" style={{ color: textSecondary }}>{t('stickyNotes.ungroupNotes')}</p>
             <div className="flex gap-2">
               <button
                 className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import UserIconData from '@hugeicons/core-free-icons/UserIcon';
@@ -68,6 +69,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
   loading = false,
   onDimensionClick,
 }) => {
+  const { t } = useTranslation();
   const [panelOpen, setPanelOpen] = useState(false);
   const [phasePopoverOpen, setPhasePopoverOpen] = useState(false);
   const [showPhaseBands, setShowPhaseBands] = useState(true);
@@ -155,7 +157,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                 <div className="flex flex-col items-end gap-3 bg-theme-bg/85 backdrop-blur-sm rounded-lg px-3.5 py-3 border border-theme-border/60" style={{ minWidth: '10.5rem' }}>
                   {/* Curriculum */}
                   <div className="flex flex-col items-end leading-none gap-1">
-                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Curriculum</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">{t('insights.curriculum')}</span>
                     <span className="text-base font-bold text-theme-primary">
                       {insightsData.curriculum?.has_data ? `${insightsData.curriculum.pct}%` : '--'}
                     </span>
@@ -170,7 +172,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
                   {/* Performance */}
                   <div className="flex flex-col items-end leading-none gap-1">
-                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Performance</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">{t('insights.performance')}</span>
                     <span className="text-base font-bold text-theme-primary">
                       {insightsData.performance?.has_data ? `${insightsData.performance.avgScore}%` : '--'}
                     </span>
@@ -185,7 +187,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
                   {/* Content */}
                   <div className="flex flex-col items-end leading-none gap-1">
-                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Content</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">{t('insights.content')}</span>
                     <span className="text-base font-bold text-theme-primary">
                       {insightsData.content?.has_data ? `${insightsData.content.totalResources}` : '--'}
                     </span>
@@ -198,7 +200,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
                   {/* Attendance */}
                   <div className="flex flex-col items-end leading-none gap-1">
-                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Attendance</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">{t('insights.attendance')}</span>
                     <span className="text-base font-bold text-theme-primary">
                       {insightsData.attendance?.has_data ? `${insightsData.attendance.avgRate}%` : '--'}
                     </span>
@@ -213,7 +215,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
                   {/* Achievements */}
                   <div className="flex flex-col items-end leading-none gap-1">
-                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">Achievements</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">{t('achievements.progress')}</span>
                     <span className="text-base font-bold text-theme-primary">
                       {insightsData.achievements?.has_data
                         ? `${insightsData.achievements.totalEarned}/${insightsData.achievements.totalAvailable}`
@@ -323,7 +325,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
                         {breakdown.length > 0 && (
                           <div className="space-y-1.5">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-theme-muted">What contributes</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-theme-muted">{t('insights.whatContributes')}</p>
                             {breakdown.map((row, i) => (
                               <div key={i} className="flex items-center justify-between gap-2">
                                 <span className="text-xs text-theme-secondary">{row.label}</span>
@@ -363,7 +365,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
               })}
 
               {sortedDimensions.length === 0 && (
-                <p className="text-xs text-theme-muted text-center py-4">No dimension data available</p>
+                <p className="text-xs text-theme-muted text-center py-4">{t('insights.noDimensionData')}</p>
               )}
             </div>
           </div>

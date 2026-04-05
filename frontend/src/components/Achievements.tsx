@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Lock01IconData from '@hugeicons/core-free-icons/LockIcon';
@@ -132,6 +133,7 @@ interface AchievementsProps {
 }
 
 export default function Achievements({ tabId, isActive = true }: AchievementsProps) {
+  const { t } = useTranslation();
   const {
     definitions,
     earned,
@@ -303,7 +305,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white">{totalPoints}</div>
-                    <div className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Points</div>
+                    <div className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('achievements.points')}</div>
                   </div>
                   {/* Progress ring */}
                   <div className="relative" style={{ width: 56, height: 56 }}>
@@ -384,7 +386,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
                         <span className="inline-flex items-center gap-1">
                           {s === 'earned' && <HugeiconsIcon icon={Tick01IconData} size={12} />}
                           {s === 'locked' && <HugeiconsIcon icon={Lock01IconData} size={12} />}
-                          {s === 'all' ? 'All' : s === 'earned' ? 'Earned' : 'Locked'}
+                          {s === 'all' ? 'All' : s === 'earned' ? t('achievements.earned') : 'Locked'}
                         </span>
                       </button>
                     ))}
@@ -422,7 +424,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
 
               {/* Row 2: Category (full width) */}
               <div className="space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>Category</span>
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>{t('achievements.category')}</span>
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={() => setSelectedCategory('all')}
@@ -477,7 +479,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
                 <>
                   <div className="h-px" style={{ backgroundColor: 'var(--dash-border, #333)' }} />
                   <div className="space-y-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>Collections</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>{t('achievements.collections')}</span>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
                       {collections.map(coll => {
                         const pct = Math.round((coll.earned_count / coll.total_count) * 100);
@@ -655,6 +657,7 @@ function AchievementCard({
   canPin: boolean;
   onView?: (def: AchievementDefinition, earnedAt?: string) => void;
 }) {
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
 
@@ -821,7 +824,7 @@ function AchievementCard({
                 <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent }}>
                   +{definition.points} pts
                 </span>
-                <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Earned</span>
+                <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>{t('achievements.earned')}</span>
               </div>
 
               {isEarned && impactLabel ? (
@@ -832,7 +835,7 @@ function AchievementCard({
               ) : !isEarned && progress ? (
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3, paddingLeft: 12, borderLeft: `1px solid ${lineDivider}` }}>
                   <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: textPrimary, whiteSpace: 'nowrap' as const }}>{progress.current}/{progress.target}</span>
-                  <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Progress</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>{t('achievements.progress')}</span>
                 </div>
               ) : null}
 

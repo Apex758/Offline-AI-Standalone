@@ -1,4 +1,5 @@
                     import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
@@ -196,6 +197,7 @@ const shouldSuggestThinking = (message: string): boolean => {
 };
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick, onOpenCurriculumTab }) => {
+  const { t } = useTranslation();
   // DEBUG logging removed to prevent render storm spam
   // LocalStorage key for this chat tab
   const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
@@ -1818,7 +1820,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
-                    <span className="text-sm text-theme-muted">Thinking...</span>
+                    <span className="text-sm text-theme-muted">{t('chat.thinking')}</span>
                   </div>
                 </div>
               )}
@@ -1944,7 +1946,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 value={input}
                 onChange={setInput}
                 onKeyDown={handleKeyDown}
-                placeholder={stt.isListening ? 'Listening...' : 'Ask me anything...'}
+                placeholder={stt.isListening ? 'Listening...' : t('chat.placeholder')}
                 className="flex-1 resize-none outline-none bg-transparent dark:text-gray-100 overflow-y-auto leading-7"
                 rows={1}
                 style={{ minHeight: '28px', maxHeight: '220px', padding: '0 12px' }}

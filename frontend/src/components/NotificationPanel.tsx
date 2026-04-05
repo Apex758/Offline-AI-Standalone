@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import { useQueue, QueueItem } from '../contexts/QueueContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -146,6 +147,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
   const { history, unreadCount, markAllRead, clearHistory, navigateToTab } = useNotification();
   const { queue, removeFromQueue, cancelGenerating, reorderQueue, clearCompleted, queueEnabled } = useQueue();
   const { getActiveStreams, cancelStream } = useWebSocket();
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<PanelTab>('notifications');
   const isDark = useIsDark();
@@ -191,10 +193,10 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
 
   const statusLabel = (status: QueueItem['status']) => {
     switch (status) {
-      case 'waiting': return 'Waiting';
+      case 'waiting': return t('notifications.waiting');
       case 'generating': return 'Generating...';
-      case 'completed': return 'Completed';
-      case 'error': return 'Failed';
+      case 'completed': return t('notifications.completed');
+      case 'error': return t('notifications.failed');
     }
   };
 
@@ -266,8 +268,8 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
           {/* ─── Tab Header ─────────────────────────────────────────── */}
           <div style={{ display: 'flex', borderBottom: `1px solid ${c.divider}` }}>
             {([
-              { key: 'notifications' as PanelTab, icon: <BellIcon />, label: 'Notifications', badge: unreadCount, badgeColor: c.badgeBg },
-              { key: 'queue' as PanelTab, icon: <QueueIcon />, label: 'Queue', badge: queueCount, badgeColor: c.queueBadge },
+              { key: 'notifications' as PanelTab, icon: <BellIcon />, label: t('notifications.title'), badge: unreadCount, badgeColor: c.badgeBg },
+              { key: 'queue' as PanelTab, icon: <QueueIcon />, label: t('notifications.queue'), badge: queueCount, badgeColor: c.queueBadge },
             ]).map(tab => (
               <button
                 key={tab.key}
@@ -495,7 +497,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                         </div>
                         <button
                           onClick={() => cancelStream(stream.tabId, stream.endpoint)}
-                          title="Cancel generation"
+                          title={t('notifications.cancelGeneration')}
                           style={{
                             flexShrink: 0,
                             padding: '4px',
@@ -530,7 +532,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                         </div>
                         <button
                           onClick={() => cancelGenerating(item.id)}
-                          title="Cancel generation"
+                          title={t('notifications.cancelGeneration')}
                           style={{
                             flexShrink: 0,
                             padding: '4px',
@@ -591,7 +593,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                             </div>
                             <button
                               onClick={() => removeFromQueue(item.id)}
-                              title="Remove from queue"
+                              title={t('notifications.removeFromQueue')}
                               style={{
                                 flexShrink: 0,
                                 padding: '4px',

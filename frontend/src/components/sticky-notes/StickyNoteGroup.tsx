@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import { useStickyNotes, StickyNoteGroup as GroupType } from '../../contexts/StickyNoteContext';
@@ -23,6 +24,7 @@ const DOC_ORDER: (keyof typeof DOC_STYLES)[] = ['left', 'right', 'center'];
 const LINE_PATTERNS = [['72%','55%','38%','55%'],['72%','38%','55%','72%'],['72%','55%','38%','55%']];
 
 export const StickyNoteGroup: React.FC<Props> = ({ group, zIndex, activeTabId, onNavigateAction }) => {
+  const { t } = useTranslation();
   const { notes, updateGroup, bringToFront, dissolveGroup } = useStickyNotes();
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -191,16 +193,16 @@ export const StickyNoteGroup: React.FC<Props> = ({ group, zIndex, activeTabId, o
           onMouseDown={e => e.stopPropagation()}
           onClick={e => e.stopPropagation()}
         >
-          <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-title, #111827)' }}>Close this folder?</p>
+          <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-title, #111827)' }}>{t('stickyNotes.closeFolder')}</p>
           <div className="flex gap-1.5 mb-2">
-            <button className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors" style={{ background: 'rgba(239,68,68,0.1)', color: '#dc2626' }} onClick={() => handleCloseChoice('delete')}>Delete All</button>
-            <button className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors" style={{ background: 'rgba(59,130,246,0.1)', color: '#2563eb' }} onClick={() => handleCloseChoice('minimize')}>Minimize</button>
+            <button className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors" style={{ background: 'rgba(239,68,68,0.1)', color: '#dc2626' }} onClick={() => handleCloseChoice('delete')}>{t('stickyNotes.deleteAll')}</button>
+            <button className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors" style={{ background: 'rgba(59,130,246,0.1)', color: '#2563eb' }} onClick={() => handleCloseChoice('minimize')}>{t('stickyNotes.minimize')}</button>
           </div>
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" checked={rememberChoice} onChange={e => setRememberChoice(e.target.checked)} className="rounded accent-blue-600" style={{ width: 12, height: 12 }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted, #6b7280)' }}>Remember my choice</span>
+            <span className="text-xs" style={{ color: 'var(--text-muted, #6b7280)' }}>{t('stickyNotes.rememberChoice')}</span>
           </label>
-          <button className="mt-1.5 w-full text-xs py-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors" style={{ color: 'var(--text-hint, #9ca3af)' }} onClick={() => { setShowCloseDialog(false); setRememberChoice(false); }}>Cancel</button>
+          <button className="mt-1.5 w-full text-xs py-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors" style={{ color: 'var(--text-hint, #9ca3af)' }} onClick={() => { setShowCloseDialog(false); setRememberChoice(false); }}>{t('common.cancel')}</button>
         </div>
       )}
 

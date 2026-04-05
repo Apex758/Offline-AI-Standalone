@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
@@ -41,6 +42,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   contentType,
   onContentUpdate
 }) => {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'chat' | 'modify'>('chat');
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [modifyMessages, setModifyMessages] = useState<Message[]>([]);
@@ -247,7 +249,7 @@ IMPORTANT INSTRUCTIONS:
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <MessageSquare className="w-6 h-6" />
-              <h2 className="text-2xl font-bold">Assistant</h2>
+              <h2 className="text-2xl font-bold">{t('assistant.title')}</h2>
             </div>
             <button
               onClick={onClose}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { API_CONFIG } from '../config/api.config';
 import { useSettings } from '../contexts/SettingsContext';
+import { useTranslation } from 'react-i18next';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ interface NetworkInfo {
 }
 
 const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -610,7 +612,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   <span style={{
                     padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600,
                     background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe',
-                  }}>Hotspot Active</span>
+                  }}>{t('photoTransfer.hotspotActive')}</span>
                 )}
               </div>
 
@@ -644,7 +646,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>
                 </svg>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>Laptop Hotspot</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>{t('photoTransfer.laptopHotspot')}</span>
               </div>
               <button
                 onClick={toggleHotspot}
@@ -820,7 +822,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               textAlign: 'center', padding: '80px 20px',
               color: '#94a3b8',
             }}>
-              <p style={{ fontSize: 16, fontWeight: 600 }}>Create a session to get started</p>
+              <p style={{ fontSize: 16, fontWeight: 600 }}>{t('photoTransfer.createSession')}</p>
               <p style={{ fontSize: 13, marginTop: 4 }}>
                 Or scan the QR code from your phone — a session will be created automatically.
               </p>
@@ -898,7 +900,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           }}>
             <div style={{ padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>Grading Results</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>{t('photoTransfer.gradingResults')}</h3>
                 <button
                   onClick={() => { setGradingResults(null); setGradingSummary(null); }}
                   style={{
@@ -921,7 +923,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   color: 'white', marginBottom: 16,
                 }}>
                   <div style={{ fontSize: 24, fontWeight: 700 }}>{gradingSummary.class_average}%</div>
-                  <div style={{ fontSize: 12, opacity: 0.8, marginTop: 2 }}>Class Average</div>
+                  <div style={{ fontSize: 12, opacity: 0.8, marginTop: 2 }}>{t('photoTransfer.classAverage')}</div>
                   <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 12 }}>
                     <span>Graded: {gradingSummary.graded}</span>
                     <span>Failed: {gradingSummary.failed}</span>
@@ -1010,7 +1012,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 color: 'white', marginBottom: 16,
               }}>
                 <div style={{ fontSize: 24, fontWeight: 700 }}>{scanMatches.length}</div>
-                <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>Documents Scanned</div>
+                <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>{t('photoTransfer.documentsScanned')}</div>
                 <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
                   {(() => {
                     const docIds = new Set(scanMatches.map(m => m.doc_id));

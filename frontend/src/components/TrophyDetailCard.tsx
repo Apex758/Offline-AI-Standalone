@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import type { NewlyEarnedAchievement, AchievementRarity, AchievementCategory } from '../types/achievement';
 
 /* ─── Rarity color themes ─── */
@@ -43,6 +44,7 @@ interface TrophyDetailCardProps {
 }
 
 export default function TrophyDetailCard({ achievement, trophyImageSrc, earnedAt, onClose }: TrophyDetailCardProps) {
+  const { t } = useTranslation();
   const [flipped, setFlipped] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -548,7 +550,7 @@ export default function TrophyDetailCard({ achievement, trophyImageSrc, earnedAt
                         </svg>
                       </div>
                       <div>
-                        <div className="tdc-back-item-title">About this award</div>
+                        <div className="tdc-back-item-title">{t('trophy.aboutAward')}</div>
                         <div className="tdc-back-item-desc">{achievement.description}</div>
                       </div>
                     </div>
@@ -559,7 +561,7 @@ export default function TrophyDetailCard({ achievement, trophyImageSrc, earnedAt
                         </svg>
                       </div>
                       <div>
-                        <div className="tdc-back-item-title">How to keep it</div>
+                        <div className="tdc-back-item-title">{t('trophy.howToKeep')}</div>
                         <div className="tdc-back-item-desc">
                           {CATEGORY_TIPS[achievement.category] || 'Stay active and keep progressing to maintain your achievements.'}
                         </div>
@@ -578,7 +580,7 @@ export default function TrophyDetailCard({ achievement, trophyImageSrc, earnedAt
               <div className="tdc-stats-row">
                 <div className="tdc-stat">
                   <span className="tdc-stat-num">+{achievement.points} pts</span>
-                  <span className="tdc-stat-label">Earned</span>
+                  <span className="tdc-stat-label">{t('trophy.earned')}</span>
                 </div>
                 <div className="tdc-stat-divider" />
                 <div className="tdc-stat">

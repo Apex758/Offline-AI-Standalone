@@ -40,6 +40,7 @@ import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
 import searchIndex, { SearchEntry } from '../data/searchIndex';
 import { useSTT } from '../hooks/useVoice';
 import { useStickyNotes, StickyChecklistItem } from '../contexts/StickyNoteContext';
+import { useTranslation } from 'react-i18next';
 import { useSettings } from '../contexts/SettingsContext';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 
@@ -110,13 +111,17 @@ const iconMap: Record<string, React.ElementType> = {
   Brain, Speedometer, Trophy,
 };
 
-const categoryLabels: Record<string, string> = {
-  tool: 'Tools',
-  setting: 'Settings',
-  feature: 'Features',
-  action: 'Actions',
-  resource: 'Resources',
-};
+// categoryLabels is resolved at render time via getCategoryLabel(t, category)
+function getCategoryLabel(t: (key: string) => string, category: string): string {
+  const map: Record<string, string> = {
+    tool: t('commandPalette.tools'),
+    setting: t('commandPalette.settings'),
+    feature: t('commandPalette.features'),
+    action: t('commandPalette.actions'),
+    resource: t('commandPalette.resources'),
+  };
+  return map[category] || category;
+}
 
 const categoryOrder = ['action', 'tool', 'setting', 'resource'];
 
@@ -333,6 +338,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
   const aiAbortRef = useRef<AbortController | null>(null);
   const { createNote } = useStickyNotes();
   const { settings } = useSettings();
+  const { t } = useTranslation();
 
   // Speech-to-text
   const sttIsListeningRef = useRef(false);
@@ -582,7 +588,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
             <button
               onClick={stt.stopListening}
               className="p-1.5 rounded-lg bg-red-500 text-white animate-pulse transition flex-shrink-0"
-              title="Stop listening"
+              title={t('commandPalette.stopListening')}
             >
               <MicOff className="w-4 h-4" />
             </button>
@@ -591,7 +597,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
             <button
               onClick={() => { setQuery(''); setAiResponse(null); setAiError(null); inputRef.current?.focus(); }}
               className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition flex-shrink-0"
-              title="Clear search"
+              title={t('commandPalette.clearSearch')}
             >
               <X className="w-4 h-4" style={{ color: 'var(--text-hint, #6b7280)' }} />
             </button>
@@ -600,7 +606,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
             <button
               onClick={stt.startListening}
               className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition flex-shrink-0"
-              title="Voice search"
+              title={t('commandPalette.voiceSearch')}
             >
               <Mic className="w-4 h-4" style={{ color: 'var(--text-hint, #6b7280)' }} />
             </button>
@@ -727,7 +733,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
                     borderBottom: '1px solid var(--border-default, #e5e7eb)',
                   }}
                 >
-                  {categoryLabels[group.category] || group.category}
+                  {getCategoryLabel(t, group.category)}
                 </div>
 
                 {/* Items */}

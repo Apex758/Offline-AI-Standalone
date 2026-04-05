@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../ui/skeleton';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
@@ -59,6 +60,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
     return arr;
   }, [columnB, externalShuffledB]);
 
+  const { t } = useTranslation();
   const ACCENT = accentColor || '#ea580c';
   const palette = deriveWorksheetPalette(ACCENT);
   const effectiveShowAnswers = isAnswerKey || showAnswers;
@@ -69,7 +71,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
       {/* Answer Key Banner */}
       {isAnswerKey && (
         <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
-          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{t('templates.answerKey')}</span>
         </div>
       )}
 
@@ -116,7 +118,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
 
       {/* Directions */}
       <div style={{ padding: '10px 36px', background: palette.accentLighter, borderBottom: `1px solid ${palette.accentBorder}`, fontSize: 13, color: palette.accentText }}>
-        <strong>Directions:</strong> Draw a line to match each item in Column A with the correct answer in Column B.
+        <strong>{t('templates.directions')}</strong> {t('templates.matchDirections')}
       </div>
 
       {/* Image */}
@@ -136,11 +138,11 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
         {/* Column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 32px 1fr', gap: 0, marginBottom: 14 }}>
           <div style={{ background: ACCENT, padding: '8px 14px', borderRadius: '4px 0 0 4px' }}>
-            <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Column A</span>
+            <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('templates.columnA')}</span>
           </div>
           <div style={{ background: palette.accentLighter, borderTop: `1.5px solid ${ACCENT}`, borderBottom: `1.5px solid ${ACCENT}` }} />
           <div style={{ background: palette.accentDark, padding: '8px 14px', borderRadius: '0 4px 4px 0', textAlign: 'right' }}>
-            <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Column B</span>
+            <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('templates.columnB')}</span>
           </div>
         </div>
 
@@ -209,7 +211,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
         {effectiveShowAnswers && columnA && columnB && (
           <div style={{ marginTop: 28, border: `1.5px solid ${palette.accentBorder}`, borderRadius: 6, overflow: 'hidden' }}>
             <div style={{ background: ACCENT, padding: '7px 16px' }}>
-              <span style={{ color: '#fff', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Answer Key</span>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('templates.answerKey')}</span>
             </div>
             <div style={{ padding: '12px 16px', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {matchingAnswerMap
@@ -238,7 +240,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
       )}
 
       <div style={{ borderTop: '1.5px solid #e7e5e4', margin: '0 36px', padding: '10px 0 18px', display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>Generated for educational purposes</span>
+        <span style={{ fontSize: 11, color: '#94a3b8' }}>{t('templates.generatedForEducation')}</span>
         <div style={{ width: 20, height: 5, background: ACCENT, borderRadius: 3 }} />
       </div>
     </div>

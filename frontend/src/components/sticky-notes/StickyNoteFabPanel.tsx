@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import PinIconData from '@hugeicons/core-free-icons/PinIcon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
@@ -17,6 +18,7 @@ interface Props {
 const COLOR_OPTIONS = ['#fef08a', '#bbf7d0', '#bfdbfe', '#fecaca', '#e9d5ff', '#fed7aa'];
 
 export const StickyNoteFabPanel: React.FC<Props> = ({ activeTabId, onClose }) => {
+  const { t } = useTranslation();
   const { notes, openNoteIds, groups, createNote, openNote, deleteNote, dissolveGroup } = useStickyNotes();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -191,7 +193,7 @@ export const StickyNoteFabPanel: React.FC<Props> = ({ activeTabId, onClose }) =>
                           </div>
                           <button
                             className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex items-center justify-center"
-                            title="Delete"
+                            title={t('common.delete')}
                             onClick={e => { e.stopPropagation(); deleteNote(n.id); }}
                           >
                             <SIcon icon={Cancel01IconData} size={10} style={{ color: '#ef4444' }} />
@@ -229,7 +231,7 @@ export const StickyNoteFabPanel: React.FC<Props> = ({ activeTabId, onClose }) =>
                   {n.pinned && <SIcon icon={PinIconData} size={12} style={{ color: 'var(--text-hint, #9ca3af)' }} />}
                   <button
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex items-center justify-center"
-                    title="Delete permanently"
+                    title={t('stickyNotes.deletePermanently')}
                     onClick={e => { e.stopPropagation(); deleteNote(n.id); }}
                   >
                     <SIcon icon={Cancel01IconData} size={10} style={{ color: '#ef4444' }} />
@@ -249,7 +251,7 @@ export const StickyNoteFabPanel: React.FC<Props> = ({ activeTabId, onClose }) =>
         >
           {showClearConfirm ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs" style={{ color: 'var(--text-muted, #6b7280)' }}>Delete all saved?</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted, #6b7280)' }}>{t('stickyNotes.deleteAllSaved')}</span>
               <button
                 className="text-xs px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 hover:bg-red-200 transition-colors"
                 onClick={handleClearAll}

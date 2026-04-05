@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
@@ -46,6 +47,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
   onDelete,
   onClose
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<TaskFormData>({
     title: task?.title || '',
     description: task?.description || '',
@@ -62,8 +64,8 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.title.trim()) newErrors.title = t('tasks.titleRequired');
+    if (!formData.date) newErrors.date = t('tasks.dateRequired');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -88,7 +90,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
   };
 
   const handleDelete = () => {
-    if (task && onDelete && confirm('Are you sure you want to delete this task?')) {
+    if (task && onDelete && confirm(t('tasks.confirmDelete'))) {
       onDelete(task.id);
       onClose();
     }
@@ -120,7 +122,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-1">
           <h2 className="text-lg font-semibold tracking-tight" style={{ color: 'var(--dash-text)' }}>
-            {task ? 'Edit Task' : 'New Task'}
+            {task ? t('tasks.editTask') : t('tasks.newTask')}
           </h2>
           <button
             onClick={onClose}
@@ -164,7 +166,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                 if (!errors.title) e.currentTarget.style.borderColor = 'transparent';
                 e.currentTarget.style.boxShadow = 'none';
               }}
-              placeholder="Task name"
+              placeholder={t('tasks.taskName')}
               autoFocus
             />
             {errors.title && (
@@ -194,7 +196,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                 e.currentTarget.style.borderColor = 'transparent';
                 e.currentTarget.style.boxShadow = 'none';
               }}
-              placeholder="Add a description (optional)"
+              placeholder={t('tasks.description')}
               rows={2}
             />
           </div>
@@ -203,7 +205,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
           <div>
             <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--dash-text-faint)' }}>
               <CalendarDays className="w-3.5 h-3.5" />
-              Due date
+              {t('tasks.dueDate')}
             </label>
             <input
               type="date"
@@ -233,7 +235,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
           <div>
             <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--dash-text-faint)' }}>
               <Flag className="w-3.5 h-3.5" />
-              Priority
+              {t('tasks.priority')}
             </label>
             <div className="grid grid-cols-4 gap-2">
               {priorityOptions.map((p) => {
@@ -268,7 +270,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                         boxShadow: isSelected ? `0 0 8px ${p.color}` : 'none',
                       }}
                     />
-                    {p.label}
+                    {t(`tasks.${p.value}`)}
                   </button>
                 );
               })}
@@ -296,7 +298,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                 }}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                Delete
+                {t('common.delete')}
               </button>
             ) : (
               <div />
@@ -319,7 +321,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
@@ -339,7 +341,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                   e.currentTarget.style.boxShadow = '0 2px 8px var(--dash-primary-a12)';
                 }}
               >
-                {task ? 'Save Changes' : 'Create Task'}
+                {task ? t('common.saveChanges') : t('tasks.createTask')}
               </button>
             </div>
           </div>

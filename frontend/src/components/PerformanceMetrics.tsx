@@ -14,6 +14,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, C
 import { useContainerSize } from '../hooks/useContainerSize';
 import axios from 'axios';
 import { DashboardSkeleton } from './ui/DashboardSkeleton';
+import { useTranslation } from 'react-i18next';
 
 const API = 'http://localhost:8000/api';
 const POLL_INTERVAL = 2500;
@@ -377,7 +378,7 @@ const ModelComparisonChart: React.FC<{
 
   return (
     <div className="rounded-xl border border-theme-border bg-theme-surface p-5">
-      <h3 className="font-semibold text-theme-primary mb-4">Model Speed Comparison</h3>
+      <h3 className="font-semibold text-theme-primary mb-4">{t('performanceMetrics.modelSpeed')}</h3>
       <div ref={containerRef} style={{ width: '100%', height: Math.max(200, barData.length * 44 + 40) }}>
         {chartWidth > 0 && (
           <BarChart
@@ -413,6 +414,7 @@ const ModelComparisonChart: React.FC<{
 /* ── Main Component ───────────────────────────────────────────────────────── */
 
 const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState<MetricsSummary | null>(null);
   const [history, setHistory] = useState<InferenceMetric[]>([]);
   const [liveStats, setLiveStats] = useState<LiveStats | null>(null);
@@ -591,8 +593,8 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
         <div className="flex items-center gap-3">
           <Icon icon={Activity01IconData} size={28} className="text-theme-accent" />
           <div>
-            <h1 className="text-2xl font-bold text-theme-primary">Performance Metrics</h1>
-            <p className="text-sm text-theme-muted">Model benchmarks and system performance</p>
+            <h1 className="text-2xl font-bold text-theme-primary">{t('performanceMetrics.title')}</h1>
+            <p className="text-sm text-theme-muted">{t('performanceMetrics.subtitle')}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -691,7 +693,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
         <div className="rounded-xl border border-theme-border bg-theme-surface p-5">
           <div className="flex items-center gap-2 mb-4">
             <Icon icon={ComputerIconData} size={20} className="text-theme-accent" />
-            <h2 className="font-semibold text-theme-primary">System Specs</h2>
+            <h2 className="font-semibold text-theme-primary">{t('performanceMetrics.systemSpecs')}</h2>
           </div>
           <div className={`grid grid-cols-2 ${hasGpu ? 'md:grid-cols-3 lg:grid-cols-6' : 'md:grid-cols-4'} gap-4 text-sm`}>
             <div>
@@ -699,7 +701,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
               <div className="text-theme-primary font-medium">{specs.os}</div>
             </div>
             <div>
-              <div className="text-theme-muted">Processor</div>
+              <div className="text-theme-muted">{t('performanceMetrics.processor')}</div>
               <div className="text-theme-primary font-medium">{specs.processor || specs.architecture}</div>
             </div>
             <div>
@@ -735,7 +737,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <h2 className="font-semibold text-theme-primary">Live Resource Monitor</h2>
+            <h2 className="font-semibold text-theme-primary">{t('performanceMetrics.liveMonitor')}</h2>
             <span className="text-xs text-theme-muted ml-auto">Updates every {POLL_INTERVAL / 1000}s</span>
           </div>
           <div className={`grid grid-cols-1 ${hasGpu ? 'lg:grid-cols-2' : 'md:grid-cols-2'} gap-4`}>
@@ -845,7 +847,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
             <div className="rounded-xl border border-theme-border bg-theme-surface p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Icon icon={TextIconData} size={20} className="text-blue-400" />
-                <h2 className="font-semibold text-theme-primary">Text Generation Performance</h2>
+                <h2 className="font-semibold text-theme-primary">{t('performanceMetrics.textGeneration')}</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -880,7 +882,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
             <div className="rounded-xl border border-theme-border bg-theme-surface p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Icon icon={ImageIconData} size={20} className="text-purple-400" />
-                <h2 className="font-semibold text-theme-primary">Image Generation Performance</h2>
+                <h2 className="font-semibold text-theme-primary">{t('performanceMetrics.imageGeneration')}</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

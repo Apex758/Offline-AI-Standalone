@@ -2,6 +2,7 @@
 import React, {
   useState, useEffect, useRef, useCallback, useMemo,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
@@ -1269,6 +1270,7 @@ function ResourceImagePicker({ onSelect, onClose, accentColor }: {
 }
 
 export default function StoryBookCreator({ tabId, savedData, onDataChange }: StoryBookCreatorProps) {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const { hasDiffusion, hasVision, tier } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
@@ -2379,7 +2381,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             className="w-full py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 active:scale-95"
             style={{ background: accentColor }}
           >
-            Generate Storybook
+            {t('generators.generateStory')}
           </button>
         </div>
 

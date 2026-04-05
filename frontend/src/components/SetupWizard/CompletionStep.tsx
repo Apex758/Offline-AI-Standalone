@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import { FeatureModuleId } from '../../types/feature-disclosure';
@@ -11,6 +12,7 @@ interface CompletionStepProps {
 }
 
 const CompletionStep: React.FC<CompletionStepProps> = ({ selectedModules, teacherName, onFinish }) => {
+  const { t } = useTranslation();
   const enabledModules = FEATURE_MODULES.filter(m => selectedModules.includes(m.id));
 
   return (
@@ -24,7 +26,7 @@ const CompletionStep: React.FC<CompletionStepProps> = ({ selectedModules, teache
       </div>
 
       <h2 className="text-2xl font-bold mb-2" style={{ color: '#F8E59D' }}>
-        You're all set{teacherName ? `, ${teacherName.split(' ').pop()}` : ''}!
+        {t('setupWizard.allSet')}{teacherName ? `, ${teacherName.split(' ').pop()}` : ''}!
       </h2>
       <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
         Your workspace is ready with {enabledModules.length} feature{enabledModules.length !== 1 ? 's' : ''} enabled.
@@ -33,7 +35,7 @@ const CompletionStep: React.FC<CompletionStepProps> = ({ selectedModules, teache
       {/* Summary */}
       <div className="w-full max-w-sm mb-8">
         <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <p className="text-xs font-medium mb-3" style={{ color: 'rgba(255,255,255,0.4)' }}>ENABLED FEATURES</p>
+          <p className="text-xs font-medium mb-3" style={{ color: 'rgba(255,255,255,0.4)' }}>{t('setupWizard.enabledFeatures')}</p>
           <div className="space-y-2">
             {enabledModules.map((mod) => (
               <div key={mod.id} className="flex items-center gap-2">

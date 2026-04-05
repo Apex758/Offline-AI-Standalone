@@ -1,5 +1,6 @@
 // components/CrossCurricularEditor.tsx
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
@@ -88,6 +89,7 @@ interface CrossCurricularEditorProps {
 }
 
 const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: initialPlan, onSave, onCancel }) => {
+  const { t } = useTranslation();
   // Deep clone to prevent mutations
   const [plan, setPlan] = useState<ParsedCrossCurricularPlan>(JSON.parse(JSON.stringify(initialPlan)));
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('all');
@@ -264,21 +266,21 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
     <div className="bg-theme-surface rounded-lg shadow-lg max-w-7xl mx-auto">
       {/* Header */}
       <div className="border-b border-theme p-6 bg-gradient-to-r from-cyan-50 dark:from-cyan-900/30 to-blue-50 dark:to-blue-900/30">
-        <h2 className="text-2xl font-bold text-theme-heading mb-4">Edit Cross-Curricular Plan</h2>
+        <h2 className="text-2xl font-bold text-theme-heading mb-4">{t('planEditors.editCrossCurricular')}</h2>
         
         {/* Metadata Editing */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-theme-label mb-1">Plan Title</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">{t('planEditors.planTitle')}</label>
             <SmartInput
               value={plan.metadata.title}
               onChange={(val) => updateMetadata('title', val)}
               className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
-              placeholder="Enter plan title"
+              placeholder={t('planEditors.enterPlanTitle')}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-theme-label mb-1">Big Idea/Theme</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">{t('planEditors.bigIdea')}</label>
             <SmartInput
               value={plan.metadata.theme}
               onChange={(val) => updateMetadata('theme', val)}
@@ -651,14 +653,14 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
             className="flex items-center px-4 py-2 text-theme-label bg-theme-surface border border-theme-strong rounded-lg hover:bg-theme-subtle"
           >
             <X className="w-4 h-4 mr-2" />
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => onSave(plan)}
             className="flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700"
           >
             <Check className="w-4 h-4 mr-2" />
-            Save Changes
+            {t('common.save')}
           </button>
         </div>
       </div>

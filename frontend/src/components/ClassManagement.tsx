@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ResourceGridSkeleton } from './ui/ResourceGridSkeleton';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -180,6 +181,7 @@ interface ClassManagementProps {
 }
 
 const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onDataChange, isActive = true }) => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const { guardOffline } = useOfflineGuard();
   const triggerCheck = useAchievementTrigger();
@@ -874,11 +876,11 @@ ${tabScript}
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: accentColor }}>
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-sm text-theme-heading">Classes</span>
+            <span className="font-bold text-sm text-theme-heading">{t('classManagement.classes')}</span>
           </div>
           <button
             onClick={() => openAdd()}
-            title="Add student"
+            title={t('classManagement.addStudent')}
             data-tutorial="class-add-student"
             className="w-6 h-6 rounded-md flex items-center justify-center text-white transition hover:opacity-80"
             style={{ backgroundColor: accentColor }}
@@ -892,7 +894,7 @@ ${tabScript}
           <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-theme-muted pointer-events-none" />
           <input
             type="text"
-            placeholder="Search students..."
+            placeholder={t('classManagement.searchStudents')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-7 pr-7 py-1.5 rounded-lg border border-theme bg-theme-input text-theme-label text-xs focus:outline-none"
@@ -1112,11 +1114,11 @@ ${tabScript}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-4">
-            <StatCard icon={<Users className="w-5 h-5" />} label="Total Students" value={allStudents.length} color={accentColor} />
-            <StatCard icon={<BookOpen className="w-5 h-5" />} label="Classes" value={gradeNode.classes.length} color={accentColor} />
+            <StatCard icon={<Users className="w-5 h-5" />} label={t('classManagement.totalStudents')} value={allStudents.length} color={accentColor} />
+            <StatCard icon={<BookOpen className="w-5 h-5" />} label={t('classManagement.classes')} value={gradeNode.classes.length} color={accentColor} />
             <StatCard
               icon={<BarChart2 className="w-5 h-5" />}
-              label="Gender Split"
+              label={t('classManagement.genderSplit')}
               value={`${male}M / ${female}F`}
               color={accentColor}
               small
@@ -1255,9 +1257,9 @@ ${tabScript}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <StatCard icon={<Users className="w-5 h-5" />} label="Students" value={cs.length} color={accentColor} />
-            <StatCard icon={<User className="w-5 h-5" />} label="Male" value={male} color={accentColor} />
-            <StatCard icon={<User className="w-5 h-5" />} label="Female" value={female} color={accentColor} />
+            <StatCard icon={<Users className="w-5 h-5" />} label={t('classManagement.totalStudents')} value={cs.length} color={accentColor} />
+            <StatCard icon={<User className="w-5 h-5" />} label={t('classManagement.male')} value={male} color={accentColor} />
+            <StatCard icon={<User className="w-5 h-5" />} label={t('classManagement.female')} value={female} color={accentColor} />
           </div>
 
           {/* ── Students Tab ── */}
@@ -1330,7 +1332,7 @@ ${tabScript}
                         ) : (
                           <Save className="w-3.5 h-3.5" />
                         )}
-                        {attendanceSaving ? 'Saving...' : 'Save'}
+                        {attendanceSaving ? t('common.saving') : t('common.save')}
                       </button>
                     </div>
                   </div>
@@ -1349,15 +1351,15 @@ ${tabScript}
                       <div className="grid grid-cols-4 gap-3 mb-4">
                         <div className="rounded-xl p-3 widget-glass text-center">
                           <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{present}</p>
-                          <p className="text-[11px] text-theme-muted">Present</p>
+                          <p className="text-[11px] text-theme-muted">{t('classManagement.present')}</p>
                         </div>
                         <div className="rounded-xl p-3 widget-glass text-center">
                           <p className="text-lg font-bold text-red-600 dark:text-red-400">{absent}</p>
-                          <p className="text-[11px] text-theme-muted">Absent</p>
+                          <p className="text-[11px] text-theme-muted">{t('classManagement.absent')}</p>
                         </div>
                         <div className="rounded-xl p-3 widget-glass text-center">
                           <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{late}</p>
-                          <p className="text-[11px] text-theme-muted">Late</p>
+                          <p className="text-[11px] text-theme-muted">{t('classManagement.late')}</p>
                         </div>
                         <div className="rounded-xl p-3 widget-glass text-center">
                           <p className="text-lg font-bold" style={{ color: accentColor }}>{avgEng}</p>
@@ -1402,7 +1404,7 @@ ${tabScript}
                                     : 'border-transparent text-theme-hint hover:bg-theme-hover'
                                 }`}
                               >
-                                {st}
+                                {t(`classManagement.${st.toLowerCase()}`)}
                               </button>
                             ))}
                           </div>
@@ -1730,7 +1732,7 @@ ${tabScript}
           onClick={() => setRightView(editingId ? { type: 'student' } : { type: 'empty' })}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-theme text-theme-muted hover:text-theme-label hover:bg-theme-hover transition text-sm"
         >
-          <X className="w-4 h-4" /> Cancel
+          <X className="w-4 h-4" /> {t('common.cancel')}
         </button>
       </div>
 
@@ -1783,7 +1785,15 @@ ${tabScript}
                 className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2"
                 style={{ '--tw-ring-color': accentColor } as any}>
                 <option value="">Select...</option>
-                {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
+                {GENDERS.map(g => {
+                  const keyMap: Record<string, string> = {
+                    'Male': 'classManagement.male',
+                    'Female': 'classManagement.female',
+                    'Other': 'classManagement.other',
+                    'Prefer not to say': 'classManagement.preferNotToSay',
+                  };
+                  return <option key={g} value={g}>{t(keyMap[g] ?? g)}</option>;
+                })}
               </select>
             </div>
           </div>
@@ -1825,7 +1835,7 @@ ${tabScript}
             className="w-full py-3 rounded-xl text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: accentColor }}>
             <Save className="w-4 h-4" />
-            {formSaving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Student'}
+            {formSaving ? t('common.saving') : editingId ? t('common.saveChanges') : 'Add Student'}
           </button>
         </div>
       </div>
@@ -1912,8 +1922,8 @@ ${tabScript}
               This will permanently delete{activeStudent ? <> <strong>{activeStudent.full_name}</strong> and</> : null} all their quiz grades. This cannot be undone.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm">Cancel</button>
-              <button onClick={() => handleDelete(confirmDelete!)} className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium">Delete</button>
+              <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm">{t('common.cancel')}</button>
+              <button onClick={() => handleDelete(confirmDelete!)} className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium">{t('common.delete')}</button>
             </div>
           </div>
         </div>

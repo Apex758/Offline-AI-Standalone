@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
 import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
@@ -50,6 +51,7 @@ const iconMap: { [key: string]: any } = {
 };
 
 const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick }) => {
+  const { t } = useTranslation();
   const getIcon = (iconName: string) => {
     const Icon = iconMap[iconName] || BookOpen;
     return Icon;
@@ -81,7 +83,7 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
       >
         <div className="flex items-center space-x-2">
           <Target className="w-5 h-5" style={{ color: 'var(--dash-orange)' }} />
-          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Most Used Tools</h3>
+          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>{t('widgets.mostUsedTools')}</h3>
         </div>
       </div>
 
@@ -90,8 +92,8 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
         {limitedToolUsage.length === 0 ? (
           <div className="text-center py-8">
             <Target className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
-            <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>No tool usage data yet</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>Start using tools to see stats</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>{t('widgets.noToolUsage')}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>{t('widgets.startUsingTools')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-5 gap-3" data-tutorial="analytics-tools-grid">

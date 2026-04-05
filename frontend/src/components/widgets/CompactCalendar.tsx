@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   format,
   startOfMonth,
@@ -104,6 +105,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
   onViewFullReport,
   onRegenerateInsights,
 }) => {
+  const { t } = useTranslation();
   const [currentMonth, setCurrentMonth] = useState(selectedDate);
 
   // Flip state
@@ -310,7 +312,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
             <div className="cc-legend" data-tutorial="analytics-calendar-legend">
               <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-resource" /><span>Resources</span></div>
               <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-task" /><span>Tasks</span></div>
-              <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-milestone" /><span>Milestones</span></div>
+              <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-milestone" /><span>{t('widgets.milestones')}</span></div>
             </div>
           </div>
         </div>
@@ -432,7 +434,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
             {!insightsReport ? (
               <div className="cc-empty-state">
                 <BulbIcon className="w-6 h-6" style={{ opacity: 0.35, marginBottom: 8 }} />
-                <p className="cc-empty-title">No insights yet</p>
+                <p className="cc-empty-title">{t('widgets.noInsightsYet')}</p>
                 <p className="cc-empty-sub">Open Educator Insights to generate your first report.</p>
                 {onViewFullReport && (
                   <button className="cc-view-btn" style={{ marginTop: 10 }} onClick={onViewFullReport}>
@@ -443,7 +445,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
             ) : allSectionsHidden ? (
               <div className="cc-empty-state">
                 <SettingsIcon className="w-6 h-6" style={{ opacity: 0.35, marginBottom: 8 }} />
-                <p className="cc-empty-title">Nothing to show</p>
+                <p className="cc-empty-title">{t('widgets.nothingToShow')}</p>
                 <p className="cc-empty-sub">Use the ⚙ menu to choose what to display.</p>
               </div>
             ) : (
@@ -453,7 +455,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
                   <div className="cc-rec-container">
                     <div className="cc-rec-header">
                       <BulbIcon className="w-3 h-3" style={{ color: 'var(--dash-orange)', flexShrink: 0 }} />
-                      <span className="cc-section-title">Recommendations</span>
+                      <span className="cc-section-title">{t('widgets.recommendations')}</span>
                     </div>
                     <div className="cc-rec-items">
                       {currentRecItems.map((item, i) => (

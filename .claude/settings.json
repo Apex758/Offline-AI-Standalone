@@ -207,7 +207,13 @@
       "Bash(wc -l \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/\"*.tsx)",
       "Bash(node node_modules/.bin/tsc --noEmit)",
       "Bash(grep -E \"^[a-z_]+\\\\.py$\")",
-      "Bash(ls \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)"
+      "Bash(ls \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(node -e \"require\\('c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/en.json'\\); console.log\\('JSON is valid'\\)\")",
+      "Bash(node -e \"require\\('./frontend/src/locales/fr.json'\\); console.log\\('JSON valid'\\);\")",
+      "Bash(node -e \"require\\('c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/es.json'\\); console.log\\('Valid JSON'\\);\")",
+      "Bash(grep -nE '>[A-Z][a-zA-Z ,.!?]{3,}<|placeholder=|aria-label=' \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/LicenseGate.tsx\")",
+      "Bash(xargs -0 grep -rL \"useTranslation\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
@@ -116,6 +117,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   onDataChange,
   isActive = true
 }) => {
+  const { t } = useTranslation();
   const [curriculumReady, setCurriculumReady] = useState(false);
   useEffect(() => {
     preloadAllCurriculum().then(() => {
@@ -1090,7 +1092,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             style={{ '--tw-ring-color': accentColor } as any}
             data-tutorial="grade-filter"
           >
-            <option value="">All Grades</option>
+            <option value="">{t('curriculum.allGrades')}</option>
             {uniqueGrades.map(grade => (
               <option key={grade} value={grade}>{grade === 'K' ? 'Kindergarten' : `Grade ${grade}`}</option>
             ))}
@@ -1103,7 +1105,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             style={{ '--tw-ring-color': accentColor } as any}
             data-tutorial="subject-filter"
           >
-            <option value="">All Subjects</option>
+            <option value="">{t('curriculum.allSubjects')}</option>
             {uniqueSubjects.map(subject => (
               <option key={subject} value={subject}>{subject}</option>
             ))}
@@ -1116,10 +1118,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             style={{ '--tw-ring-color': accentColor } as any}
             data-tutorial="status-filter"
           >
-            <option value="">All Statuses</option>
-            <option value="not_started">Not Started</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value="">{t('curriculum.allStatuses')}</option>
+            <option value="not_started">{t('curriculum.notStarted')}</option>
+            <option value="in_progress">{t('curriculum.inProgress')}</option>
+            <option value="completed">{t('curriculum.completed')}</option>
             <option value="skipped">Skipped</option>
           </select>
 
@@ -1131,7 +1133,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme-surface text-theme-label"
               style={{ '--tw-ring-color': accentColor } as any}
             >
-              <option value="">All Phases</option>
+              <option value="">{t('curriculum.allPhases')}</option>
               {ctAllPhases.map(p => (
                 <option key={p.id} value={p.id}>{p.phase_label}</option>
               ))}
@@ -1150,11 +1152,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             <button
               onClick={() => setExpandedNodes(new Set())}
               className="px-4 py-2 bg-theme-tertiary hover:bg-theme-hover text-theme-label rounded-lg font-medium transition-colors flex items-center space-x-2"
-              title="Collapse All"
+              title={t('curriculum.collapseAll')}
               data-tutorial="collapse-all"
             >
               <ChevronUp className="w-4 h-4" />
-              <span>Collapse All</span>
+              <span>{t('curriculum.collapseAll')}</span>
             </button>
           </div>
         </div>

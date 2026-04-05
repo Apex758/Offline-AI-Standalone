@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
@@ -37,6 +38,7 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
   activities,
   limit = 4
 }) => {
+  const { t } = useTranslation();
   const getActivityIcon = (activity: Activity) => {
     switch (activity.type) {
       case 'resource_created':
@@ -88,7 +90,7 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       <div className="p-4" style={{ borderBottom: `1px solid var(--dash-border)` }}>
         <div className="flex items-center space-x-2">
           <Clock className="w-5 h-5" style={{ color: 'var(--dash-text-sub)' }} />
-          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Recent Activity</h3>
+          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>{t('widgets.recentActivity')}</h3>
         </div>
       </div>
 
@@ -97,8 +99,8 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
         {displayedActivities.length === 0 ? (
           <div className="text-center py-8">
             <Clock className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
-            <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>No recent activity</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>Create resources to see your activity</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>{t('widgets.noRecentActivity')}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>{t('widgets.createResources')}</p>
           </div>
         ) : (
           <div className="space-y-3">

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
@@ -74,6 +75,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
   collapsed: controlledCollapsed,
   onCollapsedChange,
 }) => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const tabColor = settings.tabColors['educator-insights'] ?? '#d97706';
 
@@ -336,7 +338,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
             <span className="text-xs font-bold" style={{ color: tabColor }}>EC</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-base font-semibold text-theme-primary leading-tight">Educator Coach</p>
+            <p className="text-base font-semibold text-theme-primary leading-tight">{t('educator.educatorCoach')}</p>
             {triggerDimension && (
               <p className="text-xs text-theme-secondary truncate leading-tight">Focus: {triggerDimension}</p>
             )}
@@ -387,7 +389,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
             }}
           >
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-theme-border flex-shrink-0">
-              <span className="text-sm font-semibold text-theme-primary">Conversation History</span>
+              <span className="text-sm font-semibold text-theme-primary">{t('educator.conversationHistory')}</span>
               <button
                 onClick={() => setShowHistory(false)}
                 className="p-1 rounded hover:bg-theme-bg-tertiary transition-colors text-theme-muted text-lg leading-none"
@@ -418,7 +420,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
                 </button>
               ))}
               {conversations.length === 0 && (
-                <p className="text-[10px] text-theme-muted px-2 py-1">No previous conversations</p>
+                <p className="text-[10px] text-theme-muted px-2 py-1">{t('educator.noPreviousConversations')}</p>
               )}
             </div>
           </div>
@@ -437,7 +439,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
                   borderColor: hexToRgba(tabColor, 0.35),
                   background: hexToRgba(tabColor, 0.08),
                 }}
-                title="Change topic"
+                title={t('educator.changeTopic')}
               >
                 ← {selectedTopic}
               </button>
@@ -450,7 +452,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
               <div className="py-4 px-1">
                 {showTopicPicker ? (
                   <>
-                    <p className="text-xs text-theme-secondary mb-3 font-medium text-center">What would you like to discuss?</p>
+                    <p className="text-xs text-theme-secondary mb-3 font-medium text-center">{t('educator.whatToDiscuss')}</p>
                     <div className="flex flex-wrap gap-1.5 justify-center">
                       {TOPIC_BUBBLES.map(t => (
                         <button
@@ -515,7 +517,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
             {isStreaming && !streamingContent && (
               <div className="flex justify-start">
                 <div className="rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg border border-theme-border">
-                  <span className="text-theme-muted animate-pulse">Thinking...</span>
+                  <span className="text-theme-muted animate-pulse">{t('chat.thinking')}</span>
                 </div>
               </div>
             )}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import UserIconData from '@hugeicons/core-free-icons/UserIcon';
@@ -60,6 +61,7 @@ const TeacherMetricsPanel: React.FC<TeacherMetricsPanelProps> = ({
   onToggleExpanded,
   onDimensionClick,
 }) => {
+  const { t } = useTranslation();
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
   const toggleExpanded = () => {
@@ -119,7 +121,7 @@ const TeacherMetricsPanel: React.FC<TeacherMetricsPanelProps> = ({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-theme-primary">Teaching Effectiveness</span>
+            <span className="text-sm font-semibold text-theme-primary">{t('charts.teachingEffectiveness')}</span>
             {metrics.phase.phase_label && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-theme-bg-tertiary text-theme-secondary">
                 {metrics.phase.phase_label}

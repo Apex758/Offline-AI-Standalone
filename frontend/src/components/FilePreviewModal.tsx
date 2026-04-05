@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
@@ -59,6 +60,7 @@ interface FilePreviewModalProps {
 }
 
 const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ filePath, fileName, extension, onClose }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<any>(null);
@@ -298,7 +300,7 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ filePath, fileName,
 
     return (
       <div className="flex items-center justify-center h-64 text-theme-hint">
-        <p className="text-sm">No preview available</p>
+        <p className="text-sm">{t('filePreview.noPreview')}</p>
       </div>
     );
   };
@@ -322,7 +324,7 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ filePath, fileName,
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition flex-shrink-0"
-            title="Close preview"
+            title={t('filePreview.closePreview')}
           >
             <IconW icon={Cancel01IconData} className="w-4 h-4 text-theme-muted" />
           </button>

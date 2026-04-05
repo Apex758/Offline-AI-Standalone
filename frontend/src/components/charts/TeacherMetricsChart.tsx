@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ReferenceArea, Line
@@ -122,6 +123,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   onPhaseClick,
   showPhaseBands = true,
 }) => {
+  const { t } = useTranslation();
   const { ref: chartContainerRef, width: chartWidth, height: chartContainerHeight } = useContainerSize();
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
@@ -270,7 +272,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
       <style>{`.tmc-root *:focus { outline: none !important; }`}</style>
       {!compact && (
         <div className="flex items-center gap-2 mb-2">
-          <h3 className="text-base font-bold" style={{ color: 'var(--dash-text)' }}>Teaching Effectiveness</h3>
+          <h3 className="text-base font-bold" style={{ color: 'var(--dash-text)' }}>{t('charts.teachingEffectiveness')}</h3>
           {chartData.length > 0 && onPhaseClick && (
             <button
               ref={phaseBadgeRef}

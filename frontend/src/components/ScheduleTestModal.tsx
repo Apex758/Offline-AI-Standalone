@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
@@ -38,6 +39,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({
   testInfo,
   accentColor = '#3b82f6',
 }) => {
+  const { t } = useTranslation();
   const [testDate, setTestDate] = useState('');
   const [testTime, setTestTime] = useState('');
   const [saving, setSaving] = useState(false);
@@ -97,7 +99,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({
           {saved ? (
             <div className="text-center py-6">
               <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-              <p className="text-lg font-semibold text-theme-heading">Reminder Set!</p>
+              <p className="text-lg font-semibold text-theme-heading">{t('schedule.reminderSet')}</p>
               <p className="text-sm text-theme-muted mt-1">
                 You'll be reminded about this {testInfo.type} on {new Date(testDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
@@ -151,7 +153,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({
               onClick={onClose}
               className="flex-1 px-4 py-2.5 rounded-lg border border-theme text-sm font-medium text-theme-body hover:bg-theme-hover transition"
             >
-              Skip
+              {t('schedule.skip')}
             </button>
             <button
               onClick={handleSchedule}
@@ -159,7 +161,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({
               className="flex-1 px-4 py-2.5 rounded-lg text-white text-sm font-medium transition disabled:opacity-40"
               style={{ backgroundColor: accentColor }}
             >
-              {saving ? 'Saving...' : 'Set Reminder'}
+              {saving ? t('common.saving') : t('schedule.setReminder')}
             </button>
           </div>
         )}

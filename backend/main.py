@@ -48,7 +48,11 @@ from routes import milestones, achievements, insights, teacher_metrics
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from tier_analyzer_generator import build_analyzer
 
+# Maximum allowed size for WebSocket messages (50KB)
+MAX_WS_MESSAGE_BYTES = 50_000
+
 _scheduler: AsyncIOScheduler | None = None
+import sqlite3
 import student_service
 from llama_inference import LlamaInference
 from process_pool import submit_task, shutdown_executor
@@ -320,16 +324,20 @@ async def lifespan(app):
 from fastapi.responses import ORJSONResponse
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 
-# Add CORS middleware FIRST, before routers
-# allow_origins=["*"] is needed so phones on the local network (e.g.
-# http://192.168.x.x:8000) can hit the API for Photo Transfer.
-# This is safe because the server is only reachable on the LAN.
+# CORS: restrict to local Electron app origins only.
+# Photo Transfer (which needs LAN access) uses a separate server.
+_cors_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 from starlette.middleware.gzip import GZipMiddleware
@@ -339,7 +347,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 @app.exception_handler(Exception)
 async def _global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled error on {request.method} {request.url.path}: {exc}", exc_info=True)
-    return JSONResponse(status_code=500, content={"detail": str(exc)})
+    return JSONResponse(status_code=500, content={"detail": "An internal error occurred"})
 
 # Include milestone routes
 app.include_router(milestones.router)
@@ -517,7 +525,7 @@ async def save_chat_history(chat: ChatHistory):
         return {"success": True, "id": chat.id}
     except Exception as e:
         logger.error(f"Error saving chat history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to save chat history")
 
 @app.delete("/api/chat-history/{chat_id}")
 async def delete_chat_history(chat_id: str):
@@ -528,7 +536,7 @@ async def delete_chat_history(chat_id: str):
         return {"success": True}
     except Exception as e:
         logger.error(f"Error deleting chat history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete chat history")
 
 # ============================================================================
 # Shared Prompt Builder — model-aware formatting
@@ -972,13 +980,21 @@ async def websocket_chat(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
+            # Reject oversized messages
+            if len(data) > MAX_WS_MESSAGE_BYTES:
+                await websocket.send_json({"type": "error", "message": "Message too large"})
+                continue
             print(f"[ws/chat] Received message (len={len(data)})")
-            message_data = json.loads(data)
+            try:
+                message_data = json.loads(data)
+            except (json.JSONDecodeError, ValueError):
+                await websocket.send_json({"type": "error", "message": "Invalid message format"})
+                continue
             user_message = message_data.get("message", "")
             chat_id = message_data.get("chat_id", None)
             print(f"[ws/chat] user_message={user_message[:100]!r}, chat_id={chat_id}")
-            # Support custom system prompt from AI assistant panel
-            custom_system_prompt = message_data.get("system_prompt", None)
+            # System prompt is server-controlled; ignore arbitrary client prompts
+            custom_system_prompt = None
             # Support conversation history sent from frontend (for panels without chat_id)
             client_history = message_data.get("history", None)
             # Thinking mode toggle (for Qwen2.5/Qwen3 models)
@@ -1277,7 +1293,7 @@ async def websocket_chat(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     print("[ws/chat] Could not send error message - connection closed")
@@ -1361,7 +1377,7 @@ async def save_lesson_plan_history(plan: LessonPlanHistory):
         return {"success": True, "id": plan.id}
     except Exception as e:
         logger.error(f"Error saving lesson plan history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to save lesson plan")
 
 @app.delete("/api/lesson-plan-history/{plan_id}")
 async def delete_lesson_plan_history(plan_id: str):
@@ -1386,7 +1402,7 @@ async def delete_lesson_plan_history(plan_id: str):
         raise HTTPException(status_code=404, detail="Lesson plan history not found")
     except Exception as e:
         logger.error(f"Error deleting lesson plan history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete lesson plan")
 
 
 # ── Lesson Plan Drafts ──────────────────────────────────────────────────
@@ -1453,7 +1469,7 @@ async def save_lesson_draft(draft: LessonDraft):
         return {"success": True, "id": draft.id}
     except Exception as e:
         logger.error(f"Error saving lesson draft: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to save quiz")
 
 @app.delete("/api/lesson-drafts/{draft_id}")
 async def delete_lesson_draft(draft_id: str):
@@ -1478,7 +1494,7 @@ async def delete_lesson_draft(draft_id: str):
         raise HTTPException(status_code=404, detail="Draft not found")
     except Exception as e:
         logger.error(f"Error deleting lesson draft: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete quiz")
 
 
 @app.post("/api/generate-lesson-plan")
@@ -1505,7 +1521,7 @@ async def generate_lesson_plan(request: LessonPlanRequest):
 
     except Exception as e:
         logger.error(f"Error generating lesson plan: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to generate lesson plan")
 
 
 @app.websocket("/ws/lesson-plan")
@@ -1683,7 +1699,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
@@ -1819,7 +1835,7 @@ async def quiz_websocket(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
@@ -1957,7 +1973,7 @@ async def rubric_websocket(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
@@ -2070,7 +2086,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
@@ -2181,7 +2197,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
@@ -2294,7 +2310,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
@@ -2439,7 +2455,7 @@ async def worksheet_websocket(websocket: WebSocket):
                 try:
                     await websocket.send_json({
                         "type": "error",
-                        "message": str(e)
+                        "message": "An error occurred during generation"
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
@@ -2548,7 +2564,7 @@ async def presentation_websocket(websocket: WebSocket):
                 import traceback
                 logger.error(f"Full traceback: {traceback.format_exc()}")
                 try:
-                    await websocket.send_json({"type": "error", "message": str(e)})
+                    await websocket.send_json({"type": "error", "message": "An error occurred during generation"})
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
@@ -2714,7 +2730,7 @@ async def storybook_websocket(websocket: WebSocket):
                 import traceback
                 logger.error(f"Full traceback: {traceback.format_exc()}")
                 try:
-                    await websocket.send_json({"type": "error", "message": str(e)})
+                    await websocket.send_json({"type": "error", "message": "An error occurred during generation"})
                 except:
                     logger.error("Could not send error message - connection closed")
             finally:
@@ -2958,7 +2974,7 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
                 except Exception as e:
                     logger.error(f"Brain dump suggestion error: {e}")
                     try:
-                        await websocket.send_json({"type": "error", "message": str(e)})
+                        await websocket.send_json({"type": "error", "message": "An error occurred during generation"})
                     except:
                         pass
                 finally:
@@ -3021,7 +3037,7 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
                 except Exception as e:
                     logger.error(f"Brain dump generate-action error: {e}")
                     try:
-                        await websocket.send_json({"type": "error", "message": str(e)})
+                        await websocket.send_json({"type": "error", "message": "An error occurred during generation"})
                     except:
                         pass
                 finally:
@@ -3069,7 +3085,7 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
             except Exception as e:
                 logger.error(f"Brain dump analysis error: {e}")
                 try:
-                    await websocket.send_json({"type": "error", "message": str(e)})
+                    await websocket.send_json({"type": "error", "message": "An error occurred during generation"})
                 except:
                     pass
             finally:
@@ -3638,7 +3654,15 @@ async def websocket_consultant(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            msg = json.loads(data)
+            # Reject oversized messages
+            if len(data) > MAX_WS_MESSAGE_BYTES:
+                await websocket.send_json({"type": "error", "message": "Message too large"})
+                continue
+            try:
+                msg = json.loads(data)
+            except (json.JSONDecodeError, ValueError):
+                await websocket.send_json({"type": "error", "message": "Invalid message format"})
+                continue
             user_message = msg.get("message", "")
             chat_id = msg.get("chat_id")
             metrics_context = msg.get("metrics_context")
@@ -3843,7 +3867,7 @@ async def websocket_consultant(websocket: WebSocket):
             except Exception as e:
                 logger.error(f"Consultant generation error: {e}")
                 try:
-                    await websocket.send_json({"type": "error", "message": str(e)})
+                    await websocket.send_json({"type": "error", "message": "An error occurred during generation"})
                 except:
                     pass
 
@@ -3863,7 +3887,7 @@ async def list_consultant_conversations(teacher_id: str = "default_teacher"):
         return {"conversations": memory.list_conversations(teacher_id)}
     except Exception as e:
         logger.error(f"Error listing consultant conversations: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to save consultant history")
 
 
 @app.get("/api/consultant/conversation/{chat_id}")
@@ -3879,7 +3903,7 @@ async def get_consultant_conversation(chat_id: str):
         raise
     except Exception as e:
         logger.error(f"Error getting consultant conversation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete consultant history")
 
 
 @app.get("/api/quiz-history")
@@ -5984,7 +6008,7 @@ async def ocr_load():
         ocr_service.load_ocr_model()
         return {"status": "loaded"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process image")
 
 
 @app.post("/api/ocr/unload")
@@ -6006,7 +6030,7 @@ async def ocr_extract(file: UploadFile = File(...)):
         text = await ocr_service.extract_text(content)
         return {"text": text, "filename": file.filename}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"OCR extraction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="OCR extraction failed")
 
 
 @app.get("/api/ocr-models")
@@ -6022,7 +6046,7 @@ async def get_available_ocr_models():
         }
     except Exception as e:
         logger.error(f"Error retrieving OCR models: {e}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving OCR models: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving OCR models")
 
 
 @app.post("/api/ocr-models/select")
@@ -6057,7 +6081,7 @@ async def select_ocr_model(request: Request):
             return JSONResponse(status_code=500, content={"error": "Failed to save OCR model selection"})
     except Exception as e:
         logger.error(f"Error selecting OCR model: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.get("/api/rubric-history")
@@ -6367,7 +6391,7 @@ async def get_available_models():
         }
     except Exception as e:
         logger.error(f"Error retrieving models: {e}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving models: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving models")
 
 
 @app.post("/api/models/select")
@@ -6413,7 +6437,7 @@ async def select_model(request: Request):
         logger.error(f"Error selecting model: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -6442,7 +6466,7 @@ async def get_active_model():
         logger.error(f"Error getting active model: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -6457,7 +6481,7 @@ async def get_capabilities():
         return JSONResponse(content=compute_effective_tier())
     except Exception as e:
         logger.error(f"Error computing capabilities: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.get("/api/tier-config")
@@ -6466,7 +6490,7 @@ async def get_tier_config_endpoint():
     try:
         return JSONResponse(content=get_tier_config())
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.put("/api/tier-config")
@@ -6478,7 +6502,7 @@ async def update_tier_config(request: Request):
             return JSONResponse(content={"status": "ok", "config": body})
         return JSONResponse(status_code=500, content={"error": "Failed to save tier config"})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.post("/api/tier-config/assign")
@@ -6503,7 +6527,7 @@ async def assign_model_tier(request: Request):
             return JSONResponse(content={"status": "ok", "model": model, "tier": tier})
         return JSONResponse(status_code=500, content={"error": "Failed to save"})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.put("/api/tier-config/dual-model")
@@ -6521,7 +6545,7 @@ async def update_dual_model_config(request: Request):
             return JSONResponse(content={"status": "ok", "dual_model": existing_dual})
         return JSONResponse(status_code=500, content={"error": "Failed to save"})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 _preload_lock: asyncio.Lock = None
@@ -6638,7 +6662,7 @@ async def vision_analyze(request: Request):
 
     except Exception as e:
         logger.error(f"Vision analyze error: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.post("/api/models/open-folder")
@@ -6665,7 +6689,7 @@ async def open_models_folder():
             }
     except Exception as e:
         logger.error(f"Error opening models folder: {e}")
-        raise HTTPException(status_code=500, detail=f"Error opening models folder: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error opening models folder")
 
 
 # ============================================================================
@@ -6691,7 +6715,7 @@ async def get_model_recommendations():
         return result
     except Exception as e:
         logger.error(f"Error generating recommendations: {e}")
-        raise HTTPException(status_code=500, detail=f"Error generating recommendations: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating recommendations")
 
 
 # ============================================================================
@@ -6711,7 +6735,7 @@ async def get_available_diffusion_models():
         }
     except Exception as e:
         logger.error(f"Error retrieving diffusion models: {e}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving diffusion models: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving diffusion models")
 
 
 @app.post("/api/diffusion-models/select")
@@ -6757,7 +6781,7 @@ async def select_diffusion_model(request: Request):
         logger.error(f"Error selecting diffusion model: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -6782,7 +6806,7 @@ async def get_active_diffusion_model():
         logger.error(f"Error getting active diffusion model: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -6810,7 +6834,7 @@ async def open_diffusion_models_folder():
             }
     except Exception as e:
         logger.error(f"Error opening diffusion models folder: {e}")
-        raise HTTPException(status_code=500, detail=f"Error opening diffusion models folder: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error opening diffusion models folder")
 
 
 @app.get("/api/health")
@@ -6917,6 +6941,17 @@ def _save_allowed_folders(folders: list):
     with open(_FOLDER_CONFIG_PATH, 'w', encoding='utf-8') as f:
         json.dump({'allowedFolders': folders}, f)
 
+def _validate_explorer_path(requested_path: str) -> str:
+    """Validate that a path is within the allowed folders. Returns resolved path or raises ValueError."""
+    resolved = os.path.realpath(requested_path)
+    allowed = _load_allowed_folders()
+    for folder in allowed:
+        folder_resolved = os.path.realpath(folder)
+        # Check if the resolved path is the folder itself or a child of it
+        if resolved == folder_resolved or resolved.startswith(folder_resolved + os.sep):
+            return resolved
+    raise ValueError("Access denied: path outside allowed directories")
+
 @app.get("/api/file-explorer/allowed-folders")
 async def get_allowed_folders():
     return JSONResponse(content={"folders": _load_allowed_folders()})
@@ -6929,12 +6964,16 @@ async def save_allowed_folders(body: dict = Body(...)):
 
 @app.get("/api/file-explorer/browse")
 async def browse_folder(folderPath: str):
-    """List contents of a folder — returns files (filtered by allowed extensions) and subdirectories."""
-    if not os.path.isdir(folderPath):
+    """List contents of a folder - returns files (filtered by allowed extensions) and subdirectories."""
+    try:
+        validated = _validate_explorer_path(folderPath)
+    except ValueError:
+        return JSONResponse(content={"items": [], "error": "Access denied"}, status_code=403)
+    if not os.path.isdir(validated):
         return JSONResponse(content={"items": [], "error": "Not a directory"})
     items = []
     try:
-        for entry in os.scandir(folderPath):
+        for entry in os.scandir(validated):
             try:
                 stat = entry.stat()
                 ext = os.path.splitext(entry.name)[1].lower()
@@ -6959,7 +6998,8 @@ async def browse_folder(folderPath: str):
             except (PermissionError, OSError):
                 continue
     except (PermissionError, OSError) as e:
-        return JSONResponse(content={"items": [], "error": str(e)})
+        logging.error(f"Error browsing folder: {e}")
+        return JSONResponse(content={"items": [], "error": "Could not browse folder"})
     # Sort: folders first, then files, alphabetically
     items.sort(key=lambda x: (not x['isDirectory'], x['name'].lower()))
     return JSONResponse(content={"items": items})
@@ -7001,35 +7041,44 @@ async def search_files(query: str):
 @app.get("/api/file-explorer/preview-by-path")
 async def preview_by_path(filePath: str):
     """Parse a local file by path and return preview content."""
-    if not os.path.isfile(filePath):
+    try:
+        validated = _validate_explorer_path(filePath)
+    except ValueError:
+        return JSONResponse(content={"error": "Access denied"}, status_code=403)
+    if not os.path.isfile(validated):
         return JSONResponse(content={"error": "File not found"}, status_code=404)
     max_size = 50 * 1024 * 1024
-    if os.path.getsize(filePath) > max_size:
+    if os.path.getsize(validated) > max_size:
         return JSONResponse(content={"error": "File too large (max 50MB)"}, status_code=400)
     try:
         from file_parser import parse_file
-        with open(filePath, 'rb') as f:
+        with open(validated, 'rb') as f:
             content = f.read()
-        result = parse_file(content, os.path.basename(filePath))
+        result = parse_file(content, os.path.basename(validated))
         return JSONResponse(content=result)
     except Exception as e:
         logging.error(f"Error previewing file by path: {e}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        return JSONResponse(content={"error": "Could not preview file"}, status_code=500)
 
 @app.get("/api/file-explorer/read-file")
 async def read_file_content(filePath: str):
     """Read a file's raw bytes, return as base64."""
-    if not os.path.isfile(filePath):
+    try:
+        validated = _validate_explorer_path(filePath)
+    except ValueError:
+        return JSONResponse(content={"error": "Access denied"}, status_code=403)
+    if not os.path.isfile(validated):
         return JSONResponse(content={"error": "File not found"})
     max_size = 50 * 1024 * 1024
-    if os.path.getsize(filePath) > max_size:
+    if os.path.getsize(validated) > max_size:
         return JSONResponse(content={"error": "File too large (max 50MB)"})
     try:
-        with open(filePath, 'rb') as f:
+        with open(validated, 'rb') as f:
             data = f.read()
         return JSONResponse(content={"base64": base64.b64encode(data).decode('ascii')})
     except Exception as e:
-        return JSONResponse(content={"error": str(e)})
+        logging.error(f"Error reading file: {e}")
+        return JSONResponse(content={"error": "Could not read file"})
 
 # ══════════════════════════════════════════════════════════════
 # File Explorer Endpoints
@@ -7045,7 +7094,7 @@ async def file_explorer_parse(file: UploadFile = File(...)):
         return JSONResponse(content=result)
     except Exception as e:
         logging.error(f"Error parsing file: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Could not parse file")
 
 
 @app.post("/api/file-explorer/preview")
@@ -7058,7 +7107,7 @@ async def file_explorer_preview(file: UploadFile = File(...)):
         return JSONResponse(content=result)
     except Exception as e:
         logging.error(f"Error previewing file: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to organize files")
 
 
 @app.post("/api/file-explorer/organize")
@@ -7148,7 +7197,7 @@ Rules:
         )
     except Exception as e:
         logging.error(f"Error generating organization plan: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to generate content")
 
 
 @app.post("/api/file-explorer/execute-organize")
@@ -7218,7 +7267,7 @@ async def execute_organize(request: Request):
 
     except Exception as e:
         logger.error(f"Error executing organize plan: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.post("/api/file-explorer/undo-organize")
@@ -7244,7 +7293,7 @@ async def undo_organize(request: Request):
 
         return JSONResponse(content={"results": results})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.post("/api/export")
@@ -7291,7 +7340,7 @@ async def export_data(
         logger.error(f"Export failed: {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=500,
-            content={"error": f"Export failed: {str(e)}"}
+            content={"error": "Export failed"}
         )
     # Prepare response
     ext = "md" if format == "markdown" else format
@@ -7404,7 +7453,7 @@ PROMPT:"""
         logger.error(f"Error generating image prompt: {e}", exc_info=True)
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 @app.post("/api/generate-comic-prompts")
@@ -7498,7 +7547,7 @@ Generate {num_panels} sequential comic panel image prompts as a JSON array:<|eot
         logger.error(f"Error generating comic prompts: {e}", exc_info=True)
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -7534,7 +7583,7 @@ async def text_to_speech(request: Request):
 
     except Exception as e:
         logger.error(f"TTS error: {e}", exc_info=True)
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.post("/api/tts/preload")
@@ -7557,7 +7606,7 @@ async def preload_tts():
         return {"status": "loaded"}
     except Exception as e:
         logger.error(f"Error preloading TTS model: {e}")
-        return JSONResponse(status_code=500, content={"status": "error", "error": str(e)})
+        return JSONResponse(status_code=500, content={"status": "error", "error": "An internal error occurred"})
 
 
 @app.get("/api/tts/status")
@@ -7568,7 +7617,7 @@ async def tts_status():
         tts = get_tts_service()
         return JSONResponse(content=tts.get_voice_info())
     except Exception as e:
-        return JSONResponse(content={"loaded": False, "error": str(e)})
+        return JSONResponse(content={"loaded": False, "error": "Failed to check model status"})
 
 
 @app.get("/api/tts/voices")
@@ -7595,7 +7644,7 @@ async def tts_voices():
             })
         return JSONResponse(content={"voices": voices})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.post("/api/generate-image")
@@ -7666,7 +7715,7 @@ async def generate_image(request: Request):
         logger.error(f"Error generating image: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -7748,7 +7797,7 @@ async def generate_image_base64(request: Request):
         logger.error(f"Error generating image: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -7840,7 +7889,7 @@ async def generate_batch_images_base64(request: Request):
         logger.error(f"Error generating batch images: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -7941,7 +7990,7 @@ async def generate_image_from_seed(request: Request):
         logger.error(f"Error generating image from seed: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -8006,7 +8055,7 @@ async def inpaint_image(
         logger.error(f"Error in inpainting: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -8073,7 +8122,7 @@ async def inpaint_image_base64(request: Request):
             logger.error(f"Failed to decode image base64: {e}")
             return JSONResponse(
                 status_code=400,
-                content={"error": f"Invalid image base64: {str(e)}"}
+                content={"error": "Invalid image data"}
             )
 
         try:
@@ -8083,7 +8132,7 @@ async def inpaint_image_base64(request: Request):
             logger.error(f"Failed to decode mask base64: {e}")
             return JSONResponse(
                 status_code=400,
-                content={"error": f"Invalid mask base64: {str(e)}"}
+                content={"error": "Invalid mask data"}
             )
 
         # Get image service
@@ -8125,7 +8174,7 @@ async def inpaint_image_base64(request: Request):
         logger.error(f"Full traceback: {traceback.format_exc()}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -8175,7 +8224,7 @@ async def remove_background_base64(request: Request):
 
     except Exception as e:
         logger.error(f"Background removal error: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.get("/api/image-service/status")
@@ -8207,7 +8256,7 @@ async def get_image_service_status():
         logger.error(f"Error checking image service status: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -8224,7 +8273,7 @@ async def preload_image_pipeline():
         })
     except Exception as e:
         logger.error(f"Error preloading image pipeline: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 @app.post("/api/image-service/start-iopaint")
@@ -8267,7 +8316,7 @@ async def start_iopaint_service():
         logger.error(f"Error starting IOPaint: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": "An internal error occurred"}
         )
 
 
@@ -8323,6 +8372,16 @@ async def export_data(categories: str = ""):
     if "presentations" in cats:
         result["presentations"] = load_json_data("presentation_history.json")
 
+    if "lesson_drafts" in cats:
+        try:
+            drafts = []
+            if os.path.exists(LESSON_DRAFTS_FILE):
+                with open(LESSON_DRAFTS_FILE, 'r', encoding='utf-8') as f:
+                    drafts = json.load(f)
+            result["lesson_drafts"] = drafts
+        except Exception:
+            result["lesson_drafts"] = []
+
     if "achievements" in cats:
         try:
             from routes.achievements import achievement_service
@@ -8347,9 +8406,35 @@ async def export_data(categories: str = ""):
 
     if "students" in cats:
         try:
-            result["students"] = student_service.list_students()
-        except Exception:
-            result["students"] = []
+            students_list = student_service.list_students()
+            conn = sqlite3.connect(student_service._get_db_path())
+            conn.row_factory = sqlite3.Row
+            try:
+                all_attendance = [dict(r) for r in conn.execute('SELECT * FROM attendance').fetchall()]
+                all_quiz_grades = [dict(r) for r in conn.execute('SELECT * FROM quiz_grades').fetchall()]
+                all_worksheet_grades = [dict(r) for r in conn.execute('SELECT * FROM worksheet_grades').fetchall()]
+                all_quiz_answer_keys = [dict(r) for r in conn.execute('SELECT * FROM quiz_answer_keys').fetchall()]
+                all_worksheet_answer_keys = [dict(r) for r in conn.execute('SELECT * FROM worksheet_answer_keys').fetchall()]
+                all_quiz_instances = [dict(r) for r in conn.execute('SELECT * FROM quiz_instances').fetchall()]
+                all_worksheet_instances = [dict(r) for r in conn.execute('SELECT * FROM worksheet_instances').fetchall()]
+                all_worksheet_packages = [dict(r) for r in conn.execute('SELECT * FROM worksheet_packages').fetchall()]
+                all_answer_region_templates = [dict(r) for r in conn.execute('SELECT * FROM answer_region_templates').fetchall()]
+            finally:
+                conn.close()
+            result["students"] = {
+                "students": students_list,
+                "attendance": all_attendance,
+                "quiz_grades": all_quiz_grades,
+                "worksheet_grades": all_worksheet_grades,
+                "quiz_answer_keys": all_quiz_answer_keys,
+                "worksheet_answer_keys": all_worksheet_answer_keys,
+                "quiz_instances": all_quiz_instances,
+                "worksheet_instances": all_worksheet_instances,
+                "worksheet_packages": all_worksheet_packages,
+                "answer_region_templates": all_answer_region_templates,
+            }
+        except Exception as e:
+            result["students"] = {"students": [], "error": str(e)}
 
     if "calendar" in cats:
         try:
@@ -8424,6 +8509,7 @@ async def import_data(payload: dict):
         "worksheets": "worksheet_history.json",
         "images": "images_history.json",
         "presentations": "presentation_history.json",
+        "lesson_drafts": "lesson_drafts.json",
     }
     for cat_key, filename in json_map.items():
         if cat_key in cats and cat_key in data:
@@ -8490,14 +8576,73 @@ async def import_data(payload: dict):
 
     if "students" in cats and "students" in data:
         try:
-            count = 0
-            for student in data["students"]:
-                try:
-                    student_service.create_student(student)
-                    count += 1
-                except Exception:
-                    pass  # skip duplicates
-            imported["students"] = count
+            students_data = data["students"]
+            # Handle both old format (list) and new format (dict with sub-tables)
+            if isinstance(students_data, list):
+                student_list = students_data
+                sub_tables = {}
+            else:
+                student_list = students_data.get("students", [])
+                sub_tables = students_data
+
+            conn = sqlite3.connect(student_service._get_db_path())
+            conn.row_factory = sqlite3.Row
+            try:
+                student_count = 0
+                for student in student_list:
+                    orig_id = student.get("id")
+                    if not orig_id:
+                        continue
+                    existing = conn.execute('SELECT id FROM students WHERE id = ?', (orig_id,)).fetchone()
+                    if existing:
+                        continue
+                    try:
+                        conn.execute(
+                            '''INSERT INTO students (id, full_name, first_name, middle_name,
+                               last_name, date_of_birth, class_name, grade_level, gender,
+                               contact_info, created_at)
+                               VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
+                            (orig_id, student.get('full_name', ''), student.get('first_name', ''),
+                             student.get('middle_name', ''), student.get('last_name', ''),
+                             student.get('date_of_birth', ''), student.get('class_name', ''),
+                             student.get('grade_level', ''), student.get('gender', ''),
+                             json.dumps(student.get('contact_info', {})) if isinstance(student.get('contact_info'), dict) else student.get('contact_info', ''),
+                             student.get('created_at', ''))
+                        )
+                        student_count += 1
+                    except Exception:
+                        pass
+                conn.commit()
+
+                # Import sub-tables
+                sub_table_map = {
+                    'attendance': 'attendance',
+                    'quiz_grades': 'quiz_grades',
+                    'worksheet_grades': 'worksheet_grades',
+                    'quiz_answer_keys': 'quiz_answer_keys',
+                    'worksheet_answer_keys': 'worksheet_answer_keys',
+                    'quiz_instances': 'quiz_instances',
+                    'worksheet_instances': 'worksheet_instances',
+                    'worksheet_packages': 'worksheet_packages',
+                    'answer_region_templates': 'answer_region_templates',
+                }
+                for data_key, table_name in sub_table_map.items():
+                    rows = sub_tables.get(data_key, [])
+                    for row in rows:
+                        if not row:
+                            continue
+                        cols = list(row.keys())
+                        vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in row.values()]
+                        placeholders = ','.join(['?' for _ in cols])
+                        col_names = ','.join(cols)
+                        try:
+                            conn.execute(f'INSERT OR IGNORE INTO {table_name} ({col_names}) VALUES ({placeholders})', vals)
+                        except Exception:
+                            pass
+                conn.commit()
+            finally:
+                conn.close()
+            imported["students"] = student_count
         except Exception as e:
             errors.append(f"students: {e}")
 
@@ -8507,7 +8652,7 @@ async def import_data(payload: dict):
             count = 0
             for reminder in cal_data.get("reminders", []):
                 try:
-                    student_service.create_test_reminder(reminder)
+                    student_service.save_test_reminder(reminder)
                     count += 1
                 except Exception:
                     pass  # skip duplicates
@@ -8540,6 +8685,7 @@ async def factory_reset():
         "cross_curricular_history.json",
         "worksheet_history.json",
         "images_history.json",
+        "presentation_history.json",
     ]
     for fname in json_files:
         fpath = data_dir / fname
@@ -8629,7 +8775,7 @@ async def metrics_summary():
         return collector.get_summary()
     except Exception as e:
         logger.error(f"Error getting metrics summary: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 
 @app.get("/api/metrics/history")
@@ -8643,7 +8789,7 @@ async def metrics_history(type: str = "text", limit: int = 100, task_type: Optio
             return {"metrics": collector.get_inference_history(limit=limit, task_type=task_type)}
     except Exception as e:
         logger.error(f"Error getting metrics history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 
 @app.get("/api/metrics/export")
@@ -8654,7 +8800,7 @@ async def metrics_export():
         return collector.export_report()
     except Exception as e:
         logger.error(f"Error exporting metrics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 
 @app.get("/api/metrics/system-specs")
@@ -8665,7 +8811,7 @@ async def metrics_system_specs():
         return collector.get_system_specs()
     except Exception as e:
         logger.error(f"Error getting system specs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 
 @app.get("/api/metrics/live-stats")
@@ -8676,7 +8822,7 @@ async def metrics_live_stats():
         return collector.get_live_stats()
     except Exception as e:
         logger.error(f"Error getting live stats: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 
 @app.delete("/api/metrics/clear")
@@ -8688,7 +8834,7 @@ async def metrics_clear():
         return {"success": True}
     except Exception as e:
         logger.error(f"Error clearing metrics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 
 @app.get("/api/logs/recent")
@@ -8699,7 +8845,7 @@ async def logs_recent(limit: int = 100):
         return {"logs": entries}
     except Exception as e:
         logger.error(f"Error fetching logs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 
 # ── Test Reminders ─────────────────────────────────────────────────────────────
@@ -9390,7 +9536,7 @@ async def generate_tier_analyzer_endpoint():
         import traceback
         full = traceback.format_exc()
         logger.error(f"Tier analyzer generation failed: {e}\n{full}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
     if filename.endswith(".exe"):
         media_type = "application/octet-stream"

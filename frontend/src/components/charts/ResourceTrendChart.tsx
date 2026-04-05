@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
 
@@ -36,6 +37,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   timeframe,
   tabColors = {}
 }) => {
+  const { t } = useTranslation();
   const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
@@ -90,7 +92,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
       {/* Header */}
       <div className="flex items-center space-x-2 mb-4">
         <TrendingUp className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
-        <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Resource Creation Trends</h3>
+        <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>{t('charts.resourceTrends')}</h3>
       </div>
 
       {/* Stacked Area Chart */}

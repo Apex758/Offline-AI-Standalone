@@ -1,4 +1,5 @@
 import React, { useRef, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getSuggestions } from '../utils/spellCheck';
 import { useSmartText } from '../hooks/useSmartText';
 
@@ -18,6 +19,7 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
   disabled,
   ...rest
 }) => {
+  const { t } = useTranslation();
   const {
     spellCheckEnabled,
     dictionaryEnabled,
@@ -217,7 +219,7 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
             borderRadius: '3px',
             color: '#9ca3af',
             background: 'rgba(255,255,255,0.8)',
-          }}>Tab to accept</span>
+          }}>{t('stickyNotes.tabToAccept')}</span>
         </div>
       )}
 

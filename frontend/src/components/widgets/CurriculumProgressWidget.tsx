@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
@@ -39,6 +40,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
   view,
   onViewChange
 }) => {
+  const { t } = useTranslation();
   const viewButtons: { value: CurriculumView; label: string }[] = [
     { value: 'overall', label: 'Overall' },
     { value: 'grade', label: 'By Grade' },
@@ -80,7 +82,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
                 <div className="text-2xl font-bold" style={{ color: 'var(--dash-text)' }}>
                   {stats.completionPercentage}%
                 </div>
-                <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Complete</div>
+                <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.complete')}</div>
               </div>
             </div>
           </div>
@@ -96,7 +98,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
             }}
           >
             <div className="text-2xl font-bold" style={{ color: 'var(--dash-primary)' }}>{stats.completed}</div>
-            <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Completed</div>
+            <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.completed')}</div>
           </div>
           <div
             className="rounded-lg p-3"
@@ -106,7 +108,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
             }}
           >
             <div className="text-2xl font-bold" style={{ color: 'var(--dash-orange)' }}>{stats.inProgress}</div>
-            <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>In Progress</div>
+            <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.inProgress')}</div>
           </div>
           <div
             className="rounded-lg p-3"
@@ -116,7 +118,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
             }}
           >
             <div className="text-2xl font-bold" style={{ color: 'var(--dash-text-sub)' }}>{stats.notStarted}</div>
-            <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Not Started</div>
+            <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.notStarted')}</div>
           </div>
           {stats.skipped > 0 ? (
             <div
@@ -127,7 +129,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
               }}
             >
               <div className="text-2xl font-bold" style={{ color: 'var(--dash-text-sub)' }}>{stats.skipped}</div>
-              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Skipped</div>
+              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.skipped')}</div>
             </div>
           ) : (
             <div
@@ -207,11 +209,11 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
                 </div>
                 <div className="text-center">
                   <div className="font-semibold" style={{ color: 'var(--dash-orange)' }}>{stats.in_progress}</div>
-                  <div style={{ color: 'var(--dash-text-sub)' }}>In Progress</div>
+                  <div style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.inProgress')}</div>
                 </div>
                 <div className="text-center">
                   <div className="font-semibold" style={{ color: 'var(--dash-text-faint)' }}>{notStarted}</div>
-                  <div style={{ color: 'var(--dash-text-sub)' }}>Not Started</div>
+                  <div style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.notStarted')}</div>
                 </div>
               </div>
             </div>
@@ -282,11 +284,11 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
                 </div>
                 <div className="text-center">
                   <div className="font-semibold" style={{ color: 'var(--dash-orange)' }}>{stats.in_progress}</div>
-                  <div style={{ color: 'var(--dash-text-sub)' }}>In Progress</div>
+                  <div style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.inProgress')}</div>
                 </div>
                 <div className="text-center">
                   <div className="font-semibold" style={{ color: 'var(--dash-text-faint)' }}>{notStarted}</div>
-                  <div style={{ color: 'var(--dash-text-sub)' }}>Not Started</div>
+                  <div style={{ color: 'var(--dash-text-sub)' }}>{t('curriculum.notStarted')}</div>
                 </div>
               </div>
             </div>
@@ -305,7 +307,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
       <div className="p-4" style={{ borderBottom: `1px solid var(--dash-border)` }}>
         <div className="flex items-center space-x-2 mb-3">
           <Target className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
-          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Curriculum Progress</h3>
+          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>{t('curriculum.curriculumProgress')}</h3>
         </div>
 
         {/* View Toggle */}

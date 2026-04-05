@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 
@@ -16,6 +17,7 @@ interface WelcomeModalProps {
 }
 
 export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => {
+  const { t } = useTranslation();
   const handleSkip = () => {
     onClose();
   };
@@ -45,10 +47,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
         {/* Header with gradient */}
         <div className="p-10 text-white" style={{ backgroundColor: '#1D362D' }}>
           <h1 className="text-3xl font-bold text-center mb-3" style={{ color: '#F8E59D' }}>
-            Welcome to the OECS Learning Hub! 🎓
+            {t('dialogs.welcome.title')}
           </h1>
           <p className="text-center text-lg" style={{ color: '#F2A631' }}>
-            Empowering Teachers Across the Eastern Caribbean
+            {t('dialogs.welcome.subtitle')}
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
                 boxShadow: '0 4px 12px rgba(29, 54, 45, 0.2)'
               }}
             >
-              Get Started
+              {t('dialogs.welcome.getStarted')}
             </button>
           </div>
         </div>

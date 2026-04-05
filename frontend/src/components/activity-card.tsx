@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
@@ -36,6 +37,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   color = "blue",
   children
 }) => {
+  const { t } = useTranslation();
   return (
     <Card className="my-4">
       <CardHeader>
@@ -61,7 +63,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
       <CardContent>
         {materials && materials.length > 0 && (
           <div className="mb-4">
-            <h4 className="font-semibold mb-2">Materials:</h4>
+            <h4 className="font-semibold mb-2">{t('activityCard.materials')}</h4>
             <ul className="list-disc pl-5 space-y-1">
               {materials.map((material, index) => (
                 <li key={index}>{material}</li>
@@ -72,7 +74,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
         {learningAreas && learningAreas.length > 0 && (
           <div className="mb-4">
-            <h4 className="font-semibold mb-2">Learning Areas:</h4>
+            <h4 className="font-semibold mb-2">{t('activityCard.learningAreas')}</h4>
             <ul className="list-disc pl-5 space-y-1 text-gray-700">
               {learningAreas.map((area, index) => (
                 <li key={index}>{area}</li>
@@ -83,7 +85,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
         {instructions && instructions.length > 0 && (
           <div className="mb-4">
-            <h4 className="font-semibold mb-2">Instructions:</h4>
+            <h4 className="font-semibold mb-2">{t('activityCard.instructions')}</h4>
             <ol className="list-decimal pl-5 space-y-2">
               {instructions.map((instruction, index) => (
                 <li key={index}>{instruction}</li>

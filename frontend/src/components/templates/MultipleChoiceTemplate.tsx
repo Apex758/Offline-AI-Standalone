@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../ui/skeleton';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
@@ -49,6 +50,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
     options: ['First option here', 'Second option here', 'Third option here', 'Fourth option here'],
   }));
 
+  const { t } = useTranslation();
   const ACCENT = accentColor || '#2563eb';
   const palette = deriveWorksheetPalette(ACCENT);
   const effectiveShowAnswers = isAnswerKey || showAnswers;
@@ -59,7 +61,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
       {/* Answer Key Banner */}
       {isAnswerKey && (
         <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
-          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{t('templates.answerKey')}</span>
         </div>
       )}
 
@@ -78,7 +80,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
           }
         </div>
         <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
-          <div>Name: {studentName
+          <div>{t('templates.name')} {studentName
             ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
             : <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 130 }}>&nbsp;</span>
           }</div>
@@ -92,7 +94,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
 
       {/* Directions */}
       <div style={{ background: palette.accentLighter, padding: '9px 36px', borderBottom: `1px solid ${palette.accentBorder}`, fontSize: 13, color: palette.accentText }}>
-        <strong>Directions:</strong> Read each question. Circle the letter of the best answer.
+        <strong>{t('templates.directions')}</strong> {t('templates.circleDirections')}
       </div>
 
       {/* Image */}

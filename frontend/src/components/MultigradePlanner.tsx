@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
@@ -283,6 +284,7 @@ function parseGradeLevels(gradeRange: string): string[] {
 }
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `multigrade_state_${tabId}`;
@@ -919,7 +921,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="p-2 rounded-lg hover:bg-theme-hover transition relative"
-                        title="Multigrade Plan History"
+                        title={t('planners.multigradeHistory')}
                       >
                         <History className="w-5 h-5 text-theme-muted" />
                         {matchCount > 0 && (
@@ -1049,7 +1051,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
                 className="p-2 rounded-lg hover:bg-theme-hover transition relative"
-                title="Multigrade Plan History"
+                title={t('planners.multigradeHistory')}
               >
                 <History className="w-5 h-5 text-theme-muted" />
                 {matchCount > 0 && (
@@ -1060,7 +1062,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
             {/* Progress Steps */}
             <StepProgressBar
-              steps={['Basic Info', 'Learning & Strategies', 'Additional Details']}
+              steps={[t('planners.basicInfo'), t('planners.learningStrategies'), t('planners.additionalDetails')]}
               currentStep={step}
               onClick={(s) => handleStepChange(s)}
             />
@@ -1102,7 +1104,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                       <div data-tutorial="multigrade-planner-subject">
                         <label className="block text-sm font-medium text-theme-label mb-2">
-                          Subject <span className="text-red-500">*</span>
+                          {t('forms.subject')} <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={formData.subject}
@@ -1144,7 +1146,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                     <div data-tutorial="multigrade-planner-theme">
                       <label className="block text-sm font-medium text-theme-label mb-2">
-                        Topic <span className="text-red-500">*</span>
+                        {t('forms.topic')} <span className="text-red-500">*</span>
                       </label>
                       <SmartInput
                         value={formData.topic}
@@ -1171,7 +1173,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                       <div>
                         <label className="block text-sm font-medium text-theme-label mb-2">
-                          Duration (minutes) <span className="text-red-500">*</span>
+                          {t('forms.duration')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"

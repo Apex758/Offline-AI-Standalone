@@ -59,6 +59,7 @@ import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useTranslation } from 'react-i18next';
 import { useQueue } from '../contexts/QueueContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
@@ -763,6 +764,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const actionAccumulatedRef = useRef('');
 
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const accentColor = settings.tabColors['brain-dump'] ?? '#a855f7';
 
   const { tier } = useCapabilities();
@@ -1786,7 +1788,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         <div className="flex items-center justify-center gap-2 pt-2">
                           <HeartbeatLoader className="w-5 h-5" />
                           <span className="text-xs font-semibold text-theme-muted">
-                            {localLoadingMap[tabId] && !isStreaming ? 'Queued — waiting...' : 'Analyzing your thoughts...'}
+                            {localLoadingMap[tabId] && !isStreaming ? 'Queued — waiting...' : t('brainDump.processing')}
                           </span>
                         </div>
                       </div>
@@ -1817,7 +1819,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                               document.execCommand('insertHTML', false, text);
                               if (editorRef.current) setDumpText(editorRef.current.innerHTML);
                             }}
-                            data-placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything!"
+                            data-placeholder={t('brainDump.placeholder')}
                             className={`rich-text w-full h-full bg-transparent p-4 text-sm text-theme-label focus:outline-none transition-all overflow-y-auto empty:before:content-[attr(data-placeholder)] empty:before:text-theme-hint empty:before:pointer-events-none ${activeTool ? 'min-h-[60px] max-h-[60px]' : 'min-h-[480px]'}`}
                             style={{ wordBreak: 'break-word' }}
                           />
@@ -1944,7 +1946,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
                         >
                           {needsSplitting ? <Layers className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-                          {needsSplitting ? `Review ${estimatedSets} Sets` : 'Analyze & Organize'}
+                          {needsSplitting ? `Review ${estimatedSets} Sets` : t('brainDump.turnIntoActions')}
                         </button>
                         <button
                           onClick={handleSaveTextAsNote}
@@ -1953,7 +1955,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           title="Save as note without analyzing"
                         >
                           <Save className="w-4 h-4" />
-                          Save Note
+                          {t('common.save')}
                         </button>
                       </div>
 
@@ -2424,14 +2426,14 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-green-500/12 text-green-600 dark:text-green-400 hover:bg-green-500/20 transition-all active:scale-95 disabled:opacity-40"
                                 >
                                   <Check className="w-3 h-3" />
-                                  Save
+                                  {t('common.save')}
                                 </button>
                                 <button
                                   onClick={handleCancelEdit}
                                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-all active:scale-95"
                                 >
                                   <XIcon className="w-3 h-3" />
-                                  Cancel
+                                  {t('common.cancel')}
                                 </button>
                               </div>
                             </div>

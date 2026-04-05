@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   format,
   startOfMonth,
@@ -105,6 +106,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   onTaskToggle,
   insightsReminders = [],
 }) => {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate || new Date());
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -195,8 +197,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     const configs: {
       [key: string]: { icon: any; color: string; bg: string; label: string };
     } = {
-      lesson: { icon: BookMarked, color: '#1D362D', bg: '#1D362D15', label: 'Lesson' },
-      quiz: { icon: ListChecks, color: '#F2A631', bg: '#F2A63115', label: 'Quiz' },
+      lesson: { icon: BookMarked, color: '#1D362D', bg: '#1D362D15', label: t('calendar.lesson') },
+      quiz: { icon: ListChecks, color: '#F2A631', bg: '#F2A63115', label: t('calendar.quiz') },
       rubric: { icon: FileText, color: '#552A01', bg: '#552A0115', label: 'Rubric' },
       kindergarten: { icon: GraduationCap, color: '#1D362D', bg: '#1D362D15', label: 'Early Childhood' },
       multigrade: { icon: Users, color: '#552A01', bg: '#552A0115', label: 'Multi-Level' },
@@ -457,7 +459,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
               <div className="cal-grid-container">
                 {/* Weekday Headers */}
                 <div className="cal-weekday-header">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  {[t('calendar.days.sun'), t('calendar.days.mon'), t('calendar.days.tue'), t('calendar.days.wed'), t('calendar.days.thu'), t('calendar.days.fri'), t('calendar.days.sat')].map((day) => (
                     <div key={day} className="cal-weekday-cell">{day}</div>
                   ))}
                 </div>
@@ -633,7 +635,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                                   <button
                                     onClick={() => onViewResource?.(resource.type, resource)}
                                     className="cal-action-btn cal-action-view"
-                                    title="View"
+                                    title={t('calendar.view')}
                                   >
                                     <Eye className="w-3.5 h-3.5" />
                                   </button>

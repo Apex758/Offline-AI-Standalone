@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
@@ -63,6 +64,7 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+  const { t } = useTranslation();
   const { guardOffline } = useOfflineGuard();
   const { notify } = useNotification();
   const { settings } = useSettings();
@@ -849,7 +851,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 <Icon icon={Bulb01IconData} className="w-6 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-theme-primary">Educator Insights</h1>
+                <h1 className="text-xl font-semibold text-theme-primary">{t('sidebar.educatorInsights')}</h1>
                 <p className="text-sm text-theme-secondary">AI-powered analysis of your teaching data</p>
               </div>
               {activePhase && (
@@ -1239,7 +1241,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           {!hasAnyData && !dataLoading && (
             <div className="text-center py-12 text-theme-secondary">
               <Icon icon={Bulb01IconData} className="w-12 mx-auto mb-3 opacity-30" />
-              <p className="text-lg font-medium mb-2">No teaching data found yet</p>
+              <p className="text-lg font-medium mb-2">{t('educator.noTeachingData')}</p>
               <p className="text-sm max-w-md mx-auto">
                 Start creating lesson plans, tracking milestones, recording grades, or taking attendance.
                 Once you have data, Educator Insights will analyze it and provide personalized recommendations.
@@ -1313,7 +1315,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           style={{ transform: historyOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 260ms cubic-bezier(0.4, 0, 0.2, 1)' }}
         >
             <div className="flex items-center justify-between px-4 py-4 border-b border-theme-border">
-              <h3 className="text-lg font-semibold text-theme-primary">Insight Reports</h3>
+              <h3 className="text-lg font-semibold text-theme-primary">{t('educator.insightReports')}</h3>
               <button
                 onClick={() => setHistoryOpen(false)}
                 className="p-1 rounded hover:bg-theme-bg-tertiary transition-colors"
@@ -1325,7 +1327,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               {reportHistory.length === 0 ? (
                 <div className="text-center text-theme-muted mt-8">
                   <Icon icon={Bulb01IconData} className="w-12 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">No reports generated yet</p>
+                  <p className="text-sm">{t('educator.noReportsYet')}</p>
                   <p className="text-xs mt-1">Click "Generate Report" to create your first insight</p>
                 </div>
               ) : (
@@ -1525,7 +1527,7 @@ const InsightSection: React.FC<InsightSectionProps> = ({
         <div className="flex items-center gap-2 mb-2">
           <Icon icon={icon} className="w-5 text-theme-muted" />
           <span className="text-sm font-medium text-theme-muted">{name}</span>
-          <span className="text-xs text-theme-muted ml-auto">No data available</span>
+          <span className="text-xs text-theme-muted ml-auto">{t('educator.noDataAvailable')}</span>
         </div>
         <p className="text-xs text-theme-muted ml-7">{emptyMsg}</p>
       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
@@ -403,6 +404,7 @@ function cpAnalyzeImage(imageData: ImageData, currentMethod: string): { stats: C
 // ═══════════════════════════════════════════════════════════════════
 
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
+  const { t } = useTranslation();
   const hasRestoredRef = useRef(false);
   const triggerCheck = useAchievementTrigger();
   const { notify } = useNotification();
@@ -2031,7 +2033,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
              } ${!hasDiffusion ? 'opacity-40 cursor-not-allowed' : ''}`}
            >
             <Palette className="w-4 h-4 mr-2" />
-            Image Generator
+            {t('imageStudioUI.imageGenerator')}
           </button>
            <button
              onClick={() => setActiveTab('editor')}
@@ -2067,7 +2069,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           <div className="image-studio-flip-front h-full p-6 overflow-y-auto" data-tutorial="image-studio-generator-panel">
             {generationState === 'input' && (
               <div className="max-w-3xl mx-auto">
-                <h2 className="text-2xl font-semibold mb-6" data-tutorial="image-studio-generator-title">Image Generator</h2>
+                <h2 className="text-2xl font-semibold mb-6" data-tutorial="image-studio-generator-title">{t('imageStudioUI.imageGenerator')}</h2>
                 <div className="space-y-6">
                   
                   {/* Visual Style Selector */}
@@ -2625,7 +2627,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   <div className="h-full flex items-center justify-center" data-tutorial="image-studio-upload">
                     <div className="text-center">
                       <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                      <h2 className="text-xl font-semibold mb-2">Upload an Image</h2>
+                      <h2 className="text-xl font-semibold mb-2">{t('imageStudioUI.uploadImage')}</h2>
                       <p className="text-sm text-theme-hint mb-4">Start by uploading an image or pick one from your resources</p>
                       <div className="flex gap-3 justify-center">
                         <label className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
@@ -2807,7 +2809,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
                           {isRemovingBg
                             ? <><HeartbeatLoader className="w-4 h-4 mr-2" />Removing Background...</>
-                            : <><ImageOff className="w-4 h-4 mr-2" />Remove Background</>}
+                            : <><ImageOff className="w-4 h-4 mr-2" />{t('imageStudioUI.removeBackground')}</>}
                         </button>
                         <button onClick={handleDownloadEdited}
                           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center">
@@ -2856,7 +2858,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         <button onClick={handleComicGenerate}
                           disabled={!comicDescription.trim() || comicState !== 'input'}
                           className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-                          <BookOpen className="w-4 h-4 mr-2" />Generate Comic Page
+                          <BookOpen className="w-4 h-4 mr-2" />{t('imageStudioUI.generateComic')}
                         </button>
                       </div>
                     )}
@@ -3480,7 +3482,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   onChange={(val) => setQueuePrompt(val)}
                   className="w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   rows={3}
-                  placeholder="Describe the image you want to generate..."
+                  placeholder={t('imageStudioUI.describeImage')}
                   autoFocus
                 />
               </div>

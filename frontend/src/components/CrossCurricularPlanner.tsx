@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
@@ -511,6 +512,7 @@ const crossCurricularPlanToDisplayText = (plan: ParsedCrossCurricularPlan): stri
 };
 
 const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `cross_curricular_state_${tabId}`;
@@ -1031,7 +1033,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
-  const stepLabels = ['Basic Info', 'Subjects', 'Objectives', 'Activities', 'Assessment', 'Teaching & Learning', 'Resources'];
+  const stepLabels = [t('planners.basicInfo'), t('planners.subjects'), t('planners.objectives'), t('planners.activities'), t('planners.assessment'), t('planners.teachingLearning'), 'Resources'];
 
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="cross-curricular-planner-welcome">
@@ -1111,7 +1113,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-                        title="Cross-Curricular Plan History"
+                        title={t('planners.crossCurricularHistory')}
                       >
                         <History className="w-5 h-5 text-theme-muted" />
                         {matchCount > 0 && (
@@ -1237,7 +1239,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
                 className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-                title="Cross-Curricular Plan History"
+                title={t('planners.crossCurricularHistory')}
               >
                 <History className="w-5 h-5 text-theme-muted" />
                 {matchCount > 0 && (
@@ -1272,7 +1274,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.lessonTitle ? 'validation-error' : ''}`} placeholder="Enter lesson title" />
                     </div>
                     <div data-tutorial="cross-curricular-planner-grade">
-                      <label className="block text-sm font-medium text-theme-label mb-2">Grade Level *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">{t('forms.gradeLevel')} *</label>
                       <select value={formData.gradeLevel} onChange={(e) => {
                           const newGrade = e.target.value;
                           handleInputChange('gradeLevel', newGrade);

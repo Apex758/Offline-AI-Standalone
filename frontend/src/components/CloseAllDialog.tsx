@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
@@ -41,6 +42,7 @@ const CloseAllDialog: React.FC<CloseAllDialogProps> = ({
   onCloseOnlySafe,
   onCancel,
 }) => {
+  const { t } = useTranslation();
   const { draftTabs, generatingTabs, totalTabs } = summary;
   const hasDrafts = draftTabs.length > 0;
   const hasGenerating = generatingTabs.length > 0;
@@ -104,7 +106,7 @@ const CloseAllDialog: React.FC<CloseAllDialogProps> = ({
             onClick={onCancel}
             className="px-4 py-2 text-sm rounded-lg border border-theme text-theme-muted hover:bg-theme-hover transition"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
 
           {safeCount > 0 && (hasDrafts || hasGenerating) && (
@@ -122,7 +124,7 @@ const CloseAllDialog: React.FC<CloseAllDialogProps> = ({
               className="px-4 py-2 text-sm rounded-lg bg-accent/20 text-accent hover:bg-accent/30 border border-accent/30 transition flex items-center gap-2"
             >
               <Icon icon={SaveIconData} className="w-4 h-4" />
-              Save drafts & close all
+              {t('dialogs.closeAll.saveDraftsCloseAll')}
             </button>
           )}
 
@@ -131,7 +133,7 @@ const CloseAllDialog: React.FC<CloseAllDialogProps> = ({
             className="px-4 py-2 text-sm rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition flex items-center gap-2"
           >
             <Icon icon={CancelCircleIconData} className="w-4 h-4" />
-            {hasDrafts ? 'Discard & close all' : 'Stop & close all'}
+            {hasDrafts ? t('dialogs.closeAll.discardCloseAll') : t('dialogs.closeAll.stopCloseAll')}
           </button>
         </div>
       </div>

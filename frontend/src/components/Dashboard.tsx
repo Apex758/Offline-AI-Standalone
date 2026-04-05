@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { OECS_LOGO_BASE64 } from '../utils/logoBase64';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
@@ -159,6 +160,7 @@ import { useStickyNotes } from '../contexts/StickyNoteContext';
 import { StickyNoteOverlay } from './sticky-notes/StickyNoteOverlay';
 import { StickyNoteFabPanel } from './sticky-notes/StickyNoteFabPanel';
 import { NudgeProvider, useNudge } from './Nudge/NudgeProvider';
+import { getNextSuggestion } from '../lib/workflowProgression';
 
 
 interface DashboardProps {
@@ -364,6 +366,35 @@ const tools: Tool[] = [
   }
 ];
 
+// Map tool IDs to sidebar translation keys
+const SIDEBAR_I18N: Record<string, string> = {
+  'analytics': 'sidebar.myOverview',
+  'educator-insights': 'sidebar.educatorInsights',
+  'brain-dump': 'sidebar.brainDump',
+  'curriculum-tracker': 'sidebar.progressTracker',
+  'curriculum-plan': 'sidebar.curriculumPlan',
+  'resource-manager': 'sidebar.myResources',
+  'school-year-calendar': 'sidebar.schoolYear',
+  'chat': 'sidebar.askPearl',
+  'curriculum': 'sidebar.curriculumBrowser',
+  'quiz-generator': 'sidebar.quizBuilder',
+  'rubric-generator': 'sidebar.rubricBuilder',
+  'class-management': 'sidebar.myClasses',
+  'lesson-planner': 'sidebar.lessonPlan',
+  'kindergarten-planner': 'sidebar.earlyChildhood',
+  'multigrade-planner': 'sidebar.multiLevel',
+  'cross-curricular-planner': 'sidebar.integratedLesson',
+  'achievements': 'sidebar.achievements',
+  'photo-transfer': 'sidebar.photoTransfer',
+  'performance-metrics': 'sidebar.performance',
+  'support': 'sidebar.supportReporting',
+  'settings': 'sidebar.settings',
+  'worksheet-generator': 'sidebar.worksheetBuilder',
+  'image-studio': 'sidebar.imageStudio',
+  'presentation-builder': 'sidebar.slideDeck',
+  'storybook': 'sidebar.storybookCreator',
+};
+
 const iconMap: { [key: string]: React.ElementType } = {
   MessageSquare,
   ClipboardCheck,
@@ -548,7 +579,10 @@ const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string;
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
-  const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled } = useSettings();
+  const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled, isToolChildEnabled, trackToolVisit } = useSettings();
+  const { t } = useTranslation();
+  // Translate a tool name using the i18n key map, falling back to the original name
+  const tn = (tool: Tool) => SIDEBAR_I18N[tool.id] ? t(SIDEBAR_I18N[tool.id]) : tool.name;
   const { hasDiffusion } = useCapabilities();
 
   // Import the real tutorial context at the top level
@@ -909,13 +943,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     'school-year-calendar': ['school-year-calendar'],
   };
 
-  // Close tabs when any sidebar item is disabled (with close-all dialog)
+  // Close tabs when any sidebar item or individual child tool is disabled (with close-all dialog)
   useEffect(() => {
     const disabledTabTypes = new Set<string>();
     for (const item of settings.sidebarOrder) {
       if (!item.enabled) {
+        // Entire group disabled — close all children
         const types = SIDEBAR_ID_TO_TAB_TYPES[item.id];
         if (types) types.forEach(t => disabledTabTypes.add(t));
+      } else if (item.disabledChildren && item.disabledChildren.length > 0) {
+        // Group enabled but some children individually disabled
+        item.disabledChildren.forEach(childType => disabledTabTypes.add(childType));
       }
     }
 
@@ -982,6 +1020,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const openTool = (tool: Tool, initialData?: Record<string, any>) => {
+    // Guard: don't open if the tool's group has it individually disabled
+    if (tool.group && !isToolChildEnabled(tool.group, tool.type)) return;
+    // Track this tool visit for workflow progression
+    trackToolVisit(tool.type);
     // Single-instance tool types: navigate to existing tab if open
     const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'curriculum-plan', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights', 'school-year-calendar'];
     if (singleInstanceTypes.includes(tool.type)) {
@@ -1011,7 +1053,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
-      title: tool.name,
+      title: tn(tool),
       type: tool.type,
       active: true,
       data: initialData || {}
@@ -1723,7 +1765,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     // Create new tab for this tool
                     const newTab: Tab = {
                       id: `tab-${Date.now()}`,
-                      title: tool.name,
+                      title: tn(tool),
                       type: tool.type as Tool['type'],
                       active: true
                     };
@@ -2008,7 +2050,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 } else {
                   const newTab: Tab = {
                     id: `tab-${Date.now()}`,
-                    title: tool.name,
+                    title: tn(tool),
                     type: tool.type as Tool['type'],
                     active: true,
                     data: tabData
@@ -2133,12 +2175,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return acc;
   }, {} as { [key: string]: Tab[] }), [tabs]);
 
-  // Group tools by category (static — tools array never changes)
-  const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners'), []);
-  const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
-  const planningPrepTools = useMemo(() => tools.filter(t => t.group === 'planning-prep'), []);
-  const assessmentToolsList = useMemo(() => tools.filter(t => t.group === 'assessment-tools'), []);
-  const myClassroomTools = useMemo(() => tools.filter(t => t.group === 'my-classroom'), []);
+  // Group tools by category — reactive to per-child visibility settings
+  const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners' && isToolChildEnabled('lesson-planners', t.type)), [settings.sidebarOrder]);
+  const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio' && isToolChildEnabled('visual-studio', t.type)), [settings.sidebarOrder]);
+  const planningPrepTools = useMemo(() => tools.filter(t => t.group === 'planning-prep' && isToolChildEnabled('planning-prep', t.type)), [settings.sidebarOrder]);
+  const assessmentToolsList = useMemo(() => tools.filter(t => t.group === 'assessment-tools' && isToolChildEnabled('assessment-tools', t.type)), [settings.sidebarOrder]);
+  const myClassroomTools = useMemo(() => tools.filter(t => t.group === 'my-classroom' && isToolChildEnabled('my-classroom', t.type)), [settings.sidebarOrder]);
 
   // Small component to evaluate nudges when active tab changes
   const NudgeEvaluator: React.FC = () => {
@@ -2186,7 +2228,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           top: 0,
           left: 0,
           bottom: 0,
-          width: sidebarOpen ? '256px' : '72px',
+          width: sidebarOpen ? '300px' : '72px',
           zIndex: 40,
           background: sidebarOpen ? 'var(--sidebar-bg)' : 'var(--sidebar-bg-collapsed)',
           color: 'var(--sidebar-text)',
@@ -2259,7 +2301,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     )}
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <h2 className="text-sm font-bold whitespace-nowrap" style={{ letterSpacing: '0.01em' }}>OECS Learning Hub</h2>
+                    <h2 className="text-sm font-bold" style={{ letterSpacing: '0.01em', lineHeight: '1.3' }}>{t('sidebar.header')}</h2>
                     <p
                       className="text-xs whitespace-nowrap overflow-hidden"
                       style={{
@@ -2291,6 +2333,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* === Dynamic Sidebar rendered from sidebarOrder === */}
           {(() => {
+            // Compute next suggested tool for progression dot indicator
+            const enabledModules = settings.tutorials.enabledModules || [];
+            const nextSuggestion = getNextSuggestion(
+              enabledModules,
+              settings.workflowProgress?.visitedTools || [],
+              settings.workflowProgress?.dismissedProgressions || [],
+            );
+            const nextStepType = nextSuggestion?.type || null;
+
             // Helper: render a single tool button
             const renderToolButton = (tool: Tool, dataTutorial?: string) => {
               const Icon = iconMap[tool.icon];
@@ -2300,6 +2351,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors] || (tabColors[tool.type]?.border);
               const isSingle = SINGLE_INSTANCE_TABS.has(tool.type);
               const maxForTool = isSingle ? 1 : MAX_TABS_PER_TYPE;
+              const isNextStep = nextStepType === tool.type;
               return (
                 <button
                   key={tool.id}
@@ -2307,14 +2359,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   data-tutorial={dataTutorial}
                   onClick={() => openTool(tool)}
                   className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                  title={!sidebarOpen ? `${tool.name}${!isSingle && tool.type !== 'analytics' && !HIDE_TAB_COUNTER.has(tool.type) ? ` (${count}/${maxForTool} open)` : ''}` : ''}
+                  title={!sidebarOpen ? `${tn(tool)}${!isSingle && tool.type !== 'analytics' && !HIDE_TAB_COUNTER.has(tool.type) ? ` (${count}/${maxForTool} open)` : ''}` : ''}
                   style={{ backgroundColor: isActiveToolType ? 'var(--sidebar-active)' : 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveToolType && toolColor) { icon.style.color = toolColor; icon.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActiveToolType ? 'var(--sidebar-active)' : 'transparent'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveToolType) { icon.style.color = 'var(--sidebar-text-muted)'; icon.style.filter = ''; } }}
                 >
-                  <Icon className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`} style={{ color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
+                  <div className="relative flex-shrink-0">
+                    <Icon className={`w-5 h-5 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`} style={{ color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
+                    {isNextStep && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />}
+                  </div>
                   <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
-                    <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{tool.name}</p>
+                    <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}>{tn(tool)}</p>
                     {!isSingle && count > 0 && tool.type !== 'analytics' && !HIDE_TAB_COUNTER.has(tool.type) && (<p className="text-xs whitespace-nowrap" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{maxForTool} open</p>)}
                   </div>
                 </button>
@@ -2333,7 +2388,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     onClick={() => setExpanded(!expanded)}
                     data-tutorial-click={groupId === 'lesson-planners' ? 'lesson-planners-group' : undefined}
                     className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
-                    title={!sidebarOpen ? (activeGroupTool ? activeGroupTool.name : label) : ''}
+                    title={!sidebarOpen ? (activeGroupTool ? tn(activeGroupTool) : label) : ''}
                     style={{ backgroundColor: 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
@@ -2341,7 +2396,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <GroupIcon className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeGroupTool ? 'icon-glow' : ''}`} style={{ color: activeGroupTool && groupToolColor ? groupToolColor : 'var(--sidebar-text-muted)', transition: 'color 0.3s, filter 0.3s' }} />
                     <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{label}</p>
+                        <p className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1" style={{ maskImage: 'linear-gradient(to right, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}>{label}</p>
                         <ChevronDown className="w-4 h-4 text-gray-400 chevron-icon ml-2 flex-shrink-0" style={{ transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
                       </div>
                     </div>
@@ -2354,18 +2409,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       const isActive = at?.type === tool.type;
                       const tc = settings.tabColors[tool.type as keyof typeof settings.tabColors];
                       const isLocked = false;
+                      const isChildNextStep = nextStepType === tool.type;
                       return (
                         <button key={tool.id} data-tool-type={tool.type} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', opacity: isLocked ? 0.5 : 1, transition: 'background-color 0.2s' }}
                           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive && tc) { ic.style.color = tc; ic.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
                           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActive ? 'var(--sidebar-active)' : 'transparent'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive) { ic.style.color = 'var(--sidebar-text-muted)'; ic.style.filter = ''; } }}
-                          title={isLocked ? 'Tier 3 required — enable a diffusion model' : tool.name}
+                          title={isLocked ? 'Tier 3 required — enable a diffusion model' : tn(tool)}
                         >
                           <div className="relative flex-shrink-0">
                             <Icon className={`w-4 h-4 sidebar-icon ${isActive ? 'icon-glow' : ''}`} style={{ color: isActive && tc ? tc : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
                             {isLocked && <HugeiconsIcon icon={SquareLock01IconData} size={10} style={{ position: 'absolute', bottom: -2, right: -3, color: '#a855f7' }} />}
+                            {isChildNextStep && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />}
                           </div>
                           <div className="flex-1 text-left overflow-hidden">
-                            <p className="text-xs font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{tool.name}</p>
+                            <p className="text-xs font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}>{tn(tool)}</p>
                             {count > 0 && !HIDE_TAB_COUNTER.has(tool.type) && (<p className="text-xs" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}</p>)}
                           </div>
                         </button>
@@ -2396,15 +2453,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               if (item.id === 'analytics' || item.id === 'educator-insights' || item.id === 'performance-metrics' || item.id === 'support' || item.id === 'settings') continue;
 
               if (item.id === 'planning-prep') {
-                elements.push(renderGroup('planning-prep', 'Planning & Prep', planningPrepTools, planningPrepExpanded, setPlanningPrepExpanded, Compass));
+                elements.push(renderGroup('planning-prep', t('sidebar.groups.planningPrep'), planningPrepTools, planningPrepExpanded, setPlanningPrepExpanded, Compass));
               } else if (item.id === 'lesson-planners') {
-                elements.push(renderGroup('lesson-planners', 'Lesson Planners', lessonPlannerTools, lessonPlannerExpanded, setLessonPlannerExpanded, BookOpen));
+                elements.push(renderGroup('lesson-planners', t('sidebar.groups.lessonPlanners'), lessonPlannerTools, lessonPlannerExpanded, setLessonPlannerExpanded, BookOpen));
               } else if (item.id === 'assessment-tools') {
-                elements.push(renderGroup('assessment-tools', 'Assessment Tools', assessmentToolsList, assessmentToolsExpanded, setAssessmentToolsExpanded, Target));
+                elements.push(renderGroup('assessment-tools', t('sidebar.groups.assessmentTools'), assessmentToolsList, assessmentToolsExpanded, setAssessmentToolsExpanded, Target));
               } else if (item.id === 'my-classroom') {
-                elements.push(renderGroup('my-classroom', 'My Classroom', myClassroomTools, myClassroomExpanded, setMyClassroomExpanded, School));
+                elements.push(renderGroup('my-classroom', t('sidebar.groups.myClassroom'), myClassroomTools, myClassroomExpanded, setMyClassroomExpanded, School));
               } else if (item.id === 'visual-studio') {
-                elements.push(renderGroup('visual-studio', 'Visual Studio', visualStudioTools, visualStudioExpanded, setVisualStudioExpanded, Paintbrush));
+                elements.push(renderGroup('visual-studio', t('sidebar.groups.visualStudio'), visualStudioTools, visualStudioExpanded, setVisualStudioExpanded, Paintbrush));
               } else {
                 const tool = toolById(item.id);
                 if (tool) elements.push(renderToolButton(tool, tutorialMap[item.id]));
@@ -2436,14 +2493,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     data-tool-type={settingsTl.type}
                     onClick={() => openTool(settingsTl)}
                     className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                    title={!sidebarOpen ? settingsTl.name : ''}
+                    title={!sidebarOpen ? tn(settingsTl) : ''}
                     style={{ backgroundColor: 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
                     <SettIcon className={`w-5 h-5 flex-shrink-0 ${isActiveSt ? 'icon-glow' : ''}`} style={isActiveSt ? { color: '#64748b' } : { color: 'var(--sidebar-text-muted)' }} />
                     <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
-                      <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{settingsTl.name}</p>
+                      <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}>{tn(settingsTl)}</p>
                     </div>
                   </button>
                 </div>

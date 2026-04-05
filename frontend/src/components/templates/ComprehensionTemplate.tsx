@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { WorksheetQuestion } from '../../types/worksheet';
 import { Skeleton } from '../ui/skeleton';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
@@ -51,6 +52,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
     type: 'comprehension',
   }));
 
+  const { t } = useTranslation();
   const ACCENT = accentColor || '#0d9488';
   const palette = deriveWorksheetPalette(ACCENT);
   const effectiveShowAnswers = isAnswerKey || showAnswers;
@@ -61,7 +63,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
       {/* Answer Key Banner */}
       {isAnswerKey && (
         <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
-          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{t('templates.answerKey')}</span>
         </div>
       )}
 
@@ -79,7 +81,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
             {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#64748b' }}>{topic}</p>}
           </div>
           <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
-            <div>Name: {studentName
+            <div>{t('templates.name')} {studentName
               ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
               : <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span>
             }</div>
@@ -102,7 +104,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
             <div style={{ width: 24, height: 24, background: ACCENT, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ color: '#fff', fontSize: 12, fontWeight: 900 }}>A</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Read the Passage</h2>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('templates.readPassage')}</h2>
           </div>
 
           <div style={{
@@ -157,7 +159,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
             <div style={{ width: 24, height: 24, background: ACCENT, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ color: '#fff', fontSize: 12, fontWeight: 900 }}>B</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Answer the Questions</h2>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('templates.answerQuestions')}</h2>
           </div>
 
           {displayQuestions.map((q, idx) => (
@@ -196,13 +198,13 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
       {/* Footer */}
       {studentName && !isAnswerKey && (
         <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
-          <span>Score: _____ / {displayQuestions.length}</span>
+          <span>{t('templates.score')} _____ / {displayQuestions.length}</span>
           <span>Teacher: _________________________</span>
         </div>
       )}
 
       <div style={{ borderTop: '2px solid #0f172a', margin: '0 36px', paddingTop: 10, paddingBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>Worksheet generated for educational purposes</span>
+        <span style={{ fontSize: 11, color: '#94a3b8' }}>{t('templates.generatedForEducation')}</span>
         <div style={{ width: 24, height: 6, background: ACCENT, borderRadius: 3 }} />
       </div>
     </div>

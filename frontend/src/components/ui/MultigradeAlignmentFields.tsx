@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 
@@ -42,6 +43,7 @@ export default function MultigradeAlignmentFields({
   accentColor,
   validationErrors,
 }: MultigradeAlignmentFieldsProps) {
+  const { t } = useTranslation();
   // Load curriculum data for the first grade level + subject
   useCurriculumLoader(gradeLevels[0] || '', subject);
 
@@ -168,7 +170,7 @@ export default function MultigradeAlignmentFields({
           style={ringStyle}
           data-validation-error={validationErrors?.strand ? 'true' : undefined}
         >
-          <option value="">Select a strand</option>
+          <option value="">{t('curriculum.selectStrand')}</option>
           {allStrands.map(s => (
             <option key={s} value={s}>{s}</option>
           ))}

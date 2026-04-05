@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { GRADE_LEVELS, SUBJECTS, GradeSubjectMapping, GRADE_LABEL_MAP } from '../../data/teacherConstants';
 
 interface ProfileStepProps {
@@ -19,22 +20,23 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
   onNameChange, onSchoolChange, onGradeToggle, onSubjectToggle, onApplyToAll,
   onNext, onBack,
 }) => {
+  const { t } = useTranslation();
   const selectedGrades = Object.keys(gradeSubjects);
 
   return (
     <div className="px-8 py-6">
-      <h2 className="text-2xl font-bold mb-1" style={{ color: '#F8E59D' }}>Tell us about yourself</h2>
-      <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.55)' }}>This helps us tailor content to your needs.</p>
+      <h2 className="text-2xl font-bold mb-1" style={{ color: '#F8E59D' }}>{t('setupWizard.tellAboutYourself')}</h2>
+      <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.55)' }}>{t('setupWizard.tailorContent')}</p>
 
       <div className="space-y-5 max-w-lg mx-auto">
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>Your Name</label>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('setupWizard.yourName')}</label>
           <input
             type="text"
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
-            placeholder="e.g. Ms. Johnson"
+            placeholder={t('setupWizard.namePlaceholder')}
             className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
             style={{
               backgroundColor: 'rgba(255,255,255,0.08)',
@@ -52,7 +54,7 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
             type="text"
             value={school}
             onChange={(e) => onSchoolChange(e.target.value)}
-            placeholder="e.g. Castries Primary"
+            placeholder={t('setupWizard.schoolPlaceholder')}
             className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
             style={{
               backgroundColor: 'rgba(255,255,255,0.08)',
@@ -64,7 +66,7 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
 
         {/* Grade Levels */}
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>Grade Levels You Teach</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('setupWizard.gradeLevels')}</label>
           <div className="flex flex-wrap gap-2">
             {GRADE_LEVELS.map((g) => {
               const selected = selectedGrades.includes(g.value);

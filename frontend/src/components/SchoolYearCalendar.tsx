@@ -24,6 +24,7 @@ import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import axios from 'axios';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
+import { useTranslation } from 'react-i18next';
 
 // ── Types ──
 
@@ -95,6 +96,7 @@ function getTeacherId(): string {
 // ── Component ──
 
 const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+  const { t } = useTranslation();
   const teacherId = getTeacherId();
   const { currentPhase, allPhases: calPhases } = useCurrentPhase(teacherId);
 
@@ -679,10 +681,10 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                 </label>
                 <div className="syc-form-actions">
                   <button className="syc-btn-primary" onClick={handleSaveConfig}>
-                    <HugeiconsIcon icon={Tick01IconData} size={14} /> Save
+                    <HugeiconsIcon icon={Tick01IconData} size={14} /> {t('common.save')}
                   </button>
                   <button className="syc-btn-secondary" onClick={() => setShowConfigForm(false)}>
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               </div>
@@ -692,7 +694,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           {/* Quick Add */}
           {config && (
             <div className="syc-panel-section">
-              <div className="syc-section-title">Quick Add Event</div>
+              <div className="syc-section-title">{t('schoolCalendar.quickAdd')}</div>
               <div className="syc-quick-add-grid">
                 {Object.entries(EVENT_TYPE_CONFIG).map(([type, cfg]) => (
                   <button
@@ -718,7 +720,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
               <div className="syc-empty-icon">
                 <HugeiconsIcon icon={Calendar01IconData} size={48} color="#94A3B8" />
               </div>
-              <h3 className="syc-empty-title">No School Year Configured</h3>
+              <h3 className="syc-empty-title">{t('schoolCalendar.noSchoolYear')}</h3>
               <p className="syc-empty-desc">
                 Set up your school year to start planning your academic calendar with exams, midterms, grading deadlines, and more.
               </p>
@@ -886,7 +888,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                         setEventForm({ ...eventForm, reminders_enabled: e.target.checked ? 1 : 0, reminder_offsets: e.target.checked ? eventForm.reminder_offsets : '[]' })
                       }
                     />
-                    <span style={{ fontSize: '12px', fontWeight: 'normal' }}>Enable</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'normal' }}>{t('schoolCalendar.enable')}</span>
                   </label>
                 </div>
                 {eventForm.reminders_enabled === 1 && (
@@ -926,7 +928,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                   {editingEvent ? 'Update' : 'Add Event'}
                 </button>
                 <button className="syc-btn-secondary" onClick={() => { setShowEventForm(false); setEditingEvent(null); }}>
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </div>
             </div>
@@ -935,7 +937,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           {/* Events List */}
           <div className="syc-events-section">
             <div className="syc-events-header">
-              <span className="syc-section-title">Events</span>
+              <span className="syc-section-title">{t('schoolCalendar.events')}</span>
               {config && !showEventForm && (
                 <button className="syc-icon-btn syc-add-event-btn" onClick={() => openEventForm()}>
                   <HugeiconsIcon icon={Add01IconData} size={16} />
@@ -945,7 +947,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
             {selectedDateEvents.length === 0 ? (
               <div className="syc-no-events">
-                <p>No events on this date</p>
+                <p>{t('schoolCalendar.noEvents')}</p>
                 {config && !showEventForm && (
                   <button className="syc-add-event-link" onClick={() => openEventForm()}>
                     + Add an event

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
@@ -37,6 +38,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
   currentChatId,
   onChatIdChange,
 }) => {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -218,7 +220,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
               <span className="text-blue-500 text-sm font-bold">EC</span>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-theme-primary">Educator Coach</h3>
+              <h3 className="text-sm font-semibold text-theme-primary">{t('educator.educatorCoach')}</h3>
               <p className="text-xs text-theme-secondary">
                 {triggerDimension ? `Focus: ${triggerDimension}` : 'Teaching improvement advisor'}
               </p>
@@ -265,7 +267,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
               </button>
             ))}
             {conversations.length === 0 && (
-              <p className="text-xs text-theme-muted px-3 py-2">No previous conversations</p>
+              <p className="text-xs text-theme-muted px-3 py-2">{t('educator.noPreviousConversations')}</p>
             )}
           </div>
         )}
@@ -315,7 +317,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
           {isStreaming && !streamingContent && (
             <div className="flex justify-start">
               <div className="rounded-xl px-3 py-2 text-sm bg-theme-bg-secondary border border-theme-border">
-                <span className="text-theme-muted animate-pulse">Thinking...</span>
+                <span className="text-theme-muted animate-pulse">{t('chat.thinking')}</span>
               </div>
             </div>
           )}
@@ -331,7 +333,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask the Educator Coach..."
+              placeholder={t('educator.askCoach')}
               className="flex-1 resize-none rounded-xl px-3 py-2 text-sm bg-theme-bg border border-theme-border text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               rows={1}
               style={{ maxHeight: 120 }}

@@ -13,6 +13,7 @@ import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { ParsedWorksheet } from '../types/worksheet';
 import { useSettings } from '../contexts/SettingsContext';
@@ -93,6 +94,7 @@ function fileIcon(name: string) {
 }
 
 const WorksheetBulkGrader: React.FC<WorksheetBulkGraderProps> = ({ worksheet, onClose, embedded = false }) => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const accentColor = settings.tabColors['worksheet-generator'] ?? '#3b82f6';
 
@@ -221,7 +223,7 @@ const WorksheetBulkGrader: React.FC<WorksheetBulkGraderProps> = ({ worksheet, on
         {/* Student files drop zone */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-theme-label">Student Worksheet Files</h3>
+            <h3 className="text-sm font-semibold text-theme-label">{t('bulkGrader.studentFiles')}</h3>
             <span className="text-xs text-theme-muted">HTML, PDF, or TXT</span>
           </div>
 
@@ -297,7 +299,7 @@ const WorksheetBulkGrader: React.FC<WorksheetBulkGraderProps> = ({ worksheet, on
         {results && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-theme-hint uppercase tracking-wider">Results</h3>
+              <h3 className="text-sm font-semibold text-theme-hint uppercase tracking-wider">{t('bulkGrader.results')}</h3>
               <div className="text-xs text-theme-muted">
                 {results.filter(r => !r.error).length} graded · {results.filter(r => !!r.error).length} failed
               </div>
@@ -358,7 +360,7 @@ const WorksheetBulkGrader: React.FC<WorksheetBulkGraderProps> = ({ worksheet, on
                             onChange={e => setSaveTargets(prev => ({ ...prev, [idx]: e.target.value }))}
                             className="text-xs px-2 py-1.5 rounded-lg border border-theme bg-theme-input text-theme-label focus:outline-none w-36"
                           >
-                            <option value="">Select student...</option>
+                            <option value="">{t('bulkGrader.selectStudent')}</option>
                             {students.map(s => (
                               <option key={s.id} value={s.id}>{s.full_name}</option>
                             ))}
@@ -370,7 +372,7 @@ const WorksheetBulkGrader: React.FC<WorksheetBulkGraderProps> = ({ worksheet, on
                               saveStatuses[idx] === 'saved' ? 'bg-green-600' : saveStatuses[idx] === 'error' ? 'bg-red-500' : ''
                             }`}
                             style={!saveStatuses[idx] || saveStatuses[idx] === 'idle' ? { backgroundColor: accentColor } : {}}
-                            title="Save to student profile"
+                            title={t('classManagement.saveToProfile')}
                           >
                             <Save className="w-3.5 h-3.5" />
                             {saveStatuses[idx] === 'saving' ? '...' : saveStatuses[idx] === 'saved' ? '✓' : saveStatuses[idx] === 'error' ? '!' : ''}

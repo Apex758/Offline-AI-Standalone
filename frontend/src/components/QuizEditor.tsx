@@ -9,6 +9,7 @@ import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { ParsedQuiz, QuizQuestion } from '../types/quiz';
+import { useTranslation } from 'react-i18next';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -29,6 +30,7 @@ interface QuizEditorProps {
 }
 
 const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCancel }) => {
+  const { t } = useTranslation();
   const [quiz, setQuiz] = useState<ParsedQuiz>(JSON.parse(JSON.stringify(initialQuiz)));
 
   const updateMetadata = (field: keyof ParsedQuiz['metadata'], value: any) => {
@@ -191,7 +193,7 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder={question.type === 'true-false'
                     ? "Write a statement that is true or false"
-                    : "Enter your question here"}
+                    : t('editor.enterQuestion')}
                 />
               </div>
 
@@ -340,14 +342,14 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
             className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <X className="w-4 h-4 mr-2" />
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => onSave(quiz)}
             className="flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700"
           >
             <Check className="w-4 h-4 mr-2" />
-            Save Changes
+            {t('common.save')}
           </button>
         </div>
       </div>

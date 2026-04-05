@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 
@@ -45,6 +46,7 @@ export default function CurriculumAlignmentFields({
   validationErrors = {},
   hideToggle = false,
 }: CurriculumAlignmentFieldsProps) {
+  const { t } = useTranslation();
   // Load curriculum data for the selected grade + subject
   useCurriculumLoader(gradeLevel, subject);
 
@@ -125,7 +127,7 @@ export default function CurriculumAlignmentFields({
           className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.strand ? 'validation-error' : ''}`}
           style={ringStyle}
         >
-          <option value="">Select a strand</option>
+          <option value="">{t('curriculum.selectStrand')}</option>
           {getStrands(subject, gradeLevel).map(s => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -151,7 +153,7 @@ export default function CurriculumAlignmentFields({
                 className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.essentialOutcomes ? 'validation-error' : ''}`}
                 style={ringStyle}
               >
-                <option value="">Select an Essential Learning Outcome</option>
+                <option value="">{t('curriculum.selectELO')}</option>
                 {elosStructured.map((elo, idx) => (
                   <option key={idx} value={elo.text} title={elo.text}>
                     {elo.id ? `[${elo.id}] ` : ''}{elo.text.length > 100 ? elo.text.substring(0, 100) + '...' : elo.text}

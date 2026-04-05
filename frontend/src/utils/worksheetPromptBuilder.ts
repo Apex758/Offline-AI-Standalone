@@ -1017,6 +1017,5 @@ ABSOLUTE REQUIREMENTS:
 
 Begin generating the worksheet now:`;
 
-  prompt += getLanguageInstruction(language);
-  return prompt;
+  return prompt + getLanguageInstruction(language);
 }

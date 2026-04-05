@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RadialBarChart, RadialBar, Tooltip } from 'recharts';
 import { useContainerSize } from '../../hooks/useContainerSize';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -30,6 +31,7 @@ const resourceToToolType: { [key: string]: string } = {
 };
 
 const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data, tabColors = {} }) => {
+  const { t } = useTranslation();
   const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
   const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
 
@@ -89,7 +91,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
       {/* Header */}
       <div className="flex items-center space-x-2 mb-4">
         <BarChart2 className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
-        <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Resource Type Distribution</h3>
+        <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>{t('charts.resourceDistribution')}</h3>
       </div>
 
       {/* Chart + Legend */}
@@ -123,7 +125,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
         <div className="w-44 space-y-2.5 -ml-6 -mt-4">
           <div className="text-center mb-3">
             <div className="text-2xl font-bold" style={{ color: 'var(--dash-text)' }}>{total}</div>
-            <div className="text-xs font-medium" style={{ color: 'var(--dash-text-sub)' }}>Total</div>
+            <div className="text-xs font-medium" style={{ color: 'var(--dash-text-sub)' }}>{t('charts.total')}</div>
           </div>
           {allRadialData.map((entry, i) => {
             const hidden = hiddenItems.has(entry.name);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
@@ -476,6 +477,7 @@ const rubricToDisplayText = (rubric: ParsedRubric): string => {
 };
 
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   const LOCAL_STORAGE_KEY = `rubric_state_${tabId}`;
   
@@ -1335,12 +1337,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   {loading ? (
                     <>
                       <HeartbeatLoader className="w-5 h-5 mr-2" />
-                      Generating...
+                      {t('generators.generatingRubric')}
                     </>
                   ) : (
                     <>
                       <FileText className="w-5 h-5 mr-2" />
-                      Generate Rubric
+                      {t('generators.generateRubric')}
                     </>
                   )}
                 </button>

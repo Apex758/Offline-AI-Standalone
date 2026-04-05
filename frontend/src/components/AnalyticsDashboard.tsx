@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import UserIconData from '@hugeicons/core-free-icons/UserIcon';
 import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
@@ -99,6 +100,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   tabColors = {},
   isActive = true
 }) => {
+  const { t } = useTranslation();
   // Achievement data
   const { earned, totalAvailable, showcase, definitions } = useAchievementContext();
   const { settings } = useSettings();
@@ -1004,7 +1006,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   {upcomingQuizzes.length > 0 && (
                     <div className="bg-theme-surface rounded-xl border border-theme p-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-semibold text-theme-heading">Upcoming Quizzes</h3>
+                        <h3 className="text-sm font-semibold text-theme-heading">{t('analytics.upcomingQuizzes')}</h3>
                       </div>
                       <div className="space-y-2">
                         {upcomingQuizzes.slice(0, 5).map(r => (
@@ -1025,7 +1027,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   {upcomingWorksheets.length > 0 && (
                     <div className="bg-theme-surface rounded-xl border border-theme p-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-semibold text-theme-heading">Upcoming Worksheets</h3>
+                        <h3 className="text-sm font-semibold text-theme-heading">{t('analytics.upcomingWorksheets')}</h3>
                       </div>
                       <div className="space-y-2">
                         {upcomingWorksheets.slice(0, 5).map(r => (
@@ -1246,7 +1248,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               color: 'var(--dash-text)',
               boxShadow: `0 2px 8px var(--dash-card-shadow)`
             }}
-            placeholder="Enter your name"
+            placeholder={t('analytics.enterName')}
           />
         </div>
 

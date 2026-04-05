@@ -63,6 +63,7 @@ const Bug: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) =
 const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
 const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
+import { useTranslation } from 'react-i18next';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import axios from 'axios';
@@ -206,7 +207,7 @@ interface Ticket {
 
 const FAQ_DATA: FAQCategory[] = [
   {
-    id: 'getting-started', title: 'Getting Started', icon: Lightbulb, color: '#f59e0b',
+    id: 'getting-started', title: 'Getting Started', titleKey: 'support.gettingStarted', icon: Lightbulb, color: '#f59e0b',
     description: 'Learn the basics of navigating and using the Learning Hub',
     items: [
       { question: 'How do I navigate between different tools?', answer: 'Use the sidebar on the left side of the screen. Hover over it to expand and see all available tools. Click any tool to open it in a new tab. You can have multiple tabs open at once and switch between them using the tab bar at the top.' },
@@ -218,7 +219,7 @@ const FAQ_DATA: FAQCategory[] = [
     ]
   },
   {
-    id: 'lesson-planning', title: 'Lesson Planning', icon: BookOpen, color: '#8b5cf6',
+    id: 'lesson-planning', title: 'Lesson Planning', titleKey: 'support.lessonPlanning', icon: BookOpen, color: '#8b5cf6',
     description: 'Creating and managing lesson plans',
     items: [
       { question: 'How do I create a new lesson plan?', answer: 'Click "Lesson Plan" in the sidebar under Lesson Planners. Fill in the subject, grade level, topic, and any other details. A comprehensive lesson plan will be generated based on the OECS curriculum standards. You can then edit and customize the generated plan.' },
@@ -301,8 +302,8 @@ const FAQ_DATA: FAQCategory[] = [
 // ─── Ticket Constants ───────────────────────────────────────────────────
 
 const TICKET_CATEGORIES = [
-  { id: 'bug', label: 'Bug Report', icon: Bug, color: '#ef4444', description: 'Something isn\'t working correctly' },
-  { id: 'feature', label: 'Feature Request', icon: Lightbulb, color: '#f59e0b', description: 'Suggest a new feature or improvement' },
+  { id: 'bug', label: 'Bug Report', labelKey: 'support.bugReport', icon: Bug, color: '#ef4444', description: 'Something isn\'t working correctly' },
+  { id: 'feature', label: 'Feature Request', labelKey: 'support.featureRequest', icon: Lightbulb, color: '#f59e0b', description: 'Suggest a new feature or improvement' },
   { id: 'content', label: 'Content Issue', icon: FileText, color: '#8b5cf6', description: 'Incorrect or missing curriculum content' },
   { id: 'performance', label: 'Performance Issue', icon: Zap, color: '#f97316', description: 'App is slow or unresponsive' },
   { id: 'question', label: 'General Question', icon: HelpCircle, color: '#06b6d4', description: 'Need help with something' },
@@ -325,6 +326,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; icon: React.
 
 const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, onDataChange, initialScreenshot }) => {
   const { settings } = useSettings();
+  const { t } = useTranslation();
 
   // Which face is showing: false = Support (front), true = Reporting (back)
   const [flipped, setFlipped] = useState<boolean>(savedData?.flipped || false);
@@ -657,7 +659,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                             <Icon className="w-4 h-4" style={{ color: cat.color }} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{cat.title}</p>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{(cat as any).titleKey ? t((cat as any).titleKey) : cat.title}</p>
                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cat.description} · {cat.items.length} question{cat.items.length !== 1 ? 's' : ''}</p>
                           </div>
                           {isExp
@@ -790,7 +792,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                             >
                               <CatIcon className="w-4 h-4 flex-shrink-0" style={{ color: isSel ? cat.color : 'var(--text-muted)' }} />
                               <div className="min-w-0">
-                                <p className="text-xs font-semibold" style={{ color: isSel ? cat.color : 'var(--text-primary)' }}>{cat.label}</p>
+                                <p className="text-xs font-semibold" style={{ color: isSel ? cat.color : 'var(--text-primary)' }}>{(cat as any).labelKey ? t((cat as any).labelKey) : cat.label}</p>
                                 <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{cat.description}</p>
                               </div>
                             </button>
@@ -865,7 +867,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                         cursor: (!subject.trim() || !description.trim()) ? 'not-allowed' : 'pointer',
                       }}
                     >
-                      {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Send className="w-4 h-4" /> Submit Ticket</>}
+                      {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Send className="w-4 h-4" /> {t('common.submit')}</>}
                     </button>
                   </div>
                 ) : (

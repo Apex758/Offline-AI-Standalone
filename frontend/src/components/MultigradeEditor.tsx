@@ -1,5 +1,6 @@
 // components/MultigradeEditor.tsx
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Tick01Icon from '@hugeicons/core-free-icons/Tick01Icon';
 import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
@@ -23,6 +24,7 @@ interface MultigradeEditorProps {
 }
 
 const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, onSave, onCancel }) => {
+  const { t } = useTranslation();
   // Deep clone to prevent mutations
   const [plan, setPlan] = useState<ParsedMultigrade>(JSON.parse(JSON.stringify(initialPlan)));
 
@@ -131,7 +133,7 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
     <div className="rounded-lg max-w-7xl mx-auto widget-glass">
       {/* Header */}
       <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-cyan-50 to-blue-50">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Multigrade Plan</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('planEditors.editMultigrade')}</h2>
         
         {/* Metadata Editing */}
         <div className="grid grid-cols-2 gap-4">
@@ -141,7 +143,7 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
               value={plan.metadata.title}
               onChange={(val) => updateMetadata('title', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-              placeholder="Enter plan title or topic"
+              placeholder={t('planEditors.enterPlanTopic')}
             />
           </div>
           <div>
@@ -176,7 +178,7 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
       <div className="p-6 max-h-[60vh] overflow-y-auto">
         {/* Common Objective */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Common Learning Objective (All Grades)</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">{t('planEditors.commonObjective')}</h3>
           <SmartTextArea
             value={plan.sharedObjectives.common}
             onChange={(val) => updateCommonObjective(val)}
@@ -347,14 +349,14 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
             className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <X className="w-4 h-4 mr-2" />
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => onSave(plan)}
             className="flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700"
           >
             <Check className="w-4 h-4 mr-2" />
-            Save Changes
+            {t('common.save')}
           </button>
         </div>
       </div>

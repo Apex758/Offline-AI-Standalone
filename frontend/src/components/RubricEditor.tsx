@@ -8,6 +8,7 @@ import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import DragDropVerticalIconData from '@hugeicons/core-free-icons/DragDropVerticalIcon';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import { useTranslation } from 'react-i18next';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -50,6 +51,7 @@ interface RubricEditorProps {
 }
 
 const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSave, onCancel }) => {
+  const { t } = useTranslation();
   // Deep clone to prevent mutations
   const [rubric, setRubric] = useState<ParsedRubric>(JSON.parse(JSON.stringify(initialRubric)));
 
@@ -70,7 +72,7 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
   };
 
   const addPerformanceLevel = () => {
-    const newLevel = 'New Level';
+    const newLevel = t('editor.newLevel');
     setRubric(prev => ({
       ...prev,
       performanceLevels: [...prev.performanceLevels, newLevel],
@@ -233,13 +235,13 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
                   value={level}
                   onChange={(val) => updatePerformanceLevel(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Level name"
+                  placeholder={t('editor.levelName')}
                 />
                 {rubric.performanceLevels.length > 2 && (
                   <button
                     onClick={() => removePerformanceLevel(index)}
                     className="p-2 text-red-500 hover:bg-red-50 rounded"
-                    title="Remove level"
+                    title={t('editor.removeLevel')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -271,7 +273,7 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
                       value={criterion.criterion}
                       onChange={(val) => updateCriterion(criterion.id, 'criterion', val)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                      placeholder="Enter criterion name (e.g., Content Knowledge, Organization)"
+                      placeholder={t('editor.criterionName')}
                     />
                   </div>
                 </div>

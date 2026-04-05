@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquare02Icon';
 import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
@@ -321,6 +322,7 @@ interface Props {
 }
 
 const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigate, onToggleSco }) => {
+  const { t } = useTranslation();
   const [curriculumReady, setCurriculumReady] = useState(false);
   useEffect(() => {
     preloadAllCurriculum().then(() => {
@@ -661,7 +663,7 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="text-theme-hint text-sm">No items at this level</div>
+              <div className="text-theme-hint text-sm">{t('common.noResults')}</div>
             </div>
           )}
 

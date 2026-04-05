@@ -1,5 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { HashRouter } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import './i18n';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { User } from './types';
@@ -44,10 +46,17 @@ function AppContent() {
 
   // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally
   const { settings, hasCompletedSetup } = useSettings();
+  const { i18n } = useTranslation();
   useEffect(() => {
     document.documentElement.style.fontSize = `${settings.fontSize}%`;
     return () => { document.documentElement.style.fontSize = ''; };
   }, [settings.fontSize]);
+  // Sync i18n language with user setting
+  useEffect(() => {
+    if (i18n.language !== settings.language) {
+      i18n.changeLanguage(settings.language);
+    }
+  }, [settings.language, i18n]);
 
   const handleLoginSuccess = (userData: User) => {
     setUser(userData);

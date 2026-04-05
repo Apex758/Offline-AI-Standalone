@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
@@ -31,11 +32,12 @@ interface FeaturePickerStepProps {
 const FeaturePickerStep: React.FC<FeaturePickerStepProps> = ({
   selectedModules, onToggleModule, onApplyPreset, onNext, onBack,
 }) => {
+  const { t } = useTranslation();
   const canContinue = selectedModules.length > 0;
 
   return (
     <div className="px-8 py-6">
-      <h2 className="text-2xl font-bold mb-1" style={{ color: '#F8E59D' }}>Choose your tools</h2>
+      <h2 className="text-2xl font-bold mb-1" style={{ color: '#F8E59D' }}>{t('setupWizard.chooseTools')}</h2>
       <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.55)' }}>Pick what you need now — you can enable more anytime in Settings.</p>
 
       {/* Persona Presets */}

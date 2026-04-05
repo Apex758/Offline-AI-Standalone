@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import type { SchoolYearConfig, AcademicPhase } from '../types/insights';
 
 interface Props {
@@ -20,8 +21,6 @@ interface CaribbeanDates {
   final_exam_start: string;
   final_exam_end: string;
 }
-
-const STEPS = ['Structure', 'Key Dates', 'Midterms', 'Final Exams', 'Preview'];
 
 const defaultDates: CaribbeanDates = {
   year_start: '',
@@ -56,6 +55,8 @@ const labelStyle: React.CSSProperties = {
 };
 
 const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) => {
+  const { t } = useTranslation();
+  const STEPS = [t('calendar.structure'), t('calendar.keyDates'), t('calendar.midterms'), t('calendar.finalExams'), t('calendar.preview')];
   const [step, setStep] = useState(0);
   const [structureType, setStructureType] = useState<'caribbean_two_semester' | 'generic'>('caribbean_two_semester');
   const [label, setLabel] = useState('');
@@ -163,7 +164,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
             School Year Setup
           </p>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--dash-text)', margin: 0 }}>
-            {structureType === 'caribbean_two_semester' ? 'Caribbean Academic Calendar' : 'Custom School Year'}
+            {structureType === 'caribbean_two_semester' ? t('calendar.caribbeanCalendar') : t('calendar.customSchoolYear')}
           </h2>
         </div>
 
@@ -222,10 +223,10 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {[
-                { key: 'year_start',  label: 'School Year Start' },
+                { key: 'year_start',  label: t('calendar.schoolYearStart') },
                 { key: 'sem1_end',    label: 'Semester 1 End' },
                 { key: 'break_end',   label: 'Break Ends (Semester 2 starts next day)' },
-                { key: 'year_end',    label: 'School Year End' },
+                { key: 'year_end',    label: t('calendar.schoolYearEnd') },
               ].map(f => (
                 <div key={f.key}>
                   <label style={labelStyle}>{f.label}</label>
@@ -333,7 +334,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
               color: 'var(--dash-text-sub)', cursor: 'pointer',
             }}
           >
-            {step === 0 ? 'Cancel' : 'Back'}
+            {step === 0 ? t('common.cancel') : t('common.back')}
           </button>
           {step < STEPS.length - 1 ? (
             <button
@@ -359,7 +360,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
                 opacity: saving ? 0.7 : 1,
               }}
             >
-              {saving ? 'Saving…' : 'Save School Year'}
+              {saving ? t('common.saving') : t('calendar.saveSchoolYear')}
             </button>
           )}
         </div>

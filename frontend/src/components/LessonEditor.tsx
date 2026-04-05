@@ -22,6 +22,7 @@ import CurriculumReferences, { CurriculumReference } from "./CurriculumReference
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { ParsedLesson, LessonSection } from '../types/lesson';
+import { useTranslation } from 'react-i18next';
 
 interface LessonEditorProps {
   lesson: ParsedLesson;
@@ -30,6 +31,7 @@ interface LessonEditorProps {
 }
 
 const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSave, onCancel }) => {
+  const { t } = useTranslation();
   // Deep clone to prevent mutations
   const [lesson, setLesson] = useState<ParsedLesson>(JSON.parse(JSON.stringify(initialLesson)));
 
@@ -186,7 +188,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
           <button
             onClick={onCancel}
             className="p-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition"
-            title="Close editor"
+            title={t('editor.closeEditor')}
           >
             <X className="w-6 h-6" />
           </button>
@@ -232,7 +234,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
               value={lesson.metadata.duration}
               onChange={(val) => updateMetadata('duration', val)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
-              placeholder="mins"
+              placeholder={t('editor.minutes')}
             />
           </div>
           <div>
@@ -265,7 +267,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                   value={objective}
                   onChange={(val) => updateObjective(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Enter learning objective"
+                  placeholder={t('editor.enterObjective')}
                 />
                 <div className="flex gap-1">
                   <button
@@ -321,7 +323,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                   value={material}
                   onChange={(val) => updateMaterial(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Enter material or resource"
+                  placeholder={t('editor.enterMaterial')}
                 />
                 <div className="flex gap-1">
                   <button
@@ -411,7 +413,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                     value={section.name}
                     onChange={(val) => updateSection(section.id, 'name', val)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                    placeholder="e.g., Introduction, Main Activity, Conclusion"
+                    placeholder={t('editor.sectionName')}
                   />
                 </div>
 
@@ -423,7 +425,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                     onChange={(val) => updateSection(section.id, 'content', val)}
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                    placeholder="Describe the activities, steps, and details for this section"
+                    placeholder={t('editor.sectionDetails')}
                   />
                 </div>
               </div>
@@ -455,7 +457,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                   value={assessment}
                   onChange={(val) => updateAssessment(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Enter assessment method"
+                  placeholder={t('editor.assessmentMethod')}
                 />
                 <div className="flex gap-1">
                   <button

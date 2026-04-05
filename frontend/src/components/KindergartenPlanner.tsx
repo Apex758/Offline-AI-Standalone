@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading02Icon from '@hugeicons/core-free-icons/Loading02Icon';
 import GraduationScrollIcon from '@hugeicons/core-free-icons/GraduationScrollIcon';
@@ -404,6 +405,7 @@ const kindergartenPlanToDisplayText = (plan: ParsedKindergartenPlan): string => 
 };
 
 const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   // ✅ Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;
@@ -1033,7 +1035,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-                        title="Kindergarten Plan History"
+                        title={t('planners.kindergartenHistory')}
                       >
                         <History className="w-5 h-5 text-theme-muted" />
                         {matchCount > 0 && (
@@ -1159,7 +1161,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
                 className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-                title="Kindergarten Plan History"
+                title={t('planners.kindergartenHistory')}
               >
                 <History className="w-5 h-5 text-theme-muted" />
                 {matchCount > 0 && (
@@ -1172,7 +1174,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
               <div className="max-w-3xl mx-auto space-y-6">
                 <div data-tutorial="kinder-planner-theme">
                   <label className="block text-sm font-medium text-theme-label mb-2">
-                    Lesson Topic <span className="text-red-500">*</span>
+                    {t('forms.topic')} <span className="text-red-500">*</span>
                   </label>
                   <SmartInput
                     value={formData.lessonTopic}
@@ -1323,7 +1325,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
                 <div>
                   <label className="block text-sm font-medium text-theme-label mb-2">
-                    Curriculum Subject
+                    {t('forms.subject')}
                   </label>
                   <select
                     value={formData.curriculumSubject}
@@ -1371,7 +1373,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
                 <div data-tutorial="kinder-planner-circle-time">
                   <label className="block text-sm font-medium text-theme-label mb-2">
-                    Duration (minutes) <span className="text-red-500">*</span>
+                    {t('forms.duration')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { useContainerSize } from '../../hooks/useContainerSize';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -20,6 +21,7 @@ interface LessonPlanComparisonChartProps {
 }
 
 const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ data }) => {
+  const { t } = useTranslation();
   const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
   // Natural color palette
   const colorMap: { [key: string]: string } = {
@@ -61,7 +63,7 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
       {/* Header */}
       <div className="flex items-center space-x-2 mb-6">
         <BarChart3 className="w-5 h-5" style={{ color: '#1D362D' }} />
-        <h3 className="font-bold" style={{ color: '#020D03' }}>Lesson Plan Comparison</h3>
+        <h3 className="font-bold" style={{ color: '#020D03' }}>{t('charts.lessonComparison')}</h3>
       </div>
 
       {/* Chart */}

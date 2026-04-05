@@ -15,6 +15,7 @@ import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import TextCheckIconData from '@hugeicons/core-free-icons/TextCheckIcon';
+import { useTranslation } from 'react-i18next';
 import { ParsedWorksheet } from '../types/worksheet';
 import { useSettings } from '../contexts/SettingsContext';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -94,6 +95,7 @@ type Phase = 'select-source' | 'upload' | 'grading' | 'results';
 type SourceType = 'package' | 'history' | 'upload';
 
 const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose }) => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const accentColor = settings.tabColors['worksheet-generator'] ?? '#3b82f6';
 
@@ -261,7 +263,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
       });
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({ detail: 'Grading failed' }));
+        const errData = await response.json().catch(() => ({ detail: t('grader.gradingFailed') }));
         throw new Error(errData.detail || `Server error ${response.status}`);
       }
 
@@ -332,7 +334,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
       <div className="flex flex-col h-full bg-theme-surface">
         {/* Mode tabs */}
         <div className="flex border-b border-theme px-6 pt-3 flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
-          {([['vision', ClipboardCheck, 'Vision Grade'] as const, ['scan', SpellCheck, 'Scan Grade (OCR)'] as const]).map(([mode, ModeIcon, label]) => (
+          {([['vision', ClipboardCheck, t('grader.visionGrade')] as const, ['scan', SpellCheck, t('grader.scanGrade')] as const]).map(([mode, ModeIcon, label]) => (
             <button
               key={mode}
               onClick={() => setGraderMode(mode)}
@@ -386,7 +388,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
       <div className="border-b border-theme px-6 py-3 flex-shrink-0" style={{ borderBottomColor: `${accentColor}11` }}>
         <h2 className="text-lg font-semibold text-theme-heading">Grade Worksheets</h2>
         <p className="text-sm text-theme-hint">
-          {phase === 'select-source' && 'Select a worksheet or upload a teacher version'}
+          {phase === 'select-source' && t('grader.selectWorksheet')}
           {phase === 'upload' && `Upload scanned papers for: ${selectedTitle}`}
           {phase === 'grading' && `Grading paper ${gradingProgress.done + 1} of ${gradingProgress.total}...`}
           {phase === 'results' && `${successCount} of ${results.length} graded & saved`}
@@ -401,9 +403,9 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
             {/* Tabs */}
             <div className="flex border-b border-theme mb-4">
               {([
-                ['package', ClipboardCheck, 'Class Worksheets'] as const,
-                ['history', History, 'Worksheet History'] as const,
-                ['upload', Upload, 'Upload Teacher Version'] as const,
+                ['package', ClipboardCheck, t('grader.classWorksheets')] as const,
+                ['history', History, t('grader.worksheetHistory')] as const,
+                ['upload', Upload, t('grader.uploadTeacherVersion')] as const,
               ]).map(([tab, TabIcon, label]) => (
                 <button
                   key={tab}
@@ -538,7 +540,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
                   className="w-full py-3 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ backgroundColor: accentColor }}
                 >
-                  {parsing ? <><HeartbeatLoader className="w-4 h-4" />Parsing answer key...</> : 'Load Answer Key'}
+                  {parsing ? <><HeartbeatLoader className="w-4 h-4" />Parsing answer key...</> : t('grader.loadAnswerKey')}
                 </button>
               </div>
             )}

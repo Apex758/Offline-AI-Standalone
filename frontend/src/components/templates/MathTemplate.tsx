@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../ui/skeleton';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
@@ -87,6 +88,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
 
   const displayOp = (op: string) => op === '*' ? '×' : op === '/' ? '÷' : op;
 
+  const { t } = useTranslation();
   const ACCENT = accentColor || '#0891b2';
   const palette = deriveWorksheetPalette(ACCENT);
   const effectiveShowAnswers = isAnswerKey || showAnswers;
@@ -98,7 +100,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
       {/* Answer Key Banner */}
       {isAnswerKey && (
         <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
-          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{t('templates.answerKey')}</span>
         </div>
       )}
 
@@ -126,7 +128,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
             }
           </div>
           <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
-            <div>Name: {studentName
+            <div>{t('templates.name')} {studentName
               ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
               : <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span>
             }</div>
@@ -134,7 +136,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
               <div>ID: <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentId}</span></div>
             )}
             <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: studentName ? 100 : 130, paddingBottom: 1 }}>&nbsp;</span></div>
-            <div>Score: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 55, paddingBottom: 1 }}>&nbsp;</span> / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</div>
+            <div>{t('templates.score')} <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 55, paddingBottom: 1 }}>&nbsp;</span> / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</div>
           </div>
         </div>
       </div>
@@ -248,7 +250,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
       {/* Footer */}
       {studentName && !isAnswerKey && (
         <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
-          <span>Score: _____ / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</span>
+          <span>{t('templates.score')} _____ / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</span>
           <span>Teacher: _________________________</span>
         </div>
       )}

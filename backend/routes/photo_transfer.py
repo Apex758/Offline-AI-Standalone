@@ -151,7 +151,7 @@ async def create_session(request: Request):
     body = await request.json()
     session_name = (body.get("session_name") or body.get("class_name", "")).strip() or "Unnamed Session"
     date_str = body.get("date", datetime.now().strftime("%Y-%m-%d"))
-    session_id = str(uuid.uuid4())[:8]
+    session_id = str(uuid.uuid4())
 
     # Sanitise for folder name
     safe_name = re.sub(r'[^\w\s-]', '', session_name).strip().replace(' ', '_')
@@ -584,7 +584,12 @@ async def start_hotspot(request: Request):
     """Start Windows Mobile Hotspot via netsh."""
     body = await request.json()
     ssid = body.get("ssid", "OECS-PhotoTransfer")
-    password = body.get("password", "oecs1234")
+    # Generate a random password if none provided (avoid weak defaults)
+    import secrets
+    import string
+    _hotspot_chars = string.ascii_letters + string.digits
+    default_pw = ''.join(secrets.choice(_hotspot_chars) for _ in range(12))
+    password = body.get("password") or default_pw
 
     if os.name != "nt":
         return JSONResponse(status_code=400, content={"ok": False, "error": "Hotspot only supported on Windows"})

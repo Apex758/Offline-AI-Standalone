@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { WorksheetQuestion } from '../../types/worksheet';
 import { Skeleton } from '../ui/skeleton';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
@@ -45,6 +46,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
 }) => {
   const isPreviewMode = !questions || questions.length === 0;
 
+  const { t } = useTranslation();
   const ACCENT = accentColor || '#7c3aed';
   const palette = deriveWorksheetPalette(ACCENT);
   const effectiveShowAnswers = isAnswerKey || showAnswers;
@@ -115,7 +117,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
       {/* Answer Key Banner */}
       {isAnswerKey && (
         <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
-          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{t('templates.answerKey')}</span>
         </div>
       )}
 
@@ -155,7 +157,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
           ? (
             <div style={{ marginBottom: 24, border: `2px solid ${ACCENT}`, borderRadius: 6, overflow: 'hidden' }}>
               <div style={{ background: ACCENT, padding: '6px 16px' }}>
-                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Word Bank</span>
+                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('editor.wordBank')}</span>
               </div>
               <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} style={{ height: 28, width: 72, background: palette.accentLight, borderRadius: 4 }} />)}
@@ -166,7 +168,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
             ? (
               <div style={{ marginBottom: 24, border: `2px solid ${ACCENT}`, borderRadius: 6, overflow: 'hidden' }}>
                 <div style={{ background: ACCENT, padding: '6px 16px' }}>
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Word Bank</span>
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('editor.wordBank')}</span>
                 </div>
                 <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {wordBank.map((word, i) => (
@@ -182,7 +184,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
 
         {/* Directions */}
         <div style={{ background: '#fafafa', border: '1.5px solid #e2e8f0', borderLeft: `4px solid ${ACCENT}`, borderRadius: 4, padding: '10px 16px', marginBottom: 24, fontSize: 13, color: '#334155' }}>
-          <strong>Directions:</strong> {DIRECTIONS[questionType] || 'Answer each question below.'}
+          <strong>{t('templates.directions')}</strong> {DIRECTIONS[questionType] || 'Answer each question below.'}
         </div>
 
         {/* Shared image */}
@@ -234,7 +236,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
       )}
 
       <div style={{ borderTop: '1.5px solid #e2e8f0', margin: '0 36px', padding: '10px 0 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>Generated for educational purposes</span>
+        <span style={{ fontSize: 11, color: '#94a3b8' }}>{t('templates.generatedForEducation')}</span>
         <div style={{ width: 20, height: 5, background: ACCENT, borderRadius: 3 }} />
       </div>
     </div>

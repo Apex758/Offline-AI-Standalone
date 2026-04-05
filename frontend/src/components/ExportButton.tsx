@@ -1,5 +1,6 @@
 // components/ExportButton.tsx - UPDATED VERSION
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
 import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
@@ -56,6 +57,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
   filename = 'export',
   className = ''
 }) => {
+  const { t } = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
@@ -236,14 +238,14 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
               >
                 <FileText className="w-4 h-4 mr-3 text-red-600" />
-                <span className="text-sm text-gray-700">Export as PDF</span>
+                <span className="text-sm text-gray-700">{t('export.exportPdf')}</span>
               </button>
               <button
                 onClick={() => handleExport('docx')}
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
               >
                 <FileDown className="w-4 h-4 mr-3 text-blue-600" />
-                <span className="text-sm text-gray-700">Export as Word</span>
+                <span className="text-sm text-gray-700">{t('export.exportWord')}</span>
               </button>
             </div>
           </div>

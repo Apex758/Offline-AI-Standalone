@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
@@ -36,6 +37,7 @@ interface CurriculumPlanProps {
 }
 
 const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const accentColor = settings.tabColors['curriculum-plan'] ?? '#3b82f6';
 
@@ -191,8 +193,8 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Icon icon={Calendar01IconData} size={24} style={{ color: '#fff' }} />
           <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Curriculum Plan</h1>
-            <p style={{ margin: 0, fontSize: 12, opacity: 0.8 }}>Assign milestones to academic phases</p>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{t('curriculum.curriculumPlan')}</h1>
+            <p style={{ margin: 0, fontSize: 12, opacity: 0.8 }}>{t('curriculum.assignMilestones')}</p>
           </div>
         </div>
         {unassignedCount > 0 && (
@@ -249,8 +251,8 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
             Unassign
           </button>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-            <button onClick={selectAll} style={{ fontSize: 12, color: accentColor, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>Select All</button>
-            <button onClick={selectNone} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Clear</button>
+            <button onClick={selectAll} style={{ fontSize: 12, color: accentColor, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>{t('curriculum.selectAll')}</button>
+            <button onClick={selectNone} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>{t('common.clear')}</button>
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
@@ -43,6 +44,7 @@ export default function RelatedCurriculumBox({
   onOpenCurriculum,
   accentColor,
 }: RelatedCurriculumBoxProps) {
+  const { t } = useTranslation();
   const [matches, setMatches] = useState<CurriculumMatch[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -73,8 +75,8 @@ export default function RelatedCurriculumBox({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
           </svg>
         </div>
-        <p className="text-xs text-theme-hint">Curriculum alignment disabled</p>
-        <p className="text-[10px] text-theme-hint mt-1">Toggle on to align with curriculum outcomes</p>
+        <p className="text-xs text-theme-hint">{t('curriculum.alignmentDisabled')}</p>
+        <p className="text-[10px] text-theme-hint mt-1">{t('curriculum.toggleAlign')}</p>
       </div>
     );
   }
@@ -87,7 +89,7 @@ export default function RelatedCurriculumBox({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
         </div>
-        <p className="text-xs text-theme-hint">Select subject, grade, and strand</p>
+        <p className="text-xs text-theme-hint">{t('curriculum.selectSubjectGradeStrand')}</p>
       </div>
     );
   }
@@ -95,7 +97,7 @@ export default function RelatedCurriculumBox({
   if (matches.length === 0 && selectedELOs.length === 0) {
     return (
       <div className="rounded-xl border border-theme/40 p-5 bg-theme-surface/30 flex flex-col items-center justify-center text-center h-full">
-        <p className="text-xs text-theme-hint">No matching curriculum found</p>
+        <p className="text-xs text-theme-hint">{t('curriculum.noMatchingCurriculum')}</p>
       </div>
     );
   }

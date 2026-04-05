@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Calendar01Icon from '@hugeicons/core-free-icons/Calendar01Icon';
 import Target01Icon from '@hugeicons/core-free-icons/Target01Icon';
@@ -36,6 +37,7 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
   color = "blue",
   children
 }) => {
+  const { t } = useTranslation();
   return (
     <Card className={`my-6 bg-gradient-to-br from-${color}-50 to-${color}-100 border-2 border-${color}-200`}>
       <CardHeader>
@@ -51,7 +53,7 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Target className={`h-5 w-5 text-${color}-600`} />
-                <h4 className="font-semibold text-gray-800">Focus Areas</h4>
+                <h4 className="font-semibold text-gray-800">{t('weeklyOverview.focusAreas')}</h4>
               </div>
               <ul className="list-disc pl-5 space-y-1">
                 {(focusAreas || learningGoals)?.map((goal, index) => (
@@ -65,7 +67,7 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen className={`h-5 w-5 text-${color}-600`} />
-                <h4 className="font-semibold text-gray-800">Key Vocabulary</h4>
+                <h4 className="font-semibold text-gray-800">{t('weeklyOverview.keyVocabulary')}</h4>
               </div>
               <ul className="list-disc pl-5 space-y-1">
                 {(vocabulary || keyVocabulary)?.map((word, index) => (

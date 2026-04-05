@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -253,6 +254,7 @@ const formatLessonText = (text: string, accentColor: string) => {
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
 
   // Curriculum data is loaded per grade+subject via CurriculumAlignmentFields
@@ -1152,7 +1154,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <div className="space-y-4">
                         <div data-tutorial="lesson-planner-basic-info">
                           <label className="block text-sm font-medium text-theme-label mb-2">
-                            Grade Level <span className="text-red-500">*</span>
+                            {t('forms.gradeLevel')} <span className="text-red-500">*</span>
                           </label>
                           <select
                             value={formData.gradeLevel}
@@ -1179,7 +1181,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                         <div>
                           <label className="block text-sm font-medium text-theme-label mb-2">
-                            Subject <span className="text-red-500">*</span>
+                            {t('forms.subject')} <span className="text-red-500">*</span>
                           </label>
                           <select
                             value={formData.subject}
@@ -1231,7 +1233,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     {/* Rest of the form fields below (full width) */}
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">
-                        Topic <span className="text-red-500">*</span>
+                        {t('forms.topic')} <span className="text-red-500">*</span>
                       </label>
                       <SmartInput
                         value={formData.topic}
@@ -1262,7 +1264,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                       <div data-tutorial="lesson-planner-duration">
                         <label className="block text-sm font-medium text-theme-label mb-2">
-                          Duration (minutes) <span className="text-red-500">*</span>
+                          {t('forms.duration')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"
@@ -1531,12 +1533,12 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       {loading ? (
                         <>
                           <HeartbeatLoader className="w-5 h-5 mr-2" />
-                          Generating...
+                          {t('generators.generatingLesson')}
                         </>
                       ) : (
                         <>
                           <FileText className="w-5 h-5 mr-2" />
-                          Generate Lesson Plan
+                          {t('generators.generateLesson')}
                         </>
                       )}
                     </button>

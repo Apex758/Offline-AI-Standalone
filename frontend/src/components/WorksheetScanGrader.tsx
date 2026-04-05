@@ -14,6 +14,7 @@ import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { useTranslation } from 'react-i18next';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import axios from 'axios';
 import { useTabProcessing } from '../contexts/TabBusyContext';
@@ -72,6 +73,7 @@ function letterColor(g: string) {
 type Phase = 'worksheet-id' | 'upload-scans' | 'grading' | 'results';
 
 const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: initialWorksheetId, onClose }) => {
+  const { t } = useTranslation();
   const { hasOcr } = useCapabilities();
   const [phase, setPhase] = useState<Phase>(initialWorksheetId ? 'upload-scans' : 'worksheet-id');
   const [worksheetId, setWorksheetId] = useState(initialWorksheetId || '');
@@ -215,7 +217,7 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
           <Icon icon={SquareLock01IconData} className="w-7 h-7" style={{ color: '#3b82f6' }} />
         </div>
-        <h3 className="text-lg font-semibold text-gray-800">OCR Scan Grading Unavailable</h3>
+        <h3 className="text-lg font-semibold text-gray-800">{t('bulkGrader.ocrUnavailable')}</h3>
         <p className="text-sm text-gray-500 max-w-sm">
           Scan grading requires OCR (Tier 2). Enable OCR in Settings to grade student papers by scanning.
         </p>
@@ -244,7 +246,7 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
           <div className="space-y-4">
             <div className="text-center py-8">
               <SearchIcon className="w-12 h-12 text-theme-muted mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-theme-title">Find Answer Key</h3>
+              <h3 className="text-lg font-medium text-theme-title">{t('bulkGrader.findAnswerKey')}</h3>
               <p className="text-sm text-theme-muted mt-1">Upload the teacher version or enter the Worksheet ID</p>
             </div>
 
@@ -380,7 +382,7 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
         {phase === 'grading' && (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <HeartbeatLoader className="w-8 h-8 text-blue-600" />
-            <p className="text-theme-label font-medium">Grading scans...</p>
+            <p className="text-theme-label font-medium">{t('bulkGrader.gradingScans')}</p>
             <p className="text-sm text-theme-muted">
               {gradingProgress.current} of {gradingProgress.total} complete
             </p>
@@ -404,7 +406,7 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
               </div>
               <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-center">
                 <p className="text-2xl font-bold text-green-700">{classAverage}%</p>
-                <p className="text-xs text-green-600">Class Average</p>
+                <p className="text-xs text-green-600">{t('photoTransfer.classAverage')}</p>
               </div>
               <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 text-center">
                 <p className="text-2xl font-bold text-purple-700">{results.filter(r => r.saved).length}</p>

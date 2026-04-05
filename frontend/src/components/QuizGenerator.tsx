@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
@@ -242,6 +243,7 @@ const formatQuizText = (text: string, accentColor: string) => {
 
 const ENDPOINT = '/ws/quiz';
 const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
@@ -1403,7 +1405,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   <>
                     <div data-tutorial="quiz-generator-grade">
                       <label className="block text-sm font-medium text-theme-label mb-2">
-                        Grade Level <span className="text-red-500">*</span>
+                        {t('forms.gradeLevel')} <span className="text-red-500">*</span>
                       </label>
                       <select
                         value={formData.gradeLevel}
@@ -1429,7 +1431,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                     <div data-tutorial="quiz-generator-subject">
                       <label className="block text-sm font-medium text-theme-label mb-2">
-                        Subject <span className="text-red-500">*</span>
+                        {t('forms.subject')} <span className="text-red-500">*</span>
                       </label>
                       <select
                         value={formData.subject}
@@ -1535,7 +1537,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                 <div data-tutorial="quiz-generator-question-count">
                   <label className="block text-sm font-medium text-theme-label mb-2">
-                    Number of Questions <span className="text-red-500">*</span>
+                    {t('forms.questionCount')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -1627,12 +1629,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   {loading ? (
                     <>
                       <HeartbeatLoader className="w-5 h-5 mr-2" />
-                      Generating...
+                      {t('generators.generatingQuiz')}
                     </>
                   ) : (
                     <>
                       <ListChecks className="w-5 h-5 mr-2" />
-                      Generate Quiz
+                      {t('generators.generateQuiz')}
                     </>
                   )}
                 </button>

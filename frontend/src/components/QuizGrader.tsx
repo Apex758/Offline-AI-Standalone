@@ -14,6 +14,7 @@ import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import { useTranslation } from 'react-i18next';
 import { ParsedQuiz, QuizQuestion } from '../types/quiz';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -106,6 +107,7 @@ function letterGradeColor(grade: string): string {
 }
 
 const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const triggerCheck = useAchievementTrigger();
   const accentColor = settings.tabColors['quiz-generator'] ?? '#3b82f6';
@@ -306,7 +308,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
         <>
           {/* ── Tabs ── */}
           <div className="flex border-b border-theme flex-shrink-0">
-            {([['single', ClipboardCheck, 'Single Student'], ['bulk', Users, 'Bulk Grade'], ['scan', FileText, 'Scan Grade']] as const).map(([tab, Icon, label]) => (
+            {([['single', ClipboardCheck, t('grader.singleStudent')], ['bulk', Users, t('grader.bulkGrade')], ['scan', FileText, t('grader.scanGrade')]] as const).map(([tab, Icon, label]) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -342,7 +344,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
                     <div className="relative">
                       <input
                         type="text"
-                        placeholder="Search student name..."
+                        placeholder={t('grader.searchStudent')}
                         value={studentSearch}
                         onChange={e => { setStudentSearch(e.target.value); setShowDropdown(true); }}
                         onFocus={() => setShowDropdown(true)}
@@ -414,7 +416,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>
-                                  {q.type === 'multiple-choice' ? 'Multiple Choice' : q.type === 'true-false' ? 'True / False' : 'Fill in the Blank'}
+                                  {q.type === 'multiple-choice' ? t('grader.multipleChoice') : q.type === 'true-false' ? t('grader.trueFalse') : t('grader.fillInBlank')}
                                 </span>
                                 <span className="text-xs text-theme-muted">{q.points ?? 1} pt{(q.points ?? 1) !== 1 ? 's' : ''}</span>
                               </div>
@@ -459,7 +461,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
                     <div className="flex gap-3 pt-2">
                       <button onClick={() => setPhase('select-student')} className="px-4 py-2 rounded-lg border border-theme text-theme-label hover:bg-theme-hover transition text-sm">Back</button>
                       <button onClick={handleGrade} disabled={!allAnswered} className="flex-1 py-3 rounded-lg text-white font-medium transition disabled:opacity-40 disabled:cursor-not-allowed" style={{ backgroundColor: allAnswered ? accentColor : '#9ca3af' }}>
-                        {allAnswered ? 'Grade Quiz' : `Answer all questions (${answers.filter(a => a.value !== null).length}/${gradeableQuestions.length})`}
+                        {allAnswered ? t('grader.gradeQuiz') : `${t('grader.answerAll')} (${answers.filter(a => a.value !== null).length}/${gradeableQuestions.length})`}
                       </button>
                     </div>
                   </div>
@@ -500,7 +502,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
                           {selectedStudent && (
                             <button onClick={handleSave} disabled={saveStatus === 'saving' || saveStatus === 'saved'} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-sm transition ${saveStatus === 'saved' ? 'bg-green-600' : saveStatus === 'error' ? 'bg-red-500' : 'hover:opacity-90'}`} style={saveStatus === 'idle' || saveStatus === 'saving' ? { backgroundColor: accentColor } : {}}>
                               <Save className="w-4 h-4" />
-                              {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : saveStatus === 'error' ? 'Error – Retry' : 'Save to Profile'}
+                              {saveStatus === 'saving' ? t('common.saving') : saveStatus === 'saved' ? t('grader.saved') : saveStatus === 'error' ? 'Error – Retry' : t('classManagement.saveToProfile')}
                             </button>
                           )}
                         </div>

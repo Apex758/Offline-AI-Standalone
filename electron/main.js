@@ -314,10 +314,10 @@ async function startBackend() {
     }
     
     // Use the startup script in production
-    // Bind to 0.0.0.0 so phones on the local network can reach the backend
-    // (required for Photo Transfer feature)
+    // Bind to 127.0.0.1 (localhost only) for security.
+    // Photo Transfer uses a separate LAN-accessible server when active.
     const args = isDev ?
-      ['-u', '-m', 'uvicorn', 'main:app', '--host', '0.0.0.0', '--port', BACKEND_PORT.toString()] :
+      ['-u', '-m', 'uvicorn', 'main:app', '--host', '127.0.0.1', '--port', BACKEND_PORT.toString()] :
       ['-u', startScript];
     
     log.info(`Command: ${pythonCmd} ${args.join(' ')}`);

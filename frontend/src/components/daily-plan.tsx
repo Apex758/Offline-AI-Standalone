@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
@@ -49,6 +50,7 @@ export function DailyPlan({
   color = "blue",
   className = ''
 }: DailyPlanProps) {
+  const { t } = useTranslation();
   const hasStructuredProps =
     morningActivity || literacyFocus || mathFocus || afternoonActivity;
 
@@ -85,7 +87,7 @@ export function DailyPlan({
 
                     {activity.materials && activity.materials.length > 0 && (
                       <div className="mt-2">
-                        <p className="text-sm font-medium text-gray-700 mb-1">Materials:</p>
+                        <p className="text-sm font-medium text-gray-700 mb-1">{t('activityCard.materials')}</p>
                         <ul className="text-sm text-gray-600 space-y-1">
                           {activity.materials.map((material, idx) => (
                             <li key={idx} className="flex items-start">
@@ -110,20 +112,20 @@ export function DailyPlan({
       ) : (
         <div className="text-gray-700">
           {morningActivity && (
-            <p className="mb-2"><strong>Morning Activity:</strong> {morningActivity}</p>
+            <p className="mb-2"><strong>{t('dailyPlan.morningActivity')}</strong> {morningActivity}</p>
           )}
           {literacyFocus && (
-            <p className="mb-2"><strong>Literacy Focus:</strong> {literacyFocus}</p>
+            <p className="mb-2"><strong>{t('dailyPlan.literacyFocus')}</strong> {literacyFocus}</p>
           )}
           {mathFocus && (
-            <p className="mb-2"><strong>Math Focus:</strong> {mathFocus}</p>
+            <p className="mb-2"><strong>{t('dailyPlan.mathFocus')}</strong> {mathFocus}</p>
           )}
           {afternoonActivity && (
             <p className="mb-2"><strong>Afternoon Activity:</strong> {afternoonActivity}</p>
           )}
           {materials && materials.length > 0 && (
             <div className="mt-3">
-              <p className="font-medium">Materials:</p>
+              <p className="font-medium">{t('activityCard.materials')}</p>
               <ul className="list-disc pl-6">
                 {materials.map((item, idx) => (
                   <li key={idx}>{item}</li>
@@ -132,7 +134,7 @@ export function DailyPlan({
             </div>
           )}
           {assessmentNotes && (
-            <p className="mt-3"><strong>Assessment Notes:</strong> {assessmentNotes}</p>
+            <p className="mt-3"><strong>{t('dailyPlan.assessmentNotes')}</strong> {assessmentNotes}</p>
           )}
         </div>
       )}

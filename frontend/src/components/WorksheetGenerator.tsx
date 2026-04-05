@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { HugeiconsIcon } from '@hugeicons/react';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
@@ -205,6 +206,7 @@ const allGradesWS = ['K', '1', '2', '3', '4', '5', '6'];
 const ENDPOINT = '/ws/worksheet';
 
 const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
+  const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   const { hasDiffusion, hasVision } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
@@ -1967,14 +1969,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 {loading ? (
                   <>
                     <HeartbeatLoader className="w-5 h-5 mr-2" />
-                    Generating...
+                    {t('generators.generatingWorksheet')}
                   </>
                 ) : (
                   <>
                     <FileText className="w-5 h-5 mr-2" />
                     {classMode && selectedStudentIds.size > 0
                       ? `Generate for ${selectedStudentIds.size} Students`
-                      : 'Generate Worksheet'}
+                      : t('generators.generateWorksheet')}
                   </>
                 )}
               </button>

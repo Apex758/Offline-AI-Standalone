@@ -15,7 +15,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
     description: 'Browse the OECS curriculum, track progress, and manage your saved resources.',
     icon: 'Search',
     sidebarItems: ['curriculum', 'my-classroom', 'planning-prep'],
-    tools: ['Curriculum Browser', 'Progress Tracker', 'My Resources'],
+    tools: ['Curriculum Browser', 'Progress Tracker', 'My Resources', 'School Year'],
   },
   {
     id: 'assessment-tools',
@@ -31,7 +31,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
     description: 'Manage classes, student profiles, and track quiz grades.',
     icon: 'UsersRound',
     sidebarItems: ['my-classroom'],
-    tools: ['My Classes'],
+    tools: ['My Classes', 'Curriculum Plan', 'Achievements'],
   },
   {
     id: 'ai-assistant',
@@ -47,7 +47,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
     description: 'Build worksheets, generate images, and create slide decks for your classroom.',
     icon: 'Palette',
     sidebarItems: ['visual-studio'],
-    tools: ['Worksheet Builder', 'Image Studio', 'Slide Deck'],
+    tools: ['Worksheet Builder', 'Image Studio', 'Slide Deck', 'Storybook Creator'],
   },
 ];
 

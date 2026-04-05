@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SettingsPanelSkeleton } from './ui/SettingsPanelSkeleton';
 import { resetStepsCache } from '../lib/imageApi';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -169,9 +170,12 @@ const GROUP_CHILDREN: Record<string, Array<{ type: string; name: string; iconDat
 const SortableSidebarItem: React.FC<{
   item: SidebarItemConfig;
   onToggle: (id: string, enabled: boolean) => void;
-}> = ({ item, onToggle }) => {
+  onChildToggle?: (groupId: string, childType: string, enabled: boolean) => void;
+}> = ({ item, onToggle, onChildToggle }) => {
+  const [childrenExpanded, setChildrenExpanded] = useState(false);
   const meta = SIDEBAR_ITEM_META[item.id];
   const isLocked = NON_TOGGLEABLE.has(item.id);
+  const children = GROUP_CHILDREN[item.id];
   const {
     attributes,
     listeners,
@@ -191,39 +195,90 @@ const SortableSidebarItem: React.FC<{
   if (!meta) return null;
   const ItemIcon = meta.icon;
 
+  const enabledChildCount = children
+    ? children.filter(c => !(item.disabledChildren ?? []).includes(c.type)).length
+    : 0;
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-        isDragging
-          ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40 shadow-lg'
-          : 'bg-theme-surface border-theme-strong/10 hover:bg-theme-subtle'
-      } ${!item.enabled && !isLocked ? 'opacity-50' : ''}`}
-    >
+    <div ref={setNodeRef} style={style}>
       <div
-        {...attributes}
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing flex-shrink-0 text-theme-muted hover:text-theme-label"
+        className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+          isDragging
+            ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40 shadow-lg'
+            : 'bg-theme-surface border-theme-strong/10 hover:bg-theme-subtle'
+        } ${!item.enabled && !isLocked ? 'opacity-50' : ''}`}
       >
-        <GripVertical className="w-4 h-4" />
-      </div>
-      <ItemIcon className="w-4.5 h-4.5 text-theme-secondary flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-theme-label truncate">{meta.name}</p>
-        {meta.childCount && (
-          <p className="text-xs text-theme-hint">{meta.childCount} tools</p>
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing flex-shrink-0 text-theme-muted hover:text-theme-label"
+        >
+          <GripVertical className="w-4 h-4" />
+        </div>
+        <ItemIcon className="w-4.5 h-4.5 text-theme-secondary flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-theme-label truncate">{meta.name}</p>
+          {children && (
+            <p className="text-xs text-theme-hint">
+              {enabledChildCount} of {children.length} tools visible
+            </p>
+          )}
+        </div>
+        {children && item.enabled && (
+          <button
+            onClick={() => setChildrenExpanded(!childrenExpanded)}
+            className="p-1 rounded hover:bg-theme-subtle text-theme-muted hover:text-theme-label transition-colors flex-shrink-0"
+            title={childrenExpanded ? 'Collapse tools' : 'Expand tools'}
+          >
+            <ChevronDown
+              className="w-3.5 h-3.5 transition-transform duration-200"
+              style={{ transform: childrenExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            />
+          </button>
+        )}
+        {isLocked ? (
+          <Lock className="w-4 h-4 text-theme-muted flex-shrink-0" />
+        ) : (
+          <input
+            type="checkbox"
+            checked={item.enabled}
+            onChange={(e) => onToggle(item.id, e.target.checked)}
+            className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+          />
         )}
       </div>
-      {isLocked ? (
-        <Lock className="w-4 h-4 text-theme-muted flex-shrink-0" />
-      ) : (
-        <input
-          type="checkbox"
-          checked={item.enabled}
-          onChange={(e) => onToggle(item.id, e.target.checked)}
-          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
-        />
+      {/* Expandable child tools */}
+      {children && item.enabled && (
+        <div
+          className="overflow-hidden transition-all duration-200 ease-in-out"
+          style={{
+            maxHeight: childrenExpanded ? `${children.length * 48 + 8}px` : '0',
+            opacity: childrenExpanded ? 1 : 0,
+          }}
+        >
+          <div className="ml-8 mt-1 space-y-1">
+            {children.map(child => {
+              const isChildEnabled = !(item.disabledChildren ?? []).includes(child.type);
+              return (
+                <div
+                  key={child.type}
+                  className={`flex items-center gap-3 py-2 px-3 rounded-md transition-colors hover:bg-theme-subtle ${
+                    !isChildEnabled ? 'opacity-50' : ''
+                  }`}
+                >
+                  <Icon icon={child.iconData} className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                  <span className="flex-1 text-sm text-theme-label truncate">{child.name}</span>
+                  <input
+                    type="checkbox"
+                    checked={isChildEnabled}
+                    onChange={(e) => onChildToggle?.(item.id, child.type, e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -256,6 +311,7 @@ import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetI
 import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
+import Notification01IconData from '@hugeicons/core-free-icons/Notification01Icon';
 import ArrowRight02IconData from '@hugeicons/core-free-icons/ArrowRight02Icon';
 import CircleArrowRight01IconData from '@hugeicons/core-free-icons/CircleArrowRight01Icon';
 
@@ -283,6 +339,7 @@ interface ModelInfo {
 }
 
 const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
+  const { t } = useTranslation();
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
   const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, supportsThinking, dualModel, refreshCapabilities, recommendations } = useCapabilities();
   const { getActiveStreams } = useWebSocket();
@@ -353,6 +410,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     { key: 'achievements', label: 'Achievements' },
     { key: 'students', label: 'Student Records' },
     { key: 'calendar', label: 'Calendar & Reminders' },
+    { key: 'storybooks', label: 'Storybooks' },
+    { key: 'sticky_notes', label: 'Sticky Notes' },
+    { key: 'lesson_drafts', label: 'Lesson Drafts (In-Progress)' },
     { key: 'settings', label: 'App Settings' },
   ] as const;
   const [exportSelected, setExportSelected] = useState<Set<string>>(new Set(DATA_CATEGORIES.map(c => c.key)));
@@ -991,7 +1051,14 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       localStorage.clear();
       // 3. Clear all sessionStorage
       sessionStorage.clear();
-      // 4. Reload the app
+      // 4. Clear IndexedDB (StorybookAssetsDB)
+      await new Promise<void>((resolve) => {
+        const dbReq = indexedDB.deleteDatabase('StorybookAssetsDB');
+        dbReq.onsuccess = () => resolve();
+        dbReq.onerror = () => resolve();
+        dbReq.onblocked = () => resolve();
+      });
+      // 5. Reload the app
       window.location.reload();
     } catch (err) {
       console.error('Factory reset failed:', err);
@@ -1022,12 +1089,14 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     setExportMessage('');
     try {
       // Define frontend-only categories (stored in localStorage)
-      const frontendOnlyCats = ['settings', 'brain_dumps', 'tasks'];
+      const frontendOnlyCats = ['settings', 'brain_dumps', 'tasks', 'sticky_notes', 'storybooks'];
       // Separate backend categories from frontend-only ones
       const backendCats = [...exportSelected].filter(c => !frontendOnlyCats.includes(c));
       const includeSettings = exportSelected.has('settings');
       const includeBrainDumps = exportSelected.has('brain_dumps');
       const includeTasks = exportSelected.has('tasks');
+      const includeStickyNotes = exportSelected.has('sticky_notes');
+      const includeStorybooks = exportSelected.has('storybooks');
 
       let backendData: Record<string, unknown> = {};
       if (backendCats.length > 0) {
@@ -1071,6 +1140,70 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
         }
       }
 
+      // Add sticky notes from localStorage if selected
+      if (includeStickyNotes) {
+        try {
+          const notes = localStorage.getItem('pearl_sticky_notes');
+          const groups = localStorage.getItem('pearl_sticky_note_groups');
+          backendData['sticky_notes'] = {
+            notes: notes ? JSON.parse(notes) : [],
+            groups: groups ? JSON.parse(groups) : [],
+          };
+        } catch (e) {
+          console.error('Error exporting sticky notes:', e);
+          backendData['sticky_notes'] = { notes: [], groups: [] };
+        }
+      }
+
+      // Add storybooks from localStorage + IndexedDB if selected
+      if (includeStorybooks) {
+        try {
+          const historyRaw = localStorage.getItem('storybook_history');
+          const metadata: Array<Record<string, unknown>> = historyRaw ? JSON.parse(historyRaw) : [];
+          const exportSettingsRaw = localStorage.getItem('storybook_export_settings');
+
+          // For each storybook with images/audio, load from IndexedDB and attach as base64
+          const enrichedMetadata = await Promise.all(metadata.map(async (entry) => {
+            const enriched = { ...entry } as Record<string, unknown>;
+            const id = entry.id as string;
+            try {
+              if (entry.hasImages) {
+                const { loadStorybookImages } = await import('../utils/storybookIndexedDB');
+                const imagesMap = await loadStorybookImages(id);
+                const imageObj: Record<string, string> = {};
+                imagesMap.forEach((val, key) => { imageObj[key] = val; });
+                enriched.imageAssets = imageObj;
+              }
+              if (entry.hasAudio) {
+                const { loadStorybookAudio } = await import('../utils/storybookIndexedDB');
+                const audioMap = await loadStorybookAudio(id);
+                const audioObj: Record<string, string> = {};
+                for (const [key, blob] of audioMap.entries()) {
+                  const base64 = await new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.readAsDataURL(blob);
+                  });
+                  audioObj[key] = base64;
+                }
+                enriched.audioAssets = audioObj;
+              }
+            } catch (e) {
+              console.error(`Error loading storybook assets for ${id}:`, e);
+            }
+            return enriched;
+          }));
+
+          backendData['storybooks'] = {
+            metadata: enrichedMetadata,
+            exportSettings: exportSettingsRaw || null,
+          };
+        } catch (e) {
+          console.error('Error exporting storybooks:', e);
+          backendData['storybooks'] = { metadata: [], exportSettings: null };
+        }
+      }
+
       const exportPayload = {
         exportDate: new Date().toISOString(),
         version: '1.0.0',
@@ -1105,7 +1238,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       }
 
       // Define frontend-only categories (stored in localStorage)
-      const frontendOnlyCats = ['settings', 'brain_dumps', 'tasks'];
+      const frontendOnlyCats = ['settings', 'brain_dumps', 'tasks', 'sticky_notes', 'storybooks'];
       // Filter to only import the categories the user has selected
       const catsToImport = parsed.categories.filter((c: string) => importSelected.has(c));
       const filteredData: Record<string, unknown> = {};
@@ -1142,6 +1275,95 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
         }
       }
 
+      // Import sticky notes to localStorage (merge by ID)
+      if (catsToImport.includes('sticky_notes') && filteredData['sticky_notes']) {
+        try {
+          const imported = filteredData['sticky_notes'] as { notes?: unknown[]; groups?: unknown[] };
+          // Merge notes
+          const existingNotes: Array<{ id: string; [k: string]: unknown }> = JSON.parse(localStorage.getItem('pearl_sticky_notes') || '[]');
+          const existingNoteIds = new Set(existingNotes.map(n => n.id));
+          const newNotes = (imported.notes || []) as Array<{ id: string; [k: string]: unknown }>;
+          const mergedNotes = [...existingNotes, ...newNotes.filter(n => !existingNoteIds.has(n.id))];
+          localStorage.setItem('pearl_sticky_notes', JSON.stringify(mergedNotes));
+          // Merge groups
+          const existingGroups: Array<{ id: string; [k: string]: unknown }> = JSON.parse(localStorage.getItem('pearl_sticky_note_groups') || '[]');
+          const existingGroupIds = new Set(existingGroups.map(g => g.id));
+          const newGroups = (imported.groups || []) as Array<{ id: string; [k: string]: unknown }>;
+          const mergedGroups = [...existingGroups, ...newGroups.filter(g => !existingGroupIds.has(g.id))];
+          localStorage.setItem('pearl_sticky_note_groups', JSON.stringify(mergedGroups));
+        } catch (e) {
+          console.error('Error importing sticky notes:', e);
+        }
+      }
+
+      // Import storybooks to localStorage + IndexedDB
+      if (catsToImport.includes('storybooks') && filteredData['storybooks']) {
+        try {
+          const storybookData = filteredData['storybooks'] as { metadata?: Array<Record<string, unknown>>; exportSettings?: string | null };
+          const importedMetadata = storybookData.metadata || [];
+
+          // Merge metadata into localStorage (by ID)
+          const existing: Array<Record<string, unknown>> = JSON.parse(localStorage.getItem('storybook_history') || '[]');
+          const existingIds = new Set(existing.map(s => s.id as string));
+          const toAdd = importedMetadata.filter(s => !existingIds.has(s.id as string));
+
+          // Strip binary assets from localStorage entries, restore to IndexedDB
+          const lightEntries = toAdd.map(s => {
+            const { imageAssets, audioAssets, ...rest } = s;
+            return rest;
+          });
+          localStorage.setItem('storybook_history', JSON.stringify([...existing, ...lightEntries]));
+
+          // Restore IndexedDB assets
+          for (const entry of toAdd) {
+            const id = entry.id as string;
+            try {
+              if (entry.imageAssets) {
+                const { saveStorybookImages } = await import('../utils/storybookIndexedDB');
+                const imageObj = entry.imageAssets as Record<string, string>;
+                // Reconstruct StoryPage[] and CoverPage from flat map
+                const pages: Array<{ characterImageData?: string; backgroundImageData?: string }> = [];
+                let coverPage: { coverImageData?: string } | undefined;
+                for (const [key, dataUri] of Object.entries(imageObj)) {
+                  const [idxStr, type] = key.split(':');
+                  const idx = parseInt(idxStr, 10);
+                  if (idx === -1 && type === 'cover') {
+                    coverPage = { coverImageData: dataUri };
+                  } else {
+                    while (pages.length <= idx) pages.push({});
+                    if (type === 'character') pages[idx].characterImageData = dataUri;
+                    else if (type === 'background') pages[idx].backgroundImageData = dataUri;
+                  }
+                }
+                await saveStorybookImages(id, pages as never[], coverPage as never);
+              }
+              if (entry.audioAssets) {
+                const { saveStorybookAudio } = await import('../utils/storybookIndexedDB');
+                const audioObj = entry.audioAssets as Record<string, string>;
+                const entries: Array<{ pageIndex: number; segmentIndex: number; blob: Blob }> = [];
+                for (const [key, dataUri] of Object.entries(audioObj)) {
+                  const [pageStr, segStr] = key.split(':');
+                  // Convert data URI back to Blob
+                  const resp = await fetch(dataUri);
+                  const blob = await resp.blob();
+                  entries.push({ pageIndex: parseInt(pageStr, 10), segmentIndex: parseInt(segStr, 10), blob });
+                }
+                await saveStorybookAudio(id, entries);
+              }
+            } catch (e) {
+              console.error(`Error restoring storybook assets for ${id}:`, e);
+            }
+          }
+
+          // Restore export settings
+          if (storybookData.exportSettings) {
+            localStorage.setItem('storybook_export_settings', storybookData.exportSettings);
+          }
+        } catch (e) {
+          console.error('Error importing storybooks:', e);
+        }
+      }
+
       // Send backend categories to import endpoint
       const backendCats = catsToImport.filter((c: string) => !frontendOnlyCats.includes(c));
       const backendData: Record<string, unknown> = {};
@@ -1168,6 +1390,12 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       }
       if (catsToImport.includes('tasks')) {
         importedSummary = importedSummary ? importedSummary + ', tasks restored' : 'Tasks restored';
+      }
+      if (catsToImport.includes('sticky_notes')) {
+        importedSummary = importedSummary ? importedSummary + ', sticky notes restored' : 'Sticky notes restored';
+      }
+      if (catsToImport.includes('storybooks')) {
+        importedSummary = importedSummary ? importedSummary + ', storybooks restored' : 'Storybooks restored';
       }
 
       setImportMessage(importedSummary ? `Imported: ${importedSummary}` : 'Import complete (no new records)');
@@ -1652,9 +1880,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      Language
+                      {t('settings.language')}
                     </CardTitle>
-                    <CardDescription>Controls AI responses, text-to-speech, and speech-to-text language</CardDescription>
+                    <CardDescription>{t('settings.languageDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex gap-3">
@@ -2893,7 +3121,21 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                             <SortableContext items={reorderableItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
                               {reorderableItems.map(item => (
-                                <SortableSidebarItem key={item.id} item={item} onToggle={handleToggle} />
+                                <SortableSidebarItem key={item.id} item={item} onToggle={handleToggle} onChildToggle={(groupId, childType, enabled) => {
+                                  const newOrder = settings.sidebarOrder.map(i =>
+                                    i.id === groupId
+                                      ? {
+                                          ...i,
+                                          disabledChildren: enabled
+                                            ? (i.disabledChildren ?? []).filter(c => c !== childType)
+                                            : (i.disabledChildren ?? []).includes(childType)
+                                              ? i.disabledChildren
+                                              : [...(i.disabledChildren ?? []), childType],
+                                        }
+                                      : i
+                                  );
+                                  updateSettings({ sidebarOrder: newOrder });
+                                }} />
                               ))}
                             </SortableContext>
                           </DndContext>
@@ -3085,9 +3327,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 <Card data-search-section="notifications">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <svg className="w-4.5 h-4.5 text-theme-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                      </svg>
+                      <Icon icon={Notification01IconData} className="w-4.5 h-4.5 text-theme-secondary" />
                       Notifications &amp; Reminders
                     </CardTitle>
                     <CardDescription>Control how and when you receive reminders for calendar events</CardDescription>

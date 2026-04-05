@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import CurriculumNavigator from './CurriculumNavigator';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -47,6 +48,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
   onDataChange,
   onPanelClick
 }) => {
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentComponent, setCurrentComponent] = useState<React.ComponentType | null>(null);
   const [loading, setLoading] = useState(false);
@@ -183,7 +185,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
     if (error) {
       return (
         <div className="p-8">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Page</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">{t('curriculumViewer.errorLoading')}</h2>
           <p className="text-theme-muted mb-4">{error}</p>
           <p className="text-sm text-theme-hint">Current path: {location.pathname}</p>
           <button
@@ -205,8 +207,8 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
         console.error('Error rendering component:', err);
         return (
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-red-600 mb-4">Render Error</h2>
-            <p className="text-theme-muted">Failed to render this page.</p>
+            <h2 className="text-2xl font-bold text-red-600 mb-4">{t('curriculumViewer.renderError')}</h2>
+            <p className="text-theme-muted">{t('curriculumViewer.failedRender')}</p>
             <p className="text-sm text-red-500 mt-2">{String(err)}</p>
           </div>
         );
@@ -268,7 +270,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
             <button
               onClick={() => setSidebarOpen(true)}
               className="p-2 rounded-lg hover:bg-theme-hover transition mr-4"
-              title="Show navigation"
+              title={t('curriculumViewer.showNavigation')}
             >
               <Menu className="w-5 h-5 text-theme-muted" />
             </button>
