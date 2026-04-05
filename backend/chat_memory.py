@@ -205,13 +205,16 @@ class ChatMemory:
         Returns messages in chronological order.
         """
         conn = self._conn()
+        # Fetch only recent messages with margin for unpaired messages; DESC + LIMIT is index-efficient
+        limit = max(n_pairs * 3, 12)
         rows = conn.execute(
-            "SELECT role, content FROM messages WHERE chat_id = ? AND role IN ('user', 'assistant') ORDER BY id ASC",
-            (chat_id,)
+            "SELECT role, content FROM messages WHERE chat_id = ? AND role IN ('user', 'assistant') ORDER BY id DESC LIMIT ?",
+            (chat_id, limit)
         ).fetchall()
         conn.close()
 
-        messages = [dict(r) for r in rows]
+        # Reverse to restore chronological order
+        messages = [dict(r) for r in reversed(rows)]
 
         # Group into complete pairs
         pairs = []
@@ -383,28 +386,36 @@ class ChatMemory:
             "messages": [self._parse_message_row(r) for r in msg_rows]
         }
 
-    def get_all_chats_with_messages(self) -> List[Dict]:
+    def get_all_chats_with_messages(self, limit: int = 50, offset: int = 0) -> List[Dict]:
         """Get all chats with their messages (for frontend /api/chat-history compatibility)."""
         conn = self._conn()
-        chat_rows = conn.execute(
-            "SELECT id, title, updated_at as timestamp FROM chats ORDER BY updated_at DESC"
-        ).fetchall()
 
-        result = []
-        for chat in chat_rows:
-            msg_rows = conn.execute(
-                "SELECT msg_id as id, role, content, timestamp, attachments FROM messages WHERE chat_id = ? ORDER BY id ASC",
-                (chat['id'],)
-            ).fetchall()
-            result.append({
-                "id": chat['id'],
-                "title": chat['title'],
-                "timestamp": chat['timestamp'],
-                "messages": [self._parse_message_row(r) for r in msg_rows]
-            })
-
+        # Single query: paginate chats then LEFT JOIN their messages
+        rows = conn.execute("""
+            SELECT c.id as chat_id, c.title, c.updated_at as chat_timestamp,
+                   m.msg_id as id, m.role, m.content, m.timestamp, m.attachments
+            FROM (SELECT id, title, updated_at FROM chats ORDER BY updated_at DESC LIMIT ? OFFSET ?) c
+            LEFT JOIN messages m ON m.chat_id = c.id
+            ORDER BY c.updated_at DESC, m.id ASC
+        """, (limit, offset)).fetchall()
         conn.close()
-        return result
+
+        # Group by chat, preserving ORDER BY chat order via OrderedDict
+        from collections import OrderedDict
+        chats: OrderedDict = OrderedDict()
+        for row in rows:
+            cid = row['chat_id']
+            if cid not in chats:
+                chats[cid] = {
+                    "id": cid,
+                    "title": row['title'],
+                    "timestamp": row['chat_timestamp'],
+                    "messages": []
+                }
+            if row['id'] is not None:  # LEFT JOIN may produce NULL for empty chats
+                chats[cid]["messages"].append(self._parse_message_row(row))
+
+        return list(chats.values())
 
     def import_from_json(self, json_path: str):
         """One-time migration: import existing chat_history.json into SQLite."""

@@ -326,16 +326,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       // Load milestone stats if teacherId is available
       if (teacherId) {
         try {
-          const stats = await milestoneApi.getStats(teacherId);
+          const [stats, milestones, progressData] = await Promise.all([
+            milestoneApi.getStats(teacherId),
+            milestoneApi.getUpcoming(teacherId, 30),
+            milestoneApi.getProgress(teacherId),
+          ]);
           setMilestoneStats(stats);
           _cacheMilestoneStats = stats;
-
-          const milestones = await milestoneApi.getUpcoming(teacherId, 30);
           setUpcomingMilestones(milestones);
           _cacheUpcomingMilestones = milestones;
-
-          // Load progress breakdown for grade/subject views
-          const progressData = await milestoneApi.getProgress(teacherId);
           setProgressBreakdown(progressData.byGradeSubject || []);
           _cacheProgressBreakdown = progressData.byGradeSubject || [];
         } catch (e: any) {

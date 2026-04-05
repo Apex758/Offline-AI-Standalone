@@ -21,7 +21,7 @@ _ocr_model = None
 _ocr_lock = threading.Lock()
 _ocr_loaded = False
 _ocr_loading = False
-_ocr_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="ocr")
+_ocr_executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="ocr")
 
 def _get_model_path() -> Path:
     from config import MODELS_DIR, get_selected_ocr_model

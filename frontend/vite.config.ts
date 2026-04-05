@@ -45,6 +45,8 @@ export default defineConfig({
           vendor: ['react', 'react-dom', 'react-router-dom'],
           charts: ['recharts'],
           canvas: ['html2canvas'],
+          icons: ['@hugeicons/react', '@hugeicons/core-free-icons'],
+          webgl: ['ogl'],
         },
       },
     },

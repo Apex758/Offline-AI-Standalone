@@ -44,14 +44,15 @@ function computeScore(
   if (!historyFormData) return 0;
 
   // Exact match fields: subject, gradeLevel
+  // If the user filled a field, the history item MUST match — otherwise score = 0
   for (const field of ['subject', 'gradeLevel'] as const) {
     const formKey = mapping[field];
     if (!formKey) continue;
     const currentVal = getFieldValue(currentFormData, formKey);
+    if (!currentVal) continue; // user hasn't filled this field — skip
     const historyVal = getFieldValue(historyFormData, formKey);
-    if (currentVal && historyVal && currentVal === historyVal) {
-      score++;
-    }
+    if (currentVal !== historyVal) return 0; // hard fail — doesn't match
+    score++;
   }
 
   // Includes match fields: strand, essentialOutcomes, specificOutcomes
@@ -59,10 +60,10 @@ function computeScore(
     const formKey = mapping[field];
     if (!formKey) continue;
     const currentVal = getFieldValue(currentFormData, formKey);
+    if (!currentVal) continue; // user hasn't filled this field — skip
     const historyVal = getFieldValue(historyFormData, formKey);
-    if (currentVal && historyVal && (historyVal.includes(currentVal) || currentVal.includes(historyVal))) {
-      score++;
-    }
+    if (!historyVal || !(historyVal.includes(currentVal) || currentVal.includes(historyVal))) return 0; // hard fail
+    score++;
   }
 
   return score;

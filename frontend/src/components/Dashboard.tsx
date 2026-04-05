@@ -2186,7 +2186,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           zIndex: 40,
           background: sidebarOpen ? 'var(--sidebar-bg)' : 'var(--sidebar-bg-collapsed)',
           color: 'var(--sidebar-text)',
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s',
+          transition: 'box-shadow 0.3s, background 0.3s',
           backdropFilter: 'blur(24px) saturate(1.5)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
           borderRight: '1px solid var(--sidebar-border)',

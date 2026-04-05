@@ -4,6 +4,7 @@ import sys
 import os
 import io
 import queue
+import re
 import threading
 import time
 import subprocess
@@ -261,6 +262,66 @@ class LlamaInference:
             logger.error(f"❌ Failed to load model: {e}")
             raise
 
+    @property
+    def _use_chat_completion(self) -> bool:
+        """Whether this model needs create_chat_completion for proper special token handling."""
+        return self.model_config.get("prompt_format") == "gemma"
+
+    def _parse_prompt_to_messages(self, prompt: str) -> List[Dict[str, str]]:
+        """Parse a formatted prompt back into chat messages for create_chat_completion.
+
+        Gemma's <start_of_turn>/<end_of_turn> tokens are special-only tokens that
+        the raw completion API tokenizes as plain text, causing garbage output.
+        This method extracts the content so create_chat_completion can inject the
+        correct token IDs via the model's built-in Jinja template.
+        """
+        fmt = self.model_config.get("prompt_format", "llama")
+
+        if fmt == "gemma":
+            # Gemma format (single or multi-turn):
+            #   <start_of_turn>user\n{content}<end_of_turn>\n
+            #   <start_of_turn>model\n{content}<end_of_turn>\n
+            #   ...
+            #   <start_of_turn>model\n  (trailing, for generation)
+            messages = []
+            for role_tag, content in re.findall(
+                r'<start_of_turn>(user|model)\n(.*?)<end_of_turn>', prompt, re.DOTALL
+            ):
+                role = "assistant" if role_tag == "model" else "user"
+                messages.append({"role": role, "content": content.strip()})
+            # If the prompt ends with <start_of_turn>user\n...<end_of_turn>\n<start_of_turn>model\n
+            # the last user turn before the trailing model tag may not have matched above
+            # if it's the final (unclosed) user turn — but findall handles complete turns fine.
+            if messages:
+                return messages
+        elif fmt == "chatml":
+            messages = []
+            sys_match = re.search(r'<\|im_start\|>system\n(.*?)<\|im_end\|>', prompt, re.DOTALL)
+            if sys_match:
+                messages.append({"role": "system", "content": sys_match.group(1).strip()})
+            user_match = re.search(r'<\|im_start\|>user\n(.*?)<\|im_end\|>', prompt, re.DOTALL)
+            if user_match:
+                messages.append({"role": "user", "content": user_match.group(1).strip()})
+            if messages:
+                return messages
+        else:  # llama
+            messages = []
+            sys_match = re.search(
+                r'<\|start_header_id\|>system<\|end_header_id\|>\s*(.*?)<\|eot_id\|>', prompt, re.DOTALL
+            )
+            if sys_match:
+                messages.append({"role": "system", "content": sys_match.group(1).strip()})
+            user_match = re.search(
+                r'<\|start_header_id\|>user<\|end_header_id\|>\s*(.*?)<\|eot_id\|>', prompt, re.DOTALL
+            )
+            if user_match:
+                messages.append({"role": "user", "content": user_match.group(1).strip()})
+            if messages:
+                return messages
+
+        # Fallback: treat entire prompt as user message
+        return [{"role": "user", "content": prompt}]
+
     async def generate(
         self,
         tool_name: str,
@@ -289,17 +350,30 @@ class LlamaInference:
 
             # Run in thread pool (blocking call)
             resource_snapshot = [0.0, 0.0]  # [cpu_percent, ram_mb]
+            use_chat = self._use_chat_completion
+            chat_messages = self._parse_prompt_to_messages(prompt) if use_chat else None
+
             def blocking_generate():
                 with SilenceOutput():
-                    result = self.model(
-                        prompt,
-                        max_tokens=max_tokens,
-                        temperature=temperature,
-                        top_p=top_p,
-                        repeat_penalty=repeat_penalty,
-                        stop=stop,
-                        echo=False,
-                    )
+                    if use_chat and chat_messages:
+                        result = self.model.create_chat_completion(
+                            messages=chat_messages,
+                            max_tokens=max_tokens,
+                            temperature=temperature,
+                            top_p=top_p,
+                            repeat_penalty=repeat_penalty,
+                            stop=stop,
+                        )
+                    else:
+                        result = self.model(
+                            prompt,
+                            max_tokens=max_tokens,
+                            temperature=temperature,
+                            top_p=top_p,
+                            repeat_penalty=repeat_penalty,
+                            stop=stop,
+                            echo=False,
+                        )
                 # Capture resources while model is still hot in memory
                 try:
                     import psutil
@@ -310,13 +384,19 @@ class LlamaInference:
                     pass
                 return result
 
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(None, blocking_generate)
+            loop = asyncio.get_running_loop()
+            response = await asyncio.wait_for(
+                loop.run_in_executor(None, blocking_generate),
+                timeout=120
+            )
 
             gen_end = time.perf_counter()
             total_time_ms = (gen_end - gen_start) * 1000
 
-            generated = response["choices"][0]["text"]
+            if use_chat:
+                generated = response["choices"][0]["message"]["content"]
+            else:
+                generated = response["choices"][0]["text"]
             usage = response.get("usage", {})
 
             # Record metrics
@@ -384,16 +464,20 @@ class LlamaInference:
             if stop is None:
                 stop = self.model_config["stop_tokens"]
 
+            use_chat = self._use_chat_completion
+            chat_messages = self._parse_prompt_to_messages(prompt) if use_chat else None
+
             # Safety: check prompt token count before sending to native code
-            try:
-                prompt_tokens = self.model.tokenize(prompt.encode("utf-8"))
-                max_prompt_tokens = self.n_ctx - max_tokens - 64  # leave margin
-                if len(prompt_tokens) > max_prompt_tokens:
-                    logger.warning(f"Prompt too long: {len(prompt_tokens)} tokens (max {max_prompt_tokens}). Truncating.")
-                    prompt_tokens = prompt_tokens[:max_prompt_tokens]
-                    prompt = self.model.detokenize(prompt_tokens).decode("utf-8", errors="replace")
-            except Exception as te:
-                logger.warning(f"Token count check failed: {te}")
+            if not use_chat:
+                try:
+                    prompt_tokens = self.model.tokenize(prompt.encode("utf-8"))
+                    max_prompt_tokens = self.n_ctx - max_tokens - 64  # leave margin
+                    if len(prompt_tokens) > max_prompt_tokens:
+                        logger.warning(f"Prompt too long: {len(prompt_tokens)} tokens (max {max_prompt_tokens}). Truncating.")
+                        prompt_tokens = prompt_tokens[:max_prompt_tokens]
+                        prompt = self.model.detokenize(prompt_tokens).decode("utf-8", errors="replace")
+                except Exception as te:
+                    logger.warning(f"Token count check failed: {te}")
 
             # ✅ Queue for real-time communication (thread -> async)
             token_queue = queue.Queue(maxsize=100)
@@ -408,24 +492,47 @@ class LlamaInference:
                 """Runs in thread - puts tokens in queue AS they're generated."""
                 try:
                     with SilenceOutput():
-                        stream = self.model(
-                            prompt,
-                            max_tokens=max_tokens,
-                            temperature=temperature,
-                            top_p=top_p,
-                            repeat_penalty=repeat_penalty,
-                            stop=stop,
-                            echo=False,
-                            stream=True,
-                        )
-                        for output in stream:
-                            if cancel_event and cancel_event.is_set():
-                                break
-                            token = output["choices"][0]["text"]
-                            if first_token_time[0] is None:
-                                first_token_time[0] = time.perf_counter()
-                            token_count[0] += 1
-                            token_queue.put(token)  # Put immediately!
+                        if use_chat and chat_messages:
+                            # Use chat completion API for models with special-only
+                            # template tokens (e.g. Gemma) — ensures correct token IDs
+                            stream = self.model.create_chat_completion(
+                                messages=chat_messages,
+                                max_tokens=max_tokens,
+                                temperature=temperature,
+                                top_p=top_p,
+                                repeat_penalty=repeat_penalty,
+                                stop=stop,
+                                stream=True,
+                            )
+                            for chunk in stream:
+                                if cancel_event and cancel_event.is_set():
+                                    break
+                                delta = chunk["choices"][0].get("delta", {})
+                                token = delta.get("content", "")
+                                if token:
+                                    if first_token_time[0] is None:
+                                        first_token_time[0] = time.perf_counter()
+                                    token_count[0] += 1
+                                    token_queue.put(token)
+                        else:
+                            stream = self.model(
+                                prompt,
+                                max_tokens=max_tokens,
+                                temperature=temperature,
+                                top_p=top_p,
+                                repeat_penalty=repeat_penalty,
+                                stop=stop,
+                                echo=False,
+                                stream=True,
+                            )
+                            for output in stream:
+                                if cancel_event and cancel_event.is_set():
+                                    break
+                                token = output["choices"][0]["text"]
+                                if first_token_time[0] is None:
+                                    first_token_time[0] = time.perf_counter()
+                                token_count[0] += 1
+                                token_queue.put(token)  # Put immediately!
                 except Exception as e:
                     token_queue.put(("ERROR", str(e)))
                 finally:
@@ -458,8 +565,10 @@ class LlamaInference:
                     token_queue.put(DONE)  # Signal completion
 
             # ✅ Start streaming in background thread
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             stream_task = loop.run_in_executor(None, stream_in_thread)
+            stream_start = time.perf_counter()
+            STREAM_TIMEOUT = 300  # 5 minutes max for streaming
 
             # ✅ Yield tokens as they arrive in queue
             while True:
@@ -471,6 +580,9 @@ class LlamaInference:
                     )
                 except queue.Empty:
                     await asyncio.sleep(0)
+                    if time.perf_counter() - stream_start > STREAM_TIMEOUT:
+                        yield {"token": None, "finished": True, "error": "Generation timed out"}
+                        return
                     continue
 
                 # Check if done
@@ -558,8 +670,11 @@ class LlamaInference:
                     pass
                 return result
 
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(None, blocking_vision)
+            loop = asyncio.get_running_loop()
+            response = await asyncio.wait_for(
+                loop.run_in_executor(None, blocking_vision),
+                timeout=120
+            )
 
             gen_end = time.perf_counter()
             total_time_ms = (gen_end - gen_start) * 1000
@@ -699,8 +814,10 @@ class LlamaInference:
                 finally:
                     token_queue.put(DONE)
 
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             stream_task = loop.run_in_executor(None, stream_vision_in_thread)
+            stream_start = time.perf_counter()
+            STREAM_TIMEOUT = 300  # 5 minutes max for streaming
 
             while True:
                 try:
@@ -710,6 +827,9 @@ class LlamaInference:
                     )
                 except queue.Empty:
                     await asyncio.sleep(0)
+                    if time.perf_counter() - stream_start > STREAM_TIMEOUT:
+                        yield {"token": None, "finished": True, "error": "Generation timed out"}
+                        return
                     continue
 
                 if item is DONE:

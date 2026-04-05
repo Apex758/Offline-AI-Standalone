@@ -18,10 +18,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File download
   downloadFile: (arrayBuffer, filename) => ipcRenderer.invoke('download-file', { arrayBuffer, filename }),
 
-  // ✅ ADD: File download handler
-  downloadFile: (arrayBuffer, filename) => 
-    ipcRenderer.invoke('download-file', { arrayBuffer, filename }),
-
   // Platform information
   platform: process.platform,
 

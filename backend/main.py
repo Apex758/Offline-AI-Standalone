@@ -487,11 +487,11 @@ async def login(credentials: dict):
     }
 
 @app.get("/api/chat-history")
-async def get_chat_history():
+async def get_chat_history(limit: int = 50, offset: int = 0):
     """Get all chat histories from SQLite"""
     try:
         memory = get_chat_memory()
-        return memory.get_all_chats_with_messages()
+        return memory.get_all_chats_with_messages(limit=limit, offset=offset)
     except Exception as e:
         logger.error(f"Error loading chat history: {e}")
         return []
@@ -1323,7 +1323,12 @@ async def save_lesson_plan_history(plan: LessonPlanHistory):
             histories[existing_index] = plan_dict
         else:
             histories.append(plan_dict)
-        
+
+        # Cap history to prevent unbounded growth
+        if len(histories) > 50:
+            histories.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+            histories = histories[:50]
+
         tmp_file = LESSON_PLAN_HISTORY_FILE + ".tmp"
         with open(tmp_file, 'w', encoding='utf-8') as f:
             json.dump(histories, f, indent=2, ensure_ascii=False)
@@ -4259,9 +4264,9 @@ async def grade_quiz_scans(
         content = await upload.read()
         file_data.append((content, upload.filename or 'unknown'))
 
-    graded_results = []
+    _grade_semaphore = asyncio.Semaphore(3)
 
-    for file_content, filename in file_data:
+    async def _grade_one_student(file_content, filename):
         result = {
             'file_name': filename,
             'student_name': None,
@@ -4276,11 +4281,12 @@ async def grade_quiz_scans(
             'saved': False,
         }
 
-        try:
-            # 2. Preprocess and OCR extract
-            processed = _preprocess_phone_image(file_content)
+        async with _grade_semaphore:
+            try:
+                # 2. Preprocess and OCR extract
+                processed = _preprocess_phone_image(file_content)
 
-            ocr_prompt = f"""This is a student's completed quiz. Extract the following:
+                ocr_prompt = f"""This is a student's completed quiz. Extract the following:
 1. Student name (usually at the top)
 2. Student ID (usually at the top)
 3. The student's answer for each question
@@ -4297,73 +4303,72 @@ Return ONLY valid JSON:
     "2": "student's answer for Q2"
   }}
 }}"""
-            # Try structured extraction
-            import re as _re
-            # Run OCR with structured prompt
-            loop = asyncio.get_event_loop()
-            raw_json = await loop.run_in_executor(
-                ocr_service._ocr_executor, ocr_service._run_ocr, processed, ocr_prompt, 2048
-            )
+                # Try structured extraction
+                import re as _re
+                # Run OCR with structured prompt
+                loop = asyncio.get_event_loop()
+                raw_json = await loop.run_in_executor(
+                    ocr_service._ocr_executor, ocr_service._run_ocr, processed, ocr_prompt, 2048
+                )
 
-            json_match = _re.search(r'\{[\s\S]*\}', raw_json)
-            if not json_match:
-                result['error'] = 'OCR could not extract answers from this scan.'
-                graded_results.append(result)
-                continue
+                json_match = _re.search(r'\{[\s\S]*\}', raw_json)
+                if not json_match:
+                    result['error'] = 'OCR could not extract answers from this scan.'
+                    return result
 
-            parsed = json.loads(json_match.group())
-            student_name = parsed.get('student_name')
-            student_id = parsed.get('student_id')
-            student_answers = parsed.get('answers', {})
+                parsed = json.loads(json_match.group())
+                student_name = parsed.get('student_name')
+                student_id = parsed.get('student_id')
+                student_answers = parsed.get('answers', {})
 
-            result['student_name'] = student_name
-            result['student_id'] = student_id
+                result['student_name'] = student_name
+                result['student_id'] = student_id
 
-            # 3. Grade each question
-            subjective_questions = []  # Collect for LLM batch
-            details = {}
+                # 3. Grade each question
+                subjective_questions = []  # Collect for LLM batch
+                details = {}
 
-            for i, q in enumerate(questions, 1):
-                q_key = str(i)
-                student_answer = student_answers.get(q_key, '')
+                for i, q in enumerate(questions, 1):
+                    q_key = str(i)
+                    student_answer = student_answers.get(q_key, '')
 
-                if not student_answer or student_answer.lower() in ('[unclear]', 'unclear', ''):
-                    details[q_key] = {
-                        'answer': student_answer,
-                        'earned': 0,
-                        'max': q.get('points', 1) or 1,
-                    }
-                    result['unclear'].append(i)
-                    continue
+                    if not student_answer or student_answer.lower() in ('[unclear]', 'unclear', ''):
+                        details[q_key] = {
+                            'answer': student_answer,
+                            'earned': 0,
+                            'max': q.get('points', 1) or 1,
+                        }
+                        result['unclear'].append(i)
+                        continue
 
-                qtype = q.get('type', '')
-                if qtype in ('multiple-choice', 'true-false', 'fill-blank', 'word-bank', 'matching'):
-                    # Direct comparison
-                    grade_result = _grade_objective_question(q, student_answer)
-                    if grade_result:
-                        details[q_key] = grade_result
+                    qtype = q.get('type', '')
+                    if qtype in ('multiple-choice', 'true-false', 'fill-blank', 'word-bank', 'matching'):
+                        # Direct comparison
+                        grade_result = _grade_objective_question(q, student_answer)
+                        if grade_result:
+                            details[q_key] = grade_result
+                        else:
+                            subjective_questions.append((q_key, q, student_answer))
                     else:
+                        # Short-answer, comprehension, open-ended → LLM
                         subjective_questions.append((q_key, q, student_answer))
-                else:
-                    # Short-answer, comprehension, open-ended → LLM
-                    subjective_questions.append((q_key, q, student_answer))
 
-            # 4. LLM grades subjective questions (batched)
-            if subjective_questions:
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                # 4. LLM grades subjective questions (batched)
+                if subjective_questions:
+                    from inference_factory import get_inference_instance
+                    inference = get_inference_instance()
 
-                subj_lines = []
-                for q_key, q, ans in subjective_questions:
-                    pts = q.get('points', 1) or 1
-                    ref = q.get('correctAnswer', '')
-                    subj_lines.append(
-                        f"Q{q_key} [{q.get('type')}, {pts}pt]: \"{q.get('question')}\"\n"
-                        f"  Reference answer: {ref}\n"
-                        f"  Student wrote: {ans}"
-                    )
+                    subj_lines = []
+                    for q_key, q, ans in subjective_questions:
+                        pts = q.get('points', 1) or 1
+                        ref = q.get('correctAnswer', '')
+                        subj_lines.append(
+                            f"Q{q_key} [{q.get('type')}, {pts}pt]: \"{q.get('question')}\"\n"
+                            f"  Reference answer: {ref}\n"
+                            f"  Student wrote: {ans}"
+                        )
 
-                llm_prompt = f"""Grade these subjective questions. Award partial credit (0 to max) based on accuracy and completeness.
+                    llm_prompt = f"""Grade these subjective questions. Award partial credit (0 to max) based on accuracy and completeness.
 
 {chr(10).join(subj_lines)}
 
@@ -4371,72 +4376,76 @@ Return ONLY valid JSON:
 {{
   {', '.join(f'"{qk}": {{"earned": <points>, "max": {q.get("points",1) or 1}, "feedback": "brief reason"}}' for qk, q, _ in subjective_questions)}
 }}"""
-                response = await inference.generate(
-                    tool_name="quiz_subjective_grading",
-                    input_data="subjective grading",
-                    prompt_template=llm_prompt,
-                    max_tokens=500,
-                    temperature=0.1,
-                )
-                raw_llm = response.get('result') or ''
-                llm_match = _re.search(r'\{[\s\S]*\}', raw_llm)
-                if llm_match:
-                    llm_grades = json.loads(llm_match.group())
-                    for q_key, q, ans in subjective_questions:
-                        g = llm_grades.get(q_key, {})
-                        details[q_key] = {
-                            'answer': ans,
-                            'earned': g.get('earned', 0),
-                            'max': q.get('points', 1) or 1,
-                            'feedback': g.get('feedback', ''),
-                        }
-                else:
-                    # LLM failed — mark as 0
-                    for q_key, q, ans in subjective_questions:
-                        details[q_key] = {
-                            'answer': ans,
-                            'earned': 0,
-                            'max': q.get('points', 1) or 1,
-                            'feedback': 'Could not grade automatically',
-                        }
+                    response = await inference.generate(
+                        tool_name="quiz_subjective_grading",
+                        input_data="subjective grading",
+                        prompt_template=llm_prompt,
+                        max_tokens=500,
+                        temperature=0.1,
+                    )
+                    raw_llm = response.get('result') or ''
+                    llm_match = _re.search(r'\{[\s\S]*\}', raw_llm)
+                    if llm_match:
+                        llm_grades = json.loads(llm_match.group())
+                        for q_key, q, ans in subjective_questions:
+                            g = llm_grades.get(q_key, {})
+                            details[q_key] = {
+                                'answer': ans,
+                                'earned': g.get('earned', 0),
+                                'max': q.get('points', 1) or 1,
+                                'feedback': g.get('feedback', ''),
+                            }
+                    else:
+                        # LLM failed — mark as 0
+                        for q_key, q, ans in subjective_questions:
+                            details[q_key] = {
+                                'answer': ans,
+                                'earned': 0,
+                                'max': q.get('points', 1) or 1,
+                                'feedback': 'Could not grade automatically',
+                            }
 
-            # 5. Calculate totals
-            total_earned = sum(d.get('earned', 0) for d in details.values())
-            total_max = sum(d.get('max', 1) for d in details.values())
-            percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
+                # 5. Calculate totals
+                total_earned = sum(d.get('earned', 0) for d in details.values())
+                total_max = sum(d.get('max', 1) for d in details.values())
+                percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
 
-            result.update({
-                'score': total_earned,
-                'total_points': total_max,
-                'percentage': percentage,
-                'letter_grade': student_service.get_letter_grade(percentage),
-                'details': details,
-            })
+                result.update({
+                    'score': total_earned,
+                    'total_points': total_max,
+                    'percentage': percentage,
+                    'letter_grade': student_service.get_letter_grade(percentage),
+                    'details': details,
+                })
 
-            # 6. Auto-save to student DB
-            if student_id:
-                try:
-                    student_service.save_quiz_grade({
-                        'student_id': student_id,
-                        'quiz_title': quiz_title,
-                        'subject': subject,
-                        'score': total_earned,
-                        'total_points': total_max,
-                        'percentage': percentage,
-                        'letter_grade': student_service.get_letter_grade(percentage),
-                        'answers': details,
-                    })
-                    result['saved'] = True
-                except Exception as e:
-                    logger.error(f"Failed to save grade for {student_id}: {e}")
+                # 6. Auto-save to student DB
+                if student_id:
+                    try:
+                        student_service.save_quiz_grade({
+                            'student_id': student_id,
+                            'quiz_title': quiz_title,
+                            'subject': subject,
+                            'score': total_earned,
+                            'total_points': total_max,
+                            'percentage': percentage,
+                            'letter_grade': student_service.get_letter_grade(percentage),
+                            'answers': details,
+                        })
+                        result['saved'] = True
+                    except Exception as e:
+                        logger.error(f"Failed to save grade for {student_id}: {e}")
 
-        except Exception as e:
-            logger.error(f"Scan grading error for {filename}: {e}")
-            result['error'] = f'Processing error: {str(e)}'
+            except Exception as e:
+                logger.error(f"Scan grading error for {filename}: {e}")
+                result['error'] = f'Processing error: {str(e)}'
 
-        graded_results.append(result)
+        return result
 
-    return graded_results
+    graded_results = await asyncio.gather(
+        *[_grade_one_student(fc, fn) for fc, fn in file_data]
+    )
+
+    return list(graded_results)
 
 
 @app.post("/api/quiz/grade-scans-stream")
@@ -5506,12 +5515,17 @@ async def bulk_grade(
         content = await upload.read()
         file_data.append((content, upload.filename or 'unknown', upload.content_type or ''))
 
-    graded_results = []
-    for content, filename, ctype in file_data:
-        result = await _grade_single_text_file(content, filename, ctype, quiz_questions, inference, max_tokens)
-        graded_results.append(result)
+    _sem = asyncio.Semaphore(3)
 
-    return graded_results
+    async def _grade_one(content, filename, ctype):
+        async with _sem:
+            return await _grade_single_text_file(content, filename, ctype, quiz_questions, inference, max_tokens)
+
+    graded_results = await asyncio.gather(
+        *[_grade_one(c, f, ct) for c, f, ct in file_data]
+    )
+
+    return list(graded_results)
 
 
 @app.post("/api/bulk-grade-worksheet")
@@ -5542,12 +5556,17 @@ async def bulk_grade_worksheet(
         content = await upload.read()
         file_data.append((content, upload.filename or 'unknown', upload.content_type or ''))
 
-    graded_results = []
-    for content, filename, ctype in file_data:
-        result = await _grade_single_text_file(content, filename, ctype, ws_questions, inference, max_tokens)
-        graded_results.append(result)
+    _sem = asyncio.Semaphore(3)
 
-    return graded_results
+    async def _grade_one(content, filename, ctype):
+        async with _sem:
+            return await _grade_single_text_file(content, filename, ctype, ws_questions, inference, max_tokens)
+
+    graded_results = await asyncio.gather(
+        *[_grade_one(c, f, ct) for c, f, ct in file_data]
+    )
+
+    return list(graded_results)
 
 
 # ── Image Preprocessing for Phone Photos ──────────────────────────────────────
