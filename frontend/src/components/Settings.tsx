@@ -119,10 +119,10 @@ const SIDEBAR_ITEM_META: Record<string, { name: string; icon: React.FC<{ classNa
   'educator-insights': { name: 'Educator Insights', icon: (p) => <Icon icon={Search01IconData} {...p} /> },
   'chat': { name: 'Ask PEARL', icon: MessageIcon },
   'curriculum': { name: 'Curriculum Browser', icon: SearchIcon },
-  'planning-prep': { name: 'Planning & Prep', icon: Compass, childCount: 2 },
+  'planning-prep': { name: 'Planning & Prep', icon: Compass, childCount: 3 },
   'lesson-planners': { name: 'Lesson Planners', icon: (p) => <Icon icon={BookOpen01IconData} {...p} />, childCount: 4 },
   'assessment-tools': { name: 'Assessment Tools', icon: Target, childCount: 2 },
-  'my-classroom': { name: 'My Classroom', icon: SchoolIcon, childCount: 3 },
+  'my-classroom': { name: 'My Classroom', icon: SchoolIcon, childCount: 5 },
   'visual-studio': { name: 'Visual Studio', icon: Paintbrush, childCount: 4 },
   'performance-metrics': { name: 'Performance Metrics', icon: Cpu },
   'support': { name: 'Support & Reporting', icon: (p) => <Icon icon={AlertCircleIconData} {...p} /> },
@@ -132,6 +132,38 @@ const SIDEBAR_ITEM_META: Record<string, { name: string; icon: React.FC<{ classNa
 const PINNED_TOP = ['analytics', 'educator-insights'];
 const PINNED_BOTTOM = ['performance-metrics', 'support', 'settings'];
 const NON_TOGGLEABLE = new Set(['analytics', 'settings']);
+
+// Child tools within each group -- for per-tool visibility toggles
+const GROUP_CHILDREN: Record<string, Array<{ type: string; name: string; iconData: any }>> = {
+  'planning-prep': [
+    { type: 'brain-dump', name: 'Brain Dump', iconData: Brain01IconData },
+    { type: 'resource-manager', name: 'My Resources', iconData: FolderOpenIconData },
+    { type: 'school-year-calendar', name: 'School Year', iconData: Calendar03IconData },
+  ],
+  'lesson-planners': [
+    { type: 'lesson-planner', name: 'Lesson Plan', iconData: BookBookmark01IconData },
+    { type: 'kindergarten-planner', name: 'Early Childhood', iconData: Baby01IconData },
+    { type: 'multigrade-planner', name: 'Multi-Level', iconData: Layers01IconData },
+    { type: 'cross-curricular-planner', name: 'Integrated Lesson', iconData: GitMergeIconData },
+  ],
+  'assessment-tools': [
+    { type: 'quiz-generator', name: 'Quiz Builder', iconData: PenTool01IconData },
+    { type: 'rubric-generator', name: 'Rubric Builder', iconData: CheckListIconData },
+  ],
+  'my-classroom': [
+    { type: 'class-management', name: 'My Classes', iconData: UserMultipleIconData },
+    { type: 'curriculum-tracker', name: 'Progress Tracker', iconData: ChartIncreaseIconData },
+    { type: 'curriculum-plan', name: 'Curriculum Plan', iconData: Calendar03IconData },
+    { type: 'achievements', name: 'Achievements', iconData: Trophy01IconData },
+    { type: 'photo-transfer', name: 'Photo Transfer', iconData: Camera01IconData },
+  ],
+  'visual-studio': [
+    { type: 'worksheet-generator', name: 'Worksheet Builder', iconData: FileSpreadsheetIconData },
+    { type: 'image-studio', name: 'Image Studio', iconData: ColorsIconData },
+    { type: 'presentation-builder', name: 'Slide Deck', iconData: Presentation01IconData },
+    { type: 'storybook', name: 'Storybook Creator', iconData: StoryBookIconData },
+  ],
+};
 
 // Sortable sidebar item component
 const SortableSidebarItem: React.FC<{
@@ -212,6 +244,18 @@ import { useLicense } from '../contexts/LicenseContext';
 import { FEATURE_CATALOG, CATEGORY_LABELS, type FeatureCategory } from '../data/featureDiscoveryData';
 import { useFeatureDetection } from '../hooks/useFeatureDetection';
 import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import Baby01IconData from '@hugeicons/core-free-icons/Baby01Icon';
+import GitMergeIconData from '@hugeicons/core-free-icons/GitMergeIcon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import UserMultipleIconData from '@hugeicons/core-free-icons/UserMultipleIcon';
+import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
+import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
+import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
+import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
 import ArrowRight02IconData from '@hugeicons/core-free-icons/ArrowRight02Icon';
 import CircleArrowRight01IconData from '@hugeicons/core-free-icons/CircleArrowRight01Icon';
 

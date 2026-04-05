@@ -55,6 +55,7 @@ export interface UserProfile {
 export interface SidebarItemConfig {
   id: string;
   enabled: boolean;
+  disabledChildren?: string[];  // tool types hidden within this group
 }
 
 // Canonical list of reorderable sidebar items (excludes pinned: analytics at top, support+settings at bottom)
@@ -131,6 +132,11 @@ export interface Settings {
   showTrophiesByDefault: boolean;
   // Notifications & reminders
   notifications: NotificationPreferences;
+  // Workflow progression
+  workflowProgress: {
+    visitedTools: string[];
+    dismissedProgressions: string[];
+  };
 }
 
 export interface SettingsContextValue {
@@ -153,6 +159,12 @@ export interface SettingsContextValue {
   shouldShowNudge: (nudgeId: string) => boolean;
   isModuleEnabled: (moduleId: FeatureModuleId) => boolean;
   toggleModule: (moduleId: FeatureModuleId) => void;
+  // Per-tool child visibility
+  isToolChildEnabled: (groupId: string, toolType: string) => boolean;
+  toggleToolChild: (groupId: string, toolType: string, enabled: boolean) => void;
+  // Workflow progression
+  trackToolVisit: (toolType: string) => void;
+  dismissProgression: (toolType: string) => void;
 }
 
 // Default Settings (hex colors matching Settings.tsx defaults)
@@ -246,6 +258,11 @@ export const DEFAULT_SETTINGS: Settings = {
       report_card: true,
       custom: true,
     },
+  },
+  // Workflow progression
+  workflowProgress: {
+    visitedTools: [],
+    dismissedProgressions: [],
   },
 };
 
@@ -656,6 +673,54 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     return true;
   };
 
+  // --- Per-tool child visibility ---
+  const isToolChildEnabled = (groupId: string, toolType: string): boolean => {
+    const group = settings.sidebarOrder.find(i => i.id === groupId);
+    if (!group || !group.enabled) return false;
+    return !(group.disabledChildren ?? []).includes(toolType);
+  };
+
+  const toggleToolChild = (groupId: string, toolType: string, enabled: boolean) => {
+    setSettings(prev => ({
+      ...prev,
+      sidebarOrder: prev.sidebarOrder.map(item => {
+        if (item.id !== groupId) return item;
+        const current = item.disabledChildren ?? [];
+        const next = enabled
+          ? current.filter(c => c !== toolType)
+          : current.includes(toolType) ? current : [...current, toolType];
+        return { ...item, disabledChildren: next };
+      }),
+    }));
+  };
+
+  // --- Workflow progression ---
+  const trackToolVisit = (toolType: string) => {
+    setSettings(prev => {
+      if (prev.workflowProgress.visitedTools.includes(toolType)) return prev;
+      return {
+        ...prev,
+        workflowProgress: {
+          ...prev.workflowProgress,
+          visitedTools: [...prev.workflowProgress.visitedTools, toolType],
+        },
+      };
+    });
+  };
+
+  const dismissProgression = (toolType: string) => {
+    setSettings(prev => {
+      if (prev.workflowProgress.dismissedProgressions.includes(toolType)) return prev;
+      return {
+        ...prev,
+        workflowProgress: {
+          ...prev.workflowProgress,
+          dismissedProgressions: [...prev.workflowProgress.dismissedProgressions, toolType],
+        },
+      };
+    });
+  };
+
   const value: SettingsContextValue = {
     settings,
     updateSettings,
@@ -674,6 +739,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     shouldShowNudge,
     isModuleEnabled,
     toggleModule,
+    isToolChildEnabled,
+    toggleToolChild,
+    trackToolVisit,
+    dismissProgression,
   };
 
   return (

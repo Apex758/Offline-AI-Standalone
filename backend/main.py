@@ -7582,6 +7582,10 @@ async def tts_voices():
             "lessac": "Lessac (Female)",
             "ryan":   "Ryan (Male)",
             "amy":    "Amy (Female)",
+            "siwis":  "Siwis - French (Female)",
+            "gilles": "Gilles - French (Male)",
+            "sharvard": "Sharvard - Spanish (Female)",
+            "carlfm":   "Carlfm - Spanish (Male)",
         }
         for key in VOICE_REGISTRY:
             voices.append({

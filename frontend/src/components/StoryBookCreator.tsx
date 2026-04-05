@@ -671,6 +671,7 @@ function PlaybackView({
   const [phase, setPhase] = useState<'bg' | 'char' | 'text' | 'done'>('bg');
   const [segmentIdx, setSegmentIdx] = useState(0);
   const { speak, stop, isSpeaking } = useTTS();
+  const { settings } = useSettings();
   const [autoPlay, setAutoPlay] = useState(true);
   const phaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cachedAudioRef = useRef<HTMLAudioElement | null>(null);

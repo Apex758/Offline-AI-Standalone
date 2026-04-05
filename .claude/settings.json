@@ -205,7 +205,9 @@
       "Bash(ls -la \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/dist/assets/\"*.js)",
       "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/\"*tier*)",
       "Bash(wc -l \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/\"*.tsx)",
-      "Bash(node node_modules/.bin/tsc --noEmit)"
+      "Bash(node node_modules/.bin/tsc --noEmit)",
+      "Bash(grep -E \"^[a-z_]+\\\\.py$\")",
+      "Bash(ls \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/backend\"/*.py)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
