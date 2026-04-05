@@ -555,13 +555,15 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // Subscribe to streaming updates for re-render
+  // Subscribe to streaming updates — force re-render so getStreamingContent()
+  // returns the latest accumulated tokens on each batched update.
+  const [, forceRender] = useState({});
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
-      // Re-render on streaming updates
+      forceRender({});
     });
     return unsubscribe;
-  }, [tabId, subscribe, getCustomData]);
+  }, [tabId, subscribe]);
 
   // Finalization logic for streaming message
   useEffect(() => {
