@@ -3,9 +3,9 @@
 # ========================================
 
 # --- API / Backend ---
-fastapi>=0.104.0
+fastapi>=0.115.0
 pyinstaller>=6.0.0          # OLH Tier Analyzer builder
-uvicorn[standard]>=0.24.0
+uvicorn[standard]>=0.34.0
 pydantic>=2.5.0
 python-multipart>=0.0.6
 aiohttp>=3.9.0

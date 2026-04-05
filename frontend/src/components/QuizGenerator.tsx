@@ -782,15 +782,34 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setStudentPanelOpen(true);
 
         // Persist quiz instances for QR-based scan grading
+        // Must save answer key FIRST so the FK constraint in quiz_instances is satisfied
         const quizId = currentQuizId || `quiz_${Date.now()}`;
-        axios.post('http://localhost:8000/api/save-quiz-instances', {
-          quiz_id: quizId,
-          class_name: selectedClassName,
-          students: studentData.map(s => ({
-            student_id: s.id,
-            name: s.name,
-            question_order: s.questionOrder
-          }))
+        const title = formData.subject?.trim()
+          ? `${formData.subject}${formData.strand?.trim() ? ` — ${formData.strand}` : ''} Quiz - Grade ${formData.gradeLevel || 'Unknown'}`
+          : `Quiz - Grade ${formData.gradeLevel || 'Unknown'}`;
+
+        // Auto-save answer key first, then save instances
+        axios.post('http://localhost:8000/api/quiz-history', {
+          id: quizId,
+          title,
+          timestamp: new Date().toISOString(),
+          formData,
+          generatedQuiz: streamingQuiz,
+          parsedQuiz: finalParsed,
+          classQuizData: studentData,
+          selectedClassName,
+        }).then(() => {
+          setCurrentQuizId(quizId);
+          loadQuizHistories();
+          return axios.post('http://localhost:8000/api/save-quiz-instances', {
+            quiz_id: quizId,
+            class_name: selectedClassName,
+            students: studentData.map(s => ({
+              student_id: s.id,
+              name: s.name,
+              question_order: s.questionOrder
+            }))
+          });
         }).catch(err => console.warn('Failed to save quiz instances:', err));
       }
     }

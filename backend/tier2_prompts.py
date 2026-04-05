@@ -4,6 +4,8 @@ These are the full-detail prompts used when the active model is NOT Tier 1.
 Mirrors the structure of tier1_prompts.py for consistency and easy editing.
 """
 
+from functools import lru_cache
+
 TIER2_PROMPTS = {
 
     # ── General chat ──
@@ -103,6 +105,7 @@ TIER2_PROMPTS = {
 }
 
 
+@lru_cache(maxsize=32)
 def get_tier2_system_prompt(task_type: str) -> str:
     """Return the Tier-2 system prompt for a task type. Falls back to chat prompt if key not found."""
     return TIER2_PROMPTS.get(task_type, TIER2_PROMPTS["chat"])

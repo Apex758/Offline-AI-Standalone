@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 import subprocess
@@ -499,6 +500,11 @@ class ImageService:
         except requests.RequestException:
             return False
 
+    async def async_is_iopaint_running(self) -> bool:
+        """Async wrapper for is_iopaint_running - won't block event loop"""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.is_iopaint_running)
+
     def generate_image(self,
                         prompt: str,
                         negative_prompt: str = "multiple people, group, crowd, deformed, distorted, blurry",
@@ -735,7 +741,19 @@ class ImageService:
             logger.error(f"Error generating batch images: {e}")
             return []
 
-    def inpaint_image(self,
+    def _do_inpaint_request(self, url: str, payload: dict) -> Optional[bytes]:
+        """Blocking HTTP POST to IOPaint inpaint endpoint (run via executor)"""
+        response = requests.post(url, json=payload, timeout=60)
+        logger.info(f"IOPaint response status: {response.status_code}")
+        if response.status_code == 200:
+            logger.info("Inpainting completed successfully")
+            return response.content
+        else:
+            logger.error(f"IOPaint error: {response.status_code}")
+            logger.error(f"Response text: {response.text}")
+            return None
+
+    async def inpaint_image(self,
                      image_data: bytes,
                      mask_data: bytes,
                      seed: Optional[int] = None) -> Optional[bytes]:
@@ -765,17 +783,8 @@ class ImageService:
 
             url = f"http://127.0.0.1:{self.iopaint_port}/api/v1/inpaint"
             logger.info(f"Sending POST request to {url}")
-            response = requests.post(url, json=payload, timeout=60)
-
-            logger.info(f"IOPaint response status: {response.status_code}")
-
-            if response.status_code == 200:
-                logger.info("Inpainting completed successfully")
-                return response.content
-            else:
-                logger.error(f"IOPaint error: {response.status_code}")
-                logger.error(f"Response text: {response.text}")
-                return None
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(None, self._do_inpaint_request, url, payload)
 
         except Exception as e:
             logger.error(f"Error in inpainting: {e}")

@@ -98,6 +98,7 @@ General:
 - Write clear, readable code
 - Avoid unnecessary complexity
 - Use descriptive variable names
+- **NO Unicode symbols** (e.g. ✓, ✗, →, ✨, etc.) in any Python or backend code. Windows `charmap` (cp1252) encoding will crash on them. Use ASCII alternatives like `[OK]`, `[FAIL]`, `->`, etc. This applies to print statements, logs, comments, and string literals.
 
 Frontend:
 - Functional components (React)

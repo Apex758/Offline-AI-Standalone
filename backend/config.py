@@ -16,18 +16,18 @@ PROJECT_ROOT = BASE_DIR.parent
 # CRITICAL: Allow overriding models directory via environment variable (for packaged apps)
 if os.environ.get('MODELS_DIR'):
     MODELS_DIR = Path(os.environ.get('MODELS_DIR'))
-    print(f"✓ [CONFIG] Using MODELS_DIR from environment: {MODELS_DIR}", flush=True)
+    print(f"[OK] [CONFIG] Using MODELS_DIR from environment: {MODELS_DIR}", flush=True)
 else:
     MODELS_DIR = PROJECT_ROOT / "models"
-    print(f"✓ [CONFIG] Using default MODELS_DIR: {MODELS_DIR}", flush=True)
+    print(f"[OK] [CONFIG] Using default MODELS_DIR: {MODELS_DIR}", flush=True)
 
 # Verify models directory exists
 if MODELS_DIR.exists():
-    print(f"✓ [CONFIG] Models directory exists", flush=True)
+    print(f"[OK] [CONFIG] Models directory exists", flush=True)
     # List available models
     model_files = list(MODELS_DIR.glob("*.gguf"))
     if model_files:
-        print(f"✓ [CONFIG] Found {len(model_files)} model(s):", flush=True)
+        print(f"[OK] [CONFIG] Found {len(model_files)} model(s):", flush=True)
         for mf in model_files:
             print(f"    - {mf.name}", flush=True)
     else:
@@ -76,13 +76,23 @@ LLM_MODEL_REGISTRY = {
         "tier": 1,
         "model_type": "text",
     },
-    "Gemma4-E2B-Vision.gguf": {
-        "display_name": "Gemma 4 E2B",
+    "gemma-4-E2B-it-Q4_K_M.gguf": {
+        "display_name": "Gemma 4 E2B (Q4)",
         "tier": 2,
         "model_type": "vision",
     },
-    "Gemma4-E4B-Vision.gguf": {
-        "display_name": "Gemma 4 E4B",
+    "gemma-4-E2B-it-Q5_K_M.gguf": {
+        "display_name": "Gemma 4 E2B (Q5)",
+        "tier": 2,
+        "model_type": "vision",
+    },
+    "gemma-4-E4B-it-Q4_K_M.gguf": {
+        "display_name": "Gemma 4 E4B (Q4)",
+        "tier": 3,
+        "model_type": "vision",
+    },
+    "gemma-4-E4B-it-Q5_K_M.gguf": {
+        "display_name": "Gemma 4 E4B (Q5)",
         "tier": 3,
         "model_type": "vision",
     },
@@ -131,11 +141,11 @@ def get_diffusion_model_path():
     user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
     user_model_path = user_models_dir / selected
     if user_model_path.exists():
-        print(f"✓ [CONFIG] Using diffusion model from user data: {user_model_path}", flush=True)
+        print(f"[OK] [CONFIG] Using diffusion model from user data: {user_model_path}", flush=True)
         return str(user_model_path)
     # Fall back to bundled
     bundled_path = IMAGE_MODELS_DIR / selected
-    print(f"✓ [CONFIG] Using bundled diffusion model: {bundled_path}", flush=True)
+    print(f"[OK] [CONFIG] Using bundled diffusion model: {bundled_path}", flush=True)
     return str(bundled_path)
 
 def scan_diffusion_models():
@@ -313,10 +323,17 @@ def resolve_vision_projector_path(model_filename: str) -> Optional[str]:
             if "mmproj" in fname:
                 matched = False
                 # Check if model family matches (e.g. both contain "qwen2.5-vl")
-                for family in ["qwen2.5-vl", "qwen2-vl", "llava", "phi4", "minicpm", "lfm2", "gemma4"]:
-                    if family in name_lower and family in fname:
-                        candidates.append(f)
-                        matched = True
+                for family in ["qwen2.5-vl", "qwen2-vl", "llava", "phi4", "minicpm", "lfm2", "gemma4", "gemma-4"]:
+                    family_variants = [family, family.replace("-", "")]
+                    if any(v in name_lower for v in family_variants) and any(v in fname for v in family_variants):
+                        # For model families with sub-variants (e.g. gemma4 E2B vs E4B),
+                        # ensure the mmproj matches the specific variant
+                        for variant in ["e2b", "e4b", "1b", "2b", "4b", "7b", "12b", "27b"]:
+                            if variant in name_lower and variant not in fname:
+                                break  # variant mismatch — skip this candidate
+                        else:
+                            candidates.append(f)
+                            matched = True
                         break
                 if not matched:
                     # Also match generic mmproj if model family is in the mmproj name
@@ -341,7 +358,7 @@ def resolve_vision_projector_path(model_filename: str) -> Optional[str]:
 
     candidates.sort(key=projector_priority)
     chosen = candidates[0]
-    print(f"✓ [CONFIG] Found vision projector: {chosen.name} (selected from {len(candidates)} candidate(s))", flush=True)
+    print(f"[OK] [CONFIG] Found vision projector: {chosen.name} (selected from {len(candidates)} candidate(s))", flush=True)
     return str(chosen)
 
 _config_printed = False
@@ -353,12 +370,12 @@ def resolve_model_path(model_filename: str) -> str:
 
     if user_model_path.exists():
         if not _config_printed:
-            print(f"✓ [CONFIG] Using model from user data: {user_model_path}", flush=True)
+            print(f"[OK] [CONFIG] Using model from user data: {user_model_path}", flush=True)
         return str(user_model_path)
     else:
         bundled_path = MODELS_DIR / model_filename
         if not _config_printed:
-            print(f"✓ [CONFIG] Using bundled model: {bundled_path}", flush=True)
+            print(f"[OK] [CONFIG] Using bundled model: {bundled_path}", flush=True)
         return str(bundled_path)
 
 def get_model_path():
@@ -367,9 +384,9 @@ def get_model_path():
     selected_model = get_selected_model()
     model_path = resolve_model_path(selected_model)
     if not _config_printed:
-        print(f"✓ [CONFIG] Selected model: {selected_model}", flush=True)
-        print(f"✓ [CONFIG] Full model path: {model_path}", flush=True)
-        print(f"✓ [CONFIG] Model exists: {Path(model_path).exists()}", flush=True)
+        print(f"[OK] [CONFIG] Selected model: {selected_model}", flush=True)
+        print(f"[OK] [CONFIG] Full model path: {model_path}", flush=True)
+        print(f"[OK] [CONFIG] Model exists: {Path(model_path).exists()}", flush=True)
         _config_printed = True
     return model_path
 
@@ -388,11 +405,21 @@ if not os.path.exists(LLAMA_CLI_PATH):
     else:
         LLAMA_CLI_PATH = os.path.join(BASE_DIR, "bin", "Release", "llama-cli.exe")
 
+def _default_thread_count() -> int:
+    """Use physical cores minus 1, clamped to [2, 16]."""
+    import os
+    try:
+        import psutil
+        cores = psutil.cpu_count(logical=False) or os.cpu_count() or 4
+    except ImportError:
+        cores = os.cpu_count() or 4
+    return max(2, min(cores - 1, 16))
+
 # Improved Llama CLI parameters for better reliability and speed
 LLAMA_PARAMS = {
     # Maximum tokens to generate in a single response
     "max_tokens": 2000,
-    "threads": 4,
+    "threads": _default_thread_count(),
     # Sampling temperature for generation
     "temperature": 0.7,
     "top_p": 0.9,
@@ -487,7 +514,7 @@ def set_ocr_enabled(enabled: bool):
         print(f"Error saving OCR config: {e}", flush=True)
         return False
 
-print(f"✓ [CONFIG] OCR grading: {'enabled' if get_ocr_enabled() else 'disabled'}", flush=True)
+print(f"[OK] [CONFIG] OCR grading: {'enabled' if get_ocr_enabled() else 'disabled'}", flush=True)
 
 # OCR model selection (supports multiple OCR models)
 DEFAULT_OCR_MODEL = "PaddleOCR-VL-1.5-Q4_K_M"
@@ -732,15 +759,15 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     }
 
 
-print(f"✓ [CONFIG] Inference backend: {INFERENCE_BACKEND}", flush=True)
+print(f"[OK] [CONFIG] Inference backend: {INFERENCE_BACKEND}", flush=True)
 if INFERENCE_BACKEND == "gemma_api":
     if GEMMA_API_KEY:
-        print(f"✓ [CONFIG] Gemma API key configured", flush=True)
+        print(f"[OK] [CONFIG] Gemma API key configured", flush=True)
     else:
         print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'gemma_api' but GEMMA_API_KEY not set!", flush=True)
 elif INFERENCE_BACKEND == "openrouter":
     if OPENROUTER_API_KEY:
-        print(f"✓ [CONFIG] OpenRouter API key configured", flush=True)
-        print(f"✓ [CONFIG] OpenRouter model: {OPENROUTER_MODEL}", flush=True)
+        print(f"[OK] [CONFIG] OpenRouter API key configured", flush=True)
+        print(f"[OK] [CONFIG] OpenRouter model: {OPENROUTER_MODEL}", flush=True)
     else:
         print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'openrouter' but OPENROUTER_API_KEY not set!", flush=True)

@@ -252,39 +252,45 @@ async def lifespan(app):
         curriculum_matcher = None
         logger.error(f"Failed to initialize CurriculumMatcher: {e}")
 
-    # Initialize MilestoneDB
-    from milestones.milestone_db import get_milestone_db
-    try:
-        milestone_db = get_milestone_db()
-        logger.info("Milestone database initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize milestone database: {e}")
+    # Initialize databases and services in parallel
+    async def _init_milestone_db():
+        from milestones.milestone_db import get_milestone_db
+        try:
+            get_milestone_db()
+            logger.info("Milestone database initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize milestone database: {e}")
 
-    # Initialize Student DB
-    try:
-        student_service.init_db()
-        logger.info("Student database initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize student database: {e}")
+    async def _init_student_db():
+        try:
+            await asyncio.to_thread(student_service.init_db)
+            logger.info("Student database initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize student database: {e}")
 
-    # Initialize Achievement DB
-    try:
-        import achievement_service
-        achievement_service.init_db()
-        logger.info("Achievement database initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize achievement database: {e}")
+    async def _init_achievement_db():
+        try:
+            import achievement_service
+            await asyncio.to_thread(achievement_service.init_db)
+            logger.info("Achievement database initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize achievement database: {e}")
 
-    # Initialize Image Service
-    try:
-        from image_service import get_image_service
-        image_service = get_image_service()
-        logger.info("Image service initialized")
+    async def _init_image_service():
+        try:
+            from image_service import get_image_service
+            image_service = get_image_service()
+            logger.info("Image service initialized")
+            asyncio.get_running_loop().run_in_executor(None, image_service.start_iopaint)
+        except Exception as e:
+            logger.error(f"Failed to initialize image service: {e}")
 
-        # Start IOPaint on startup
-        asyncio.get_running_loop().run_in_executor(None, image_service.start_iopaint)
-    except Exception as e:
-        logger.error(f"Failed to initialize image service: {e}")
+    await asyncio.gather(
+        _init_milestone_db(),
+        _init_student_db(),
+        _init_achievement_db(),
+        _init_image_service(),
+    )
 
     logger.info("Server ready!")
     yield

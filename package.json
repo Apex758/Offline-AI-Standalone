@@ -31,8 +31,8 @@
     "app-builder-bin": "^4.2.0",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
-    "electron": "28.3.3",
-    "electron-builder": "^24.9.1",
+    "electron": "40.8.5",
+    "electron-builder": "^26.0.0",
     "wait-on": "^7.2.0"
   },
   "build": {

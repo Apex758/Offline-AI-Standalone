@@ -181,6 +181,12 @@ class LlamaInference:
             "prompt_format": "gemma",
             "supports_thinking": False,
         },
+        "gemma-4": {
+            "handler_class": "Llava15ChatHandler",
+            "stop_tokens": ["<end_of_turn>", "<eos>"],
+            "prompt_format": "gemma",
+            "supports_thinking": False,
+        },
     }
 
     @staticmethod
@@ -264,8 +270,16 @@ class LlamaInference:
 
     @property
     def _use_chat_completion(self) -> bool:
-        """Whether this model needs create_chat_completion for proper special token handling."""
-        return self.model_config.get("prompt_format") == "gemma"
+        """Whether this model needs create_chat_completion for proper special token handling.
+
+        Gemma was previously routed here because <start_of_turn>/<end_of_turn>
+        are special tokens, but llama-cpp-python >=0.3.x tokenizes with
+        special=True by default in create_completion, so the raw prompt path
+        handles them correctly.  Routing through create_chat_completion
+        conflicts with the Llava15ChatHandler (vision projector) which
+        reformats prompts into LLaVA format that Gemma doesn't understand.
+        """
+        return False
 
     def _parse_prompt_to_messages(self, prompt: str) -> List[Dict[str, str]]:
         """Parse a formatted prompt back into chat messages for create_chat_completion.
@@ -491,10 +505,10 @@ class LlamaInference:
             def stream_in_thread():
                 """Runs in thread - puts tokens in queue AS they're generated."""
                 try:
+                    logger.info(f"[stream] use_chat={use_chat}, prompt_len={len(prompt)}, max_tokens={max_tokens}")
+                    logger.info(f"[stream] prompt_preview: {prompt[:300]!r}")
                     with SilenceOutput():
                         if use_chat and chat_messages:
-                            # Use chat completion API for models with special-only
-                            # template tokens (e.g. Gemma) — ensures correct token IDs
                             stream = self.model.create_chat_completion(
                                 messages=chat_messages,
                                 max_tokens=max_tokens,
@@ -515,6 +529,7 @@ class LlamaInference:
                                     token_count[0] += 1
                                     token_queue.put(token)
                         else:
+                            logger.info("[stream] Creating raw completion stream...")
                             stream = self.model(
                                 prompt,
                                 max_tokens=max_tokens,
@@ -525,12 +540,14 @@ class LlamaInference:
                                 echo=False,
                                 stream=True,
                             )
+                            logger.info("[stream] Stream created, iterating tokens...")
                             for output in stream:
                                 if cancel_event and cancel_event.is_set():
                                     break
                                 token = output["choices"][0]["text"]
                                 if first_token_time[0] is None:
                                     first_token_time[0] = time.perf_counter()
+                                    logger.info(f"[stream] First token received: {token!r}")
                                 token_count[0] += 1
                                 token_queue.put(token)  # Put immediately!
                 except Exception as e:

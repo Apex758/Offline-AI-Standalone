@@ -8,6 +8,8 @@ rather than open-ended instructions. This module provides:
 - Reduced max_tokens to prevent late-generation degradation
 """
 
+from functools import lru_cache
+
 # ── Grade → typical student age mapping ──────────────────────────────────────
 
 GRADE_AGE_MAP = {
@@ -349,6 +351,7 @@ TIER1_PROMPTS = {
 
 # ── Public helpers ─────────────────────────────────────────────────────────────
 
+@lru_cache(maxsize=32)
 def get_tier1_system_prompt(task_type: str, grade: str | None = None) -> str | None:
     """Return the Tier-1 system prompt for a task type, or None if unchanged.
 
