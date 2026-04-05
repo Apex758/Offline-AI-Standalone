@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
@@ -1302,6 +1303,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           onCollapsedChange={setCoachCollapsed}
         />
       </div>
+      <AIDisclaimer />
 
       {/* ── History floating panel ── */}
       <>

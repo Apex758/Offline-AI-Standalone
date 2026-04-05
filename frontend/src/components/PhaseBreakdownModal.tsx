@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -59,6 +60,7 @@ function fmtShort(s: string) {
 }
 
 const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState<AcademicPhaseSummary | null>(entry.phase_summary);
   const [generating, setGenerating] = useState(false);
 
@@ -170,16 +172,16 @@ const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => 
 
         {snapshots.length === 0 ? (
           <p style={{ fontSize: 13, color: 'var(--dash-text-sub)', textAlign: 'center', padding: '24px 0' }}>
-            No reports were logged during this phase.
+            {t('phases.noReports')}
           </p>
         ) : (
           <>
             {/* Score summary row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
               {[
-                { label: 'Average', score: avgScore },
-                { label: 'Peak', score: peakScore },
-                { label: 'Lowest', score: lowScore },
+                { label: t('phases.average'), score: avgScore },
+                { label: t('phases.peak'), score: peakScore },
+                { label: t('phases.lowest'), score: lowScore },
               ].map(item => (
                 <div key={item.label} style={{
                   padding: '12px 14px', borderRadius: 10,
@@ -202,7 +204,7 @@ const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => 
             {chartData.length > 1 && (
               <div style={{ marginBottom: 20 }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--dash-text-sub)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                  Score Progression
+                  {t('phases.scoreProgression')}
                 </p>
                 <ResponsiveContainer width="100%" height={120}>
                   <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
@@ -236,7 +238,7 @@ const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => 
             {/* Dimension deltas */}
             <div style={{ marginBottom: 20 }}>
               <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--dash-text-sub)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
-                Dimension Progress (Start → End)
+                {t('phases.dimensionProgress')}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {dimKeys.map(dk => {
@@ -282,7 +284,7 @@ const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => 
                 marginBottom: 16,
               }}>
                 <p style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
-                  Phase Summary
+                  {t('phases.phaseSummary')}
                 </p>
                 <p style={{ fontSize: 13, color: 'var(--dash-text)', lineHeight: 1.6, margin: 0 }}>
                   {summary.narrative}
@@ -292,7 +294,7 @@ const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => 
 
             {generating && (
               <p style={{ fontSize: 12, color: 'var(--dash-text-sub)', textAlign: 'center' }}>
-                Generating phase summary…
+                {t('phases.generatingSummary')}
               </p>
             )}
 

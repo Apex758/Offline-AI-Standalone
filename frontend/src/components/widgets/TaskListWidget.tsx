@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
@@ -46,6 +47,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
   onTaskToggle,
   onAddTask
 }) => {
+  const { t } = useTranslation();
   const groupedTasks = groupTasksByStatus(tasks);
   const [showCompleted, setShowCompleted] = useState(false);
   const hasAnyTasks = tasks.length > 0;
@@ -199,7 +201,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
         </div>
         {remaining > 0 && (
           <p className="text-[11px] px-3 py-1.5 font-medium" style={{ color: 'var(--dash-primary)' }}>
-            +{remaining} more
+            {t('tasks.moreItems', { count: remaining })}
           </p>
         )}
       </div>
@@ -224,7 +226,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
                 className="ml-2 text-xs font-normal"
                 style={{ color: 'var(--dash-text-faint)' }}
               >
-                {tasks.filter(t => !t.completed).length} remaining
+                {t('tasks.remaining', { count: tasks.filter(task => !task.completed).length })}
               </span>
             )}
           </h3>
@@ -296,17 +298,17 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
               <ListTodo className="w-6 h-6" style={{ color: 'var(--dash-primary)' }} />
             </div>
             <p className="text-sm font-semibold" style={{ color: 'var(--dash-text-sub)' }}>
-              No tasks yet
+              {t('tasks.noTasksYet')}
             </p>
             <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'var(--dash-text-faint)' }}>
-              Add your first task to get started
+              {t('tasks.addFirstTask')}
             </p>
           </div>
         ) : (
           <>
-            {renderSection('Overdue', groupedTasks.overdue, true)}
-            {renderSection('Today', groupedTasks.today)}
-            {renderSection('Upcoming', groupedTasks.upcoming, false, 5)}
+            {renderSection(t('tasks.overdue'), groupedTasks.overdue, true)}
+            {renderSection(t('tasks.today'), groupedTasks.today)}
+            {renderSection(t('tasks.upcoming'), groupedTasks.upcoming, false, 5)}
 
             {/* Completed - collapsible */}
             {groupedTasks.completed.length > 0 && (
@@ -330,7 +332,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
                     className="text-[11px] font-semibold uppercase tracking-wider"
                     style={{ color: 'var(--dash-text-faint)' }}
                   >
-                    Completed
+                    {t('tasks.completed')}
                   </span>
                   <span
                     className="text-[10px] font-medium ml-auto tabular-nums px-1.5 py-0.5 rounded-md"

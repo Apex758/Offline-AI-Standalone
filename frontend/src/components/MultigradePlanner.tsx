@@ -33,6 +33,7 @@ const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01Icon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
+import AIDisclaimer from './AIDisclaimer';
 import MultigradeEditor from './MultigradeEditor';
 import axios from 'axios';
 import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
@@ -1450,6 +1451,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
             </div>
           </>
         )}
+        <AIDisclaimer />
       </div>
 
       {/* History Panel */}

@@ -29,6 +29,7 @@ const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
+import AIDisclaimer from './AIDisclaimer';
 import RubricEditor from './RubricEditor';
 import type { ParsedRubric, CriteriaRow } from './RubricEditor';
 import axios from 'axios';
@@ -1350,6 +1351,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
             </div>
           </>
         )}
+        <AIDisclaimer />
       </div>
 
       {/* History Panel */}

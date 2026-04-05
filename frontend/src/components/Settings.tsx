@@ -115,56 +115,60 @@ const Fire: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
 
 // Sidebar item metadata for Features section
-const SIDEBAR_ITEM_META: Record<string, { name: string; icon: React.FC<{ className?: string; style?: React.CSSProperties }>; description?: string; childCount?: number }> = {
-  'analytics': { name: 'My Overview', icon: LayoutDashboardIcon },
-  'educator-insights': { name: 'Educator Insights', icon: (p) => <Icon icon={Search01IconData} {...p} /> },
-  'chat': { name: 'Ask PEARL', icon: MessageIcon },
-  'curriculum': { name: 'Curriculum Browser', icon: SearchIcon },
-  'planning-prep': { name: 'Planning & Prep', icon: Compass, childCount: 3 },
-  'lesson-planners': { name: 'Lesson Planners', icon: (p) => <Icon icon={BookOpen01IconData} {...p} />, childCount: 4 },
-  'assessment-tools': { name: 'Assessment Tools', icon: Target, childCount: 2 },
-  'my-classroom': { name: 'My Classroom', icon: SchoolIcon, childCount: 5 },
-  'visual-studio': { name: 'Visual Studio', icon: Paintbrush, childCount: 4 },
-  'performance-metrics': { name: 'Performance Metrics', icon: Cpu },
-  'support': { name: 'Support & Reporting', icon: (p) => <Icon icon={AlertCircleIconData} {...p} /> },
-  'settings': { name: 'Settings', icon: SettingsIcon },
-};
+type SidebarItemMeta = Record<string, { name: string; icon: React.FC<{ className?: string; style?: React.CSSProperties }>; description?: string; childCount?: number }>;
+
+const getSidebarItemMeta = (t: (key: string) => string): SidebarItemMeta => ({
+  'analytics': { name: t('sidebar.myOverview'), icon: LayoutDashboardIcon },
+  'educator-insights': { name: t('sidebar.educatorInsights'), icon: (p) => <Icon icon={Search01IconData} {...p} /> },
+  'chat': { name: t('sidebar.askPearl'), icon: MessageIcon },
+  'curriculum': { name: t('sidebar.curriculumBrowser'), icon: SearchIcon },
+  'planning-prep': { name: t('sidebar.groups.planningPrep'), icon: Compass, childCount: 3 },
+  'lesson-planners': { name: t('sidebar.groups.lessonPlanners'), icon: (p) => <Icon icon={BookOpen01IconData} {...p} />, childCount: 4 },
+  'assessment-tools': { name: t('sidebar.groups.assessmentTools'), icon: Target, childCount: 2 },
+  'my-classroom': { name: t('sidebar.groups.myClassroom'), icon: SchoolIcon, childCount: 5 },
+  'visual-studio': { name: t('sidebar.groups.visualStudio'), icon: Paintbrush, childCount: 4 },
+  'performance-metrics': { name: t('sidebar.performance'), icon: Cpu },
+  'support': { name: t('sidebar.supportReporting'), icon: (p) => <Icon icon={AlertCircleIconData} {...p} /> },
+  'settings': { name: t('sidebar.settings'), icon: SettingsIcon },
+});
 
 const PINNED_TOP = ['analytics', 'educator-insights'];
 const PINNED_BOTTOM = ['performance-metrics', 'support', 'settings'];
 const NON_TOGGLEABLE = new Set(['analytics', 'settings']);
 
 // Child tools within each group -- for per-tool visibility toggles
-const GROUP_CHILDREN: Record<string, Array<{ type: string; name: string; iconData: any }>> = {
+type GroupChildrenMap = Record<string, Array<{ type: string; name: string; iconData: any }>>;
+
+const getGroupChildren = (t: (key: string) => string): GroupChildrenMap => ({
   'planning-prep': [
-    { type: 'brain-dump', name: 'Brain Dump', iconData: Brain01IconData },
-    { type: 'resource-manager', name: 'My Resources', iconData: FolderOpenIconData },
-    { type: 'school-year-calendar', name: 'School Year', iconData: Calendar03IconData },
+    { type: 'brain-dump', name: t('sidebar.brainDump'), iconData: Brain01IconData },
+    { type: 'resource-manager', name: t('sidebar.myResources'), iconData: FolderOpenIconData },
+    { type: 'school-year-calendar', name: t('sidebar.schoolYear'), iconData: Calendar03IconData },
   ],
   'lesson-planners': [
-    { type: 'lesson-planner', name: 'Lesson Plan', iconData: BookBookmark01IconData },
-    { type: 'kindergarten-planner', name: 'Early Childhood', iconData: Baby01IconData },
-    { type: 'multigrade-planner', name: 'Multi-Level', iconData: Layers01IconData },
-    { type: 'cross-curricular-planner', name: 'Integrated Lesson', iconData: GitMergeIconData },
+    { type: 'lesson-planner', name: t('sidebar.lessonPlan'), iconData: BookBookmark01IconData },
+    { type: 'kindergarten-planner', name: t('sidebar.earlyChildhood'), iconData: Baby01IconData },
+    { type: 'multigrade-planner', name: t('sidebar.multiLevel'), iconData: Layers01IconData },
+    { type: 'cross-curricular-planner', name: t('sidebar.integratedLesson'), iconData: GitMergeIconData },
   ],
   'assessment-tools': [
-    { type: 'quiz-generator', name: 'Quiz Builder', iconData: PenTool01IconData },
-    { type: 'rubric-generator', name: 'Rubric Builder', iconData: CheckListIconData },
+    { type: 'quiz-generator', name: t('sidebar.quizBuilder'), iconData: PenTool01IconData },
+    { type: 'rubric-generator', name: t('sidebar.rubricBuilder'), iconData: CheckListIconData },
   ],
   'my-classroom': [
-    { type: 'class-management', name: 'My Classes', iconData: UserMultipleIconData },
-    { type: 'curriculum-tracker', name: 'Progress Tracker', iconData: ChartIncreaseIconData },
-    { type: 'curriculum-plan', name: 'Curriculum Plan', iconData: Calendar03IconData },
-    { type: 'achievements', name: 'Achievements', iconData: Trophy01IconData },
-    { type: 'photo-transfer', name: 'Photo Transfer', iconData: Camera01IconData },
+    { type: 'class-management', name: t('sidebar.myClasses'), iconData: UserMultipleIconData },
+    { type: 'curriculum-tracker', name: t('sidebar.progressTracker'), iconData: ChartIncreaseIconData },
+    { type: 'curriculum-plan', name: t('sidebar.curriculumPlan'), iconData: Calendar03IconData },
+    { type: 'achievements', name: t('sidebar.achievements'), iconData: Trophy01IconData },
+    { type: 'photo-transfer', name: t('sidebar.photoTransfer'), iconData: Camera01IconData },
   ],
   'visual-studio': [
-    { type: 'worksheet-generator', name: 'Worksheet Builder', iconData: FileSpreadsheetIconData },
-    { type: 'image-studio', name: 'Image Studio', iconData: ColorsIconData },
-    { type: 'presentation-builder', name: 'Slide Deck', iconData: Presentation01IconData },
-    { type: 'storybook', name: 'Storybook Creator', iconData: StoryBookIconData },
+    { type: 'worksheet-generator', name: t('sidebar.worksheetBuilder'), iconData: FileSpreadsheetIconData },
+    { type: 'image-studio', name: t('sidebar.imageStudio'), iconData: ColorsIconData },
+    { type: 'presentation-builder', name: t('sidebar.slideDeck'), iconData: Presentation01IconData },
+    { type: 'storybook', name: t('sidebar.storybookCreator'), iconData: StoryBookIconData },
   ],
-};
+});
 
 // Sortable sidebar item component
 const SortableSidebarItem: React.FC<{
@@ -172,7 +176,10 @@ const SortableSidebarItem: React.FC<{
   onToggle: (id: string, enabled: boolean) => void;
   onChildToggle?: (groupId: string, childType: string, enabled: boolean) => void;
 }> = ({ item, onToggle, onChildToggle }) => {
+  const { t } = useTranslation();
   const [childrenExpanded, setChildrenExpanded] = useState(false);
+  const SIDEBAR_ITEM_META = getSidebarItemMeta(t);
+  const GROUP_CHILDREN = getGroupChildren(t);
   const meta = SIDEBAR_ITEM_META[item.id];
   const isLocked = NON_TOGGLEABLE.has(item.id);
   const children = GROUP_CHILDREN[item.id];
@@ -220,7 +227,7 @@ const SortableSidebarItem: React.FC<{
           <p className="text-sm font-medium text-theme-label truncate">{meta.name}</p>
           {children && (
             <p className="text-xs text-theme-hint">
-              {enabledChildCount} of {children.length} tools visible
+              {t('settingsPage.features.toolsVisible', { count: enabledChildCount, total: children.length })}
             </p>
           )}
         </div>
@@ -344,6 +351,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, supportsThinking, dualModel, refreshCapabilities, recommendations } = useCapabilities();
   const { getActiveStreams } = useWebSocket();
   const { queue } = useQueue();
+  // Build translated metadata inside component so t() is available
+  const SIDEBAR_ITEM_META = getSidebarItemMeta(t);
   const FEATURE_MODULE_LIST = FEATURE_MODULES;
   const handleToggleFeatureModule = (moduleId: FeatureModuleId) => toggleModule(moduleId);
   // dnd-kit sensors for sidebar reordering (must be at top level)
@@ -394,26 +403,26 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
   // Export / Import state
   const DATA_CATEGORIES = [
-    { key: 'chats', label: 'Chat Conversations' },
-    { key: 'lesson_plans', label: 'Lesson Plans' },
-    { key: 'kindergarten', label: 'Early Childhood Plans' },
-    { key: 'multigrade', label: 'Multi-Level Plans' },
-    { key: 'cross_curricular', label: 'Integrated Lesson Plans' },
-    { key: 'quizzes', label: 'Quizzes' },
-    { key: 'rubrics', label: 'Rubrics' },
-    { key: 'worksheets', label: 'Worksheets' },
-    { key: 'images', label: 'Generated Images' },
-    { key: 'presentations', label: 'Presentations' },
-    { key: 'brain_dumps', label: 'Brain Dumps' },
-    { key: 'tasks', label: 'Tasks & Reminders' },
-    { key: 'milestones', label: 'Progress Tracker' },
-    { key: 'achievements', label: 'Achievements' },
-    { key: 'students', label: 'Student Records' },
-    { key: 'calendar', label: 'Calendar & Reminders' },
-    { key: 'storybooks', label: 'Storybooks' },
-    { key: 'sticky_notes', label: 'Sticky Notes' },
-    { key: 'lesson_drafts', label: 'Lesson Drafts (In-Progress)' },
-    { key: 'settings', label: 'App Settings' },
+    { key: 'chats', label: t('settingsPage.dangerZone.categories.chatConversations') },
+    { key: 'lesson_plans', label: t('settingsPage.dangerZone.categories.lessonPlans') },
+    { key: 'kindergarten', label: t('settingsPage.dangerZone.categories.earlyChildhoodPlans') },
+    { key: 'multigrade', label: t('settingsPage.dangerZone.categories.multiLevelPlans') },
+    { key: 'cross_curricular', label: t('settingsPage.dangerZone.categories.integratedLessonPlans') },
+    { key: 'quizzes', label: t('settingsPage.dangerZone.categories.quizzes') },
+    { key: 'rubrics', label: t('settingsPage.dangerZone.categories.rubrics') },
+    { key: 'worksheets', label: t('settingsPage.dangerZone.categories.worksheets') },
+    { key: 'images', label: t('settingsPage.dangerZone.categories.generatedImages') },
+    { key: 'presentations', label: t('settingsPage.dangerZone.categories.presentations') },
+    { key: 'brain_dumps', label: t('settingsPage.dangerZone.categories.brainDumps') },
+    { key: 'tasks', label: t('settingsPage.dangerZone.categories.tasksReminders') },
+    { key: 'milestones', label: t('settingsPage.dangerZone.categories.progressTracker') },
+    { key: 'achievements', label: t('settingsPage.dangerZone.categories.achievements') },
+    { key: 'students', label: t('settingsPage.dangerZone.categories.studentRecords') },
+    { key: 'calendar', label: t('settingsPage.dangerZone.categories.calendarReminders') },
+    { key: 'storybooks', label: t('settingsPage.dangerZone.categories.storybooks') },
+    { key: 'sticky_notes', label: t('settingsPage.dangerZone.categories.stickyNotes') },
+    { key: 'lesson_drafts', label: t('settingsPage.dangerZone.categories.lessonDrafts') },
+    { key: 'settings', label: t('settingsPage.dangerZone.categories.appSettings') },
   ] as const;
   const [exportSelected, setExportSelected] = useState<Set<string>>(new Set(DATA_CATEGORIES.map(c => c.key)));
   const [importSelected, setImportSelected] = useState<Set<string>>(new Set(DATA_CATEGORIES.map(c => c.key)));
@@ -592,7 +601,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       await axios.post('http://localhost:8000/api/models/open-folder');
     } catch (error) {
       console.error('Failed to open models folder:', error);
-      alert('Failed to open models folder');
+      alert(t('settingsPage.models.failedOpenModelsFolder'));
     }
   };
 
@@ -607,7 +616,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
     if (totalActive > 0) {
       const confirmed = window.confirm(
-        `You have ${totalActive} generation${totalActive > 1 ? 's' : ''} in progress. Switching models now may cause unexpected results. Continue?`
+        t('settingsPage.models.confirmSwitchActive', { count: totalActive })
       );
       if (!confirmed) return;
     }
@@ -627,15 +636,15 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       if (response.ok) {
         const data = await response.json();
         setSelectedModel(modelName);
-        setModelChangeMessage(`✅ Model changed to ${modelName}. Please restart the app for changes to take effect.`);
+        setModelChangeMessage(`[OK] ${t('settingsPage.models.modelChangedTo', { name: modelName })}`);
         await refreshCapabilities();
       } else {
         const error = await response.json();
-        setModelChangeMessage(`❌ Error: ${error.error || 'Failed to change model'}`);
+        setModelChangeMessage(`[ERROR] ${error.error || t('settingsPage.models.failedChangeModel')}`);
       }
     } catch (error) {
       console.error('Error selecting model:', error);
-      setModelChangeMessage('❌ Error: Failed to communicate with backend');
+      setModelChangeMessage(`[ERROR] ${t('settingsPage.models.failedCommunicate')}`);
     } finally {
       setIsSelectingModel(false);
     }
@@ -714,7 +723,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       await axios.post('http://localhost:8000/api/diffusion-models/open-folder');
     } catch (error) {
       console.error('Failed to open diffusion models folder:', error);
-      alert('Failed to open diffusion models folder');
+      alert(t('settingsPage.models.failedOpenDiffusionFolder'));
     }
   };
 
@@ -736,15 +745,15 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       if (response.ok) {
         setSelectedDiffusionModel(modelName);
         resetStepsCache();
-        setDiffusionModelChangeMessage(modelName ? `Model changed to ${modelName}. Please restart the app for changes to take effect.` : 'Diffusion model disabled. Image generation features will be locked.');
+        setDiffusionModelChangeMessage(modelName ? t('settingsPage.models.diffusionChangedTo', { name: modelName }) : t('settingsPage.models.diffusionDisabled'));
         await refreshCapabilities();
       } else {
         const error = await response.json();
-        setDiffusionModelChangeMessage(`Error: ${error.error || 'Failed to change diffusion model'}`);
+        setDiffusionModelChangeMessage(`${t('settingsPage.models.error')}: ${error.error || t('settingsPage.models.failedChangeDiffusion')}`);
       }
     } catch (error) {
       console.error('Error selecting diffusion model:', error);
-      setDiffusionModelChangeMessage('Error: Failed to communicate with backend');
+      setDiffusionModelChangeMessage(`${t('settingsPage.models.error')}: ${t('settingsPage.models.failedCommunicate')}`);
     } finally {
       setIsSelectingDiffusionModel(false);
     }
@@ -772,27 +781,27 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled }),
       });
-      setOcrMessage(enabled ? 'OCR grading enabled. Model will load on first scan.' : 'OCR grading disabled. Will use vision model instead.');
+      setOcrMessage(enabled ? t('settingsPage.models.ocrEnabled') : t('settingsPage.models.ocrDisabled'));
       setTimeout(() => setOcrMessage(''), 4000);
       await refreshCapabilities();
     } catch {
-      setOcrMessage('Failed to update OCR setting');
+      setOcrMessage(t('settingsPage.models.ocrUpdateFailed'));
     }
   };
 
   const handleOcrPreload = async () => {
-    setOcrMessage('Loading OCR model...');
+    setOcrMessage(t('settingsPage.models.ocrLoading'));
     try {
       const response = await fetch('http://localhost:8000/api/ocr/load', { method: 'POST' });
       if (response.ok) {
-        setOcrMessage('OCR model loaded successfully');
+        setOcrMessage(t('settingsPage.models.ocrLoadedSuccess'));
         setOcrStatus(prev => prev ? { ...prev, loaded: true, loading: false } : prev);
       } else {
         const err = await response.json();
-        setOcrMessage(`Failed to load: ${err.detail || 'Unknown error'}`);
+        setOcrMessage(`${t('settingsPage.models.ocrLoadFailed')}: ${err.detail || t('settingsPage.models.unknownError')}`);
       }
     } catch {
-      setOcrMessage('Failed to communicate with backend');
+      setOcrMessage(t('settingsPage.models.failedCommunicate'));
     }
     setTimeout(() => setOcrMessage(''), 5000);
   };
@@ -800,10 +809,10 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const handleOcrUnload = async () => {
     try {
       await fetch('http://localhost:8000/api/ocr/unload', { method: 'POST' });
-      setOcrMessage('OCR model unloaded, VRAM freed');
+      setOcrMessage(t('settingsPage.models.ocrUnloaded'));
       setOcrStatus(prev => prev ? { ...prev, loaded: false } : prev);
     } catch {
-      setOcrMessage('Failed to unload OCR model');
+      setOcrMessage(t('settingsPage.models.ocrUnloadFailed'));
     }
     setTimeout(() => setOcrMessage(''), 4000);
   };
@@ -841,16 +850,16 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
       if (response.ok) {
         setSelectedOcrModel(modelName);
-        setOcrMessage(`OCR model changed to ${modelName}. Will load on next scan.`);
+        setOcrMessage(t('settingsPage.models.ocrChangedTo', { name: modelName }));
         setOcrStatus(prev => prev ? { ...prev, loaded: false } : prev);
         await refreshCapabilities();
       } else {
         const error = await response.json();
-        setOcrMessage(`Error: ${error.error || 'Failed to change OCR model'}`);
+        setOcrMessage(`${t('settingsPage.models.error')}: ${error.error || t('settingsPage.models.failedChangeOcr')}`);
       }
     } catch (error) {
       console.error('Error selecting OCR model:', error);
-      setOcrMessage('Error: Failed to communicate with backend');
+      setOcrMessage(`${t('settingsPage.models.error')}: ${t('settingsPage.models.failedCommunicate')}`);
     } finally {
       setIsSelectingOcrModel(false);
       setTimeout(() => setOcrMessage(''), 5000);
@@ -863,53 +872,53 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   };
 
   const sections = [
-    { id: 'profile' as const, label: 'Profile', icon: User, description: 'Your name, school & role' },
-    { id: 'appearance' as const, label: 'Appearance', icon: Palette, description: 'Theme, fonts & tab colors' },
-    { id: 'models' as const, label: 'Models', icon: Cpu, description: 'Language & diffusion models' },
-    { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
-    { id: 'features' as const, label: 'Features', icon: Sliders, description: 'Writing assistant & tools' },
-    { id: 'discovery' as const, label: 'Feature Discovery', icon: Compass, description: 'Explore all app features' },
-    { id: 'files' as const, label: 'File Access', icon: FolderOpen, description: 'Access PC files & folders' },
-    { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
-    { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Export, import & reset' },
+    { id: 'profile' as const, label: t('settingsPage.profile.title'), icon: User, description: t('settingsPage.profile.description') },
+    { id: 'appearance' as const, label: t('settingsPage.appearance.title'), icon: Palette, description: t('settingsPage.appearance.description') },
+    { id: 'models' as const, label: t('settingsPage.models.title'), icon: Cpu, description: t('settingsPage.models.description') },
+    { id: 'general' as const, label: t('settingsPage.general.title'), icon: Layers, description: t('settingsPage.general.description') },
+    { id: 'features' as const, label: t('settingsPage.features.title'), icon: Sliders, description: t('settingsPage.features.description') },
+    { id: 'discovery' as const, label: t('settingsPage.featureDiscovery.title'), icon: Compass, description: t('settingsPage.featureDiscovery.description') },
+    { id: 'files' as const, label: t('settingsPage.fileAccess.title'), icon: FolderOpen, description: t('settingsPage.fileAccess.description') },
+    { id: 'license' as const, label: t('settingsPage.license.title'), icon: RefreshCw, description: t('settingsPage.license.description') },
+    { id: 'danger' as const, label: t('settingsPage.dangerZone.title'), icon: AlertTriangle, description: t('settingsPage.dangerZone.description') },
   ];
 
   // Tab types and their default colors (matching sidebar order)
   const tabTypes = [
     // Standalone tools
-    { type: 'analytics', label: 'My Overview', defaultColor: '#3b82f6' },
-    { type: 'educator-insights', label: 'Educator Insights', defaultColor: '#d97706' },
-    { type: 'chat', label: 'Ask PEARL', defaultColor: '#3b82f6' },
-    { type: 'curriculum', label: 'Curriculum Browser', defaultColor: '#8b5cf6' },
+    { type: 'analytics', label: t('sidebar.myOverview'), defaultColor: '#3b82f6' },
+    { type: 'educator-insights', label: t('sidebar.educatorInsights'), defaultColor: '#d97706' },
+    { type: 'chat', label: t('sidebar.askPearl'), defaultColor: '#3b82f6' },
+    { type: 'curriculum', label: t('sidebar.curriculumBrowser'), defaultColor: '#8b5cf6' },
     // Planning & Prep group
-    { type: 'brain-dump', label: 'Brain Dump', defaultColor: '#a855f7' },
-    { type: 'resource-manager', label: 'My Resources', defaultColor: '#84cc16' },
+    { type: 'brain-dump', label: t('sidebar.brainDump'), defaultColor: '#a855f7' },
+    { type: 'resource-manager', label: t('sidebar.myResources'), defaultColor: '#84cc16' },
     // Assessment Tools group
-    { type: 'quiz-generator', label: 'Quiz Builder', defaultColor: '#14b8a6' },
-    { type: 'rubric-generator', label: 'Rubric Builder', defaultColor: '#f97316' },
+    { type: 'quiz-generator', label: t('sidebar.quizBuilder'), defaultColor: '#14b8a6' },
+    { type: 'rubric-generator', label: t('sidebar.rubricBuilder'), defaultColor: '#f97316' },
     // My Classroom group
-    { type: 'class-management', label: 'My Classes', defaultColor: '#f97316' },
-    { type: 'curriculum-tracker', label: 'Progress Tracker', defaultColor: '#10b981' },
-    { type: 'achievements', label: 'Achievements', defaultColor: '#f59e0b' },
+    { type: 'class-management', label: t('sidebar.myClasses'), defaultColor: '#f97316' },
+    { type: 'curriculum-tracker', label: t('sidebar.progressTracker'), defaultColor: '#10b981' },
+    { type: 'achievements', label: t('sidebar.achievements'), defaultColor: '#f59e0b' },
     // Lesson planners group
-    { type: 'lesson-planner', label: 'Lesson Plan', defaultColor: '#f59e0b' },
-    { type: 'kindergarten-planner', label: 'Early Childhood', defaultColor: '#ec4899' },
-    { type: 'multigrade-planner', label: 'Multi-Level', defaultColor: '#06b6d4' },
-    { type: 'cross-curricular-planner', label: 'Integrated Lesson', defaultColor: '#6366f1' },
+    { type: 'lesson-planner', label: t('sidebar.lessonPlan'), defaultColor: '#f59e0b' },
+    { type: 'kindergarten-planner', label: t('sidebar.earlyChildhood'), defaultColor: '#ec4899' },
+    { type: 'multigrade-planner', label: t('sidebar.multiLevel'), defaultColor: '#06b6d4' },
+    { type: 'cross-curricular-planner', label: t('sidebar.integratedLesson'), defaultColor: '#6366f1' },
     // Visual studio group
     ...(settings.sidebarOrder.find(i => i.id === 'visual-studio')?.enabled ? [
-      { type: 'worksheet-generator', label: 'Worksheet Builder', defaultColor: '#8b5cf6' },
-      { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
-      { type: 'presentation-builder', label: 'Slide Deck', defaultColor: '#f97316' },
-      { type: 'storybook', label: 'Storybook Creator', defaultColor: '#a855f7' },
+      { type: 'worksheet-generator', label: t('sidebar.worksheetBuilder'), defaultColor: '#8b5cf6' },
+      { type: 'image-studio', label: t('sidebar.imageStudio'), defaultColor: '#ec4899' },
+      { type: 'presentation-builder', label: t('sidebar.slideDeck'), defaultColor: '#f97316' },
+      { type: 'storybook', label: t('sidebar.storybookCreator'), defaultColor: '#a855f7' },
     ] : []),
     // Performance metrics
     ...(settings.sidebarOrder.find(i => i.id === 'performance-metrics')?.enabled ? [
-      { type: 'performance-metrics', label: 'Performance', defaultColor: '#10b981' },
+      { type: 'performance-metrics', label: t('sidebar.performance'), defaultColor: '#10b981' },
     ] : []),
     // Bottom tools
-    { type: 'support', label: 'Support & Reporting', defaultColor: '#3b82f6' },
-    { type: 'settings', label: 'Settings', defaultColor: '#6b7280' },
+    { type: 'support', label: t('sidebar.supportReporting'), defaultColor: '#3b82f6' },
+    { type: 'settings', label: t('sidebar.settings'), defaultColor: '#6b7280' },
   ];
 
   const handleTabColorChange = (tabType: string, color: string) => {
@@ -1213,11 +1222,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
       const filename = `oecs-backup-${new Date().toISOString().split('T')[0]}.json`;
       downloadJSON(exportPayload, filename);
-      setExportMessage(`Exported ${exportSelected.size} categor${exportSelected.size === 1 ? 'y' : 'ies'} successfully`);
+      setExportMessage(t('settingsPage.dangerZone.exportSuccess', { count: exportSelected.size }));
       setTimeout(() => setExportMessage(''), 4000);
     } catch (error) {
       console.error('Export failed:', error);
-      setExportMessage('Export failed. Please try again.');
+      setExportMessage(t('settingsPage.dangerZone.exportFailed'));
       setTimeout(() => setExportMessage(''), 4000);
     } finally {
       setIsExporting(false);
@@ -1232,7 +1241,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       const parsed = JSON.parse(text);
 
       if (!parsed.data || !parsed.categories) {
-        setImportMessage('Invalid backup file format.');
+        setImportMessage(t('settingsPage.dangerZone.invalidBackup'));
         setTimeout(() => setImportMessage(''), 4000);
         return;
       }
@@ -1383,26 +1392,26 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       }
 
       if (catsToImport.includes('settings')) {
-        importedSummary = importedSummary ? importedSummary + ', settings restored' : 'Settings restored';
+        importedSummary = importedSummary ? importedSummary + ', ' + t('settingsPage.dangerZone.settingsRestored') : t('settingsPage.dangerZone.settingsRestored');
       }
       if (catsToImport.includes('brain_dumps')) {
-        importedSummary = importedSummary ? importedSummary + ', brain dumps restored' : 'Brain dumps restored';
+        importedSummary = importedSummary ? importedSummary + ', ' + t('settingsPage.dangerZone.brainDumpsRestored') : t('settingsPage.dangerZone.brainDumpsRestored');
       }
       if (catsToImport.includes('tasks')) {
-        importedSummary = importedSummary ? importedSummary + ', tasks restored' : 'Tasks restored';
+        importedSummary = importedSummary ? importedSummary + ', ' + t('settingsPage.dangerZone.tasksRestored') : t('settingsPage.dangerZone.tasksRestored');
       }
       if (catsToImport.includes('sticky_notes')) {
-        importedSummary = importedSummary ? importedSummary + ', sticky notes restored' : 'Sticky notes restored';
+        importedSummary = importedSummary ? importedSummary + ', ' + t('settingsPage.dangerZone.stickyNotesRestored') : t('settingsPage.dangerZone.stickyNotesRestored');
       }
       if (catsToImport.includes('storybooks')) {
-        importedSummary = importedSummary ? importedSummary + ', storybooks restored' : 'Storybooks restored';
+        importedSummary = importedSummary ? importedSummary + ', ' + t('settingsPage.dangerZone.storybooksRestored') : t('settingsPage.dangerZone.storybooksRestored');
       }
 
-      setImportMessage(importedSummary ? `Imported: ${importedSummary}` : 'Import complete (no new records)');
+      setImportMessage(importedSummary ? t('settingsPage.dangerZone.importedSummary', { summary: importedSummary }) : t('settingsPage.dangerZone.importComplete'));
       setTimeout(() => setImportMessage(''), 6000);
     } catch (error) {
       console.error('Import failed:', error);
-      setImportMessage('Import failed. Check the file format.');
+      setImportMessage(t('settingsPage.dangerZone.importFailed'));
       setTimeout(() => setImportMessage(''), 4000);
     } finally {
       setIsImporting(false);
@@ -1424,7 +1433,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     if (file && file.name.endsWith('.json')) {
       processImportFile(file);
     } else {
-      setImportMessage('Please drop a .json backup file.');
+      setImportMessage(t('settingsPage.dangerZone.dropJsonOnly'));
       setTimeout(() => setImportMessage(''), 4000);
     }
   };
@@ -1455,9 +1464,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
         <div className="px-7 pt-7 pb-4">
           <div className="flex items-center gap-2.5 mb-1">
             <SettingsIcon className="w-6 h-6 text-theme-label" />
-            <h1 className="text-xl font-bold text-theme-title">Settings</h1>
+            <h1 className="text-xl font-bold text-theme-title">{t('settingsPage.title')}</h1>
           </div>
-          <p className="text-xs text-theme-muted ml-[34px]">Customize PEARL</p>
+          <p className="text-xs text-theme-muted ml-[34px]">{t('settingsPage.subtitle')}</p>
         </div>
         <nav className="flex-1 px-5 py-3 space-y-1.5">
           {sections.map((section) => {
@@ -1499,8 +1508,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
             {activeSection === 'profile' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-theme-title">Profile</h2>
-                  <p className="text-sm text-theme-muted mt-1">Tell PEARL about yourself to personalize your experience</p>
+                  <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.profile.title')}</h2>
+                  <p className="text-sm text-theme-muted mt-1">{t('settingsPage.profile.tellPearl')}</p>
                 </div>
 
                 {/* Avatar & Name */}
@@ -1508,9 +1517,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <User className="w-4.5 h-4.5 text-theme-secondary" />
-                      Personal Info
+                      {t('settingsPage.profile.personalInfo')}
                     </CardTitle>
-                    <CardDescription>Your basic information</CardDescription>
+                    <CardDescription>{t('settingsPage.profile.personalInfoDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -1533,7 +1542,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                             className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                             onClick={() => profileImageInputRef.current?.click()}
                           >
-                            <span className="text-white text-[10px] font-medium">Change</span>
+                            <span className="text-white text-[10px] font-medium">{t('settingsPage.profile.change')}</span>
                           </div>
                           {userProfileImage && (
                             <button
@@ -1552,9 +1561,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-theme-label mb-1.5">Display Name</label>
+                          <label className="block text-sm font-medium text-theme-label mb-1.5">{t('settingsPage.profile.displayName')}</label>
                           <Input
-                            placeholder="e.g. Ms. Johnson"
+                            placeholder={t('settingsPage.profile.displayNamePlaceholder')}
                             value={settings.profile.displayName}
                             onChange={(e) => handleDisplayNameChange(e.target.value)}
                           />
@@ -1563,9 +1572,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
                       {/* School */}
                       <div>
-                        <label className="block text-sm font-medium text-theme-label mb-1.5">School</label>
+                        <label className="block text-sm font-medium text-theme-label mb-1.5">{t('settingsPage.profile.school')}</label>
                         <Input
-                          placeholder="e.g. Castries Primary School"
+                          placeholder={t('settingsPage.profile.schoolPlaceholder')}
                           value={settings.profile.school}
                           onChange={(e) => updateSettings({ profile: { ...settings.profile, school: e.target.value } })}
                         />
@@ -1573,8 +1582,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
                       {/* Grade Levels */}
                       <div>
-                        <label className="block text-sm font-medium text-theme-label mb-2">Grade Levels</label>
-                        <p className="text-xs text-theme-hint mb-3">Select the grades you teach, then choose subjects for each grade below.</p>
+                        <label className="block text-sm font-medium text-theme-label mb-2">{t('settingsPage.profile.gradeLevels')}</label>
+                        <p className="text-xs text-theme-hint mb-3">{t('settingsPage.profile.selectGrades')}</p>
                         <div className="flex flex-wrap gap-2">
                           {GRADE_LEVELS.map((grade) => {
                             const gradeSubjects = settings.profile.gradeSubjects[grade.value] || [];
@@ -1619,8 +1628,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div>
-                          <CardTitle>Subjects for {GRADE_LABEL_MAP[activeGradeTab] || activeGradeTab}</CardTitle>
-                          <CardDescription>Select the subjects you teach for this grade</CardDescription>
+                          <CardTitle>{t('settingsPage.profile.subjectsFor')} {GRADE_LABEL_MAP[activeGradeTab] || activeGradeTab}</CardTitle>
+                          <CardDescription>{t('settingsPage.profile.subjectsDesc')}</CardDescription>
                         </div>
                         <div className="flex gap-2">
                           {(() => {
@@ -1637,7 +1646,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                                   }}
                                   className="text-xs px-2.5 py-1 rounded-md border border-theme-strong/20 text-theme-secondary hover:bg-theme-subtle"
                                 >
-                                  {allSelected ? 'Clear All' : 'Select All'}
+                                  {allSelected ? t('settingsPage.profile.clearAll') : t('settingsPage.profile.selectAll')}
                                 </button>
                                 {otherGrades.length > 0 && (
                                   <select
@@ -1653,7 +1662,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                                     }}
                                     className="text-xs px-2 py-1 rounded-md border border-theme-strong/20 text-theme-secondary bg-theme-surface cursor-pointer"
                                   >
-                                    <option value="">Copy from...</option>
+                                    <option value="">{t('settingsPage.profile.copyFrom')}</option>
                                     {otherGrades.map(g => (
                                       <option key={g} value={g}>{GRADE_LABEL_MAP[g]}</option>
                                     ))}
@@ -1707,7 +1716,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                             }}
                             className="text-xs px-3 py-1.5 rounded-md border border-blue-200 dark:border-blue-800/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20"
                           >
-                            Apply these subjects to all my grades
+                            {t('settingsPage.profile.applyToAll')}
                           </button>
                         </div>
                       )}
@@ -1719,8 +1728,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 {getTeacherGrades(settings.profile.gradeSubjects).length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>My Teaching Profile</CardTitle>
-                      <CardDescription>Summary of your grade and subject assignments</CardDescription>
+                      <CardTitle>{t('settingsPage.profile.teachingProfile')}</CardTitle>
+                      <CardDescription>{t('settingsPage.profile.teachingProfileDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
@@ -1763,15 +1772,15 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 {/* Content Filtering Toggle */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Content Filtering</CardTitle>
-                    <CardDescription>Control what content is shown based on your profile</CardDescription>
+                    <CardTitle>{t('settingsPage.profile.contentFiltering')}</CardTitle>
+                    <CardDescription>{t('settingsPage.profile.contentFilteringDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
                       <div>
-                        <p className="text-sm font-medium text-theme-label">Only show my grades & subjects</p>
+                        <p className="text-sm font-medium text-theme-label">{t('settingsPage.profile.onlyShowMine')}</p>
                         <p className="text-xs text-theme-hint mt-0.5">
-                          When enabled, curriculum, lesson plans, and other content will be filtered to only show items related to your selected grade levels and subjects.
+                          {t('settingsPage.profile.onlyShowMineDesc')}
                         </p>
                       </div>
                       <input
@@ -1783,23 +1792,20 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     </label>
                     {settings.profile.filterContentByProfile && getTeacherGrades(settings.profile.gradeSubjects).length === 0 && (
                       <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 px-3">
-                        Select at least one grade and its subjects above for filtering to take effect.
+                        {t('settingsPage.profile.filterWarning')}
                       </p>
                     )}
                     {settings.profile.filterContentByProfile && getTeacherGrades(settings.profile.gradeSubjects).length > 0 && (
                       <div className="mt-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
                         <p className="text-xs text-blue-700 dark:text-blue-400">
-                          Showing content for{' '}
+                          {t('settingsPage.profile.showingContentFor')}{' '}
                           <span className="font-medium">
                             {getTeacherGrades(settings.profile.gradeSubjects).sort((a, b) => {
                               const order = ['k', '1', '2', '3', '4', '5', '6'];
                               return order.indexOf(a) - order.indexOf(b);
                             }).map(g => GRADE_LABEL_MAP[g]).join(', ')}
                           </span>
-                          {' '}with{' '}
-                          <span className="font-medium">
-                            {getTeacherSubjects(settings.profile.gradeSubjects).length} subject{getTeacherSubjects(settings.profile.gradeSubjects).length !== 1 ? 's' : ''}
-                          </span>
+                          {' '}{t('settingsPage.profile.withSubjects', { count: getTeacherSubjects(settings.profile.gradeSubjects).length })}
                         </p>
                       </div>
                     )}
@@ -1812,9 +1818,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <RotateCcw className="w-4.5 h-4.5 text-amber-500" />
-                        Setup Wizard
+                        {t('settingsPage.profile.setupWizard')}
                       </CardTitle>
-                      <CardDescription>Re-run the first-time setup to change which features are shown in your sidebar.</CardDescription>
+                      <CardDescription>{t('settingsPage.profile.setupWizardDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <button
@@ -1822,7 +1828,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 active:scale-95"
                         style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)' }}
                       >
-                        Redo Setup Wizard
+                        {t('settingsPage.profile.redoSetup')}
                       </button>
                     </CardContent>
                   </Card>
@@ -1834,8 +1840,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
             {activeSection === 'appearance' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-theme-title">Appearance</h2>
-                  <p className="text-sm text-theme-muted mt-1">Customize how PEARL looks and feels</p>
+                  <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.appearance.title')}</h2>
+                  <p className="text-sm text-theme-muted mt-1">{t('settingsPage.appearance.description')}</p>
                 </div>
 
                 {/* Theme */}
@@ -1843,16 +1849,16 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Sun className="w-4.5 h-4.5 text-theme-secondary" />
-                      Theme
+                      {t('settingsPage.appearance.theme')}
                     </CardTitle>
-                    <CardDescription>Choose your preferred color scheme</CardDescription>
+                    <CardDescription>{t('settingsPage.appearance.themeDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex gap-3">
                       {([
-                        { value: 'light', label: 'Light', icon: Sun },
-                        { value: 'dark', label: 'Dark', icon: Moon },
-                        { value: 'system', label: 'System', icon: Monitor },
+                        { value: 'light', label: t('settingsPage.appearance.light'), icon: Sun },
+                        { value: 'dark', label: t('settingsPage.appearance.dark'), icon: Moon },
+                        { value: 'system', label: t('settingsPage.appearance.system'), icon: Monitor },
                       ] as const).map((option) => {
                         const OptIcon = option.icon;
                         return (
@@ -1917,9 +1923,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Type className="w-4.5 h-4.5 text-theme-secondary" />
-                      Font Size
+                      {t('settingsPage.appearance.fontSize')}
                     </CardTitle>
-                    <CardDescription>Adjust the font size for better readability</CardDescription>
+                    <CardDescription>{t('settingsPage.appearance.fontSizeDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -1948,9 +1954,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Sun02 className="w-4.5 h-4.5 text-theme-secondary" />
-                      Brightness
+                      {t('settingsPage.appearance.brightness')}
                     </CardTitle>
-                    <CardDescription>Adjust screen brightness for comfort</CardDescription>
+                    <CardDescription>{t('settingsPage.appearance.brightnessDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -1975,7 +1981,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           onClick={() => updateSettings({ brightness: 100 })}
                           className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                         >
-                          Reset to 100%
+                          {t('settingsPage.appearance.resetTo100')}
                         </button>
                       )}
                     </div>
@@ -1989,9 +1995,9 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           <Fire className="w-4.5 h-4.5 text-theme-secondary" />
-                          Night Tone
+                          {t('settingsPage.appearance.nightTone')}
                         </CardTitle>
-                        <CardDescription>Add a warm yellow tint to reduce eye strain</CardDescription>
+                        <CardDescription>{t('settingsPage.appearance.nightToneDesc')}</CardDescription>
                       </div>
                       <button
                         onClick={() => updateSettings({ warmToneEnabled: !settings.warmToneEnabled })}
@@ -2010,7 +2016,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardContent>
                     <div className="space-y-4">
                       <div className={`flex items-center gap-4 ${!settings.warmToneEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
-                        <span className="text-xs font-medium text-theme-hint w-6">Low</span>
+                        <span className="text-xs font-medium text-theme-hint w-6">{t('settingsPage.appearance.low')}</span>
                         <input
                           type="range"
                           min="0"
@@ -2036,7 +2042,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           <Palette className="w-4.5 h-4.5 text-theme-secondary" />
-                          Tab Colors
+                          {t('settingsPage.appearance.tabColors')}
                         </CardTitle>
                         <CardDescription>Personalize the accent color for each tab</CardDescription>
                       </div>
@@ -2053,14 +2059,14 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         className="text-xs gap-1.5"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        Reset Default
+                        {t('settingsPage.appearance.resetDefault')}
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     {/* ── Color Presets ── */}
                     <div className="space-y-3">
-                      <p className="text-xs font-semibold text-theme-muted uppercase tracking-wider">Presets</p>
+                      <p className="text-xs font-semibold text-theme-muted uppercase tracking-wider">{t('settingsPage.appearance.presets')}</p>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {/* Monochrome */}
                         <button
@@ -2072,7 +2078,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                               <div key={i} className="w-3 h-6 rounded-sm first:rounded-l-md last:rounded-r-md" style={{ backgroundColor: c }} />
                             ))}
                           </div>
-                          <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors">Monochrome</span>
+                          <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors">{t('settingsPage.appearance.monochrome')}</span>
                         </button>
 
                         {/* Randomize */}
@@ -2087,7 +2093,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           </div>
                           <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors flex items-center gap-1">
                             <Shuffle className="w-3 h-3" />
-                            Randomize
+                            {t('settingsPage.appearance.randomize')}
                           </span>
                         </button>
 
@@ -2101,7 +2107,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           <div className="w-[62px] h-6 rounded-md" style={{ background: `linear-gradient(to right, ${gradientColors.join(', ')})` }} />
                           <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors flex items-center gap-1">
                             <Blend className="w-3 h-3" />
-                            Gradient
+                            {t('settingsPage.appearance.gradient')}
                           </span>
                         </button>
 
@@ -2122,7 +2128,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           </div>
                           <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors flex items-center gap-1">
                             <Droplets className="w-3 h-3" />
-                            Spectrum
+                            {t('settingsPage.appearance.spectrum')}
                           </span>
                         </button>
                       </div>
@@ -2279,7 +2285,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
             {activeSection === 'models' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-theme-title">Models</h2>
+                  <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.models.title')}</h2>
                   <p className="text-sm text-theme-muted mt-1">Manage language and image generation models</p>
                 </div>
 
@@ -2337,7 +2343,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Cpu className="w-4.5 h-4.5 text-theme-secondary" />
-                      Language Model
+                      {t('settingsPage.models.languageModel')}
                     </CardTitle>
                     <CardDescription>Select the model to use for text generation</CardDescription>
                   </CardHeader>
@@ -2410,13 +2416,13 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
                       {modelChangeMessage && (
                         <div className={`mt-2 p-3 rounded-lg text-sm ${
-                          modelChangeMessage.startsWith('\u2705')
+                          modelChangeMessage.startsWith('[OK]')
                             ? 'bg-green-100 text-green-800 border border-green-300'
                             : 'bg-red-100 text-red-800 border border-red-300'
                         }`}>
                           <div className="flex items-center justify-between gap-2">
                             <span>{modelChangeMessage}</span>
-                            {modelChangeMessage.startsWith('\u2705') && (
+                            {modelChangeMessage.startsWith('[OK]') && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2424,7 +2430,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                                 className="shrink-0 bg-green-200 hover:bg-green-300 text-green-900 border-green-400"
                               >
                                 <RefreshCw className="w-3 h-3 mr-1" />
-                                Restart
+                                {t('settingsPage.models.restart')}
                               </Button>
                             )}
                           </div>
@@ -2437,7 +2443,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           className="flex-1"
                         >
                           <FolderOpen className="w-4 h-4 mr-2" />
-                          Browse Models Folder
+                          {t('settingsPage.models.browseModels')}
                         </Button>
                       </div>
                       {availableModels.length > 0 && (
@@ -2455,7 +2461,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <span className="w-4.5 h-4.5 text-purple-500">💭</span>
-                        Thinking Mode
+                        {t('settingsPage.models.thinkingMode')}
                       </CardTitle>
                       <CardDescription>Enable deep reasoning for complex tasks (supported by Qwen models)</CardDescription>
                     </CardHeader>
@@ -2492,7 +2498,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Image className="w-4.5 h-4.5 text-theme-secondary" />
-                      Diffusion Model
+                      {t('settingsPage.models.diffusionModel')}
                     </CardTitle>
                     <CardDescription>Select the diffusion model used for image generation</CardDescription>
                   </CardHeader>
@@ -2569,7 +2575,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                                 className="shrink-0 bg-green-200 hover:bg-green-300 text-green-900 border-green-400"
                               >
                                 <RefreshCw className="w-3 h-3 mr-1" />
-                                Restart
+                                {t('settingsPage.models.restart')}
                               </Button>
                             )}
                           </div>
@@ -2599,7 +2605,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <SpellCheck className="w-4.5 h-4.5 text-theme-secondary" />
-                      OCR Grading
+                      {t('settingsPage.models.ocrGrading')}
                     </CardTitle>
                     <CardDescription>
                       Dedicated OCR model for reading scanned worksheets and quizzes. More accurate than vision LLM for handwriting recognition.
@@ -2720,7 +2726,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Layers className="w-4.5 h-4.5 text-theme-secondary" />
-                      Capability Tier
+                      {t('settingsPage.models.capabilityTier')}
                     </CardTitle>
                     <CardDescription>Auto-detected based on your active models</CardDescription>
                   </CardHeader>
@@ -2866,7 +2872,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
             {activeSection === 'general' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-theme-title">General</h2>
+                  <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.general.title')}</h2>
                   <p className="text-sm text-theme-muted mt-1">App behavior, generation mode, and tutorials</p>
                 </div>
 
@@ -2875,7 +2881,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Layers className="w-4.5 h-4.5 text-theme-secondary" />
-                      Application Behavior
+                      {t('settingsPage.general.appBehavior')}
                     </CardTitle>
                     <CardDescription>Configure how the application behaves</CardDescription>
                   </CardHeader>
@@ -2898,7 +2904,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 {/* Generation Behavior */}
                 <Card data-search-section="generation-mode">
                   <CardHeader>
-                    <CardTitle>Generation Behavior</CardTitle>
+                    <CardTitle>{t('settingsPage.general.generationBehavior')}</CardTitle>
                     <CardDescription>
                       Control how generations are processed
                     </CardDescription>
@@ -2940,7 +2946,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BookOpen className="w-4.5 h-4.5 text-theme-secondary" />
-                      Tutorials
+                      {t('settingsPage.general.tutorials')}
                     </CardTitle>
                     <CardDescription>Control tutorial behavior and reset completed tutorials</CardDescription>
                   </CardHeader>
@@ -2999,7 +3005,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           className="w-full"
                         >
                           <RotateCcw className="w-4 h-4 mr-2" />
-                          Reset All Tutorials
+                          {t('settingsPage.general.resetTutorials')}
                         </Button>
                       </div>
                     </div>
@@ -3012,7 +3018,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
             {activeSection === 'features' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-theme-title">Features</h2>
+                  <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.features.title')}</h2>
                   <p className="text-sm text-theme-muted mt-1">Enable, disable, and reorder your sidebar tools</p>
                 </div>
 
@@ -3188,7 +3194,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <PenTool className="w-4.5 h-4.5 text-theme-secondary" />
-                      Writing Assistant
+                      {t('settingsPage.features.writingAssistant')}
                     </CardTitle>
                     <CardDescription>Spell check, autocorrect, and smart text features for all text inputs</CardDescription>
                   </CardHeader>
@@ -3198,7 +3204,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <div className="flex items-start gap-3">
                           <SpellCheck className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-theme-label">Spell Check</p>
+                            <p className="text-sm font-medium text-theme-label">{t('settingsPage.features.spellCheck')}</p>
                             <p className="text-xs text-theme-hint">Highlight misspelled words with a red underline as you type</p>
                           </div>
                         </div>
@@ -3231,7 +3237,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <div className="flex items-start gap-3">
                           <Zap className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-theme-label">Autocorrect</p>
+                            <p className="text-sm font-medium text-theme-label">{t('settingsPage.features.autocorrect')}</p>
                             <p className="text-xs text-theme-hint">Automatically fix common spelling mistakes and typos as you type</p>
                           </div>
                         </div>
@@ -3275,7 +3281,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <ComputerSettings className="w-4.5 h-4.5 text-theme-secondary" />
-                      System Behavior
+                      {t('settingsPage.features.systemBehavior')}
                     </CardTitle>
                     <CardDescription>Control how the app starts and runs in the background</CardDescription>
                   </CardHeader>
@@ -3285,7 +3291,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <div className="flex items-start gap-3">
                           <ArrowDownTray className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-theme-label">Minimize to Tray</p>
+                            <p className="text-sm font-medium text-theme-label">{t('settingsPage.features.minimizeToTray')}</p>
                             <p className="text-xs text-theme-hint">When you close the window, the app stays running in the system tray instead of quitting</p>
                           </div>
                         </div>
@@ -3304,7 +3310,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <div className="flex items-start gap-3">
                           <Rocket className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-theme-label">Start on Boot</p>
+                            <p className="text-sm font-medium text-theme-label">{t('settingsPage.features.startOnBoot')}</p>
                             <p className="text-xs text-theme-hint">Automatically launch OECS Learning Hub when you log in to Windows</p>
                           </div>
                         </div>
@@ -3328,7 +3334,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Icon icon={Notification01IconData} className="w-4.5 h-4.5 text-theme-secondary" />
-                      Notifications &amp; Reminders
+                      {t('settingsPage.features.notifications')}
                     </CardTitle>
                     <CardDescription>Control how and when you receive reminders for calendar events</CardDescription>
                   </CardHeader>

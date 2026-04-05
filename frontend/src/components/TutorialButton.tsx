@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
@@ -51,6 +52,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   position = 'bottom-right',
   ghost = false
 }) => {
+  const { t } = useTranslation();
   const { settings, isTutorialCompleted, updateSettings } = useSettings();
   const [expanded, setExpanded] = useState(false);
   const [displayPanelOpen, setDisplayPanelOpen] = useState(false);
@@ -97,7 +99,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
 
   const positionStyles: Record<typeof position, string> = {
     'bottom-right': 'bottom-6 right-12',
-    'bottom-left': 'bottom-[2.6rem] left-[5.5rem]',
+    'bottom-left': 'bottom-[7rem] right-[1.5rem]',
     'top-right': 'top-6 right-6',
     'top-left': 'top-6 left-6'
   };
@@ -202,8 +204,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               pointerEvents: expanded ? 'auto' : 'none',
               transitionDelay: expanded ? '0.12s' : '0s',
             }}
-            title="Search (Ctrl+K)"
-            aria-label="Search"
+            title={t('tutorialButton.searchShortcut')}
+            aria-label={t('tutorialButton.search')}
           >
             <Search className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
             {/* Tooltip */}
@@ -219,7 +221,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 letterSpacing: '0.01em',
               }}
             >
-              Search
+              {t('tutorialButton.search')}
               <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
             </span>
           </button>
@@ -247,8 +249,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               pointerEvents: expanded ? 'auto' : 'none',
               transitionDelay: expanded ? '0.09s' : '0.01s',
             }}
-            title="Display Controls"
-            aria-label="Display Controls"
+            title={t('tutorialButton.displayControls')}
+            aria-label={t('tutorialButton.displayControls')}
           >
             {isDarkMode ? (
               <Moon className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
@@ -268,7 +270,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 letterSpacing: '0.01em',
               }}
             >
-              Display Controls
+              {t('tutorialButton.displayControls')}
               <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
             </span>
           </button>
@@ -295,7 +297,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 {/* Brightness column */}
                 <div className="flex flex-col items-center gap-2">
                   <Sun02 className="w-4 h-4" style={{ color: '#fbbf24' }} />
-                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">Brightness</span>
+                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">{t('tutorialButton.brightness')}</span>
                   <input
                     type="range"
                     min="50"
@@ -311,7 +313,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 {/* Warm Tone column */}
                 <div className="flex flex-col items-center gap-2">
                   <Fire className="w-4 h-4" style={{ color: '#f97316' }} />
-                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">Warmth</span>
+                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">{t('tutorialButton.warmth')}</span>
                   <input
                     type="range"
                     min="0"
@@ -341,7 +343,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                     <Sun className="w-4 h-4" style={{ color: '#fbbf24' }} />
                   )}
                   <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">
-                    {isDarkMode ? 'Dark' : 'Light'}
+                    {isDarkMode ? t('tutorialButton.dark') : t('tutorialButton.light')}
                   </span>
                   <div
                     className={`relative w-9 h-5 rounded-full transition-colors ${
@@ -362,7 +364,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                   className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-colors hover:bg-white/10"
                 >
                   <Fire className="w-4 h-4" style={{ color: settings.warmToneEnabled ? '#f97316' : '#9ca3af' }} />
-                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">Warmth</span>
+                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">{t('tutorialButton.warmth')}</span>
                   <div
                     className={`relative w-9 h-5 rounded-full transition-colors ${
                       settings.warmToneEnabled ? 'bg-amber-500' : 'bg-white/20'
@@ -395,8 +397,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 pointerEvents: expanded ? 'auto' : 'none',
                 transitionDelay: expanded ? '0.06s' : '0.02s',
               }}
-              title="Screenshot & Report Issue"
-              aria-label="Screenshot and create ticket"
+              title={t('tutorialButton.reportIssue')}
+              aria-label={t('tutorialButton.reportIssueDesc')}
             >
               <Camera className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
               {/* Tooltip */}
@@ -412,7 +414,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                   letterSpacing: '0.01em',
                 }}
               >
-                Report Issue (Screenshot)
+                {t('tutorialButton.reportIssueTooltip')}
                 <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
               </span>
             </button>
@@ -434,8 +436,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 pointerEvents: expanded ? 'auto' : 'none',
                 transitionDelay: expanded ? '0.04s' : '0.03s',
               }}
-              title="Sticky Notes"
-              aria-label="Sticky Notes"
+              title={t('tutorialButton.stickyNotes')}
+              aria-label={t('tutorialButton.stickyNotes')}
             >
               <StickyNoteIcon className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
               {/* Count badge */}
@@ -464,7 +466,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                   letterSpacing: '0.01em',
                 }}
               >
-                Sticky Notes
+                {t('tutorialButton.stickyNotes')}
                 <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
               </span>
             </button>
@@ -485,8 +487,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               pointerEvents: expanded ? 'auto' : 'none',
               transitionDelay: expanded ? '0.02s' : '0.04s',
             }}
-            title={isCompleted ? 'Replay Tutorial' : 'Start Tutorial'}
-            aria-label={isCompleted ? 'Replay Tutorial' : 'Start Tutorial'}
+            title={isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial')}
+            aria-label={isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial')}
           >
             <GraduationCap className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
             {/* Pulsing dot if not completed */}
@@ -509,7 +511,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 letterSpacing: '0.01em',
               }}
             >
-              {isCompleted ? 'Replay Tutorial' : 'Start Tutorial'}
+              {isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial')}
               <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
             </span>
           </button>
@@ -533,15 +535,15 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
             (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgba(250,204,21,0.45), 0 2px 8px rgba(245,158,11,0.25)';
           }
         }}
-        title={onOpenSearch ? (expanded ? 'Close' : 'Help & Search') : (isCompleted ? 'Replay Tutorial' : 'Start Tutorial')}
-        aria-label={onOpenSearch ? 'Help & Search' : 'Tutorial'}
+        title={onOpenSearch ? (expanded ? t('tutorialButton.close') : t('tutorialButton.helpAndSearch')) : (isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial'))}
+        aria-label={onOpenSearch ? t('tutorialButton.helpAndSearch') : t('tutorialButton.tutorial')}
       >
         {expanded ? (
           <X className="w-5 h-5" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))', transition: 'transform 0.2s ease', transform: 'rotate(0deg)' }} />
         ) : (
           <img
             src={OECS_LOGO_BASE64}
-            alt="OECS"
+            alt={t('tutorialButton.oecs')}
             style={{
               width: '100%',
               height: '100%',
@@ -576,7 +578,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               letterSpacing: '0.01em',
             }}
           >
-            {isCompleted ? 'Replay Tutorial' : 'Start Tutorial'}
+            {isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial')}
             <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent" style={{ borderTopColor: 'rgba(15,15,25,0.9)' }}></span>
           </span>
         )}

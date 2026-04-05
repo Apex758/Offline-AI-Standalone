@@ -213,7 +213,13 @@
       "Bash(node -e \"require\\('./frontend/src/locales/fr.json'\\); console.log\\('JSON valid'\\);\")",
       "Bash(node -e \"require\\('c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/es.json'\\); console.log\\('Valid JSON'\\);\")",
       "Bash(grep -nE '>[A-Z][a-zA-Z ,.!?]{3,}<|placeholder=|aria-label=' \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/LicenseGate.tsx\")",
-      "Bash(xargs -0 grep -rL \"useTranslation\")"
+      "Bash(xargs -0 grep -rL \"useTranslation\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/en.json', 'utf8'\\)\\); console.log\\('Valid JSON'\\);\")",
+      "Bash(node -e \"require\\('c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/fr.json'\\); console.log\\('Valid JSON'\\);\")",
+      "Bash(ls *.tsx)",
+      "Bash(grep -v \"//\")",
+      "Bash(ls frontend/src/components/AIDisclaimer*)",
+      "Bash(grep -n \"return \\($\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/StoryBookCreator.tsx\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

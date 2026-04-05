@@ -61,6 +61,7 @@ import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import AIDisclaimer from './AIDisclaimer';
 
 interface LessonPlannerProps {
   tabId: string;
@@ -1548,6 +1549,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             </div>
           </>
         )}
+        <AIDisclaimer />
       </div>
 
       {/* History Panel - Always available */}

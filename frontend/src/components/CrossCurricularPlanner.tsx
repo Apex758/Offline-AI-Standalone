@@ -33,6 +33,7 @@ const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01Icon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
+import AIDisclaimer from './AIDisclaimer';
 import CrossCurricularEditor from './CrossCurricularEditor';
 import type { ParsedCrossCurricularPlan } from './CrossCurricularEditor';
 import axios from 'axios';
@@ -1571,6 +1572,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
             </div>
           </>
         )}
+        <AIDisclaimer />
       </div>
 
       {/* History Panel */}

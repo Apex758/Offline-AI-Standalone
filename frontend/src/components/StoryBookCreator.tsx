@@ -3,6 +3,7 @@ import React, {
   useState, useEffect, useRef, useCallback, useMemo,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
@@ -264,6 +265,7 @@ function HistorySidePanel({
   formData?: Record<string, any>;
   onMatchCount?: (count: number) => void;
 }) {
+  const { t } = useTranslation();
   const [items, setItems] = React.useState<SavedStorybook[]>(() => getSavedStorybooks());
   const [draftsExpanded, setDraftsExpanded] = React.useState(true);
 
@@ -306,7 +308,7 @@ function HistorySidePanel({
       <div className="h-full flex flex-col p-4 w-80">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-theme-heading">Saved Storybooks</h3>
+          <h3 className="text-lg font-semibold text-theme-heading">{t('storybook.savedStorybooks')}</h3>
           <button
             onClick={onClose}
             className="p-1 rounded hover:bg-theme-hover transition"
@@ -325,7 +327,7 @@ function HistorySidePanel({
                 onClick={() => setDraftsExpanded(!draftsExpanded)}
               >
                 <span className="text-xs text-theme-muted transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
-                <span className="text-sm font-medium text-amber-500">Drafts ({drafts.length})</span>
+                <span className="text-sm font-medium text-amber-500">{t('storybook.draftsCount', { count: drafts.length })}</span>
               </div>
               {draftsExpanded && (
                 <div className="space-y-2">
@@ -341,11 +343,11 @@ function HistorySidePanel({
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 uppercase tracking-wide">Draft</span>
-                            <p className="text-sm font-medium text-theme-heading line-clamp-2">{item.formData.title || 'Untitled'}</p>
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 uppercase tracking-wide">{t('dashboard.draft')}</span>
+                            <p className="text-sm font-medium text-theme-heading line-clamp-2">{item.formData.title || t('storybook.untitled')}</p>
                           </div>
                           <p className="text-xs text-theme-hint mt-1">
-                            {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
+                            {item.formData.gradeLevel === 'K' ? t('storybook.kindergarten') : t('storybook.gradeN', { n: item.formData.gradeLevel })}
                             {item.formData.subject && ` · ${item.formData.subject}`}
                             {' · '}{new Date(item.savedAt).toLocaleDateString()} {new Date(item.savedAt).toLocaleTimeString()}
                           </p>
@@ -353,7 +355,7 @@ function HistorySidePanel({
                         <button
                           onClick={(e) => handleDelete(item.id, e)}
                           className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                          title="Delete draft"
+                          title={t('storybook.deleteDraft')}
                         >
                           <Icon icon={Delete02IconData} className="w-4 text-red-600" />
                         </button>
@@ -370,20 +372,20 @@ function HistorySidePanel({
           {drafts.length === 0 && completedSorted.length === 0 ? (
             <div className="text-center text-theme-hint mt-8">
               <Icon icon={BookOpen01IconData} className="w-12 mx-auto mb-2 text-theme-hint" />
-              <p className="text-sm">No saved storybooks yet</p>
+              <p className="text-sm">{t('storybook.noSavedStorybooks')}</p>
             </div>
           ) : (
             <>
               {matchCount > 0 && completedSorted.some(i => matchedCompletedIds.has(i.id)) && (
                 <div className="mb-2">
-                  <span className="text-xs font-medium text-blue-400">Matching ({matchedCompletedIds.size})</span>
+                  <span className="text-xs font-medium text-blue-400">{t('storybook.matchingCount', { count: matchedCompletedIds.size })}</span>
                 </div>
               )}
               {completedSorted.map((item, idx) => (
                 <React.Fragment key={item.id}>
                   {matchCount > 0 && idx > 0 && matchedCompletedIds.has(completedSorted[idx - 1].id) && !matchedCompletedIds.has(item.id) && (
                     <div className="border-b border-theme my-3">
-                      <span className="text-xs text-theme-muted">Other</span>
+                      <span className="text-xs text-theme-muted">{t('storybook.otherSection')}</span>
                     </div>
                   )}
                   <div
@@ -396,26 +398,26 @@ function HistorySidePanel({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                            {item.formData.title || 'Untitled'}
+                            {item.formData.title || t('storybook.untitled')}
                           </p>
                           {item.hasImages && (
-                            <span title="Images saved" className="shrink-0 text-green-500"><Icon icon={Image01IconData} className="w-3.5" /></span>
+                            <span title={t('storybook.imagesSaved')} className="shrink-0 text-green-500"><Icon icon={Image01IconData} className="w-3.5" /></span>
                           )}
                           {item.hasAudio && (
-                            <span title="Audio saved" className="shrink-0 text-blue-500"><Icon icon={Mic01IconData} className="w-3.5" /></span>
+                            <span title={t('storybook.audioSaved')} className="shrink-0 text-blue-500"><Icon icon={Mic01IconData} className="w-3.5" /></span>
                           )}
                         </div>
                         <p className="text-xs text-theme-hint mt-1">
-                          {item.formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${item.formData.gradeLevel}`}
+                          {item.formData.gradeLevel === 'K' ? t('storybook.kindergarten') : t('storybook.gradeN', { n: item.formData.gradeLevel })}
                           {item.formData.subject && ` · ${item.formData.subject}`}
-                          {item.parsedBook && ` · ${item.parsedBook.pages.length} pages`}
+                          {item.parsedBook && ` · ${t('storybook.nPages', { count: item.parsedBook.pages.length })}`}
                           {' · '}{new Date(item.savedAt).toLocaleDateString()} {new Date(item.savedAt).toLocaleTimeString()}
                         </p>
                       </div>
                       <button
                         onClick={(e) => handleDelete(item.id, e)}
                         className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                        title="Delete storybook"
+                        title={t('storybook.deleteStorybook')}
                       >
                         <Icon icon={Delete02IconData} className="w-4 text-red-600" />
                       </button>
@@ -444,6 +446,7 @@ function ExportSettingsPanel({
   onClose: () => void;
   accentColor: string;
 }) {
+  const { t } = useTranslation();
   const update = <K extends keyof StorybookExportSettings>(key: K, val: StorybookExportSettings[K]) => {
     const next = { ...settings, [key]: val };
     onChange(next);
@@ -456,7 +459,7 @@ function ExportSettingsPanel({
         <div className="flex items-center justify-between p-4 border-b border-theme">
           <h3 className="font-semibold text-theme-heading flex items-center gap-2">
             <Icon icon={Settings01IconData} className="w-5" style={{ color: accentColor }} />
-            Export Settings
+            {t('storybook.exportSettings')}
           </h3>
           <button onClick={onClose} className="text-theme-muted hover:text-theme-heading">
             <Icon icon={Cancel01IconData} className="w-5" />
@@ -465,23 +468,23 @@ function ExportSettingsPanel({
         <div className="p-4 space-y-4">
           {/* Default format */}
           <div>
-            <label className="block text-sm font-medium text-theme-label mb-1.5">Default Export Format</label>
+            <label className="block text-sm font-medium text-theme-label mb-1.5">{t('storybook.defaultFormat')}</label>
             <select
               value={settings.defaultFormat}
               onChange={e => update('defaultFormat', e.target.value as 'pdf' | 'pptx' | 'html')}
               className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm bg-theme"
             >
-              <option value="html">Animated HTML</option>
-              <option value="pdf">PDF</option>
-              <option value="pptx">PowerPoint (PPTX)</option>
+              <option value="html">{t('storybook.formatAnimatedHTML')}</option>
+              <option value="pdf">{t('storybook.formatPDF')}</option>
+              <option value="pptx">{t('storybook.formatPPTX')}</option>
             </select>
           </div>
 
           {/* Include audio */}
           <label className="flex items-center justify-between gap-3 cursor-pointer">
             <div>
-              <p className="text-sm font-medium text-theme-label">Include Audio in HTML</p>
-              <p className="text-xs text-theme-muted">Embed TTS audio in interactive HTML exports</p>
+              <p className="text-sm font-medium text-theme-label">{t('storybook.includeAudio')}</p>
+              <p className="text-xs text-theme-muted">{t('storybook.includeAudioDesc')}</p>
             </div>
             <div
               onClick={() => update('includeAudioInHTML', !settings.includeAudioInHTML)}
@@ -494,8 +497,8 @@ function ExportSettingsPanel({
           {/* Include comprehension questions */}
           <label className="flex items-center justify-between gap-3 cursor-pointer">
             <div>
-              <p className="text-sm font-medium text-theme-label">Comprehension Questions</p>
-              <p className="text-xs text-theme-muted">Include questions page in PDF/PPTX exports</p>
+              <p className="text-sm font-medium text-theme-label">{t('storybook.comprehensionQuestions')}</p>
+              <p className="text-xs text-theme-muted">{t('storybook.comprehensionDesc')}</p>
             </div>
             <div
               onClick={() => update('includeComprehensionQuestions', !settings.includeComprehensionQuestions)}
@@ -511,7 +514,7 @@ function ExportSettingsPanel({
             className="w-full py-2 rounded-lg text-sm font-medium text-white"
             style={{ background: accentColor }}
           >
-            Done
+            {t('common.done')}
           </button>
         </div>
       </div>
@@ -529,12 +532,13 @@ function ScenePickerModal({
   onClose: () => void;
   accentColor: string;
 }) {
+  const { t } = useTranslation();
   const byCategory = getScenesByCategory();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-theme">
-          <h3 className="font-semibold text-theme-heading">Choose Background Scene</h3>
+          <h3 className="font-semibold text-theme-heading">{t('storybook.chooseScene')}</h3>
           <button onClick={onClose} className="text-theme-muted hover:text-theme-heading">
             <Icon icon={Cancel01IconData} className="w-5" />
           </button>
@@ -604,10 +608,11 @@ function FlashcardSlide({
   totalQuestions: number;
   accentColor: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center h-full w-full px-8" style={{ perspective: '1200px' }}>
       <div className="text-white/40 text-sm mb-4 font-sans">
-        Question {questionNumber} of {totalQuestions}
+        {t('storybook.questionNofM', { n: questionNumber, m: totalQuestions })}
       </div>
       <div
         className="relative w-full max-w-xl"
@@ -628,9 +633,9 @@ function FlashcardSlide({
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
           }}
         >
-          <div className="text-sm font-sans font-semibold mb-4" style={{ color: accentColor }}>QUESTION</div>
+          <div className="text-sm font-sans font-semibold mb-4" style={{ color: accentColor }}>{t('storybook.flashcardQuestion')}</div>
           <p className="text-2xl text-white leading-relaxed">{question.question}</p>
-          <div className="mt-6 text-white/30 text-sm font-sans">Press → to reveal answer</div>
+          <div className="mt-6 text-white/30 text-sm font-sans">{t('storybook.pressToReveal')}</div>
         </div>
         {/* Back — Answer */}
         <div
@@ -646,10 +651,10 @@ function FlashcardSlide({
         >
           <div className="text-white/40 text-sm font-sans mb-2">{question.question}</div>
           <div className="mx-auto my-4" style={{ width: 60, height: 2, background: accentColor }} />
-          <div className="text-sm font-sans font-semibold mb-3" style={{ color: accentColor }}>ANSWER</div>
+          <div className="text-sm font-sans font-semibold mb-3" style={{ color: accentColor }}>{t('storybook.flashcardAnswer')}</div>
           <p className="text-xl text-white leading-relaxed">{question.answer}</p>
           {question.outcomeRef && (
-            <div className="mt-4 text-white/25 text-xs font-sans">Outcome: {question.outcomeRef}</div>
+            <div className="mt-4 text-white/25 text-xs font-sans">{t('storybook.outcome')}: {question.outcomeRef}</div>
           )}
         </div>
       </div>
@@ -668,6 +673,7 @@ function PlaybackView({
   accentColor: string;
   cachedAudio?: Map<string, Blob> | null;
 }) {
+  const { t } = useTranslation();
   const [pageIdx, setPageIdx] = useState(0);
   const [phase, setPhase] = useState<'bg' | 'char' | 'text' | 'done'>('bg');
   const [segmentIdx, setSegmentIdx] = useState(0);
@@ -800,7 +806,7 @@ function PlaybackView({
 
   // Page label
   const pageLabel = isQuestionSlide
-    ? `Question ${questionDataIdx + 1} of ${questions.length}${isAnswerFace ? ' (Answer)' : ''}`
+    ? `${t('storybook.questionNofM', { n: questionDataIdx + 1, m: questions.length })}${isAnswerFace ? ` (${t('storybook.flashcardAnswer')})` : ''}`
     : `${pageIdx + 1} / ${totalPages}`;
 
   return (
@@ -808,7 +814,7 @@ function PlaybackView({
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-black/80">
         <button onClick={() => { stopAll(); onClose(); }} className="text-white/70 hover:text-white flex items-center gap-1 text-sm">
-          <Icon icon={Cancel01IconData} className="w-4" /> Exit
+          <Icon icon={Cancel01IconData} className="w-4" /> {t('storybook.exit')}
         </button>
         <div className="text-white/60 text-sm">{pageLabel}</div>
         <div className="flex items-center gap-3">
@@ -819,7 +825,7 @@ function PlaybackView({
             className="text-white/60 hover:text-white text-xs flex items-center gap-1"
           >
             {autoPlay ? <Icon icon={PauseIconData} className="w-4" /> : <Icon icon={PlayIconData} className="w-4" />}
-            {autoPlay ? 'Pause Auto' : 'Auto Play'}
+            {autoPlay ? t('storybook.pauseAuto') : t('storybook.autoPlay')}
           </button>
           <button onClick={() => { stopAll(); speakSegment(0); }} className="text-white/60 hover:text-white">
             <Icon icon={RefreshIconData} className="w-4" />
@@ -943,6 +949,7 @@ function StreamingPagePreview({
   page: StoryPage;
   accentColor: string;
 }) {
+  const { t } = useTranslation();
   const bgScene = page.bundledSceneId
     ? BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)
     : null;
@@ -981,7 +988,7 @@ function StreamingPagePreview({
       {/* Writing badge */}
       <div className="absolute bottom-2 right-2 text-xs bg-black/20 text-white px-2 py-0.5 rounded-full flex items-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-        Writing…
+        {t('storybook.writingBadge')}
       </div>
       <style>{`
         @keyframes streamFadeIn {
@@ -996,6 +1003,7 @@ function StreamingPagePreview({
 // ─── Skeleton Page Placeholder (ungenerated pages in editor) ─────────────────
 
 function SkeletonPagePreview() {
+  const { t } = useTranslation();
   return (
     <div
       className="relative rounded-xl overflow-hidden border border-theme shadow-sm"
@@ -1018,7 +1026,7 @@ function SkeletonPagePreview() {
         ))}
       </div>
       <div className="absolute bottom-2 right-2 text-xs text-gray-400 px-2 py-0.5">
-        Waiting…
+        {t('storybook.waitingBadge')}
       </div>
       <style>{`
         @keyframes skeletonShimmer {
@@ -1039,6 +1047,7 @@ function CoverPagePreview({
   coverPage: CoverPage;
   accentColor: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="relative rounded-xl overflow-hidden border border-theme shadow-sm flex flex-col items-center justify-center text-center"
@@ -1075,7 +1084,7 @@ function CoverPagePreview({
           className="text-2xl font-bold leading-tight"
           style={{ color: coverPage.coverImageData ? '#fff' : '#1f2937' }}
         >
-          {coverPage.title || 'Untitled Story'}
+          {coverPage.title || t('storybook.untitledStory')}
         </h1>
         {coverPage.subtitle && (
           <p
@@ -1090,7 +1099,7 @@ function CoverPagePreview({
             className="text-sm mt-1"
             style={{ color: coverPage.coverImageData ? 'rgba(255,255,255,0.8)' : accentColor }}
           >
-            by {coverPage.authorName}
+            {t('storybook.byAuthor', { name: coverPage.authorName })}
           </p>
         )}
       </div>
@@ -1208,6 +1217,7 @@ function ResourceImagePicker({ onSelect, onClose, accentColor }: {
   onClose: () => void;
   accentColor: string;
 }) {
+  const { t } = useTranslation();
   const [images, setImages] = useState<{ id: string; title: string; imageUrl: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -1228,7 +1238,7 @@ function ResourceImagePicker({ onSelect, onClose, accentColor }: {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b border-theme">
-          <h3 className="font-semibold text-theme-heading">Choose Background Image</h3>
+          <h3 className="font-semibold text-theme-heading">{t('storybook.chooseBackgroundImage')}</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-theme-hover">
             <Icon icon={Cancel01IconData} className="w-5 text-theme-muted" />
           </button>
@@ -1241,8 +1251,8 @@ function ResourceImagePicker({ onSelect, onClose, accentColor }: {
           ) : images.length === 0 ? (
             <div className="text-center py-12 text-theme-muted">
               <Icon icon={Image01IconData} className="w-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No saved images found.</p>
-              <p className="text-xs mt-1">Generate images in the Image Generator to see them here.</p>
+              <p className="text-sm">{t('storybook.noSavedImages')}</p>
+              <p className="text-xs mt-1">{t('storybook.noSavedImagesHint')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-3">
@@ -2032,13 +2042,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               <Icon icon={BookOpen01IconData} className="w-5" style={{ color: accentColor }} />
             </div>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-theme-heading">Storybook Creator</h1>
-              <p className="text-sm text-theme-muted">Create illustrated stories for K-2 students</p>
+              <h1 className="text-xl font-bold text-theme-heading">{t('storybook.title')}</h1>
+              <p className="text-sm text-theme-muted">{t('storybook.subtitle')}</p>
             </div>
             <button
               onClick={() => setShowHistory(prev => !prev)}
               className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-              title="Storybook History"
+              title={t('storybook.storybookHistory')}
             >
               <Icon icon={Clock01IconData} className="w-5 text-theme-muted" />
               {storyMatchCount > 0 && (
@@ -2050,12 +2060,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-1.5">
-              Story Title <span className="text-red-500">*</span>
+              {t('storybook.storyTitle')} <span className="text-red-500">*</span>
             </label>
             <SmartInput
               value={formData.title}
               onChange={v => updateForm('title', v)}
-              placeholder="e.g. Max and the Magic Seed"
+              placeholder={t('storybook.titlePlaceholder')}
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.title ? 'border-red-500' : 'border-theme-strong'}`}
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             />
@@ -2064,12 +2074,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Author Name */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-1.5">
-              Author Name
+              {t('storybook.authorName')}
             </label>
             <SmartInput
               value={formData.authorName}
               onChange={v => updateForm('authorName', v)}
-              placeholder="e.g. Ms. Johnson"
+              placeholder={t('storybook.authorPlaceholder')}
               className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             />
@@ -2078,7 +2088,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Grade Level */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-1.5">
-              Grade Level <span className="text-red-500">*</span>
+              {t('forms.gradeLevel')} <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.gradeLevel}
@@ -2099,9 +2109,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             >
-              <option value="">Select a grade</option>
+              <option value="">{t('forms.selectGrade')}</option>
               {grades.map(g => (
-                <option key={g} value={g}>{g === 'K' ? 'Kindergarten' : `Grade ${g}`}</option>
+                <option key={g} value={g}>{g === 'K' ? t('storybook.kindergarten') : t('storybook.gradeN', { n: g })}</option>
               ))}
             </select>
           </div>
@@ -2109,7 +2119,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Subject */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-1.5">
-              Subject <span className="text-red-500">*</span>
+              {t('forms.subject')} <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.subject}
@@ -2123,7 +2133,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.subject ? 'validation-error' : ''}`}
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             >
-              <option value="">Select a subject</option>
+              <option value="">{t('forms.selectSubject')}</option>
               {availableSubjects.map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}
@@ -2141,7 +2151,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 title={formData.useCurriculum ? 'Curriculum alignment enabled' : 'Curriculum alignment disabled'}
               >
                 <span className="text-sm font-medium text-theme-label group-hover:text-theme-heading transition-colors">
-                  Align to curriculum
+                  {t('storybook.alignCurriculum')}
                 </span>
                 <div className={`relative w-7 h-4 rounded-full transition-colors ${formData.useCurriculum ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
                   <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${formData.useCurriculum ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
@@ -2168,7 +2178,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   />
                   {formData.strand && (
                     <p className="mt-2 text-xs text-theme-muted bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg px-3 py-2">
-                      The AI will weave the curriculum outcomes naturally into the story and generate comprehension questions you can use with students.
+                      {t('storybook.curriculumNote')}
                     </p>
                   )}
                 </>
@@ -2181,7 +2191,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium text-theme-label">
-                  Story Description <span className="text-red-500">*</span>
+                  {t('storybook.storyDescription')} <span className="text-red-500">*</span>
                 </label>
                 <button
                   onClick={toggleListening}
@@ -2192,19 +2202,19 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   }`}
                 >
                   <Icon icon={Mic01IconData} className="w-3.5" />
-                  {isListening ? 'Listening...' : 'Speak'}
+                  {isListening ? t('storybook.listening') : t('storybook.speak')}
                 </button>
               </div>
               <SmartTextArea
                 value={formData.description}
                 onChange={v => updateForm('description', v)}
                 rows={4}
-                placeholder="Describe the story you want — characters, setting, theme, and what happens. e.g. A curious rabbit named Pip discovers a magical garden that teaches about sharing..."
+                placeholder={t('storybook.descriptionPlaceholder')}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent resize-none ${validationErrors.description ? 'border-red-500' : 'border-theme-strong'}`}
                 style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
               />
               {validationErrors.description && (
-                <p className="text-xs text-red-500 mt-1">Please describe the story</p>
+                <p className="text-xs text-red-500 mt-1">{t('storybook.describeStory')}</p>
               )}
             </div>
           )}
@@ -2212,7 +2222,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Page count */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-2">
-              Pages: <span style={{ color: accentColor }}>{formData.pageCount}</span>
+              {t('storybook.pages')} <span style={{ color: accentColor }}>{formData.pageCount}</span>
             </label>
             <input
               type="range"
@@ -2225,14 +2235,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               style={{ accentColor }}
             />
             <div className="flex justify-between text-xs text-theme-muted mt-0.5">
-              <span>6 pages</span>
-              <span>12 pages</span>
+              <span>{t('storybook.nPages', { count: 6 })}</span>
+              <span>{t('storybook.nPages', { count: 12 })}</span>
             </div>
           </div>
 
           {/* Image Mode */}
           <div>
-            <label className="block text-sm font-medium text-theme-label mb-2">Images</label>
+            <label className="block text-sm font-medium text-theme-label mb-2">{t('presentation.images')}</label>
             <ImageModeSelector
               imageMode={formData.imageMode}
               onModeChange={m => updateForm('imageMode', m)}
@@ -2248,7 +2258,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {formData.imageMode === 'ai' && (
             <div>
               <label className="block text-sm font-medium text-theme-label mb-2">
-                Backgrounds
+                {t('storybook.backgrounds')}
                 <span className="ml-1.5 text-xs font-normal text-theme-muted">
                   (suggested max: {Math.ceil(formData.pageCount / 2)})
                 </span>
@@ -2314,7 +2324,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
           {/* Speakers */}
           <div>
-            <label className="block text-sm font-medium text-theme-label mb-2">Narrators & Voices</label>
+            <label className="block text-sm font-medium text-theme-label mb-2">{t('storybook.narratorsVoices')}</label>
             <div className="flex gap-2 mb-3">
               {([1, 2, 3] as const).map(n => {
                 const active = formData.speakerCount === n;
@@ -2329,7 +2339,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       color: active ? accentColor : undefined,
                     }}
                   >
-                    {n === 1 ? 'Narrator only' : n === 2 ? '1 character' : '2 characters'}
+                    {n === 1 ? t('storybook.narratorOnly') : n === 2 ? t('storybook.oneCharacter') : t('storybook.twoCharacters')}
                   </button>
                 );
               })}
@@ -2344,20 +2354,20 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   </div>
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <div>
-                      <p className="text-xs text-theme-muted mb-1">{sp.role === 'narrator' ? 'Narrator' : `Character ${i}`}</p>
+                      <p className="text-xs text-theme-muted mb-1">{sp.role === 'narrator' ? t('storybook.narrator') : `${t('storybook.character')} ${i}`}</p>
                       {sp.role !== 'narrator' && (
                         <input
                           type="text"
                           value={sp.characterName || ''}
                           onChange={e => updateSpeaker(i, { characterName: e.target.value })}
-                          placeholder="Character name"
+                          placeholder={t('storybook.characterName')}
                           className="w-full px-2 py-1 text-sm border border-theme-strong rounded focus:ring-1 bg-theme"
                           style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
                         />
                       )}
                     </div>
                     <div>
-                      <p className="text-xs text-theme-muted mb-1">Voice</p>
+                      <p className="text-xs text-theme-muted mb-1">{t('storybook.voice')}</p>
                       <select
                         value={sp.voice}
                         onChange={e => updateSpeaker(i, { voice: e.target.value as VoiceName })}
@@ -2409,10 +2419,10 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   // ─── Render: Streaming view ────────────────────────────────────────────────
   if (view === 'streaming') {
     const phaseLabel = generationPhase === 'writing_story'
-      ? 'Writing the story...'
+      ? t('storybook.writingStory')
       : generationPhase === 'formatting_pages'
-        ? 'Formatting into pages...'
-        : 'Writing your storybook...';
+        ? t('storybook.formattingPages')
+        : t('storybook.writingStory');
     const phaseDetail = generationPhase === 'writing_story'
       ? 'Creating a cohesive narrative first'
       : generationPhase === 'formatting_pages'
@@ -2433,7 +2443,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setView('input'); setNarrativePreview(''); setLivePages([]); }}
           className="absolute bottom-4 right-4 z-10 text-sm px-3 py-1.5 rounded-lg bg-black/20 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/30 transition-colors"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
     );
@@ -2466,7 +2476,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           onClick={() => setView('input')}
           className="text-theme-muted hover:text-theme-heading flex items-center gap-1 text-sm"
         >
-          <Icon icon={ArrowLeft01IconData} className="w-4" /> Edit Form
+          <Icon icon={ArrowLeft01IconData} className="w-4" /> {t('storybook.editForm')}
         </button>
         <div className="flex-1 text-center">
           <h2 className="font-semibold text-theme-heading text-sm truncate">{parsedBook.title}</h2>
@@ -2492,7 +2502,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               onClick={() => { clearStreaming(tabId, WS_ENDPOINT); setLivePages([]); setView('input'); }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           )}
           {/* Save */}
@@ -2565,14 +2575,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
                 : <Icon icon={Download01IconData} className="w-4" />
               }
-              {exportProgress ? exportProgress.label : 'Export'}
+              {exportProgress ? exportProgress.label : t('common.export')}
             </button>
             {showExportMenu && (
               <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-900 rounded-xl border border-theme shadow-lg z-20">
                 {[
-                  { fmt: 'pdf' as const,  label: 'PDF',                iconData: File01IconData },
-                  { fmt: 'pptx' as const, label: 'PowerPoint (PPTX)',   iconData: Presentation01IconData },
-                  { fmt: 'html' as const, label: 'Animated HTML',       iconData: Video01IconData },
+                  { fmt: 'pdf' as const,  label: t('storybook.formatPDF'),          iconData: File01IconData },
+                  { fmt: 'pptx' as const, label: t('storybook.formatPPTX'),         iconData: Presentation01IconData },
+                  { fmt: 'html' as const, label: t('storybook.formatAnimatedHTML'), iconData: Video01IconData },
                 ].map(({ fmt, label, iconData }) => (
                   <button
                     key={fmt}
@@ -2587,7 +2597,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     onClick={() => { setShowExportMenu(false); setShowExportSettings(true); }}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-theme-muted hover:bg-theme-secondary rounded-b-xl"
                   >
-                    <Icon icon={Settings01IconData} className="w-4" /> Export Settings
+                    <Icon icon={Settings01IconData} className="w-4" /> {t('storybook.exportSettings')}
                   </button>
                 </div>
               </div>
@@ -2652,7 +2662,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               onClick={handleCancelImageGen}
               className="text-theme-muted hover:text-red-500 text-xs"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -2671,7 +2681,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               color: activeTab === tab ? accentColor : undefined,
             }}
           >
-            {tab === 'story' ? 'Story Pages' : `Questions${parsedBook.comprehensionQuestions?.length ? ` (${parsedBook.comprehensionQuestions.length})` : ''}`}
+            {tab === 'story' ? t('storybook.storyPages') : `Questions${parsedBook.comprehensionQuestions?.length ? ` (${parsedBook.comprehensionQuestions.length})` : ''}`}
           </button>
         ))}
       </div>
@@ -2859,7 +2869,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   <Icon icon={ArrowLeft01IconData} className="w-5" />
                 </button>
                 <span className="text-sm text-theme-muted">
-                  {isCoverSelected ? 'Cover Page' : `Page ${currentPageIdx + 1} of ${parsedBook.pages.length}`}
+                  {isCoverSelected ? t('storybook.coverPage') : `Page ${currentPageIdx + 1} of ${parsedBook.pages.length}`}
                 </span>
                 <button
                   disabled={currentPageIdx === parsedBook.pages.length - 1}
@@ -2919,7 +2929,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Author Name</label>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.authorName')}</label>
                   <input
                     value={parsedBook.coverPage.authorName || ''}
                     onChange={e => setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, authorName: e.target.value } } : prev)}
@@ -3361,7 +3371,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 disabled={isSaving}
                 className="px-4 py-2 rounded-lg text-sm text-theme-muted hover:bg-theme-secondary disabled:opacity-50"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleConfirmSave}
@@ -3396,6 +3406,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {saveToast}
         </div>
       )}
+      <AIDisclaimer />
     </div>
     <HistorySidePanel
       open={showHistory}

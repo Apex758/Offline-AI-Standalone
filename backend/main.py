@@ -5274,7 +5274,7 @@ Quiz text:
             parsed['metadata'] = {'title': 'Uploaded Quiz', 'subject': '', 'gradeLevel': '', 'totalQuestions': len(parsed['questions'])}
         return parsed
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Parsed output was not valid quiz JSON: {e}")
+        raise HTTPException(status_code=422, detail="Parsed output was not valid quiz JSON")
 
 
 async def _grade_single_text_file(
@@ -5825,8 +5825,11 @@ def _load_grading_context(package_id, worksheet_json):
         package = student_service.get_worksheet_package(package_id)
         if not package:
             raise HTTPException(status_code=404, detail="Worksheet package not found")
-        base_worksheet = json.loads(package['base_worksheet']) if isinstance(package['base_worksheet'], str) else package['base_worksheet']
-        student_versions = json.loads(package['student_versions']) if isinstance(package['student_versions'], str) else package['student_versions']
+        try:
+            base_worksheet = json.loads(package['base_worksheet']) if isinstance(package['base_worksheet'], str) else package['base_worksheet']
+            student_versions = json.loads(package['student_versions']) if isinstance(package['student_versions'], str) else package['student_versions']
+        except (json.JSONDecodeError, ValueError):
+            raise HTTPException(status_code=500, detail="Failed to parse stored worksheet data")
     elif worksheet_json:
         try:
             base_worksheet = json.loads(worksheet_json)

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
 import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
@@ -1589,9 +1590,9 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   }
 
   return (
-    <div className="h-full overflow-hidden">
+    <div className="h-full flex flex-col">
       {/* Card flip container */}
-      <div className="image-studio-flip-container h-full">
+      <div className="image-studio-flip-container flex-1 min-h-0">
         <div className={`image-studio-flip-inner h-full ${flipped ? 'flipped' : ''}`}>
 
           {/* ═══════ FRONT: Brain Dump Input ═══════ */}
@@ -2513,6 +2514,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
 
         </div>
       </div>
+      <AIDisclaimer />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
@@ -54,7 +55,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   showFloatingButton = true,
   isSplitViewActive = false
 }) => {
-
+  const { t } = useTranslation();
 
   const { settings } = useSettings();
   const [currentStep, setCurrentStep] = useState(0);
@@ -476,7 +477,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         onClick={() => setIsActive(true)}
         data-tutorial="help-button"
         className="fixed bottom-6 right-6 text-white flex items-center justify-center z-[9998] group"
-        title="Start Tutorial"
+        title={t('tutorial.startTutorial')}
         style={{
           width: '52px',
           height: '52px',
@@ -618,7 +619,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="text-sm text-gray-500">
-                  Step {currentStep + 1} of {steps.length}
+                  {t('tutorial.stepCounter', { current: currentStep + 1, total: steps.length })}
                 </div>
                 <button
                   onClick={handleTTSClick}
@@ -631,16 +632,16 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                   }`}
                   title={
                     ttsMode === 'off'
-                      ? 'Read this step aloud'
+                      ? t('tutorial.ttsReadAloud')
                       : ttsMode === 'single'
-                      ? 'Click again to auto-read all steps'
-                      : 'Stop reading'
+                      ? t('tutorial.ttsAutoRead')
+                      : t('tutorial.ttsStop')
                   }
                 >
                   {ttsMode === 'auto' ? (
                     <>
                       <PlayCircle className="w-4 h-4" />
-                      <span>Auto</span>
+                      <span>{t('tutorial.ttsAuto')}</span>
                     </>
                   ) : ttsMode === 'single' && tts.isSpeaking ? (
                     <Volume2 className="w-4 h-4 animate-pulse" />
@@ -657,14 +658,14 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                   className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
+                  {t('tutorial.previous')}
                 </button>
                 <button
                   onClick={handleNext}
                   disabled={waitingForAction}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
-                  {currentStep === steps.length - 1 ? 'Finish' : waitingForAction ? 'Waiting...' : 'Next'}
+                  {currentStep === steps.length - 1 ? t('tutorial.finish') : waitingForAction ? t('tutorial.waiting') : t('tutorial.next')}
                   {currentStep < steps.length - 1 && !waitingForAction && <ChevronRight className="w-4 h-4 ml-1" />}
                 </button>
               </div>

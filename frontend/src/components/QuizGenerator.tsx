@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
@@ -383,8 +384,20 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   }, [selectedClassName]);
 
-  const questionTypesOptions = ['Multiple Choice', 'True/False', 'Open-Ended', 'Fill-in-the-Blank'];
-  const cognitiveLevelsOptions = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
+  const questionTypesOptions = [
+    { key: 'Multiple Choice', label: t('quiz.multipleChoice') },
+    { key: 'True/False', label: t('quiz.trueFalse') },
+    { key: 'Open-Ended', label: t('quiz.openEnded') },
+    { key: 'Fill-in-the-Blank', label: t('quiz.fillInBlank') },
+  ];
+  const cognitiveLevelsOptions = [
+    { key: 'Knowledge', label: t('quiz.knowledge') },
+    { key: 'Comprehension', label: t('quiz.comprehension') },
+    { key: 'Application', label: t('quiz.application') },
+    { key: 'Analysis', label: t('quiz.analysis') },
+    { key: 'Synthesis', label: t('quiz.synthesis') },
+    { key: 'Evaluation', label: t('quiz.evaluation') },
+  ];
 
   // Try to parse quiz when generated (for restored/loaded quizzes)
   useEffect(() => {
@@ -469,7 +482,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     if (parsedQuiz) {
       setIsEditing(true);
     } else {
-      alert('Cannot edit: Quiz format not recognized. Try regenerating the quiz.');
+      alert(t('quiz.cannotEditAlert'));
     }
   };
 
@@ -531,7 +544,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   const saveQuiz = async () => {
     if (!generatedQuiz && !parsedQuiz) {
-      alert('No quiz to save');
+      alert(t('quiz.noQuizToSave'));
       return;
     }
 
@@ -562,7 +575,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Failed to save quiz:', error);
-      alert('Failed to save quiz');
+      alert(t('quiz.failedToSave'));
       setSaveStatus('idle');
     }
   };
@@ -595,7 +608,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   const deleteQuizHistory = async (quizId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Delete this quiz?')) return;
+    if (!confirm(t('quiz.confirmDeleteQuiz'))) return;
     
     try {
       await axios.delete(`http://localhost:8000/api/quiz-history/${quizId}`);
@@ -633,7 +646,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   const deleteDraft = async (draftId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Delete this draft?')) return;
+    if (!confirm(t('quiz.confirmDeleteDraft'))) return;
     try {
       await axios.delete(`http://localhost:8000/api/lesson-drafts/${draftId}`);
       await loadDrafts();
@@ -686,7 +699,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
     const ws = getConnection(tabId, ENDPOINT);
     if (ws.readyState !== WebSocket.OPEN) {
-      alert('Connection not established. Please wait and try again.');
+      alert(t('quiz.connectionNotEstablished'));
       return;
     }
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
@@ -870,9 +883,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
                   <div>
                     <h2 className="text-xl font-semibold text-theme-heading">
-                      {loading ? 'Generating Quiz...' : 'Generated Quiz'}
+                      {loading ? t('generators.generatingQuiz') : t('quiz.generatedQuiz')}
                     </h2>
-                    <p className="text-sm text-theme-hint">{formData.subject} - Grade {formData.gradeLevel}</p>
+                    <p className="text-sm text-theme-hint">{formData.subject} - {t('quiz.gradeLabel', { level: formData.gradeLevel })}</p>
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
@@ -880,17 +893,17 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         onClick={enableEditing}
                         disabled={!parsedQuiz}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={!parsedQuiz ? "Quiz format not recognized" : "Edit quiz"}
+                        title={!parsedQuiz ? t('quiz.quizFormatNotRecognized') : t('quiz.editQuiz')}
                       >
                         <Edit className="w-3.5 h-3.5 mr-1.5" />
-                        Edit
+                        {t('common.edit')}
                       </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
                         <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
-                        Assistant
+                        {t('common.assistant')}
                       </button>
                       <button
                         onClick={saveQuiz}
@@ -900,17 +913,17 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         {saveStatus === 'saving' ? (
                           <>
                             <HeartbeatLoader className="w-3.5 h-3.5 mr-1.5" />
-                            Saving...
+                            {t('quiz.saving')}
                           </>
                         ) : saveStatus === 'saved' ? (
                           <>
                             <Save className="w-3.5 h-3.5 mr-1.5" />
-                            Saved!
+                            {t('quiz.saved')}
                           </>
                         ) : (
                           <>
                             <Save className="w-3.5 h-3.5 mr-1.5" />
-                            Save Quiz
+                            {t('quiz.saveQuiz')}
                           </>
                         )}
                       </button>
@@ -921,7 +934,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
                         >
                           <FileText className="w-3.5 h-3.5 mr-1.5" />
-                          {selectedVersion === 'teacher' ? 'Teacher Version' : 'Student Version'}
+                          {selectedVersion === 'teacher' ? t('quiz.teacherVersion') : t('quiz.studentVersion')}
                           <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
                         </button>
 
@@ -949,8 +962,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   <div className="flex items-center">
                                     <Users className="w-4 h-4 mr-3 text-blue-600" />
                                     <div>
-                                      <div className="text-sm font-medium text-theme-title">Student Version</div>
-                                      <div className="text-xs text-theme-hint">Clean quiz without answers</div>
+                                      <div className="text-sm font-medium text-theme-title">{t('quiz.studentVersion')}</div>
+                                      <div className="text-xs text-theme-hint">{t('quiz.cleanQuiz')}</div>
                                     </div>
                                   </div>
                                   {selectedVersion === 'student' && (
@@ -971,8 +984,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   <div className="flex items-center">
                                     <GraduationCap className="w-4 h-4 mr-3 text-green-600" />
                                     <div>
-                                      <div className="text-sm font-medium text-theme-title">Teacher Version</div>
-                                      <div className="text-xs text-theme-hint">With answer key & explanations</div>
+                                      <div className="text-sm font-medium text-theme-title">{t('quiz.teacherVersion')}</div>
+                                      <div className="text-xs text-theme-hint">{t('quiz.withAnswerKey')}</div>
                                     </div>
                                   </div>
                                   {selectedVersion === 'teacher' && (
@@ -1008,7 +1021,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-                        title="Quiz History"
+                        title={t('quiz.quizHistory')}
                       >
                         <History className="w-5 h-5 text-theme-muted" />
                         {matchCount > 0 && (
@@ -1027,7 +1040,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         }}
                         className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
-                        Create New Quiz
+                        {t('quiz.createNewQuiz')}
                       </button>
                     </div>
                   )}
@@ -1052,12 +1065,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   <span className="text-white text-sm font-medium">{formData.subject}</span>
                                 </div>
                                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-                                  <span className="text-white text-sm font-medium">Grade {formData.gradeLevel}</span>
+                                  <span className="text-white text-sm font-medium">{t('quiz.gradeLabel', { level: formData.gradeLevel })}</span>
                                 </div>
                               </div>
 
                               <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
-                                {formData.subject}{formData.strand ? ` — ${formData.strand}` : ''} Quiz
+                                {t('quiz.quizTitle', { subject: formData.subject, strand: formData.strand ? ` — ${formData.strand}` : '' })}
                               </h1>
 
                               <div className="flex flex-wrap items-center gap-4 text-cyan-100">
@@ -1068,7 +1081,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 {effectiveVersion !== 'student' && (
                                 <div className="flex items-center">
                                   <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
-                                  <span className="text-sm">Generated on {new Date().toLocaleDateString()}</span>
+                                  <span className="text-sm">{t('quiz.generatedOn', { date: new Date().toLocaleDateString() })}</span>
                                 </div>
                                 )}
                               </div>
@@ -1079,8 +1092,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 <div className="flex items-center text-white">
                                   <HeartbeatLoader className="w-5 h-5 mr-3" />
                                   <div>
-                                    <div className="text-sm font-medium">Generating...</div>
-                                    <div className="text-xs text-cyan-100">Generating quiz</div>
+                                    <div className="text-sm font-medium">{t('quiz.generatingDot')}</div>
+                                    <div className="text-xs text-cyan-100">{t('generators.generatingQuiz')}</div>
                                   </div>
                                 </div>
                               </div>
@@ -1088,7 +1101,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             {viewingStudent && !loading && (
                               <div className="text-right">
                                 <div className="text-3xl font-bold text-white leading-tight">{viewingStudent.name}</div>
-                                <div className="text-sm text-cyan-100 mt-1">ID: {viewingStudent.id}</div>
+                                <div className="text-sm text-cyan-100 mt-1">{t('quiz.idPrefix')}{viewingStudent.id}</div>
                               </div>
                             )}
                           </div>
@@ -1115,7 +1128,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             return (
                               <div key={question.id} className="space-y-3">
                                 <h3 className="text-lg font-semibold p-3 rounded-lg" style={{ color: `${tabColor}cc`, backgroundColor: `${tabColor}0d` }}>
-                                  Question {qIndex + 1}: {question.question}
+                                  {t('quiz.questionPrefix', { number: qIndex + 1 })}: {question.question}
                                 </h3>
                                 
                                 {question.type === 'multiple-choice' && question.options && (
@@ -1146,7 +1159,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                     {effectiveVersion === 'teacher' && (
                                       <div className="mt-3 text-sm">
                                         <span className="font-semibold text-green-700">
-                                          Correct Answer: {correctLetter}
+                                          {t('quiz.correctAnswer')}: {correctLetter}
                                         </span>
                                       </div>
                                     )}
@@ -1166,7 +1179,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                         A)
                                       </span>
                                       <span className={`text-theme-label ${effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? 'font-medium' : ''}`}>
-                                        True
+                                        {t('quiz.true')}
                                       </span>
                                     </div>
                                     <div className="flex items-start">
@@ -1180,7 +1193,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                         B)
                                       </span>
                                       <span className={`text-theme-label ${effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? 'font-medium' : ''}`}>
-                                        False
+                                        {t('quiz.false')}
                                       </span>
                                     </div>
 
@@ -1188,7 +1201,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                     {effectiveVersion === 'teacher' && (
                                       <div className="mt-3 text-sm">
                                         <span className="font-semibold text-green-700">
-                                          Correct Answer: {question.correctAnswer === 'true' ? 'True' : 'False'}
+                                          {t('quiz.correctAnswer')}: {question.correctAnswer === 'true' ? t('quiz.true') : t('quiz.false')}
                                         </span>
                                       </div>
                                     )}
@@ -1199,7 +1212,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   <div className="ml-6 space-y-2">
                                     <div className="text-sm">
                                       <span className="font-semibold text-green-700">
-                                        Answer: {question.correctAnswer}
+                                        {t('quiz.correctAnswer')}: {question.correctAnswer}
                                       </span>
                                     </div>
                                   </div>
@@ -1208,7 +1221,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 {question.type === 'open-ended' && effectiveVersion === 'teacher' && (
                                   <div className="ml-6 space-y-2">
                                     <div className="text-sm">
-                                      <span className="font-semibold text-theme-label">Sample Answer:</span>
+                                      <span className="font-semibold text-theme-label">{t('quiz.sampleAnswer')}</span>
                                       <p className="text-theme-muted mt-1 whitespace-pre-wrap">{question.correctAnswer}</p>
                                     </div>
                                   </div>
@@ -1217,7 +1230,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 {/* Show explanation only in teacher version */}
                                 {effectiveVersion === 'teacher' && question.explanation && (
                                   <div className="ml-6 mt-3 p-3 bg-blue-50 rounded-lg">
-                                    <span className="text-sm font-semibold text-blue-900">Explanation: </span>
+                                    <span className="text-sm font-semibold text-blue-900">{t('quiz.explanation')}: </span>
                                     <span className="text-sm text-blue-800">{question.explanation}</span>
                                   </div>
                                 )}
@@ -1225,10 +1238,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 {effectiveVersion === 'teacher' && (question.cognitiveLevel || question.points) && (
                                   <div className="ml-6 mt-2 flex gap-4 text-xs text-theme-hint">
                                     {question.cognitiveLevel && (
-                                      <span>Cognitive Level: {question.cognitiveLevel}</span>
+                                      <span>{t('quiz.cognitiveLevel')} {question.cognitiveLevel}</span>
                                     )}
                                     {question.points && (
-                                      <span>Points: {question.points}</span>
+                                      <span>{t('quiz.points')} {question.points}</span>
                                     )}
                                   </div>
                                 )}
@@ -1257,8 +1270,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                     }}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your quiz</div>
-                          <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Tailored for your learning outcomes</div>
+                          <div className="font-medium" style={{ color: `${tabColor}dd` }}>{t('quiz.creatingYourQuiz')}</div>
+                          <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>{t('quiz.tailoredForOutcomes')}</div>
                         </div>
                         <div className="flex space-x-1">
                           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
@@ -1277,15 +1290,15 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
           <>
               <div className="border-b border-theme p-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-theme-heading">Quiz Configuration</h2>
-                  <p className="text-sm text-theme-hint">Configure your quiz parameters</p>
+                  <h2 className="text-xl font-semibold text-theme-heading">{t('quiz.quizConfiguration')}</h2>
+                  <p className="text-sm text-theme-hint">{t('quiz.configureParams')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {lockedLessonPlan ? (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border" style={{ borderColor: `${tabColor}44`, color: tabColor, backgroundColor: `${tabColor}10` }}>
                       <BookOpen className="w-4 h-4 shrink-0" />
                       <span className="max-w-[160px] truncate">{lockedLessonPlan.title}</span>
-                      <button onClick={() => setLockedLessonPlan(null)} className="ml-1 hover:opacity-60 transition shrink-0" title="Remove lesson plan">
+                      <button onClick={() => setLockedLessonPlan(null)} className="ml-1 hover:opacity-60 transition shrink-0" title={t('quiz.removeLessonPlan')}>
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -1294,24 +1307,24 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       onClick={() => { setLessonPickerOpen(true); loadLessonPlans(); }}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-sm font-medium"
                       style={{ color: tabColor }}
-                      title="Generate quiz from a saved lesson plan"
+                      title={t('quiz.generateFromLessonTitle')}
                     >
                       <BookOpen className="w-4 h-4" />
-                      From Lesson Plan
+                      {t('quiz.fromLessonPlan')}
                     </button>
                   )}
                   <button
                     onClick={() => setIsGrading(true)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition text-sm font-medium text-emerald-600 border border-emerald-200"
-                    title="Grade an existing quiz"
+                    title={t('quiz.gradeExistingQuiz')}
                   >
                     <ClipboardCheck className="w-4 h-4" />
-                    Grade Quiz
+                    {t('quiz.gradeQuiz')}
                   </button>
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-                    title="Quiz History"
+                    title={t('quiz.quizHistory')}
                     data-tutorial="quiz-generator-history"
                   >
                     <History className="w-5 h-5 text-theme-muted" />
@@ -1333,7 +1346,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           <BookOpen className="w-5 h-5" style={{ color: tabColor }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium uppercase tracking-wider text-theme-hint mb-1">Generating quiz from</p>
+                          <p className="text-xs font-medium uppercase tracking-wider text-theme-hint mb-1">{t('quiz.generatingQuizFrom')}</p>
                           <h4 className="font-semibold text-theme-heading text-base truncate">{lockedLessonPlan.title}</h4>
                           <div className="flex items-center gap-3 mt-1.5 text-sm text-theme-muted">
                             {lockedLessonPlan.formData.subject && (
@@ -1345,7 +1358,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             {lockedLessonPlan.formData.gradeLevel && (
                               <span className="flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tabColor }} />
-                                Grade {lockedLessonPlan.formData.gradeLevel}
+                                {t('quiz.gradeLabel', { level: lockedLessonPlan.formData.gradeLevel })}
                               </span>
                             )}
                             {lockedLessonPlan.formData.topic && (
@@ -1359,7 +1372,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         <button
                           onClick={() => setLockedLessonPlan(null)}
                           className="p-1.5 rounded-lg hover:bg-theme-hover transition shrink-0"
-                          title="Remove lesson plan"
+                          title={t('quiz.removeLessonPlan')}
                         >
                           <X className="w-4 h-4 text-theme-muted" />
                         </button>
@@ -1368,7 +1381,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       {/* Learning objectives preview */}
                       {lockedLessonPlan.parsedLesson?.learningObjectives && lockedLessonPlan.parsedLesson.learningObjectives.length > 0 && (
                         <div className="mt-3 pt-3 border-t" style={{ borderColor: `${tabColor}20` }}>
-                          <p className="text-xs font-medium text-theme-hint mb-1.5">Learning Objectives</p>
+                          <p className="text-xs font-medium text-theme-hint mb-1.5">{t('quiz.learningObjectives')}</p>
                           <ul className="space-y-1">
                             {lockedLessonPlan.parsedLesson.learningObjectives.slice(0, 3).map((obj, i) => (
                               <li key={i} className="text-sm text-theme-label flex items-start gap-2">
@@ -1378,7 +1391,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             ))}
                             {lockedLessonPlan.parsedLesson.learningObjectives.length > 3 && (
                               <li className="text-xs text-theme-hint ml-3">
-                                +{lockedLessonPlan.parsedLesson.learningObjectives.length - 3} more objectives
+                                {t('quiz.moreObjectives', { count: lockedLessonPlan.parsedLesson.learningObjectives.length - 3 })}
                               </li>
                             )}
                           </ul>
@@ -1388,7 +1401,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       {/* Curriculum outcomes preview */}
                       {!lockedLessonPlan.parsedLesson?.learningObjectives?.length && (lockedLessonPlan.formData.essentialOutcomes || lockedLessonPlan.formData.specificOutcomes) && (
                         <div className="mt-3 pt-3 border-t" style={{ borderColor: `${tabColor}20` }}>
-                          <p className="text-xs font-medium text-theme-hint mb-1.5">Curriculum Outcomes</p>
+                          <p className="text-xs font-medium text-theme-hint mb-1.5">{t('quiz.curriculumOutcomes')}</p>
                           <p className="text-sm text-theme-label line-clamp-2">
                             {lockedLessonPlan.formData.essentialOutcomes || lockedLessonPlan.formData.specificOutcomes}
                           </p>
@@ -1397,7 +1410,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                     </div>
                     <div className="px-5 py-2.5 bg-theme-secondary border-t border-theme text-xs text-theme-hint flex items-center gap-1.5">
                       <MessageSquare className="w-3 h-3" />
-                      The generated quiz will be based on this lesson plan.
+                      {t('quiz.quizBasedOnLesson')}
                     </div>
                   </div>
                 ) : (
@@ -1424,8 +1437,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       >
-                        <option value="">Select a grade</option>
-                        {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
+                        <option value="">{t('quiz.selectGrade')}</option>
+                        {grades.map(g => <option key={g} value={g}>{t('quiz.gradeLabel', { level: g })}</option>)}
                       </select>
                     </div>
 
@@ -1445,7 +1458,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.subject ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       >
-                        <option value="">Select a subject</option>
+                        <option value="">{t('quiz.selectSubject')}</option>
                         {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
@@ -1493,20 +1506,20 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       className="w-4 h-4 rounded"
                       style={{ accentColor: tabColor }}
                     />
-                    <span className="text-sm font-medium text-theme-label">Generate for Class</span>
+                    <span className="text-sm font-medium text-theme-label">{t('quiz.generateForClass')}</span>
                   </label>
 
                   {classQuizMode && (
                     <div className="ml-6 space-y-3 p-3 rounded-lg border border-theme bg-theme-subtle">
                       <div>
-                        <label className="block text-xs font-medium text-theme-hint mb-1">Select Class</label>
+                        <label className="block text-xs font-medium text-theme-hint mb-1">{t('quiz.selectClass')}</label>
                         <select
                           value={selectedClassName}
                           onChange={(e) => setSelectedClassName(e.target.value)}
                           className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm focus:ring-2"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         >
-                          <option value="">Choose a class...</option>
+                          <option value="">{t('quiz.chooseClass')}</option>
                           {availableClasses.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
@@ -1514,7 +1527,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       {classStudents.length > 0 && (
                         <div className="flex items-center gap-2 text-xs" style={{ color: tabColor }}>
                           <Users className="w-3.5 h-3.5" />
-                          <span className="font-medium">{classStudents.length} student{classStudents.length !== 1 ? 's' : ''} in class</span>
+                          <span className="font-medium">{t('quiz.studentsInClass', { count: classStudents.length })}</span>
                         </div>
                       )}
 
@@ -1526,10 +1539,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           className="w-4 h-4 rounded"
                           style={{ accentColor: tabColor }}
                         />
-                        <span className="text-sm text-theme-label">Randomize Question Order</span>
+                        <span className="text-sm text-theme-label">{t('quiz.randomizeOrder')}</span>
                       </label>
                       {randomizeClassQuestions && (
-                        <p className="text-xs text-theme-hint ml-6">Each student will receive questions in a different random order.</p>
+                        <p className="text-xs text-theme-hint ml-6">{t('quiz.randomizeOrderHint')}</p>
                       )}
                     </div>
                   )}
@@ -1553,19 +1566,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                 <div data-tutorial="quiz-generator-question-types">
                   <label className="block text-sm font-medium text-theme-label mb-3">
-                    Question Types <span className="text-red-500">*</span>
+                    {t('quiz.questionTypes')} <span className="text-red-500">*</span>
                   </label>
                   <div data-validation-error={validationErrors.questionTypes ? 'true' : undefined} className={`grid grid-cols-2 gap-2 p-2 rounded-lg ${validationErrors.questionTypes ? 'validation-error' : ''}`}>
-                    {questionTypesOptions.map(type => (
-                      <label key={type} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
+                    {questionTypesOptions.map(({ key, label }) => (
+                      <label key={key} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={formData.questionTypes.includes(type)}
-                          onChange={() => handleCheckboxChange('questionTypes', type)}
+                          checked={formData.questionTypes.includes(key)}
+                          onChange={() => handleCheckboxChange('questionTypes', key)}
                           className="w-4 h-4 rounded"
                           style={{ accentColor: tabColor }}
                         />
-                        <span className="text-sm">{type}</span>
+                        <span className="text-sm">{label}</span>
                       </label>
                     ))}
                   </div>
@@ -1573,19 +1586,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                 <div data-tutorial="quiz-generator-cognitive-levels">
                   <label className="block text-sm font-medium text-theme-label mb-3">
-                    Cognitive Levels <span className="text-red-500">*</span>
+                    {t('quiz.cognitiveLevels')} <span className="text-red-500">*</span>
                   </label>
                   <div data-validation-error={validationErrors.cognitiveLevels ? 'true' : undefined} className={`grid grid-cols-2 gap-2 p-2 rounded-lg ${validationErrors.cognitiveLevels ? 'validation-error' : ''}`}>
-                    {cognitiveLevelsOptions.map(level => (
-                      <label key={level} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
+                    {cognitiveLevelsOptions.map(({ key, label }) => (
+                      <label key={key} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={formData.cognitiveLevels.includes(level)}
-                          onChange={() => handleCheckboxChange('cognitiveLevels', level)}
+                          checked={formData.cognitiveLevels.includes(key)}
+                          onChange={() => handleCheckboxChange('cognitiveLevels', key)}
                           className="w-4 h-4 rounded"
                           style={{ accentColor: tabColor }}
                         />
-                        <span className="text-sm">{level}</span>
+                        <span className="text-sm">{label}</span>
                       </label>
                     ))}
                   </div>
@@ -1593,7 +1606,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                 <div>
                   <label className="block text-sm font-medium text-theme-label mb-2">
-                    Time Limit per Question (in seconds, optional)
+                    {t('quiz.timeLimitPerQuestion')}
                   </label>
                   <input
                     type="number"
@@ -1615,7 +1628,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg"
                 >
                   <Trash2 className="w-5 h-5 mr-2" />
-                  Clear Form
+                  {t('quiz.clearForm')}
                 </button>
                 <button
                   onClick={generateQuiz}
@@ -1665,6 +1678,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             )}
           </div>
         </div>
+        <AIDisclaimer />
       </div>
 
       {/* History Panel */}
@@ -1676,7 +1690,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-theme-heading">Saved Quizzes</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">{t('quiz.savedQuizzes')}</h3>
             <button
               onClick={() => setHistoryOpen(false)}
               className="p-1 rounded hover:bg-theme-hover transition"
@@ -1693,7 +1707,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   onClick={() => setDraftsExpanded(!draftsExpanded)}
                 >
                   <span className="text-xs text-theme-muted transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
-                  <span className="text-sm font-medium text-amber-500">Drafts ({drafts.length})</span>
+                  <span className="text-sm font-medium text-amber-500">{t('quiz.draftsCount', { count: drafts.length })}</span>
                 </div>
                 {draftsExpanded && (
                   <div className="space-y-2">
@@ -1707,7 +1721,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 uppercase tracking-wide">Draft</span>
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 uppercase tracking-wide">{t('quiz.draft')}</span>
                               <p className="text-sm font-medium text-theme-heading line-clamp-2">{draft.title}</p>
                             </div>
                             <p className="text-xs text-theme-hint mt-1">
@@ -1717,7 +1731,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           <button
                             onClick={(e) => deleteDraft(draft.id, e)}
                             className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                            title="Delete draft"
+                            title={t('quiz.deleteDraft')}
                           >
                             <Trash2 className="w-4 h-4 text-red-600" />
                           </button>
@@ -1732,20 +1746,20 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             {drafts.length === 0 && quizHistories.length === 0 ? (
               <div className="text-center text-theme-hint mt-8">
                 <ListChecks className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
-                <p className="text-sm">No saved quizzes yet</p>
+                <p className="text-sm">{t('quiz.noSavedQuizzes')}</p>
               </div>
             ) : (
               <>
                 {matchCount > 0 && (
                   <div className="mb-2">
-                    <span className="text-xs font-medium text-blue-400">Matching ({matchCount})</span>
+                    <span className="text-xs font-medium text-blue-400">{t('quiz.matchingCount', { count: matchCount })}</span>
                   </div>
                 )}
                 {(matchCount > 0 ? sortedQuizHistories : quizHistories).map((history, idx) => (
                   <React.Fragment key={history.id}>
                     {matchCount > 0 && idx === matchedHistories.length && matchedHistories.length > 0 && (
                       <div className="border-b border-theme my-3">
-                        <span className="text-xs text-theme-muted">Other</span>
+                        <span className="text-xs text-theme-muted">{t('dashboard.other')}</span>
                       </div>
                     )}
                     <div
@@ -1766,7 +1780,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         <button
                           onClick={(e) => deleteQuizHistory(history.id, e)}
                           className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                          title="Delete quiz"
+                          title={t('quiz.deleteQuiz')}
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </button>
@@ -1788,7 +1802,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
           }`}
           style={{ width: studentPanelOpen ? '280px' : '40px' }}
           onClick={!studentPanelOpen ? () => setStudentPanelOpen(true) : undefined}
-          title={!studentPanelOpen ? 'Show student list' : undefined}
+          title={!studentPanelOpen ? t('quiz.showStudentList') : undefined}
         >
           {/* Collapsed content */}
           <div
@@ -1800,7 +1814,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
               <PanelRightOpen className="w-4 h-4 text-theme-muted" />
               <Users className="w-4 h-4 text-theme-muted" />
               <span className="text-xs text-theme-hint font-semibold" style={{ writingMode: 'vertical-lr' }}>
-                {classQuizData.length} Students
+                {t('quiz.nStudents', { count: classQuizData.length })}
               </span>
             </div>
           </div>
@@ -1814,13 +1828,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
           >
             <div className="p-3 border-b border-theme flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
-                <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
+                <h3 className="text-sm font-semibold text-theme-heading">{t('quiz.studentQuizzes')}</h3>
+                <p className="text-xs text-theme-hint mt-0.5">{t('quiz.nStudents', { count: classQuizData.length })}</p>
               </div>
               <button
                 onClick={() => setStudentPanelOpen(false)}
                 className="p-1 rounded-lg hover:bg-theme-hover transition"
-                title="Collapse panel"
+                title={t('quiz.collapsePanel')}
               >
                 <PanelRightClose className="w-4 h-4 text-theme-muted" />
               </button>
@@ -1835,7 +1849,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
               >
                 <div className="flex items-center gap-2">
                   <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
-                  <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
+                  <span className="font-medium text-theme-heading text-xs">{t('quiz.teacherVersion')}</span>
                 </div>
               </button>
 
@@ -1889,8 +1903,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-theme">
               <div>
-                <h3 className="text-lg font-semibold text-theme-heading">Generate from Lesson Plan</h3>
-                <p className="text-sm text-theme-hint mt-0.5">Select a saved lesson plan to pre-fill the quiz form</p>
+                <h3 className="text-lg font-semibold text-theme-heading">{t('quiz.generateFromLesson')}</h3>
+                <p className="text-sm text-theme-hint mt-0.5">{t('quiz.selectLessonPlan')}</p>
               </div>
               <button onClick={() => setLessonPickerOpen(false)}
                 className="p-1.5 rounded-lg hover:bg-theme-hover transition">
@@ -1903,13 +1917,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
               {lessonPickerLoading ? (
                 <div className="flex items-center justify-center py-12 text-theme-hint">
                   <HeartbeatLoader className="w-5 h-5 mr-3" />
-                  Loading lesson plans...
+                  {t('quiz.loadingLessons')}
                 </div>
               ) : lessonPlanOptions.length === 0 ? (
                 <div className="text-center py-12">
                   <BookOpen className="w-12 h-12 mx-auto mb-3 text-theme-hint opacity-40" />
-                  <p className="font-medium text-theme-heading">No saved lesson plans found</p>
-                  <p className="text-sm text-theme-hint mt-1">Create and save a lesson plan first, then return here.</p>
+                  <p className="font-medium text-theme-heading">{t('quiz.noLessonsFound')}</p>
+                  <p className="text-sm text-theme-hint mt-1">{t('quiz.createLessonPlanFirst')}</p>
                 </div>
               ) : (
                 lessonPlanOptions.map(lesson => (
@@ -1934,7 +1948,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         className="text-xs px-2 py-1 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition font-medium whitespace-nowrap"
                         style={{ backgroundColor: `${tabColor}20`, color: tabColor }}
                       >
-                        Use this
+                        {t('quiz.useThis')}
                       </span>
                     </div>
                   </button>

@@ -67,6 +67,7 @@ import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { Skeleton } from './ui/skeleton';
+import AIDisclaimer from './AIDisclaimer';
 
 interface ImageStudioProps {
   tabId: string;
@@ -3561,6 +3562,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           </div>
         </div>
       )}
+
+      <AIDisclaimer />
 
       {/* Image Modal */}
       {showImageModal && selectedImage && (

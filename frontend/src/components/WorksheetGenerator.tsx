@@ -77,6 +77,7 @@ import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import axios from 'axios';
 import WorksheetGrader from './WorksheetGrader';
 import ScheduleTestModal from './ScheduleTestModal';
+import AIDisclaimer from './AIDisclaimer';
 import SmartTextArea from './SmartTextArea';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -2679,6 +2680,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             )}
           </div>
         </div>
+        <AIDisclaimer />
       </div>
 
       <ScheduleTestModal

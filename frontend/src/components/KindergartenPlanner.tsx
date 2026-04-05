@@ -34,6 +34,7 @@ import type { ParsedKindergartenPlan } from './KindergartenEditor';
 import axios from 'axios';
 import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
+import AIDisclaimer from './AIDisclaimer';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
 import { filterLearningDomains } from '../data/teacherConstants';
@@ -1464,6 +1465,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
             </div>
           </>
         )}
+        <AIDisclaimer />
       </div>
 
       {/* History Panel */}

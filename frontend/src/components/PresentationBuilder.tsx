@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import AIDisclaimer from './AIDisclaimer';
 import type { ImageMode } from '../types';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -95,44 +96,46 @@ type RightTab = 'color' | 'edit' | 'layouts';
 
 const SLIDE_LAYOUTS = ['title', 'objectives', 'hook', 'instruction', 'activity', 'assessment', 'closing'];
 
-const ALL_STYLES = [
-  { id: 'bubbly', label: 'Bubbly', tag: 'KIDS', desc: 'Big shapes, playful & bouncy' },
-  { id: 'chalkboard', label: 'Chalkboard', tag: 'KIDS', desc: 'Chalk-on-board classroom feel' },
-  { id: 'storybook', label: 'Storybook', tag: 'KIDS', desc: 'Warm, illustrated, story-like' },
-  { id: 'comic', label: 'Comic Book', tag: 'KIDS', desc: 'Bold outlines, POW energy' },
-  { id: 'scrapbook', label: 'Scrapbook', tag: 'KIDS', desc: 'Crafty, cut-out, handmade look' },
-  { id: 'space', label: 'Space Explorer', tag: 'KIDS', desc: 'Stars, planets & cosmic vibes' },
-  { id: 'candy', label: 'Candy Shop', tag: 'KIDS', desc: 'Sweet pastels, sprinkles & treats' },
-  { id: 'underwater', label: 'Underwater', tag: 'KIDS', desc: 'Ocean waves, bubbles & sea life' },
-  { id: 'jungle', label: 'Jungle Safari', tag: 'KIDS', desc: 'Tropical leaves & animal prints' },
-  { id: 'pixel', label: 'Pixel Art', tag: 'KIDS', desc: '8-bit retro game style' },
-  { id: 'rainbow', label: 'Rainbow Pop', tag: 'KIDS', desc: 'Colorful stripes & gradient joy' },
-  { id: 'crayon', label: 'Crayon Box', tag: 'KIDS', desc: 'Hand-drawn crayon sketch style' },
-  { id: 'origami', label: 'Origami', tag: 'KIDS', desc: 'Folded paper geometric shapes' },
-  { id: 'treehouse', label: 'Treehouse', tag: 'KIDS', desc: 'Wooden planks & leafy nature' },
-  { id: 'superhero', label: 'Superhero', tag: 'KIDS', desc: 'Cape & mask action hero energy' },
-  { id: 'dinosaur', label: 'Dino Land', tag: 'KIDS', desc: 'Prehistoric fossils & volcanoes' },
-  { id: 'pirate', label: 'Pirate Ship', tag: 'KIDS', desc: 'Treasure maps & ocean waves' },
-  { id: 'fairy', label: 'Fairy Tale', tag: 'KIDS', desc: 'Castles, sparkles & magic wands' },
-  { id: 'robot', label: 'Robot Lab', tag: 'KIDS', desc: 'Gears, circuits & cute bots' },
-  { id: 'farm', label: 'Farm Fun', tag: 'KIDS', desc: 'Barns, animals & sunny fields' },
-  { id: 'circus', label: 'Circus Party', tag: 'KIDS', desc: 'Tent stripes & balloon pops' },
-  { id: 'ice-cream', label: 'Ice Cream Dream', tag: 'KIDS', desc: 'Scoops, cones & sprinkles' },
-  { id: 'safari', label: 'Safari Park', tag: 'KIDS', desc: 'Animal spots & binoculars' },
-  { id: 'music', label: 'Music Jam', tag: 'KIDS', desc: 'Notes, instruments & rhythms' },
-  { id: 'blocks', label: 'Block Builder', tag: 'KIDS', desc: 'Colorful building block shapes' },
-  // Professional themes
-  { id: 'corporate-blue', label: 'Corporate Blue', tag: 'PRO', desc: 'Clean navy & white, boardroom ready' },
-  { id: 'minimal-dark', label: 'Minimal Dark', tag: 'PRO', desc: 'Sleek dark with subtle accents' },
-  { id: 'modern-gradient', label: 'Modern Gradient', tag: 'PRO', desc: 'Smooth gradients, contemporary feel' },
-  { id: 'slate-gold', label: 'Slate & Gold', tag: 'PRO', desc: 'Elegant grey with gold accents' },
-  { id: 'nordic-clean', label: 'Nordic Clean', tag: 'PRO', desc: 'Light, airy Scandinavian minimalism' },
-  { id: 'monochrome', label: 'Monochrome', tag: 'PRO', desc: 'Black & white, strong typography' },
-  { id: 'tech-modern', label: 'Tech Modern', tag: 'PRO', desc: 'Digital-inspired geometric shapes' },
-  { id: 'earth-tones', label: 'Earth Tones', tag: 'PRO', desc: 'Warm naturals, sophisticated & grounded' },
-  { id: 'coral-bloom', label: 'Coral Bloom', tag: 'PRO', desc: 'Soft coral & cream, elegant warmth' },
-  { id: 'midnight-luxe', label: 'Midnight Luxe', tag: 'PRO', desc: 'Deep navy with metallic accents' },
-];
+function getAllStyles(t: (key: string) => string) {
+  return [
+    { id: 'bubbly', label: t('presentation.styles.bubbly'), tag: 'KIDS', desc: t('presentation.styles.bubblyDesc') },
+    { id: 'chalkboard', label: t('presentation.styles.chalkboard'), tag: 'KIDS', desc: t('presentation.styles.chalkboardDesc') },
+    { id: 'storybook', label: t('presentation.styles.storybook'), tag: 'KIDS', desc: t('presentation.styles.storybookDesc') },
+    { id: 'comic', label: t('presentation.styles.comic'), tag: 'KIDS', desc: t('presentation.styles.comicDesc') },
+    { id: 'scrapbook', label: t('presentation.styles.scrapbook'), tag: 'KIDS', desc: t('presentation.styles.scrapbookDesc') },
+    { id: 'space', label: t('presentation.styles.space'), tag: 'KIDS', desc: t('presentation.styles.spaceDesc') },
+    { id: 'candy', label: t('presentation.styles.candy'), tag: 'KIDS', desc: t('presentation.styles.candyDesc') },
+    { id: 'underwater', label: t('presentation.styles.underwater'), tag: 'KIDS', desc: t('presentation.styles.underwaterDesc') },
+    { id: 'jungle', label: t('presentation.styles.jungle'), tag: 'KIDS', desc: t('presentation.styles.jungleDesc') },
+    { id: 'pixel', label: t('presentation.styles.pixel'), tag: 'KIDS', desc: t('presentation.styles.pixelDesc') },
+    { id: 'rainbow', label: t('presentation.styles.rainbow'), tag: 'KIDS', desc: t('presentation.styles.rainbowDesc') },
+    { id: 'crayon', label: t('presentation.styles.crayon'), tag: 'KIDS', desc: t('presentation.styles.crayonDesc') },
+    { id: 'origami', label: t('presentation.styles.origami'), tag: 'KIDS', desc: t('presentation.styles.origamiDesc') },
+    { id: 'treehouse', label: t('presentation.styles.treehouse'), tag: 'KIDS', desc: t('presentation.styles.treehouseDesc') },
+    { id: 'superhero', label: t('presentation.styles.superhero'), tag: 'KIDS', desc: t('presentation.styles.superheroDesc') },
+    { id: 'dinosaur', label: t('presentation.styles.dinosaur'), tag: 'KIDS', desc: t('presentation.styles.dinosaurDesc') },
+    { id: 'pirate', label: t('presentation.styles.pirate'), tag: 'KIDS', desc: t('presentation.styles.pirateDesc') },
+    { id: 'fairy', label: t('presentation.styles.fairy'), tag: 'KIDS', desc: t('presentation.styles.fairyDesc') },
+    { id: 'robot', label: t('presentation.styles.robot'), tag: 'KIDS', desc: t('presentation.styles.robotDesc') },
+    { id: 'farm', label: t('presentation.styles.farm'), tag: 'KIDS', desc: t('presentation.styles.farmDesc') },
+    { id: 'circus', label: t('presentation.styles.circus'), tag: 'KIDS', desc: t('presentation.styles.circusDesc') },
+    { id: 'ice-cream', label: t('presentation.styles.iceCream'), tag: 'KIDS', desc: t('presentation.styles.iceCreamDesc') },
+    { id: 'safari', label: t('presentation.styles.safari'), tag: 'KIDS', desc: t('presentation.styles.safariDesc') },
+    { id: 'music', label: t('presentation.styles.music'), tag: 'KIDS', desc: t('presentation.styles.musicDesc') },
+    { id: 'blocks', label: t('presentation.styles.blocks'), tag: 'KIDS', desc: t('presentation.styles.blocksDesc') },
+    // Professional themes
+    { id: 'corporate-blue', label: t('presentation.styles.corporateBlue'), tag: 'PRO', desc: t('presentation.styles.corporateBlueDesc') },
+    { id: 'minimal-dark', label: t('presentation.styles.minimalDark'), tag: 'PRO', desc: t('presentation.styles.minimalDarkDesc') },
+    { id: 'modern-gradient', label: t('presentation.styles.modernGradient'), tag: 'PRO', desc: t('presentation.styles.modernGradientDesc') },
+    { id: 'slate-gold', label: t('presentation.styles.slateGold'), tag: 'PRO', desc: t('presentation.styles.slateGoldDesc') },
+    { id: 'nordic-clean', label: t('presentation.styles.nordicClean'), tag: 'PRO', desc: t('presentation.styles.nordicCleanDesc') },
+    { id: 'monochrome', label: t('presentation.styles.monochrome'), tag: 'PRO', desc: t('presentation.styles.monochromeDesc') },
+    { id: 'tech-modern', label: t('presentation.styles.techModern'), tag: 'PRO', desc: t('presentation.styles.techModernDesc') },
+    { id: 'earth-tones', label: t('presentation.styles.earthTones'), tag: 'PRO', desc: t('presentation.styles.earthTonesDesc') },
+    { id: 'coral-bloom', label: t('presentation.styles.coralBloom'), tag: 'PRO', desc: t('presentation.styles.coralBloomDesc') },
+    { id: 'midnight-luxe', label: t('presentation.styles.midnightLuxe'), tag: 'PRO', desc: t('presentation.styles.midnightLuxeDesc') },
+  ];
+}
 
 type PresentationMode = 'kids' | 'professional';
 
@@ -1292,6 +1295,7 @@ function Thumbnail({ slide, theme, selected, onClick, index, styleId, imageMode 
 ═══════════════════════════════════════ */
 
 function ColorPicker({ primary, bg, onPrimary, onBg, theme, styleId }: { primary: string; bg: string; onPrimary: (c: string) => void; onBg: (c: string) => void; theme: ThemeColors; styleId: string }) {
+  const { t } = useTranslation();
   const previewSlide: Slide = { id: 'pv', layout: 'title', content: { headline: 'Preview Slide', subtitle: 'Your presentation', badge: 'Preview' } };
   const swatches = {
     accent: ['#38bdf8', '#34d399', '#fbbf24', '#a78bfa', '#fb7185', '#f97316', '#22d3ee', '#4ade80', '#e879f9', '#facc15'],
@@ -1303,14 +1307,14 @@ function ColorPicker({ primary, bg, onPrimary, onBg, theme, styleId }: { primary
         <SlideCanvas slide={previewSlide} theme={theme} width={230} styleId={styleId} />
       </div>
       <div>
-        <div className="text-[10px] font-bold text-theme-muted uppercase tracking-wider mb-2">Accent Colour</div>
+        <div className="text-[10px] font-bold text-theme-muted uppercase tracking-wider mb-2">{t('presentation.accentColour')}</div>
         <div className="flex items-center gap-2.5 mb-2.5">
           <label className="relative cursor-pointer">
             <div className="w-9 h-9 rounded-lg border-2 border-white/15" style={{ background: primary, boxShadow: `0 0 0 3px ${primary}40` }} />
             <input type="color" value={primary} onChange={e => onPrimary(e.target.value)} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer" />
           </label>
           <div className="flex-1">
-            <div className="text-[11px] text-theme-muted">Click swatch to pick</div>
+            <div className="text-[11px] text-theme-muted">{t('presentation.clickSwatchToPick')}</div>
             <div className="text-xs font-bold text-theme-secondary tracking-wide">{primary.toUpperCase()}</div>
           </div>
         </div>
@@ -1321,14 +1325,14 @@ function ColorPicker({ primary, bg, onPrimary, onBg, theme, styleId }: { primary
         </div>
       </div>
       <div>
-        <div className="text-[10px] font-bold text-theme-muted uppercase tracking-wider mb-2">Background</div>
+        <div className="text-[10px] font-bold text-theme-muted uppercase tracking-wider mb-2">{t('presentation.background')}</div>
         <div className="flex items-center gap-2.5 mb-2.5">
           <label className="relative cursor-pointer">
             <div className="w-9 h-9 rounded-lg border-2 border-white/15" style={{ background: bg, boxShadow: `0 0 0 3px ${primary}40` }} />
             <input type="color" value={bg} onChange={e => onBg(e.target.value)} className="absolute inset-0 opacity-0 w-full h-full cursor-pointer" />
           </label>
           <div className="flex-1">
-            <div className="text-[11px] text-theme-muted">{theme.isDark ? 'Dark background' : 'Light background'}</div>
+            <div className="text-[11px] text-theme-muted">{theme.isDark ? t('presentation.darkBackground') : t('presentation.lightBackground')}</div>
             <div className="text-xs font-bold text-theme-secondary tracking-wide">{bg.toUpperCase()}</div>
           </div>
         </div>
@@ -1339,9 +1343,9 @@ function ColorPicker({ primary, bg, onPrimary, onBg, theme, styleId }: { primary
         </div>
       </div>
       <div className="p-2.5 bg-theme-secondary rounded-lg border border-theme-border">
-        <div className="text-[10px] text-theme-muted mb-2 font-semibold uppercase tracking-wide">Auto-derived</div>
+        <div className="text-[10px] text-theme-muted mb-2 font-semibold uppercase tracking-wide">{t('presentation.autoDerived')}</div>
         <div className="flex gap-1.5">
-          {[{ l: 'Text', c: theme.text }, { l: 'Muted', c: theme.textMuted }, { l: 'Surface', c: theme.surface }].map(x => (
+          {[{ l: t('presentation.swatchText'), c: theme.text }, { l: t('presentation.swatchMuted'), c: theme.textMuted }, { l: t('presentation.swatchSurface'), c: theme.surface }].map(x => (
             <div key={x.l} className="flex-1 text-center">
               <div className="w-full h-3.5 rounded border border-white/10 mb-1" style={{ background: x.c }} />
               <div className="text-[9px] text-theme-muted">{x.l}</div>
@@ -1387,6 +1391,7 @@ function SlideSkeleton({ index, primaryColor }: { index: number; primaryColor: s
 }
 
 function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth, expectedSlides = 8 }: { primaryColor: string; streamingText: string; parsedCount: number; stageWidth: number; expectedSlides?: number }) {
+  const { t } = useTranslation();
   const slideHeight = Math.round(stageWidth * 0.5625);
   return (
     <div className="flex flex-col items-center gap-4 w-full">
@@ -1414,7 +1419,7 @@ function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth, e
         <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: `${primaryColor}20` }}>
           <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: primaryColor }} />
           <span className="text-[10px] font-bold" style={{ color: primaryColor }}>
-            {parsedCount > 0 ? `${parsedCount} / ~${expectedSlides} slides` : 'Generating...'}
+            {parsedCount > 0 ? t('presentation.skeletonProgress', { current: parsedCount, total: expectedSlides }) : t('common.generating')}
           </span>
         </div>
       </div>
@@ -1424,8 +1429,8 @@ function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth, e
           <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
           <span className="text-xs font-semibold text-theme-heading">
             {parsedCount > 0
-              ? `Building slide ${parsedCount + 1} of ~${expectedSlides}...`
-              : 'Preparing slides...'}
+              ? t('presentation.buildingSlide', { current: parsedCount + 1, total: expectedSlides })
+              : t('presentation.preparingSlides')}
           </span>
         </div>
         <div className="flex gap-1">
@@ -1598,7 +1603,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   // Auto-switch theme when presentation mode changes
   useEffect(() => {
-    const currentTheme = ALL_STYLES.find(s => s.id === styleId);
+    const currentTheme = getAllStyles(t).find(s => s.id === styleId);
     if (presentationMode === 'professional' && currentTheme?.tag === 'KIDS') {
       setStyleId('corporate-blue');
       setPrimaryColor('#2563eb');
@@ -1611,7 +1616,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   }, [presentationMode]);
 
   // Filtered styles based on mode
-  const filteredStyles = ALL_STYLES.filter(s =>
+  const filteredStyles = getAllStyles(t).filter(s =>
     presentationMode === 'professional' ? s.tag === 'PRO' : s.tag === 'KIDS'
   );
 
@@ -1995,7 +2000,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     if (!s) return;
     setImageLoading(prev => ({ ...prev, [slideIdx]: true }));
     try {
-      const styleHint = ALL_STYLES.find(st => st.id === styleId);
+      const styleHint = getAllStyles(t).find(st => st.id === styleId);
       const styleName = styleHint?.label || 'fun';
       const sceneDesc = s.content.imageScene || s.content.body || s.content.bullets?.join(', ') || s.content.headline || '';
       const prompt = `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
@@ -2075,7 +2080,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
     setBatchImageProgress({ current: 0, total: slidesNeedingImages.length, generating: true });
 
-    const styleHint = ALL_STYLES.find(st => st.id === styleId);
+    const styleHint = getAllStyles(t).find(st => st.id === styleId);
     const styleName = styleHint?.label || 'fun';
 
     for (let i = 0; i < slidesNeedingImages.length; i++) {
@@ -2272,15 +2277,15 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           <div>
             <h2 className="text-xl font-semibold text-theme-heading flex items-center">
               <Icon icon={Presentation01Icon} className="w-5 inline mr-2" style={{ color: tabColor }} />
-              Presentation Builder
+              {t('presentation.title')}
             </h2>
-            <p className="text-sm text-theme-hint mt-0.5">Create slide decks from scratch or from existing lesson plans</p>
+            <p className="text-sm text-theme-hint mt-0.5">{t('presentation.subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setShowHistory(!showHistory); if (!showHistory) { loadPresentationHistory(); loadDrafts(); } }}
               className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-              title="Presentation History"
+              title={t('presentation.presentationHistory')}
             >
               <Icon icon={Clock01Icon} className="w-5" style={{ color: 'var(--sidebar-text-muted)' }} />
               {matchCount > 0 && (
@@ -2304,7 +2309,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   }`}
                   style={inputMode === mode ? { background: tabColor } : undefined}
                 >
-                  {mode === 'scratch' ? 'From Scratch' : mode === 'lesson' ? 'From Lesson Plan' : 'Free Prompt'}
+                  {mode === 'scratch' ? t('presentation.fromScratch') : mode === 'lesson' ? t('presentation.fromLessonPlan') : t('presentation.freePrompt')}
                 </button>
               ))}
             </div>
@@ -2313,15 +2318,15 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               /* ── FREE PROMPT MODE ── */
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-theme-heading mb-1">Describe the presentation you want</label>
+                  <label className="block text-sm font-semibold text-theme-heading mb-1">{t('presentation.describePres')}</label>
                   <SmartTextArea
                     value={freePrompt}
                     onChange={v => setFreePrompt(v)}
-                    placeholder="e.g. A company quarterly review highlighting revenue growth, key wins, and next quarter goals..."
+                    placeholder={t('presentation.freePromptPlaceholder')}
                     rows={5}
                     className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm resize-none"
                   />
-                  <p className="text-xs text-theme-muted mt-1">No grade or subject required — just describe what you need and the AI will create it.</p>
+                  <p className="text-xs text-theme-muted mt-1">{t('presentation.noGradeHint')}</p>
                 </div>
               </div>
             ) : inputMode === 'scratch' ? (
@@ -2329,7 +2334,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-theme-heading mb-1">Grade Level *</label>
+                    <label className="block text-sm font-semibold text-theme-heading mb-1">{t('forms.gradeLevel')}</label>
                     <select
                       value={formData.gradeLevel}
                       onChange={e => {
@@ -2344,12 +2349,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     >
-                      <option value="">Select grade...</option>
-                      {grades.map(g => <option key={g} value={g}>{g === 'K' ? 'Kindergarten' : `Grade ${g}`}</option>)}
+                      <option value="">{t('forms.selectGrade')}</option>
+                      {grades.map(g => <option key={g} value={g}>{g === 'K' ? t('resources.kindergarten') : t('presentation.gradeN', { n: g })}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-theme-heading mb-1">Subject *</label>
+                    <label className="block text-sm font-semibold text-theme-heading mb-1">{t('forms.subject')}</label>
                     <select
                       value={formData.subject}
                       onChange={e => updateField('subject', e.target.value)}
@@ -2357,18 +2362,18 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.subject ? 'validation-error' : ''}`}
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     >
-                      <option value="">Select subject...</option>
+                      <option value="">{t('forms.selectSubject')}</option>
                       {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-theme-heading mb-1">Topic *</label>
+                  <label className="block text-sm font-semibold text-theme-heading mb-1">{t('forms.topic')}</label>
                   <SmartInput
                     value={formData.topic}
                     onChange={v => updateField('topic', v)}
-                    placeholder="e.g. Light Interactions, Fractions, Community Helpers..."
+                    placeholder={t('presentation.topicPlaceholder')}
                     data-validation-error={validationErrors.topic ? 'true' : undefined}
                     className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.topic ? 'validation-error' : ''}`}
                   />
@@ -2391,17 +2396,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-theme-heading mb-1">Duration (minutes)</label>
+                    <label className="block text-sm font-semibold text-theme-heading mb-1">{t('forms.duration')}</label>
                     <select
                       value={formData.duration}
                       onChange={e => updateField('duration', e.target.value)}
                       className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm"
                     >
-                      {['30', '45', '50', '60', '90'].map(d => <option key={d} value={d}>{d} min</option>)}
+                      {['30', '45', '50', '60', '90'].map(d => <option key={d} value={d}>{t('editor.minutes', { count: Number(d) })}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-theme-heading mb-1">Class Size</label>
+                    <label className="block text-sm font-semibold text-theme-heading mb-1">{t('forms.classSize')}</label>
                     <input
                       type="number"
                       value={formData.studentCount}
@@ -2412,11 +2417,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-theme-heading mb-1">Additional Instructions</label>
+                  <label className="block text-sm font-semibold text-theme-heading mb-1">{t('presentation.additionalInstructions')}</label>
                   <SmartTextArea
                     value={formData.additionalInstructions}
                     onChange={v => updateField('additionalInstructions', v)}
-                    placeholder="Any special focus areas, activities to include, etc."
+                    placeholder={t('presentation.additionalInstructionsPlaceholder')}
                     rows={3}
                     className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm resize-none"
                   />
@@ -2430,7 +2435,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     type="text"
                     value={lessonSearchQuery}
                     onChange={e => setLessonSearchQuery(e.target.value)}
-                    placeholder="Search lesson plans by subject, topic, or title..."
+                    placeholder={t('presentation.searchLessons')}
                     className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   />
@@ -2439,7 +2444,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
                   {filteredPlans.length === 0 ? (
                     <div className="text-center py-8 text-theme-muted text-sm">
-                      {lessonPlans.length === 0 ? 'No lesson plans found. Create some in the Lesson Planner first.' : 'No matching lesson plans.'}
+                      {lessonPlans.length === 0 ? t('presentation.noLessonsFound') : t('presentation.noMatchingLessons')}
                     </div>
                   ) : filteredPlans.map(plan => (
                     <button
@@ -2470,7 +2475,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-theme-muted">{plan.formData?.subject}</span>
                         <span className="text-xs text-theme-muted">·</span>
-                        <span className="text-xs text-theme-muted">Grade {plan.formData?.gradeLevel}</span>
+                        <span className="text-xs text-theme-muted">{t('presentation.gradeN', { n: plan.formData?.gradeLevel })}</span>
                         <span className="text-xs text-theme-muted">·</span>
                         <span className="text-xs text-theme-muted">{new Date(plan.timestamp).toLocaleDateString()}</span>
                       </div>
@@ -2480,9 +2485,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
                 {selectedPlan && (
                   <div className="p-3 rounded-lg border border-theme-border bg-theme-secondary">
-                    <div className="text-xs font-semibold text-theme-muted uppercase tracking-wide mb-1">Selected</div>
+                    <div className="text-xs font-semibold text-theme-muted uppercase tracking-wide mb-1">{t('presentation.selected')}</div>
                     <div className="text-sm font-bold text-theme-heading">{selectedPlan.title}</div>
-                    <div className="text-xs text-theme-muted mt-1">{selectedPlan.formData?.topic} — {selectedPlan.formData?.subject}, Grade {selectedPlan.formData?.gradeLevel}</div>
+                    <div className="text-xs text-theme-muted mt-1">{selectedPlan.formData?.topic} — {selectedPlan.formData?.subject}, {t('presentation.gradeN', { n: selectedPlan.formData?.gradeLevel })}</div>
                   </div>
                 )}
               </div>
@@ -2494,12 +2499,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             <div className="space-y-2 p-4 rounded-xl bg-theme-secondary border border-theme-border">
               <div className="text-sm font-semibold text-theme-heading flex items-center gap-2">
                 <Icon icon={Presentation01Icon} className="w-4" style={{ color: tabColor }} />
-                Presentation Style
+                {t('presentation.presentationStyle')}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {([
-                  { id: 'kids' as PresentationMode, label: 'For Students', desc: 'Interactive, engaging, classroom-ready' },
-                  { id: 'professional' as PresentationMode, label: 'Professional', desc: 'Formal, structured, information-dense' },
+                  { id: 'kids' as PresentationMode, label: t('presentation.forStudents'), desc: t('presentation.studentDesc') },
+                  { id: 'professional' as PresentationMode, label: t('presentation.professional'), desc: t('presentation.professionalDesc') },
                 ] as const).map(opt => {
                   const active = presentationMode === opt.id;
                   return (
@@ -2526,14 +2531,14 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               <div className="space-y-2">
                 <div className="text-sm font-semibold text-theme-heading flex items-center gap-2">
                   <Icon icon={Image01Icon} className="w-4" style={{ color: tabColor }} />
-                  Images
+                  {t('presentation.images')}
                 </div>
                 <div className={`grid gap-2 ${hasDiffusion ? 'grid-cols-4' : hasVision ? 'grid-cols-3' : 'grid-cols-2'}`}>
                   {([
-                    { id: 'none' as ImageMode, label: 'No Images', desc: 'Text only' },
-                    { id: 'suggested' as ImageMode, label: 'Suggested', desc: 'AI suggests images' },
-                    ...(hasVision ? [{ id: 'my-images' as ImageMode, label: 'My Images', desc: 'Upload your own' }] : []),
-                    ...(hasDiffusion ? [{ id: 'ai' as ImageMode, label: 'AI Generated', desc: 'Auto-create images' }] : []),
+                    { id: 'none' as ImageMode, label: t('presentation.noImages'), desc: t('presentation.textOnly') },
+                    { id: 'suggested' as ImageMode, label: t('presentation.suggested'), desc: t('presentation.aiSuggests') },
+                    ...(hasVision ? [{ id: 'my-images' as ImageMode, label: t('presentation.myImages'), desc: t('presentation.uploadOwn') }] : []),
+                    ...(hasDiffusion ? [{ id: 'ai' as ImageMode, label: t('presentation.aiGenerated'), desc: t('presentation.autoCreate') }] : []),
                   ]).map(opt => {
                     const active = imageMode === opt.id;
                     return (
@@ -2570,8 +2575,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     }}
                   >
                     <Icon icon={Image01Icon} className="w-7 mx-auto mb-1.5" style={{ color: `${tabColor}66` }} />
-                    <div className="text-xs font-semibold text-theme-heading">Drop images here or click to browse</div>
-                    <div className="text-[10px] text-theme-muted mt-0.5">PNG, JPG — up to 10 images</div>
+                    <div className="text-xs font-semibold text-theme-heading">{t('presentation.dropImages')}</div>
+                    <div className="text-[10px] text-theme-muted mt-0.5">{t('presentation.dropImagesHint')}</div>
                     <input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelect} />
                   </div>
 
@@ -2597,7 +2602,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               {/* Slide count slider */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-theme-heading">Slide Count</span>
+                  <span className="text-sm font-semibold text-theme-heading">{t('presentation.slideCount')}</span>
                   <span className="text-sm font-bold" style={{ color: tabColor }}>{slideCount}</span>
                 </div>
                 <input
@@ -2612,8 +2617,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   }}
                 />
                 <div className="flex justify-between text-[10px] text-theme-muted">
-                  <span>5 slides</span>
-                  <span>15 slides</span>
+                  <span>{t('presentation.nSlides', { n: 5 })}</span>
+                  <span>{t('presentation.nSlides', { n: 15 })}</span>
                 </div>
               </div>
 
@@ -2621,9 +2626,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               {imageMode === 'ai' && (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-theme-heading">Max Images</span>
+                    <span className="text-sm font-semibold text-theme-heading">{t('presentation.maxImages')}</span>
                     <span className="text-sm font-bold" style={{ color: tabColor }}>
-                      {maxImages === 0 ? 'Auto' : maxImages}
+                      {maxImages === 0 ? t('presentation.autoAiDecides') : maxImages}
                     </span>
                   </div>
                   <input
@@ -2638,8 +2643,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     }}
                   />
                   <div className="flex justify-between text-[10px] text-theme-muted">
-                    <span>Auto (AI decides)</span>
-                    <span>{slideCount} (all slides)</span>
+                    <span>{t('presentation.autoAiDecides')}</span>
+                    <span>{t('presentation.allSlides', { n: slideCount })}</span>
                   </div>
                 </div>
               )}
@@ -2673,10 +2678,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: tabColor }} />
                     <span className="text-sm font-semibold text-theme-heading">
                       {generationPhase === 'analyzing'
-                        ? 'Analyzing your images...'
+                        ? t('presentation.analyzingImages')
                         : streamingSlides.length > 0
-                          ? `Building slide ${streamingSlides.length + 1} of ~${slideCount}...`
-                          : 'Preparing your presentation...'}
+                          ? t('presentation.buildingSlide', { current: streamingSlides.length + 1, total: slideCount })
+                          : t('presentation.preparingSlides')}
                     </span>
                   </div>
                   <div className="flex gap-1">
@@ -2710,7 +2715,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         >
           <div className="h-full flex flex-col p-4 w-80">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-theme-heading">Saved Presentations</h3>
+              <h3 className="text-lg font-semibold text-theme-heading">{t('presentation.savedPresentations')}</h3>
               <button
                 onClick={() => setShowHistory(false)}
                 className="p-1 rounded hover:bg-theme-hover transition"
@@ -2722,12 +2727,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
               {historyLoading ? (
                 <div className="text-center py-8 text-theme-muted text-sm">
-                  <Icon icon={Loading02Icon} className="w-5 inline animate-spin" /> Loading...
+                  <Icon icon={Loading02Icon} className="w-5 inline animate-spin" /> {t('common.loading')}
                 </div>
               ) : drafts.length === 0 && presentationHistory.length === 0 ? (
                 <div className="text-center text-theme-muted mt-8">
                   <Icon icon={Presentation01Icon} className="w-12 mx-auto mb-2" style={{ color: 'var(--sidebar-text-muted)' }} />
-                  <p className="text-sm">No saved presentations yet</p>
+                  <p className="text-sm">{t('presentation.noSavedPresentations')}</p>
                 </div>
               ) : (
                 <>
@@ -2738,7 +2743,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                         className="flex items-center gap-1.5 text-xs font-semibold text-theme-muted uppercase tracking-wider w-full text-left py-1 hover:text-theme-heading transition"
                       >
                         <span className="transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
-                        Drafts ({drafts.length})
+                        {t('presentation.draftsCount', { count: drafts.length })}
                       </button>
                       {draftsExpanded && drafts.map(draft => (
                         <div
@@ -2749,7 +2754,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">Draft</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">{t('dashboard.draft')}</span>
                               </div>
                               <p className="text-sm font-medium text-theme-heading line-clamp-2">
                                 {draft.title}
@@ -2761,7 +2766,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                             <button
                               onClick={e => { e.stopPropagation(); deleteDraft(draft.id); }}
                               className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                              title="Delete draft"
+                              title={t('storybook.deleteDraft')}
                             >
                               <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
                             </button>
@@ -2775,7 +2780,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   )}
                   {matchCount > 0 && matchedHistories.length > 0 && (
                     <>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 px-1 pt-1">Matching ({matchCount})</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 px-1 pt-1">{t('presentation.matchingCount', { count: matchCount })}</p>
                       {sortedPresentationHistory.filter(pres => matchedHistories.includes(pres)).map(pres => (
                         <div
                           key={pres.id}
@@ -2790,13 +2795,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                                 {pres.title}
                               </p>
                               <p className="text-xs text-theme-muted mt-1">
-                                {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                                {t('presentation.slidesCount', { count: pres.slideCount || pres.slides?.length || '?' })} · {new Date(pres.timestamp).toLocaleDateString()}
                               </p>
                             </div>
                             <button
                               onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
                               className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                              title="Delete"
+                              title={t('common.delete')}
                             >
                               <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
                             </button>
@@ -2807,7 +2812,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   )}
                   {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).length > 0 && (
                     <>
-                      {matchCount > 0 && <p className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted px-1 pt-2">Other</p>}
+                      {matchCount > 0 && <p className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted px-1 pt-2">{t('dashboard.other')}</p>}
                       {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).map(pres => (
                         <div
                           key={pres.id}
@@ -2822,13 +2827,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                                 {pres.title}
                               </p>
                               <p className="text-xs text-theme-muted mt-1">
-                                {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                                {t('presentation.slidesCount', { count: pres.slideCount || pres.slides?.length || '?' })} · {new Date(pres.timestamp).toLocaleDateString()}
                               </p>
                             </div>
                             <button
                               onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
                               className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                              title="Delete"
+                              title={t('common.delete')}
                             >
                               <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
                             </button>
@@ -2860,15 +2865,15 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               onClick={() => setView('input')}
               className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
             >
-              <Icon icon={ArrowLeft01Icon} className="w-3.5 inline mr-1.5" /> Back
+              <Icon icon={ArrowLeft01Icon} className="w-3.5 inline mr-1.5" /> {t('common.back')}
             </button>
             <div className="min-w-0">
               <h3 className="text-lg font-semibold text-theme-heading flex items-center">
                 <Icon icon={Presentation01Icon} className="w-5 inline mr-2" />
-                Preview
+                {t('calendar.preview')}
               </h3>
               <div className="text-xs text-theme-muted truncate">
-                {formData.topic || 'Presentation'}{formData.subject ? ` · Grade ${formData.gradeLevel} · ${formData.subject}` : ''}
+                {formData.topic || t('presentation.title')}{formData.subject ? ` · ${t('presentation.gradeN', { n: formData.gradeLevel })} · ${formData.subject}` : ''}
               </div>
             </div>
           </div>
@@ -2876,7 +2881,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             <button
               onClick={() => { setShowHistory(!showHistory); if (!showHistory) { loadPresentationHistory(); loadDrafts(); } }}
               className="relative p-2 rounded-lg hover:bg-theme-hover transition"
-              title="Presentation History"
+              title={t('presentation.presentationHistory')}
             >
               <Icon icon={Clock01Icon} className="w-5" style={{ color: 'var(--sidebar-text-muted)' }} />
               {matchCount > 0 && (
@@ -2888,10 +2893,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 background: presentationMode === 'professional' ? '#6366f120' : `${tabColor}20`,
                 color: presentationMode === 'professional' ? '#818cf8' : tabColor,
               }}>
-                {presentationMode === 'professional' ? 'PRO' : 'KIDS'}
+                {presentationMode === 'professional' ? t('presentation.tagPro') : t('presentation.tagKids')}
               </span>
               <div className="w-2 h-2 rounded-full" style={{ background: primaryColor }} />
-              <span className="text-xs font-semibold" style={{ color: primaryColor }}>{ALL_STYLES.find(s => s.id === styleId)?.label}</span>
+              <span className="text-xs font-semibold" style={{ color: primaryColor }}>{getAllStyles(t).find(s => s.id === styleId)?.label}</span>
             </div>
             <button
               onClick={handleGenerate}
@@ -2899,7 +2904,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             >
               <Icon icon={Loading02Icon} className="w-3.5 inline mr-1.5" />
-              {loading ? 'Generating...' : 'Regenerate'}
+              {loading ? t('common.generating') : t('common.regenerate')}
             </button>
             {slides.length > 0 && (
               <>
@@ -2909,7 +2914,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
                 >
                   <Icon icon={SaveIcon} className="w-3.5 inline mr-1.5" />
-                  {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : 'Save'}
+                  {saveStatus === 'saving' ? t('common.saving') : saveStatus === 'saved' ? t('grader.saved') : t('common.save')}
                 </button>
                 <button
                   onClick={exportPPTX}
@@ -2926,8 +2931,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   >
                     <Icon icon={Image01Icon} className="w-3.5 inline mr-1.5" />
                     {batchImageProgress.generating
-                      ? `Images ${batchImageProgress.current}/${batchImageProgress.total}...`
-                      : slides.every(s => s.content.image) ? 'Regenerate All Images' : 'Generate All Images'}
+                      ? t('presentation.imagesProgress', { current: batchImageProgress.current, total: batchImageProgress.total })
+                      : slides.every(s => s.content.image) ? t('presentation.regenerateAllImages') : t('presentation.generateAllImages')}
                   </button>
                 )}
                 {imageMode === 'suggested' && suggestedImages.length > 0 && (
@@ -2937,7 +2942,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     style={{ background: `${primaryColor}20`, color: primaryColor, border: `1px solid ${primaryColor}40` }}
                   >
                     <Icon icon={Image01Icon} className="w-3.5 inline mr-1.5" />
-                    {suggestedImages.filter(s => slides[s.slideIndex]?.content.image).length}/{suggestedImages.length} Images Added
+                    {t('presentation.imagesAdded', { added: suggestedImages.filter(s => slides[s.slideIndex]?.content.image).length, total: suggestedImages.length })}
                   </button>
                 )}
               </>
@@ -3004,7 +3009,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         {/* LEFT: Slide list */}
         <div className="w-[170px] flex-shrink-0 border-r border-theme bg-theme-secondary flex flex-col">
           <div className="px-2.5 pt-2.5 pb-1.5 text-[9px] font-extrabold text-theme-muted uppercase tracking-wider flex items-center justify-between">
-            <span>Slides</span>
+            <span>{t('presentation.slides')}</span>
             {slides.length > 0 && <span style={{ color: primaryColor }}>{slides.length}</span>}
           </div>
           <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-1.5">
@@ -3162,13 +3167,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   </select>
                 </div>
 
-                <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">Headline</label>
+                <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">{t('presentation.headline')}</label>
                 <textarea rows={2} value={cur.content.headline || ''} onChange={e => updateSlide('headline', e.target.value)}
                   className="w-full px-2 py-1.5 rounded bg-theme-primary border border-theme-border text-theme-heading text-xs resize-y outline-none" />
 
                 {cur.layout === 'title' && (
                   <>
-                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">Subtitle</label>
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">{t('presentation.subtitleField')}</label>
                     <input value={cur.content.subtitle || ''} onChange={e => updateSlide('subtitle', e.target.value)}
                       className="w-full px-2 py-1.5 rounded bg-theme-primary border border-theme-border text-theme-heading text-xs outline-none" />
                   </>
@@ -3176,7 +3181,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
                 {hasBody && (
                   <>
-                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">Body Text</label>
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">{t('presentation.bodyText')}</label>
                     <textarea rows={3} value={cur.content.body || ''} onChange={e => updateSlide('body', e.target.value)}
                       className="w-full px-2 py-1.5 rounded bg-theme-primary border border-theme-border text-theme-heading text-xs resize-y outline-none" />
                   </>
@@ -3188,7 +3193,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
                 {hasBullets && (
                   <>
-                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">Bullet Points</label>
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">{t('presentation.bulletPoints')}</label>
                     {(cur.content.bullets || []).map((b, i) => (
                       <div key={i} className="flex gap-1 mb-1.5">
                         <textarea rows={2} value={b} onChange={e => updateBullet(i, e.target.value)}
@@ -3262,6 +3267,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           </div>
         </div>
       </div>
+      <AIDisclaimer />
       </div>
 
       {/* History Side Panel */}
@@ -3273,7 +3279,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       >
         <div className="h-full flex flex-col p-4 w-80">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-theme-heading">Saved Presentations</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">{t('presentation.savedPresentations')}</h3>
             <button
               onClick={() => setShowHistory(false)}
               className="p-1 rounded hover:bg-theme-hover transition"
@@ -3285,12 +3291,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
             {historyLoading ? (
               <div className="text-center py-8 text-theme-muted text-sm">
-                <Icon icon={Loading02Icon} className="w-5 inline animate-spin" /> Loading...
+                <Icon icon={Loading02Icon} className="w-5 inline animate-spin" /> {t('common.loading')}
               </div>
             ) : drafts.length === 0 && presentationHistory.length === 0 ? (
               <div className="text-center text-theme-muted mt-8">
                 <Icon icon={Presentation01Icon} className="w-12 mx-auto mb-2" style={{ color: 'var(--sidebar-text-muted)' }} />
-                <p className="text-sm">No saved presentations yet</p>
+                <p className="text-sm">{t('presentation.noSavedPresentations')}</p>
               </div>
             ) : (
               <>
@@ -3301,7 +3307,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       className="flex items-center gap-1.5 text-xs font-semibold text-theme-muted uppercase tracking-wider w-full text-left py-1 hover:text-theme-heading transition"
                     >
                       <span className="transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
-                      Drafts ({drafts.length})
+                      {t('presentation.draftsCount', { count: drafts.length })}
                     </button>
                     {draftsExpanded && drafts.map(draft => (
                       <div
@@ -3312,7 +3318,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">Draft</span>
+                              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">{t('dashboard.draft')}</span>
                             </div>
                             <p className="text-sm font-medium text-theme-heading line-clamp-2">
                               {draft.title}
@@ -3324,7 +3330,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                           <button
                             onClick={e => { e.stopPropagation(); deleteDraft(draft.id); }}
                             className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                            title="Delete draft"
+                            title={t('storybook.deleteDraft')}
                           >
                             <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
                           </button>
@@ -3353,13 +3359,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                               {pres.title}
                             </p>
                             <p className="text-xs text-theme-muted mt-1">
-                              {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                              {t('presentation.slidesCount', { count: pres.slideCount || pres.slides?.length || '?' })} · {new Date(pres.timestamp).toLocaleDateString()}
                             </p>
                           </div>
                           <button
                             onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
                             className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                            title="Delete"
+                            title={t('common.delete')}
                           >
                             <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
                           </button>
@@ -3370,7 +3376,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 )}
                 {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).length > 0 && (
                   <>
-                    {matchCount > 0 && <p className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted px-1 pt-2">Other</p>}
+                    {matchCount > 0 && <p className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted px-1 pt-2">{t('dashboard.other')}</p>}
                     {sortedPresentationHistory.filter(pres => !matchedHistories.includes(pres)).map(pres => (
                       <div
                         key={pres.id}
@@ -3385,13 +3391,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                               {pres.title}
                             </p>
                             <p className="text-xs text-theme-muted mt-1">
-                              {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                              {t('presentation.slidesCount', { count: pres.slideCount || pres.slides?.length || '?' })} · {new Date(pres.timestamp).toLocaleDateString()}
                             </p>
                           </div>
                           <button
                             onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
                             className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                            title="Delete"
+                            title={t('common.delete')}
                           >
                             <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
                           </button>

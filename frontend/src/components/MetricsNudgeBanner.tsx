@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import type { TeacherMetrics } from '../types/insights';
@@ -24,6 +25,7 @@ const MetricsNudgeBanner: React.FC<MetricsNudgeBannerProps> = ({
   onDismiss,
   onTalkToCoach,
 }) => {
+  const { t } = useTranslation();
   if (!metrics || dismissed) return null;
 
   // Check nudge conditions
@@ -59,17 +61,17 @@ const MetricsNudgeBanner: React.FC<MetricsNudgeBannerProps> = ({
   let targetDimension: string | undefined;
 
   if (compositeDrop >= 5 && previousMetrics) {
-    message = `Your overall score dropped from ${Math.round(previousMetrics.composite_score)} to ${Math.round(metrics.composite_score)}. The Educator Coach can help you figure out what changed.`;
+    message = t('metrics.scoreDropped', { from: Math.round(previousMetrics.composite_score), to: Math.round(metrics.composite_score) });
   } else if (lowDimensions.length > 0) {
     const [dimKey, dim] = lowDimensions[0];
     targetDimension = dimKey;
-    message = `Your ${dimKey} score could use some attention (${Math.round(dim.score)}/100). Want to talk through strategies with the Educator Coach?`;
+    message = t('metrics.dimensionLow', { dimension: dimKey, score: Math.round(dim.score) });
   } else if (droppedDimension) {
     targetDimension = droppedDimension;
     const dim = metrics.dimensions[droppedDimension as keyof typeof metrics.dimensions];
-    message = `Your ${droppedDimension} score dropped significantly to ${Math.round(dim.score)}. The Educator Coach can help you recover.`;
+    message = t('metrics.dimensionDropped', { dimension: droppedDimension, score: Math.round(dim.score) });
   } else {
-    message = `Your composite score is ${Math.round(metrics.composite_score)}/100. The Educator Coach can help you identify areas for improvement.`;
+    message = t('metrics.compositeScore', { score: Math.round(metrics.composite_score) });
   }
 
   return (
@@ -83,7 +85,7 @@ const MetricsNudgeBanner: React.FC<MetricsNudgeBannerProps> = ({
           onClick={() => onTalkToCoach(targetDimension)}
           className="mt-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
         >
-          Talk to Coach
+          {t('metrics.talkToCoach')}
         </button>
       </div>
       <button

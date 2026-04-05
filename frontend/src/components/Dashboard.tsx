@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { OECS_LOGO_BASE64 } from '../utils/logoBase64';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
@@ -174,21 +175,21 @@ const tools: Tool[] = [
     name: 'My Overview',
     icon: 'LayoutDashboard',
     type: 'analytics',
-    description: 'Teaching analytics and quick access'
+    description: 'sidebar.descriptions.myOverview'
   },
   {
     id: 'educator-insights',
     name: 'Educator Insights',
     icon: 'Lightbulb',
     type: 'educator-insights',
-    description: 'AI-powered teaching analysis and recommendations'
+    description: 'sidebar.descriptions.educatorInsights'
   },
   {
     id: 'brain-dump',
     name: 'Brain Dump',
     icon: 'Brain',
     type: 'brain-dump',
-    description: 'Dump your thoughts and turn them into actions',
+    description: 'sidebar.descriptions.brainDump',
     group: 'planning-prep'
   },
   {
@@ -196,7 +197,7 @@ const tools: Tool[] = [
     name: 'Progress Tracker',
     icon: 'TrendingUp',
     type: 'curriculum-tracker',
-    description: 'Monitor your curriculum progress',
+    description: 'sidebar.descriptions.progressTracker',
     group: 'my-classroom'
   },
   {
@@ -204,7 +205,7 @@ const tools: Tool[] = [
     name: 'Curriculum Plan',
     icon: 'CalendarRange',
     type: 'curriculum-plan',
-    description: 'Assign milestones to academic phases',
+    description: 'sidebar.descriptions.curriculumPlan',
     group: 'my-classroom'
   },
   {
@@ -212,7 +213,7 @@ const tools: Tool[] = [
     name: 'My Resources',
     icon: 'FolderOpen',
     type: 'resource-manager',
-    description: 'View, edit, and manage all your saved resources',
+    description: 'sidebar.descriptions.myResources',
     group: 'planning-prep'
   },
   {
@@ -220,7 +221,7 @@ const tools: Tool[] = [
     name: 'School Year',
     icon: 'CalendarRange',
     type: 'school-year-calendar',
-    description: 'Plan your school year with exams, midterms, grading deadlines, and more',
+    description: 'sidebar.descriptions.schoolYear',
     group: 'planning-prep'
   },
   {
@@ -228,21 +229,21 @@ const tools: Tool[] = [
     name: 'Ask PEARL',
     icon: 'MessageSquare',
     type: 'chat',
-    description: 'Chat with PEARL for ideas and help'
+    description: 'sidebar.descriptions.askPearl'
   },
   {
     id: 'curriculum',
     name: 'Curriculum Browser',
     icon: 'Search',
     type: 'curriculum',
-    description: 'Browse OECS curriculum content'
+    description: 'sidebar.descriptions.curriculumBrowser'
   },
   {
     id: 'quiz-generator',
     name: 'Quiz Builder',
     icon: 'PenTool',
     type: 'quiz-generator',
-    description: 'Quizzes aligned to your curriculum',
+    description: 'sidebar.descriptions.quizBuilder',
     group: 'assessment-tools'
   },
   {
@@ -250,7 +251,7 @@ const tools: Tool[] = [
     name: 'Rubric Builder',
     icon: 'ClipboardList',
     type: 'rubric-generator',
-    description: 'Grading criteria for assignments',
+    description: 'sidebar.descriptions.rubricBuilder',
     group: 'assessment-tools'
   },
   {
@@ -258,7 +259,7 @@ const tools: Tool[] = [
     name: 'My Classes',
     icon: 'UsersRound',
     type: 'class-management',
-    description: 'Manage students, classes, and quiz grades',
+    description: 'sidebar.descriptions.myClasses',
     group: 'my-classroom'
   },
   // Lesson Planner Group
@@ -267,7 +268,7 @@ const tools: Tool[] = [
     name: 'Lesson Plan',
     icon: 'BookMarked',
     type: 'lesson-planner',
-    description: 'Create comprehensive lesson plans',
+    description: 'sidebar.descriptions.lessonPlan',
     group: 'lesson-planners'
   },
   {
@@ -275,7 +276,7 @@ const tools: Tool[] = [
     name: 'Early Childhood',
     icon: 'Baby',
     type: 'kindergarten-planner',
-    description: 'Early childhood lesson plans',
+    description: 'sidebar.descriptions.earlyChildhood',
     group: 'lesson-planners'
   },
   {
@@ -283,7 +284,7 @@ const tools: Tool[] = [
     name: 'Multi-Level',
     icon: 'Layers',
     type: 'multigrade-planner',
-    description: 'Plans for multiple grade levels',
+    description: 'sidebar.descriptions.multiLevel',
     group: 'lesson-planners'
   },
   {
@@ -291,7 +292,7 @@ const tools: Tool[] = [
     name: 'Integrated Lesson',
     icon: 'Merge',
     type: 'cross-curricular-planner',
-    description: 'Integrated subject lesson plans',
+    description: 'sidebar.descriptions.integratedLesson',
     group: 'lesson-planners'
   },
   {
@@ -299,7 +300,7 @@ const tools: Tool[] = [
     name: 'Achievements',
     icon: 'Trophy',
     type: 'achievements',
-    description: 'Track your teaching milestones and earn rewards',
+    description: 'sidebar.descriptions.achievements',
     group: 'my-classroom'
   },
   {
@@ -307,7 +308,7 @@ const tools: Tool[] = [
     name: 'Photo Transfer',
     icon: 'Camera',
     type: 'photo-transfer',
-    description: 'Scan worksheets from your phone to PC over WiFi',
+    description: 'sidebar.descriptions.photoTransfer',
     group: 'my-classroom'
   },
   {
@@ -315,21 +316,21 @@ const tools: Tool[] = [
     name: 'Performance',
     icon: 'Speedometer',
     type: 'performance-metrics',
-    description: 'Model benchmarks and system performance'
+    description: 'sidebar.descriptions.performance'
   },
   {
     id: 'support',
     name: 'Support & Reporting',
     icon: 'HelpCircle',
     type: 'support',
-    description: 'FAQ help center and issue reporting'
+    description: 'sidebar.descriptions.support'
   },
   {
     id: 'settings',
     name: 'Settings',
     icon: 'Settings',
     type: 'settings',
-    description: 'Models, themes, and preferences'
+    description: 'sidebar.descriptions.settings'
   },
   // Visual Studio Group
   {
@@ -337,7 +338,7 @@ const tools: Tool[] = [
     name: 'Worksheet Builder',
     icon: 'FileSpreadsheet',
     type: 'worksheet-generator',
-    description: 'Printable student worksheets',
+    description: 'sidebar.descriptions.worksheetBuilder',
     group: 'visual-studio'
   },
   {
@@ -345,7 +346,7 @@ const tools: Tool[] = [
     name: 'Image Studio',
     icon: 'Palette',
     type: 'image-studio',
-    description: 'Generate and edit classroom visuals',
+    description: 'sidebar.descriptions.imageStudio',
     group: 'visual-studio'
   },
   {
@@ -353,7 +354,7 @@ const tools: Tool[] = [
     name: 'Slide Deck',
     icon: 'Presentation',
     type: 'presentation-builder',
-    description: 'Create presentations from lesson plans',
+    description: 'sidebar.descriptions.slideDeck',
     group: 'visual-studio'
   },
   {
@@ -361,7 +362,7 @@ const tools: Tool[] = [
     name: 'Storybook Creator',
     icon: 'StoryBook',
     type: 'storybook',
-    description: 'Illustrated K-2 stories with TTS narration',
+    description: 'sidebar.descriptions.storybookCreator',
     group: 'visual-studio'
   }
 ];
@@ -433,63 +434,66 @@ const iconMap: { [key: string]: React.ElementType } = {
   CalendarRange,
 };
 
-const WELCOME_TIPS = [
-  'Right-click on tabs to split them side-by-side',
-  'Use Ctrl+K to open the command palette',
-  'Drag tabs to reorder them in the toolbar',
-  'Ask PEARL can help you plan lessons instantly',
-  'Build worksheets tailored to any grade level',
-  'Track curriculum coverage from My Overview',
-  'Use the Rubric Builder to create assessment criteria',
-  'The Curriculum Browser covers all OECS subject areas',
-  'Create multi-level lesson plans for combined classes',
-  'Export your lesson plans and worksheets as PDFs',
-  'Use the Image Studio to create visual aids for lessons',
-  'Manage your classes and student groups from My Classes',
-  'The Quiz Builder supports multiple question types',
-  'Pin your most-used tools for quick access',
-  'Keyboard shortcuts make navigation faster — try them out',
+const getWelcomeTips = (t: TFunction): string[] => [
+  t('dashboard.tips.tip1'),
+  t('dashboard.tips.tip2'),
+  t('dashboard.tips.tip3'),
+  t('dashboard.tips.tip4'),
+  t('dashboard.tips.tip5'),
+  t('dashboard.tips.tip6'),
+  t('dashboard.tips.tip7'),
+  t('dashboard.tips.tip8'),
+  t('dashboard.tips.tip9'),
+  t('dashboard.tips.tip10'),
+  t('dashboard.tips.tip11'),
+  t('dashboard.tips.tip12'),
+  t('dashboard.tips.tip13'),
+  t('dashboard.tips.tip14'),
+  t('dashboard.tips.tip15'),
 ];
 
-const QUICKLINK_SETS = [
+const getQuicklinkSets = (t: TFunction) => [
   [
-    { icon: LayoutDashboard, label: 'My Overview', type: 'analytics' },
-    { icon: MessageSquare, label: 'Ask PEARL', type: 'chat' },
-    { icon: Search, label: 'Curriculum', type: 'curriculum' },
+    { icon: LayoutDashboard, label: t('sidebar.myOverview'), type: 'analytics' },
+    { icon: MessageSquare, label: t('sidebar.askPearl'), type: 'chat' },
+    { icon: Search, label: t('sidebar.curriculumBrowser'), type: 'curriculum' },
   ],
   [
-    { icon: BookMarked, label: 'Lesson Plan', type: 'lesson-planner' },
-    { icon: PenTool, label: 'Quiz Builder', type: 'quiz-generator' },
-    { icon: ClipboardList, label: 'Rubric Builder', type: 'rubric-generator' },
+    { icon: BookMarked, label: t('sidebar.lessonPlan'), type: 'lesson-planner' },
+    { icon: PenTool, label: t('sidebar.quizBuilder'), type: 'quiz-generator' },
+    { icon: ClipboardList, label: t('sidebar.rubricBuilder'), type: 'rubric-generator' },
   ],
   [
-    { icon: Brain, label: 'Brain Dump', type: 'brain-dump' },
-    { icon: FolderOpen, label: 'My Resources', type: 'resource-manager' },
-    { icon: TrendingUp, label: 'Progress Tracker', type: 'curriculum-tracker' },
+    { icon: Brain, label: t('sidebar.brainDump'), type: 'brain-dump' },
+    { icon: FolderOpen, label: t('sidebar.myResources'), type: 'resource-manager' },
+    { icon: TrendingUp, label: t('sidebar.progressTracker'), type: 'curriculum-tracker' },
   ],
   [
-    { icon: FileSpreadsheet, label: 'Worksheets', type: 'worksheet-generator' },
-    { icon: UsersRound, label: 'My Classes', type: 'class-management' },
-    { icon: Palette, label: 'Image Studio', type: 'image-studio' },
+    { icon: FileSpreadsheet, label: t('sidebar.worksheetBuilder'), type: 'worksheet-generator' },
+    { icon: UsersRound, label: t('sidebar.myClasses'), type: 'class-management' },
+    { icon: Palette, label: t('sidebar.imageStudio'), type: 'image-studio' },
   ],
 ];
 
 const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; onOpenTool: (type: string) => void }) => {
+  const { t } = useTranslation();
   const [setIndex, setSetIndex] = useState(0);
   const [visible, setVisible] = useState(true);
+
+  const quicklinkSets = getQuicklinkSets(t);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
-        setSetIndex(prev => (prev + 1) % QUICKLINK_SETS.length);
+        setSetIndex(prev => (prev + 1) % quicklinkSets.length);
         setVisible(true);
       }, 400);
     }, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [quicklinkSets.length]);
 
-  const currentSet = QUICKLINK_SETS[setIndex];
+  const currentSet = quicklinkSets[setIndex];
 
   return (
     <div className="relative mb-6">
@@ -510,7 +514,7 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
       </div>
       {/* Dot indicators */}
       <div className="flex justify-center gap-1.5 mt-3">
-        {QUICKLINK_SETS.map((_, i) => (
+        {quicklinkSets.map((_, i) => (
           <button
             key={i}
             onClick={() => {
@@ -536,19 +540,21 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
 };
 
 const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
-  const [index, setIndex] = useState(() => Math.floor(Math.random() * WELCOME_TIPS.length));
+  const { t } = useTranslation();
+  const tips = getWelcomeTips(t);
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * tips.length));
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
-        setIndex(prev => (prev + 1) % WELCOME_TIPS.length);
+        setIndex(prev => (prev + 1) % tips.length);
         setVisible(true);
       }, 400);
     }, 12000);
     return () => clearInterval(interval);
-  }, []);
+  }, [tips.length]);
 
   return (
     <p
@@ -558,7 +564,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
         opacity: visible ? 1 : 0,
       }}
     >
-      Tip: {WELCOME_TIPS[index]}
+      {t('dashboard.tip')} {tips[index]}
     </p>
   );
 };
@@ -1162,7 +1168,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       if (!hasContent) return null;
       // Build a title from available fields
       const titleParts = [fd.subject, fd.topic, fd.gradeLevel, fd.theme, fd.title].filter(Boolean);
-      const title = titleParts.length > 0 ? titleParts.join(' - ') : 'Untitled Draft';
+      const title = titleParts.length > 0 ? titleParts.join(' - ') : t('dashboard.untitledDraft');
       return {
         formData: fd,
         step: parsed.step || 1,
@@ -1646,7 +1652,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
-      title: `Viewing: ${resource.title.substring(0, 20)}...`,
+      title: `${t('dashboard.viewing')} ${resource.title.substring(0, 20)}...`,
       type: tool.type,
       active: true,
       data: {
@@ -1675,7 +1681,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
-      title: `Editing: ${resource.title.substring(0, 20)}...`,
+      title: `${t('dashboard.editing')} ${resource.title.substring(0, 20)}...`,
       type: tool.type,
       active: true,
       data: {
@@ -2116,7 +2122,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 className="absolute inset-0"
                 style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
               >
-                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab, tab.id === activeTabId)}</React.Suspense>
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>{renderSingleTabContent(tab, tab.id === activeTabId)}</React.Suspense>
               </div>
             );
           }
@@ -2129,7 +2135,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             // Hidden tab — keep mounted but invisible
             return (
               <div key={tab.id} style={{ display: 'none' }}>
-                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab, false)}</React.Suspense>
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>{renderSingleTabContent(tab, false)}</React.Suspense>
               </div>
             );
           }
@@ -2161,7 +2167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 zIndex: 1
               }}
             >
-              <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab, true)}</React.Suspense>
+              <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>{renderSingleTabContent(tab, true)}</React.Suspense>
             </div>
           );
         })}
@@ -2209,13 +2215,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           style={{ left: contextMenu.x, top: contextMenu.y + 20}}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Group Actions</div>
+          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">{t('dashboard.groupActions')}</div>
           <button
             onClick={() => closeGroupTabs(contextMenu.groupType!)}
             className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 flex items-center space-x-2 dark:text-gray-300 dark:hover:bg-red-900 dark:hover:text-red-400"
           >
             <X className="w-4 h-4" />
-            <span>Close all {tools.find(t => t.type === contextMenu.groupType)?.name} tabs</span>
+            <span>{t('dashboard.closeAllTabs', { name: (() => { const tool = tools.find(tl => tl.type === contextMenu.groupType); return tool ? tn(tool) : ''; })() })}</span>
           </button>
         </div>
       )}
@@ -2232,7 +2238,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           zIndex: 40,
           background: sidebarOpen ? 'var(--sidebar-bg)' : 'var(--sidebar-bg-collapsed)',
           color: 'var(--sidebar-text)',
-          transition: 'box-shadow 0.3s, background 0.3s',
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s',
           backdropFilter: 'blur(24px) saturate(1.5)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
           borderRight: '1px solid var(--sidebar-border)',
@@ -2328,7 +2334,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               transition: 'padding 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
-            Tools
+            {t('sidebar.tools')}
           </div>
 
           {/* === Dynamic Sidebar rendered from sidebarOrder === */}
@@ -2414,7 +2420,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         <button key={tool.id} data-tool-type={tool.type} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', opacity: isLocked ? 0.5 : 1, transition: 'background-color 0.2s' }}
                           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive && tc) { ic.style.color = tc; ic.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
                           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActive ? 'var(--sidebar-active)' : 'transparent'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive) { ic.style.color = 'var(--sidebar-text-muted)'; ic.style.filter = ''; } }}
-                          title={isLocked ? 'Tier 3 required — enable a diffusion model' : tn(tool)}
+                          title={isLocked ? t('dashboard.tier3Required') : tn(tool)}
                         >
                           <div className="relative flex-shrink-0">
                             <Icon className={`w-4 h-4 sidebar-icon ${isActive ? 'icon-glow' : ''}`} style={{ color: isActive && tc ? tc : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
@@ -2533,7 +2539,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               onLogout();
             }}
             className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition text-red-400 hover:text-red-300`}
-            title={!sidebarOpen ? 'Logout' : ''}
+            title={!sidebarOpen ? t('sidebar.logout') : ''}
             style={{
               display: 'none',
               backgroundColor: 'transparent',
@@ -2555,7 +2561,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 pointerEvents: sidebarOpen ? 'auto' : 'none'
               }}
             >
-              Logout
+              {t('sidebar.logout')}
             </span>
           </button>
         </div>
@@ -2681,7 +2687,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       marginRight: TAB_OVERLAP,
                       overflow: 'visible',
                     } as React.CSSProperties}
-                    title="Right-click for options"
+                    title={t('dashboard.rightClickOptions')}
                     onMouseEnter={() => setHoveringTabId(`${type}-group`)}
                     onMouseLeave={() => setHoveringTabId(null)}
                   >
@@ -2705,7 +2711,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                       }}
                     >
-                      {tools.find(t => t.type === type)?.name}
+                      {(() => { const tl = tools.find(tl => tl.type === type); return tl ? tn(tl) : ''; })()}
                     </span>
                   </button>
 
@@ -2810,7 +2816,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     ? 'bg-white/20 text-white hover:bg-white/30'
                     : 'hover:bg-white/10 text-gray-300 light-tab-icon'
                 }`}
-                title={splitView.isActive ? 'Exit Split View' : 'Enter Split View'}
+                title={splitView.isActive ? t('dashboard.exitSplitView') : t('dashboard.enterSplitView')}
               >
                 <Columns className="w-5 h-5" />
               </button>
@@ -2825,7 +2831,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }}
                 data-tutorial="close-all-tabs"
                 className="p-2 rounded-lg hover:bg-red-500/20 transition group flex-shrink-0 border border-red-400/30"
-                title="Close All Tabs and Exit Split View"
+                title={t('dashboard.closeAllTabsExit')}
               >
                 <X className="w-5 h-5 text-red-400 group-hover:text-red-300" />
               </button>
@@ -2839,7 +2845,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <button
                 onClick={(e) => { e.stopPropagation(); setNotifPanelOpen(prev => !prev); }}
                 className="relative p-2 rounded-lg hover:bg-white/10 transition text-gray-300 light-tab-icon flex-shrink-0"
-                title="Notifications"
+                title={t('dashboard.notifications')}
               >
                 <Bell className="w-5 h-5" />
                 {(unreadCount > 0 || queueActiveCount > 0) && (
@@ -2935,13 +2941,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         textShadow: isDarkMode ? 'none' : '0 1px 2px rgba(255,255,255,0.5)'
                       }}
                     >
-                      OECS Learning Hub
+                      {t('dashboard.welcomeTitle')}
                     </h3>
                     <p
                       className="text-sm mb-8"
                       style={{ color: isDarkMode ? 'rgba(255,255,255,0.4)' : 'rgba(29,54,45,0.6)' }}
                     >
-                      Select a tool from the sidebar to get started
+                      {t('dashboard.welcomeSubtitle')}
                     </p>
 
                     <RotatingQuickLinks
@@ -3050,7 +3056,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     // Otherwise, use the mapped tutorial for the tab type, or fallback to dashboard tutorial
     const tutorialId = tutorialIdsByTabType[activeTab.type] || TUTORIAL_IDS.DASHBOARD_MAIN;
-    const isChat = activeTab.type === 'chat';
 
     return (
       <TutorialButton
@@ -3060,8 +3065,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         onScreenshotTicket={handleScreenshotTicket}
         onStickyNote={() => setFabPanelOpen(!fabPanelOpen)}
         stickyNoteCount={openNoteIds.length}
-        position={isChat ? 'bottom-left' : 'bottom-right'}
-        ghost={isChat}
+        position="bottom-right"
       />
     );
   })()}

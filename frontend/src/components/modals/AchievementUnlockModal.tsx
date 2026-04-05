@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
@@ -137,12 +138,12 @@ const RARITY_THEMES: Record<AchievementRarity, {
   },
 };
 
-const RARITY_LABELS: Record<AchievementRarity, string> = {
-  common: 'Common',
-  uncommon: 'Uncommon',
-  rare: 'Rare',
-  epic: 'Epic',
-  legendary: 'Legendary',
+const RARITY_LABEL_KEYS: Record<AchievementRarity, string> = {
+  common: 'achievements.rarityCommon',
+  uncommon: 'achievements.rarityUncommon',
+  rare: 'achievements.rarityRare',
+  epic: 'achievements.rarityEpic',
+  legendary: 'achievements.rarityLegendary',
 };
 
 interface AchievementUnlockModalProps {
@@ -153,6 +154,7 @@ interface AchievementUnlockModalProps {
 }
 
 export default function AchievementUnlockModal({ achievement, onDismiss, viewOnly }: AchievementUnlockModalProps) {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<'idle' | 'entering' | 'visible' | 'exiting'>('idle');
   const [trophySrc, setTrophySrc] = useState<string | undefined>(undefined);
 
@@ -380,7 +382,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               transition: 'opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s',
             }}
           >
-            {viewOnly ? 'Achievement' : 'Achievement Unlocked'}
+            {viewOnly ? t('achievements.achievement') : t('achievements.achievementUnlocked')}
           </div>
 
           {/* ─── Icon area with rings & glow ─── */}
@@ -560,7 +562,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
             }}>
-              {RARITY_LABELS[achievement.rarity]}
+              {t(RARITY_LABEL_KEYS[achievement.rarity])}
             </span>
             <span style={{
               fontSize: 11,
@@ -587,9 +589,9 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               marginBottom: 20,
               animation: show ? 'ach-text-up 0.5s ease 0.55s both' : 'none',
             }}>
-              Earned on {new Date(achievement.earned_at).toLocaleDateString(undefined, {
+              {t('achievements.earnedOn', { date: new Date(achievement.earned_at).toLocaleDateString(undefined, {
                 year: 'numeric', month: 'long', day: 'numeric',
-              })}
+              }) })}
             </p>
           )}
 
@@ -618,7 +620,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               (e.target as HTMLButtonElement).style.boxShadow = `0 4px 20px ${theme.primary}40, 0 1px 0 inset ${theme.accent}30`;
             }}
           >
-            {viewOnly ? 'Close' : 'Continue'}
+            {viewOnly ? t('achievements.close') : t('achievements.continue')}
           </button>
         </div>
       </div>

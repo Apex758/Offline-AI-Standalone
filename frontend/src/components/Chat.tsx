@@ -1,5 +1,6 @@
                     import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
@@ -1838,6 +1839,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           )}
         </div>
 
+        <AIDisclaimer />
+
         <div className="border-t border-theme py-4 pr-4 pl-20">
           {/* Attached file chips */}
           {(attachedFiles.length > 0 || pendingDropFiles.length > 0 || attachingFile) && (
@@ -1921,12 +1924,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               )}
             </div>
           )}
-          <div className="flex items-end space-x-2">
+          <div className="flex items-center space-x-2 mx-auto" style={{ maxWidth: '1000px', width: '100%' }}>
             {/* Input field with mic (left) and brain (right) inside */}
-            <div className={`flex-1 flex items-center border rounded-xl px-3 py-2 transition ${
+            <div className={`flex-1 flex items-center border rounded-xl px-2 py-1 transition ${
               stt.isListening ? 'border-red-400 bg-red-50 dark:bg-red-900/10' : 'border-theme-strong focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent'
-            }`} style={{ minHeight: '48px' }}>
-              {/* Mic button — left side, pinned to bottom */}
+            }`} style={{ minHeight: '56px' }}>
+              {/* Mic button — left side */}
               <button
                 onClick={stt.toggleListening}
                 disabled={loading}
@@ -1935,10 +1938,10 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     ? 'text-red-500 animate-pulse'
                     : 'text-theme-muted hover:text-theme-heading hover:bg-theme-hover'
                 }`}
-                style={{ width: '28px', height: '28px' }}
+                style={{ width: '24px', height: '24px' }}
                 title={stt.isListening ? 'Stop listening' : 'Voice input'}
               >
-                {stt.isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                {stt.isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
               </button>
 
               {/* Text area — grows up to 10 lines then scrolls */}
@@ -1947,9 +1950,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 onChange={setInput}
                 onKeyDown={handleKeyDown}
                 placeholder={stt.isListening ? 'Listening...' : t('chat.placeholder')}
-                className="flex-1 resize-none outline-none bg-transparent dark:text-gray-100 overflow-y-auto leading-7"
+                className="flex-1 resize-none outline-none bg-transparent dark:text-gray-100 overflow-y-auto leading-5"
                 rows={1}
-                style={{ minHeight: '28px', maxHeight: '220px', padding: '0 12px' }}
+                style={{ minHeight: '22px', maxHeight: '220px', padding: '0 8px' }}
                 disabled={loading}
                 data-tutorial="chat-input"
               />
@@ -1964,9 +1967,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                         ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40'
                         : 'text-theme-muted hover:text-purple-600 hover:bg-theme-hover'
                     }`}
-                    style={{ width: '28px', height: '28px' }}
+                    style={{ width: '24px', height: '24px' }}
                   >
-                    <BrainIcon className="w-6 h-6" />
+                    <BrainIcon className="w-5 h-5" />
                   </button>
                   <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover/brain:opacity-100 pointer-events-none transition-opacity bg-gray-900 dark:bg-gray-700 text-white shadow-lg">
                     Thinking Mode {settings.thinkingEnabled ? '(ON)' : '(OFF)'}
@@ -1976,12 +1979,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               )}
             </div>
 
-            {/* Send button */}
+            {/* Send button — right side */}
             <button
               onClick={handleSend}
               disabled={loading || !input.trim()}
-              className="px-5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 self-stretch"
+              className="px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0"
               data-tutorial="chat-send"
+              style={{ height: '56px' }}
             >
               {loading ? (
                 <HeartbeatLoader className="w-5 h-5" />
@@ -1990,9 +1994,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               )}
             </button>
           </div>
-          <p className="text-xs text-theme-hint mt-2">
-            {stt.isListening ? 'Speak now — your words will appear above' : 'Press Enter to send, Shift+Enter for new line'}
-          </p>
+          {stt.isListening && (
+            <p className="text-xs text-theme-hint mt-2">Speak now — your words will appear above</p>
+          )}
         </div>
       </div>
 

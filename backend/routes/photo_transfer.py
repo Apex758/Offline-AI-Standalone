@@ -574,7 +574,7 @@ async def enable_https():
         return JSONResponse(status_code=500, content={"ok": False, "error": "Could not start HTTPS"})
     except Exception as e:
         logger.error(f"Failed to enable HTTPS: {e}")
-        return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
+        return JSONResponse(status_code=500, content={"ok": False, "error": "An internal error occurred"})
 
 
 # ── Hotspot management (Windows) ─────────────────────────────────────────────
@@ -645,7 +645,7 @@ async def start_hotspot(request: Request):
         return JSONResponse(status_code=500, content={"ok": False, "error": "Hotspot start timed out"})
     except Exception as e:
         logger.error(f"Hotspot start failed: {e}")
-        return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
+        return JSONResponse(status_code=500, content={"ok": False, "error": "An internal error occurred"})
 
 
 @router.post("/hotspot/stop")
@@ -679,7 +679,7 @@ async def stop_hotspot():
         return {"ok": True}
     except Exception as e:
         logger.error(f"Hotspot stop failed: {e}")
-        return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
+        return JSONResponse(status_code=500, content={"ok": False, "error": "An internal error occurred"})
 
 
 # ── Theme sync (laptop → phone) ─────────────────────────────────────────────
