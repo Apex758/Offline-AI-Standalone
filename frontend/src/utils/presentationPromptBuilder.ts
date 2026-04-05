@@ -1,5 +1,6 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { GRADE_AGE_MAP } from './gradeSpecs';
+import { getLanguageInstruction } from './languageInstruction';
 
 export interface PresentationFormData {
   subject: string;
@@ -37,7 +38,7 @@ export interface ParsedLessonInput {
 /**
  * Build a prompt for generating presentation slides from form data (scratch mode).
  */
-export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional', imageMode?: string): string {
+export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional', imageMode?: string, language?: string): string {
   const sc = slideCount || 8;
   const isKids = presentationMode === 'kids';
   const curriculumSection = buildCurriculumPromptSection(
@@ -48,7 +49,7 @@ export function buildPresentationPromptFromForm(formData: PresentationFormData, 
 
   const ageRange = GRADE_AGE_MAP[formData.gradeLevel] || '';
 
-  return `Convert the following lesson information into a structured presentation slide deck.
+  const prompt = `Convert the following lesson information into a structured presentation slide deck.
 Return ONLY valid JSON — no markdown, no code fences, no explanation.
 
 LESSON DETAILS:
@@ -92,6 +93,8 @@ RULES:
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : includeImages ? `
 - imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
+
+  return prompt + getLanguageInstruction(language);
 }
 
 /**
@@ -103,12 +106,13 @@ export function buildPresentationPromptFromFreeInput(
   includeImages?: boolean,
   slideCount?: number,
   presentationMode?: 'kids' | 'professional',
-  imageMode?: string
+  imageMode?: string,
+  language?: string
 ): string {
   const sc = slideCount || 8;
   const isKids = presentationMode === 'kids';
 
-  return `Create a structured presentation slide deck based on the following request.
+  const prompt = `Create a structured presentation slide deck based on the following request.
 Return ONLY valid JSON — no markdown, no code fences, no explanation.
 
 USER REQUEST:
@@ -136,12 +140,14 @@ RULES:
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions — do NOT repeat the same position consecutively. Options: "background" or "half" for title slides, "right"/"left"/"top" for content slides, "bottom-right" for smaller accent images.` : includeImages ? `
 - imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict. Include imageScene on: title slide and 2-3 content slides. Do NOT include imageScene on text-heavy or closing slides. Slides WITHOUT imageScene should NOT have imagePlacement.
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions — do NOT repeat the same position consecutively. Options: "background" or "half" for title slides, "right"/"left"/"top" for content slides, "bottom-right" for smaller accent images.` : ''}`;
+
+  return prompt + getLanguageInstruction(language);
 }
 
 /**
  * Build a prompt for generating presentation slides from an existing parsed lesson plan.
  */
-export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional', imageMode?: string): string {
+export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional', imageMode?: string, language?: string): string {
   const sc = slideCount || 8;
   const isKids = presentationMode === 'kids';
   const fb = formFallback || {};
@@ -169,7 +175,7 @@ export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, raw
 
   const lessonAgeRange = GRADE_AGE_MAP[meta.grade] || GRADE_AGE_MAP[fb.gradeLevel || ''] || '';
 
-  return `Convert this complete lesson plan into a structured presentation slide deck.
+  const prompt = `Convert this complete lesson plan into a structured presentation slide deck.
 Return ONLY valid JSON — no markdown, no code fences, no explanation.
 
 LESSON PLAN:
@@ -223,4 +229,6 @@ RULES:
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : includeImages ? `
 - imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
+
+  return prompt + getLanguageInstruction(language);
 }

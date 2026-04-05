@@ -784,7 +784,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
 
     // Build prompt for worksheet generation (will include sceneSpec if available)
-    const prompt = buildWorksheetPrompt(formData, currentSceneSpec, currentUserImageDescription);
+    const prompt = buildWorksheetPrompt(formData, currentSceneSpec, currentUserImageDescription, settings.language);
 
     const jobId = `worksheet-${Date.now()}`;
     console.log('Built prompt, jobId:', jobId);

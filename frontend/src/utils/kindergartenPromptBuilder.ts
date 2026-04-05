@@ -1,5 +1,6 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { GRADE_AGE_MAP } from './gradeSpecs';
+import { getLanguageInstruction } from './languageInstruction';
 
 interface KindergartenFormData {
   theme: string;
@@ -73,11 +74,11 @@ Subject-Specific Guidance for Social Studies (Kindergarten):
   return guidance[subject] || '';
 }
 
-export function buildKindergartenPrompt(formData: KindergartenFormData): string {
+export function buildKindergartenPrompt(formData: KindergartenFormData, language?: string): string {
   const specs = KINDERGARTEN_SPECS;
   const domains = formData.learningDomains.join(', ');
   
-  const prompt = `Create a kindergarten daily lesson plan using play-based, developmentally appropriate practices.
+  let prompt = `Create a kindergarten daily lesson plan using play-based, developmentally appropriate practices.
 
 THEME: ${formData.theme}
 CURRICULUM UNIT: ${formData.curriculumUnit}
@@ -160,6 +161,7 @@ IMPORTANT: Do not include any introductory text, headers, or explanations before
 
 Generate the complete plan now:`;
 
+  prompt += getLanguageInstruction(language);
   return prompt;
 }
 

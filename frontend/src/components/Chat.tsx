@@ -311,7 +311,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     // onInterim — live preview in input
     (interimText) => {
       setInput(interimText);
-    }
+    },
+    settings.language
   );
 
   // Track which message TTS is speaking
@@ -320,7 +321,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       tts.stop();
       setSpeakingMessageId(null);
     } else {
-      tts.speak(content);
+      tts.speak(content, undefined, undefined, settings.language);
       setSpeakingMessageId(msgId);
     }
   };

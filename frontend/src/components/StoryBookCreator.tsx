@@ -721,7 +721,7 @@ function PlaybackView({
         speak(seg.text, () => {
           setSegmentIdx(idx + 1);
           speakSegment(idx + 1);
-        }, voice);
+        }, voice, settings.language);
       });
       return;
     }
@@ -732,7 +732,7 @@ function PlaybackView({
     speak(seg.text, () => {
       setSegmentIdx(idx + 1);
       speakSegment(idx + 1);
-    }, voice);
+    }, voice, settings.language);
   }, [page, pageIdx, book.voiceAssignments, speak, cachedAudio]);
 
   const stopAll = useCallback(() => {
@@ -1398,6 +1398,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const { isListening, toggleListening } = useSTT(
     (text) => updateForm('description', formData.description ? formData.description + ' ' + text : text),
     (interim) => { /* show interim if desired */ },
+    settings.language
   );
 
   // ── Validate & Generate ────────────────────────────────────────────────────
@@ -1424,7 +1425,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     setView('streaming');
 
     if (queueEnabled) {
-      const prompt = buildStorybookPrompt(formData);
+      const prompt = buildStorybookPrompt(formData, settings.language);
       enqueue({
         label: `Storybook - ${formData.title.slice(0, 40)}`,
         toolType: 'Storybook',
@@ -1464,7 +1465,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       ws.addEventListener('message', statusHandler);
     }
 
-    const prompt = buildStorybookPrompt(formData);
+    const prompt = buildStorybookPrompt(formData, settings.language);
     const payload: Record<string, unknown> = { prompt, grade: formData.gradeLevel };
 
     if (useTwoPass) {
@@ -3220,7 +3221,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       if (i >= segments.length) return;
                       const seg = segments[i++];
                       const voice = parsedBook.voiceAssignments?.[seg.speaker] || 'lessac';
-                      speak(seg.text, readNext, voice);
+                      speak(seg.text, readNext, voice, settings.language);
                     };
                     readNext();
                   }

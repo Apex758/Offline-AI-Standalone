@@ -1,5 +1,6 @@
 import type { StorybookFormData } from '../types/storybook';
 import type { ImageMode } from '../types';
+import { getLanguageInstruction } from './languageInstruction';
 
 // ─── Grade Specs ─────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ function buildCurriculumBlock(formData: StorybookFormData): string {
 
 // ─── Main Builder ─────────────────────────────────────────────────────────────
 
-export function buildStorybookPrompt(formData: StorybookFormData): string {
+export function buildStorybookPrompt(formData: StorybookFormData, language?: string): string {
   const grade = formData.gradeLevel;
   const spec = GRADE_SPECS[grade];
   const hasMultipleSpeakers = formData.speakerCount > 1;
@@ -128,7 +129,7 @@ IMPORTANT: Use ONLY these ${formData.speakerCount} speakers. Do NOT invent addit
   const curriculumBlock = buildCurriculumBlock(formData);
   const hasCurriculum = formData.useCurriculum && formData.strand;
 
-  return `You are a children's storybook author specializing in ${spec.name} (${spec.age}) literacy.
+  const prompt = `You are a children's storybook author specializing in ${spec.name} (${spec.age}) literacy.
 
 TASK: Write a complete illustrated storybook based on the teacher's description below.
 
@@ -209,6 +210,8 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown, no explanation:
 }
 
 Generate all ${formData.pageCount} pages. Every page must have at least one textSegment. Return ONLY the JSON object.`;
+
+  return prompt + getLanguageInstruction(language);
 }
 
 // ─── Two-Pass Builders (for smaller models) ──────────────────────────────────

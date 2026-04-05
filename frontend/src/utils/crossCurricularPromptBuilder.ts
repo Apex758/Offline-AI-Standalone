@@ -1,4 +1,5 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { getLanguageInstruction } from './languageInstruction';
 
 interface CrossCurricularFormData {
   theme: string;
@@ -187,10 +188,10 @@ Subject-Specific Guidance for Social Studies (Grades K-6):
   return guidance[subject] || '';
 }
 
-export function buildCrossCurricularPrompt(formData: CrossCurricularFormData): string {
+export function buildCrossCurricularPrompt(formData: CrossCurricularFormData, language?: string): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
 
-  const prompt = `Create a comprehensive cross-curricular lesson plan for Grade ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}).
+  let prompt = `Create a comprehensive cross-curricular lesson plan for Grade ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}).
 
 THEME: ${formData.theme}
 PRIMARY SUBJECT: ${formData.primarySubject}
@@ -326,6 +327,7 @@ Do not include any introductory text, explanations, or meta-comments. Start dire
 
 Generate the complete cross-curricular lesson plan now:`;
 
+  prompt += getLanguageInstruction(language);
   return prompt;
 }
 

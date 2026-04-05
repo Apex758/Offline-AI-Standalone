@@ -1,4 +1,5 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { getLanguageInstruction } from './languageInstruction';
 
 interface RubricFormData {
   assignmentType: string;
@@ -183,7 +184,7 @@ Subject-Specific Rubric Guidance for Social Studies (Grades K-6):
   return guidance[subject] || '';
 }
 
-export function buildRubricPrompt(formData: RubricFormData): string {
+export function buildRubricPrompt(formData: RubricFormData, language?: string): string {
   const gradeKey = normalizeGradeLevel(formData.gradeLevel);
   const gradeSpec = GRADE_SPECS[gradeKey];
 
@@ -195,7 +196,7 @@ export function buildRubricPrompt(formData: RubricFormData): string {
   const tableHeader = `| Criteria | ${levels.join(' | ')} |`;
   const tableSeparator = `| --- | ${levels.map(() => '---').join(' | ')} |`;
 
-  const prompt = `Create an assessment rubric for ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}).
+  let prompt = `Create an assessment rubric for ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}).
 
 ASSIGNMENT DETAILS:
 - Title: ${formData.assignmentTitle || formData.assignmentType}
@@ -248,6 +249,7 @@ ${formData.includePointValues
 
 Generate the complete rubric now. Start directly with the title - no preamble or explanation.`;
 
+  prompt += getLanguageInstruction(language);
   return prompt;
 }
 

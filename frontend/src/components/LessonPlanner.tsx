@@ -690,7 +690,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     if (guardOffline()) return;
     const refs = useCurriculum ? curriculumMatches : [];
     setCurriculumReferences(refs);
-    const prompt = buildLessonPrompt(formData, refs);
+    const prompt = buildLessonPrompt(formData, refs, settings.language);
 
     if (queueEnabled) {
       enqueue({
@@ -1041,7 +1041,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 {(generatedPlan || streamingPlan) && !loading && (
                   <div className="flex justify-end mb-2">
                     <button
-                      onClick={() => tts.toggle(streamingPlan || generatedPlan)}
+                      onClick={() => tts.toggle(streamingPlan || generatedPlan, settings.language)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                         tts.isSpeaking
                           ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50'

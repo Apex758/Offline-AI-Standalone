@@ -852,7 +852,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       return;
     }
 
-    const prompt = buildRubricPrompt(formData);
+    const prompt = buildRubricPrompt(formData, settings.language);
 
     if (queueEnabled) {
       enqueue({

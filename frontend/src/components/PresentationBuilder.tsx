@@ -1876,11 +1876,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
       if (inputMode === 'prompt') {
         if (!freePrompt.trim()) { setError('Please enter a prompt describing the presentation you want.'); setLoading(false); return; }
-        prompt = buildPresentationPromptFromFreeInput(freePrompt.trim(), includeImagePlacement, slideCount, presentationMode, imageMode) + imageContext;
+        prompt = buildPresentationPromptFromFreeInput(freePrompt.trim(), includeImagePlacement, slideCount, presentationMode, imageMode, settings.language) + imageContext;
       } else if (inputMode === 'lesson') {
         const plan = lessonPlans.find(p => p.id === selectedPlanId);
         if (!plan) { setError('Please select a lesson plan first.'); setLoading(false); return; }
-        prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount, presentationMode, imageMode) + imageContext;
+        prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount, presentationMode, imageMode, settings.language) + imageContext;
       } else {
         const errors: Record<string, boolean> = {};
         if (!formData.subject) errors.subject = true;
@@ -1895,7 +1895,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           }, 50);
           return;
         }
-        prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount, presentationMode, imageMode) + imageContext;
+        prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount, presentationMode, imageMode, settings.language) + imageContext;
       }
 
       if (queueEnabled) {

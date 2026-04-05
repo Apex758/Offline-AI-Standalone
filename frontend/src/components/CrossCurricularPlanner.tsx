@@ -986,7 +986,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       integrationSubjects: formData.supportingSubjects.split(',').map(s => s.trim()).filter(s => s)
     };
 
-    const prompt = buildCrossCurricularPrompt(mappedData);
+    const prompt = buildCrossCurricularPrompt(mappedData, settings.language);
 
     if (queueEnabled) {
       enqueue({

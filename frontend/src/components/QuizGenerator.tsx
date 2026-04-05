@@ -666,7 +666,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       return;
     }
 
-    const { systemPrompt, userPrompt } = buildQuizPrompt(formData, lockedLessonPlan?.generatedPlan);
+    const { systemPrompt, userPrompt } = buildQuizPrompt(formData, lockedLessonPlan?.generatedPlan, settings.language);
 
     if (queueEnabled) {
       enqueue({

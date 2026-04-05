@@ -8,6 +8,7 @@ import VolumeHighIconData from '@hugeicons/core-free-icons/VolumeHighIcon';
 import VolumeOffIconData from '@hugeicons/core-free-icons/VolumeOffIcon';
 import PlayCircleIconData from '@hugeicons/core-free-icons/PlayCircleIcon';
 import { useTTS } from '../hooks/useVoice';
+import { useSettings } from '../contexts/SettingsContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -55,6 +56,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 }) => {
 
 
+  const { settings } = useSettings();
   const [currentStep, setCurrentStep] = useState(0);
   const [isActive, setIsActive] = useState(autoStart);
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
@@ -106,7 +108,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     const step = steps[stepIndex];
     if (!step) return;
     const text = `${step.title}. ${step.description}`;
-    tts.speak(text, handleSpeechEnd);
+    tts.speak(text, handleSpeechEnd, undefined, settings.language);
   }, [steps, tts, handleSpeechEnd]);
 
   // When step changes while in auto mode, speak the new card

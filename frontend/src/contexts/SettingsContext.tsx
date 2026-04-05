@@ -97,6 +97,7 @@ export interface Settings {
   oakKey: string;
   autoCloseTabsOnExit: boolean;
   theme: 'light' | 'dark' | 'system';
+  language: 'en' | 'fr' | 'es';
   sidebarColor: string;
   tutorials: TutorialState;
   generationMode: 'queued' | 'simultaneous';
@@ -185,6 +186,7 @@ export const DEFAULT_SETTINGS: Settings = {
   oakKey: '',
   autoCloseTabsOnExit: false,
   theme: 'system',
+  language: 'en',
   sidebarColor: '#21201e',
   tutorials: {
     completedTutorials: [],

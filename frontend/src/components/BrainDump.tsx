@@ -784,7 +784,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
       }
       setInterimText('');
     },
-    (interim) => setInterimText(interim)
+    (interim) => setInterimText(interim),
+    settings.language
   );
 
   // Helper to get plain text from editor

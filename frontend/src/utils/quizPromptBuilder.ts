@@ -1,4 +1,5 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { getLanguageInstruction } from './languageInstruction';
 
 interface QuizFormData {
   subject: string;
@@ -266,7 +267,7 @@ function buildDistributionInstruction(numberOfQuestions: string, questionTypes: 
   return `- Distribute the ${total} questions across types: ${parts.join(', ')}. The total must be exactly ${total}.`;
 }
 
-export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string): QuizPromptParts {
+export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string, language?: string): QuizPromptParts {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   const formatInstructions = buildFormatInstructions(formData.questionTypes);
 
@@ -301,7 +302,7 @@ QUESTION TYPES: ${formData.questionTypes.join(', ')}
 
 Begin with Question 1:`;
 
-    return { systemPrompt, userPrompt };
+    return { systemPrompt: systemPrompt + getLanguageInstruction(language), userPrompt };
   }
 
   // Standard quiz: system prompt carries all instructional context
@@ -345,7 +346,7 @@ ${buildDistributionInstruction(formData.numberOfQuestions, formData.questionType
 
 Begin with Question 1:`;
 
-  return { systemPrompt, userPrompt };
+  return { systemPrompt: systemPrompt + getLanguageInstruction(language), userPrompt };
 }
 
 // Helper to map frontend question types to backend format

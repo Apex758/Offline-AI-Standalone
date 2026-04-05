@@ -1,4 +1,5 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { getLanguageInstruction } from './languageInstruction';
 
 interface MultigradeFormData {
   topic: string;
@@ -285,11 +286,11 @@ Subject-Specific Guidance for Social Studies (Grades K-6):
   return guidance[subject] || '';
 }
 
-export function buildMultigradePrompt(formData: MultigradeFormData): string {
+export function buildMultigradePrompt(formData: MultigradeFormData, language?: string): string {
   const rangeKey = getGradeRangeKey(formData.gradeLevels);
   const rangeSpec = GRADE_RANGE_SPECS[rangeKey as keyof typeof GRADE_RANGE_SPECS] || GRADE_RANGE_SPECS['K-6'];
 
-  const prompt = `Create a comprehensive multigrade lesson plan for ${formData.gradeLevels.join(', ')} students learning together.
+  let prompt = `Create a comprehensive multigrade lesson plan for ${formData.gradeLevels.join(', ')} students learning together.
 
 TOPIC: ${formData.topic}
 SUBJECT: ${formData.subject}
@@ -396,6 +397,7 @@ IMPORTANT: Do not include any introductory text, headers, or explanations before
 
 Generate the complete multigrade lesson plan now:`;
 
+  prompt += getLanguageInstruction(language);
   return prompt;
 }
 

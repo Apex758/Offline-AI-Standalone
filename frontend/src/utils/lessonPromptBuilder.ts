@@ -1,5 +1,6 @@
 import { BASE_GRADE_SPECS, getSubjectGuidance } from './gradeSpecs';
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { getLanguageInstruction } from './languageInstruction';
 
 interface CurriculumReference {
   id: string;
@@ -15,7 +16,7 @@ interface CurriculumReference {
 
 const GRADE_SPECS = BASE_GRADE_SPECS;
 
-export function buildLessonPrompt(formData: any, curriculumRefs?: CurriculumReference[]): string {
+export function buildLessonPrompt(formData: any, curriculumRefs?: CurriculumReference[], language?: string): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   
   let prompt = `Create a complete, detailed lesson plan for Grade ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}) following this criteria:
@@ -119,6 +120,7 @@ IMPORTANT: Do not include any introductory text, headers, or explanations before
 
 Generate the complete lesson plan now. Remember: Do NOT include a "Curriculum References" section in your output - it will be added automatically.`;
 
+  prompt += getLanguageInstruction(language);
   return prompt;
 }
 

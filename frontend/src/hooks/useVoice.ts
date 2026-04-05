@@ -113,7 +113,7 @@ export function useTTS() {
     return URL.createObjectURL(blob);
   }, []);
 
-  const speak = useCallback(async (text: string, onEnd?: () => void, voice?: string) => {
+  const speak = useCallback(async (text: string, onEnd?: () => void, voice?: string, language?: string) => {
     const cleaned = cleanTextForTTS(text);
     if (!cleaned) return;
 
@@ -128,10 +128,13 @@ export function useTTS() {
     const chunks = chunkTextForTTS(cleaned);
     const objectUrls: string[] = [];
 
+    // Resolve voice based on language if no explicit voice given
+    const resolvedVoice = voice || (language === 'fr' ? 'siwis' : language === 'es' ? 'sharvard' : undefined);
+
     try {
       // Pre-fetch first chunk immediately
       let nextAudioPromise: Promise<string> | null =
-        chunks.length > 0 ? fetchChunkAudio(chunks[0], controller.signal, voice) : null;
+        chunks.length > 0 ? fetchChunkAudio(chunks[0], controller.signal, resolvedVoice) : null;
 
       for (let i = 0; i < chunks.length; i++) {
         if (cancelledRef.current) break;
@@ -142,7 +145,7 @@ export function useTTS() {
 
         // Start pre-fetching the next chunk while this one plays
         if (i + 1 < chunks.length) {
-          nextAudioPromise = fetchChunkAudio(chunks[i + 1], controller.signal, voice);
+          nextAudioPromise = fetchChunkAudio(chunks[i + 1], controller.signal, resolvedVoice);
         } else {
           nextAudioPromise = null;
         }
@@ -193,11 +196,11 @@ export function useTTS() {
     setIsSpeaking(false);
   }, [stopAudio]);
 
-  const toggle = useCallback((text: string) => {
+  const toggle = useCallback((text: string, language?: string) => {
     if (isSpeaking) {
       stop();
     } else {
-      speak(text);
+      speak(text, undefined, undefined, language);
     }
   }, [isSpeaking, speak, stop]);
 
@@ -215,7 +218,13 @@ export function useTTS() {
 // STT Hook — uses refs for callbacks to avoid re-creating recognition
 // Uses continuous mode with a silence timeout so the mic stays on longer
 // ========================================
-export function useSTT(onResult: (text: string) => void, onInterim?: (text: string) => void) {
+const STT_LANG_MAP: Record<string, string> = {
+  en: 'en-US',
+  fr: 'fr-FR',
+  es: 'es-ES',
+};
+
+export function useSTT(onResult: (text: string) => void, onInterim?: (text: string) => void, language?: string) {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const onResultRef = useRef(onResult);
@@ -247,7 +256,7 @@ export function useSTT(onResult: (text: string) => void, onInterim?: (text: stri
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = STT_LANG_MAP[language || 'en'] || 'en-US';
 
     recognition.onresult = (event: any) => {
       let interimTranscript = '';
@@ -292,7 +301,7 @@ export function useSTT(onResult: (text: string) => void, onInterim?: (text: stri
     return () => {
       recognition.abort();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && !isListening) {

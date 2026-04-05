@@ -890,7 +890,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       day: formData.dayOfWeek
     };
 
-    const prompt = buildKindergartenPrompt(mappedData);
+    const prompt = buildKindergartenPrompt(mappedData, settings.language);
 
     if (queueEnabled) {
       enqueue({

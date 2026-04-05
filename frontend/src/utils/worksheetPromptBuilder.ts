@@ -1,5 +1,6 @@
 import { SceneSpec } from '../types/scene';
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
+import { getLanguageInstruction } from './languageInstruction';
 
 interface WorksheetFormData {
   subject: string;
@@ -555,7 +556,8 @@ Example BAD Questions (avoid these):
 export function buildWorksheetPrompt(
   formData: WorksheetFormData,
   sceneSpec?: SceneSpec | null,
-  userImageDescription?: string
+  userImageDescription?: string,
+  language?: string
 ): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
 
@@ -1015,5 +1017,6 @@ ABSOLUTE REQUIREMENTS:
 
 Begin generating the worksheet now:`;
 
+  prompt += getLanguageInstruction(language);
   return prompt;
 }

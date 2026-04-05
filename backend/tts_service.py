@@ -21,14 +21,32 @@ logger = logging.getLogger(__name__)
 DEFAULT_VOICE = "en_US-lessac-high"
 
 VOICE_REGISTRY: dict[str, str] = {
+    # English
     "lessac": "en_US-lessac-high",   # Female narrator (pre-installed)
     "ryan":   "en_US-ryan-high",     # Male character voice
     "amy":    "en_US-amy-medium",    # Female character voice (different tone)
+    # French
+    "siwis":  "fr_FR-siwis-medium",  # French female narrator
+    "gilles": "fr_FR-gilles-low",    # French male voice
+    # Spanish
+    "sharvard": "es_ES-sharvard-medium",  # Spanish female narrator
+    "carlfm":   "es_ES-carlfm-x_low",    # Spanish male voice
+}
+
+LANGUAGE_DEFAULT_VOICE: dict[str, str] = {
+    "en": "en_US-lessac-high",
+    "fr": "fr_FR-siwis-medium",
+    "es": "es_ES-sharvard-medium",
 }
 
 def resolve_voice_model_name(voice_key: str) -> str:
     """Resolve a short voice key (e.g. 'ryan') to its full Piper model name."""
     return VOICE_REGISTRY.get(voice_key.lower(), voice_key)
+
+
+def get_default_voice_for_language(lang: str) -> str:
+    """Return the default voice model name for a language code (en, fr, es)."""
+    return LANGUAGE_DEFAULT_VOICE.get(lang, DEFAULT_VOICE)
 
 
 def _get_voices_dir() -> Path:

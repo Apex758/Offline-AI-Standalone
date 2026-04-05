@@ -779,7 +779,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       specificOutcomes: formData.specificOutcomes
     };
 
-    const prompt = buildMultigradePrompt(multigradeFormData);
+    const prompt = buildMultigradePrompt(multigradeFormData, settings.language);
 
     if (queueEnabled) {
       enqueue({

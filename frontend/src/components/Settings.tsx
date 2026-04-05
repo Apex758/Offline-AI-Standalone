@@ -1604,6 +1604,42 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   </CardContent>
                 </Card>
 
+                {/* Language */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      Language
+                    </CardTitle>
+                    <CardDescription>Controls AI responses, text-to-speech, and speech-to-text language</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-3">
+                      {([
+                        { value: 'en' as const, label: 'English' },
+                        { value: 'fr' as const, label: 'French' },
+                        { value: 'es' as const, label: 'Spanish' },
+                      ]).map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => updateSettings({ language: option.value })}
+                          className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+                            settings.language === option.value
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-sm'
+                              : 'border-theme-strong/30 hover:border-theme-strong/60 bg-theme-surface'
+                          }`}
+                        >
+                          <span className={`text-lg ${settings.language === option.value ? 'text-blue-600 dark:text-blue-400' : 'text-theme-secondary'}`}>
+                            {option.value === 'en' ? 'EN' : option.value === 'fr' ? 'FR' : 'ES'}
+                          </span>
+                          <span className={`text-sm font-medium ${settings.language === option.value ? 'text-blue-700 dark:text-blue-400' : 'text-theme-label'}`}>
+                            {option.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Font Size */}
                 <Card data-search-section="font-size">
                   <CardHeader>

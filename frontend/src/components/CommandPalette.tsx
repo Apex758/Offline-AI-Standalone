@@ -40,6 +40,7 @@ import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
 import searchIndex, { SearchEntry } from '../data/searchIndex';
 import { useSTT } from '../hooks/useVoice';
 import { useStickyNotes, StickyChecklistItem } from '../contexts/StickyNoteContext';
+import { useSettings } from '../contexts/SettingsContext';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -331,6 +332,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const aiAbortRef = useRef<AbortController | null>(null);
   const { createNote } = useStickyNotes();
+  const { settings } = useSettings();
 
   // Speech-to-text
   const sttIsListeningRef = useRef(false);
@@ -343,7 +345,8 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
     // onInterim — live preview in the input
     (partialText) => {
       setQuery(partialText);
-    }
+    },
+    settings.language
   );
 
   // Keep ref in sync
