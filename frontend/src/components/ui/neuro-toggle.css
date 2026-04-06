@@ -500,3 +500,168 @@
 .ng-chevron-icon.ng-chevron-expanded {
   transform: rotate(180deg);
 }
+
+/* =============================================================
+   NeuroSlider — neumorphic range slider
+   ============================================================= */
+
+.ng-slider-track {
+  position: relative;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: var(--ng-track-bg);
+  box-shadow:
+    inset 2px 2px 4px var(--ng-track-lo),
+    inset -2px -2px 4px var(--ng-track-hi);
+  touch-action: none;
+  user-select: none;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.ng-slider-track:focus-visible {
+  box-shadow:
+    inset 2px 2px 4px var(--ng-track-lo),
+    inset -2px -2px 4px var(--ng-track-hi),
+    0 0 0 3px color-mix(in srgb, var(--ng-accent, #5ce0c4) 45%, transparent);
+}
+
+.dark .ng-slider-track {
+  box-shadow:
+    inset 2px 2px 4px var(--ng-track-lo),
+    inset -1px -1px 3px var(--ng-track-hi);
+}
+
+.dark .ng-slider-track:focus-visible {
+  box-shadow:
+    inset 2px 2px 4px var(--ng-track-lo),
+    inset -1px -1px 3px var(--ng-track-hi),
+    0 0 0 3px color-mix(in srgb, var(--ng-accent, #5ce0c4) 35%, transparent);
+}
+
+.ng-slider-track.ng-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Fill ──────────────────────────────────────────────────── */
+.ng-slider-fill {
+  position: absolute;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 55%, transparent),
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 80%, transparent)
+  );
+  pointer-events: none;
+  transition: none;
+}
+
+.ng-slider-vertical .ng-slider-fill {
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 55%, transparent),
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 80%, transparent)
+  );
+}
+
+.dark .ng-slider-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 35%, transparent),
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 55%, transparent)
+  );
+}
+
+.dark .ng-slider-vertical .ng-slider-fill {
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 35%, transparent),
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 55%, transparent)
+  );
+}
+
+/* ── Thumb ─────────────────────────────────────────────────── */
+.ng-slider-thumb {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(
+    145deg,
+    var(--ng-thumb-bg-hi) 0%,
+    var(--ng-thumb-bg-lo) 100%
+  );
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1.5px solid var(--ng-thumb-border);
+  box-shadow:
+    0 2px 6px var(--ng-thumb-shadow),
+    inset 0 1px 2px rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+  transition: box-shadow 0.2s ease;
+}
+
+.ng-slider-track:hover .ng-slider-thumb,
+.ng-slider-track:active .ng-slider-thumb {
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--ng-accent, #5ce0c4) 25%, transparent),
+    0 2px 6px var(--ng-thumb-shadow),
+    inset 0 1px 2px rgba(255, 255, 255, 0.20);
+  border-color: color-mix(in srgb, var(--ng-accent, #5ce0c4) 40%, transparent);
+}
+
+/* ── Horizontal size variants ─────────────────────────────── */
+.ng-slider-horizontal.ng-slider-sm {
+  width: 100%;
+  height: 6px;
+}
+.ng-slider-horizontal.ng-slider-sm .ng-slider-fill {
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+.ng-slider-horizontal.ng-slider-sm .ng-slider-thumb {
+  width: 14px;
+  height: 14px;
+}
+
+.ng-slider-horizontal.ng-slider-md {
+  width: 100%;
+  height: 8px;
+}
+.ng-slider-horizontal.ng-slider-md .ng-slider-fill {
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+.ng-slider-horizontal.ng-slider-md .ng-slider-thumb {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Vertical size variants ───────────────────────────────── */
+.ng-slider-vertical.ng-slider-sm {
+  width: 6px;
+  height: 100px;
+}
+.ng-slider-vertical.ng-slider-sm .ng-slider-fill {
+  width: 100%;
+  left: 0;
+}
+.ng-slider-vertical.ng-slider-sm .ng-slider-thumb {
+  width: 14px;
+  height: 14px;
+}
+
+.ng-slider-vertical.ng-slider-md {
+  width: 8px;
+  height: 120px;
+}
+.ng-slider-vertical.ng-slider-md .ng-slider-fill {
+  width: 100%;
+  left: 0;
+}
+.ng-slider-vertical.ng-slider-md .ng-slider-thumb {
+  width: 18px;
+  height: 18px;
+}

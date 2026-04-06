@@ -6905,10 +6905,40 @@ async def health():
     except Exception:
         pass
 
+    # Check OCR model status
+    _ocr_enabled = False
+    _ocr_loaded = False
+    try:
+        from config import get_ocr_enabled
+        import ocr_service
+        _ocr_enabled = get_ocr_enabled()
+        if _ocr_enabled:
+            _ocr_loaded = ocr_service.is_ocr_loaded()
+    except Exception:
+        pass
+
+    # Check diffusion model status
+    _diffusion_active = False
+    _diffusion_loaded = False
+    try:
+        from config import get_selected_diffusion_model
+        _diff_model = get_selected_diffusion_model()
+        _diffusion_active = bool(_diff_model and _diff_model.strip())
+        if _diffusion_active:
+            from image_service import get_image_service
+            _svc = get_image_service()
+            _diffusion_loaded = _svc.pipeline is not None
+    except Exception:
+        pass
+
     return {
         "status": "healthy",
         "model_found": os.path.exists(get_model_path()),
         "model_loaded": _model_loaded,
+        "ocr_enabled": _ocr_enabled,
+        "ocr_loaded": _ocr_loaded,
+        "diffusion_active": _diffusion_active,
+        "diffusion_loaded": _diffusion_loaded,
         "llama_cli_found": os.path.exists(LLAMA_CLI_PATH),
         "chat_memory_db": os.path.exists(get_chat_memory().db_path)
     }

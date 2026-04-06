@@ -323,6 +323,7 @@ import Notification01IconData from '@hugeicons/core-free-icons/Notification01Ico
 import ArrowRight02IconData from '@hugeicons/core-free-icons/ArrowRight02Icon';
 import CircleArrowRight01IconData from '@hugeicons/core-free-icons/CircleArrowRight01Icon';
 import { NeuroSwitch } from './ui/NeuroSwitch';
+import { NeuroSlider } from './ui/NeuroSlider';
 import { NeuroSegment } from './ui/NeuroSegment';
 
 const ArrowRightCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CircleArrowRight01IconData} {...p} />;
@@ -1922,14 +1923,15 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-medium text-theme-hint w-8">Aa</span>
-                        <input
-                          type="range"
-                          min="80"
-                          max="120"
-                          step="5"
+                        <NeuroSlider
                           value={settings.fontSize}
-                          onChange={(e) => updateSettings({ fontSize: Number(e.target.value) })}
-                          className="flex-1 h-2 bg-theme-tertiary rounded-lg appearance-none cursor-pointer accent-blue-600"
+                          onChange={(v) => updateSettings({ fontSize: v })}
+                          min={80}
+                          max={120}
+                          step={5}
+                          size="md"
+                          aria-label="Font size"
+                          className="flex-1"
                         />
                         <span className="text-lg font-bold text-theme-hint w-8">Aa</span>
                         <span className="text-sm font-semibold text-theme-label min-w-[50px] text-center px-2 py-1 rounded-md bg-theme-subtle">
@@ -1953,14 +1955,15 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
                         <Moon className="w-4 h-4 text-theme-hint" />
-                        <input
-                          type="range"
-                          min="50"
-                          max="150"
-                          step="5"
+                        <NeuroSlider
                           value={settings.brightness}
-                          onChange={(e) => updateSettings({ brightness: Number(e.target.value) })}
-                          className="flex-1 h-2 bg-theme-tertiary rounded-lg appearance-none cursor-pointer accent-blue-600"
+                          onChange={(v) => updateSettings({ brightness: v })}
+                          min={50}
+                          max={150}
+                          step={5}
+                          size="md"
+                          aria-label="Brightness"
+                          className="flex-1"
                         />
                         <Sun className="w-4 h-4 text-theme-hint" />
                         <span className="text-sm font-semibold text-theme-label min-w-[50px] text-center px-2 py-1 rounded-md bg-theme-subtle">
@@ -1990,32 +1993,28 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         </CardTitle>
                         <CardDescription>{t('settingsPage.appearance.nightToneDesc')}</CardDescription>
                       </div>
-                      <button
-                        onClick={() => updateSettings({ warmToneEnabled: !settings.warmToneEnabled })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          settings.warmToneEnabled ? 'bg-amber-500' : 'bg-theme-tertiary'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                            settings.warmToneEnabled ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                      <NeuroSwitch
+                        checked={settings.warmToneEnabled}
+                        onChange={(v) => updateSettings({ warmToneEnabled: v })}
+                        size="sm"
+                        aria-label="Toggle warm tone"
+                      />
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div className={`flex items-center gap-4 ${!settings.warmToneEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
                         <span className="text-xs font-medium text-theme-hint w-6">{t('settingsPage.appearance.low')}</span>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          step="5"
+                        <NeuroSlider
                           value={settings.warmTone}
-                          onChange={(e) => updateSettings({ warmTone: Number(e.target.value) })}
-                          className="flex-1 h-2 bg-theme-tertiary rounded-lg appearance-none cursor-pointer accent-amber-500"
+                          onChange={(v) => updateSettings({ warmTone: v })}
+                          min={0}
+                          max={100}
+                          step={5}
+                          size="md"
+                          disabled={!settings.warmToneEnabled}
+                          aria-label="Warm tone intensity"
+                          className="flex-1"
                         />
                         <span className="text-xs font-medium text-theme-hint w-8">High</span>
                         <span className="text-sm font-semibold text-theme-label min-w-[50px] text-center px-2 py-1 rounded-md bg-theme-subtle">

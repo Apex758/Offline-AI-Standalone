@@ -630,7 +630,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return tab.title;
   };
   const { hasDiffusion } = useCapabilities();
-  const { engineStatus } = useEngineStatus();
+  const { engineStatus, scannerStatus, studioStatus } = useEngineStatus();
+
+  // -- Status indicator helpers --
+  const statusColor = (s: typeof engineStatus) =>
+    s === 'online' ? '#22c55e' :
+    s === 'starting' ? '#f59e0b' :
+    s === 'checking' ? 'var(--text-hint, #9ca3af)' :
+    '#ef4444';
+
+  const statusLabel = (s: typeof engineStatus) =>
+    s === 'online' ? 'Online' :
+    s === 'starting' ? 'Starting' :
+    s === 'checking' ? 'Checking' :
+    'Offline';
+
+  const statusGlow = (s: typeof engineStatus) =>
+    s === 'online' ? '0 0 6px #22c55e88' :
+    s === 'starting' ? '0 0 6px #f59e0b88' :
+    'none';
+
+  const statusPulse = (s: typeof engineStatus) =>
+    (s === 'starting' || s === 'checking') ? 'pulse 1.5s ease-in-out infinite' : 'none';
+
+  type Indicator = { label: string; status: typeof engineStatus };
+  const indicators: Indicator[] = [
+    { label: 'Brain', status: engineStatus },
+    ...(scannerStatus !== null ? [{ label: 'Scanner', status: scannerStatus }] : []),
+    ...(studioStatus !== null ? [{ label: 'Studio', status: studioStatus }] : []),
+  ];
+  const multiMode = indicators.length > 1;
 
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
@@ -2627,48 +2656,92 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             gap: '8px',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
-          title={!sidebarOpen ? (engineStatus === 'online' ? 'Engine Online' : engineStatus === 'starting' ? 'Engine Starting' : engineStatus === 'checking' ? 'Checking...' : 'Engine Offline') : ''}
+          title={!sidebarOpen ? indicators.map(i => `${i.label}: ${statusLabel(i.status)}`).join(' | ') : ''}
         >
-          {/* Status dot */}
-          <span
-            style={{
-              display: 'inline-block',
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              flexShrink: 0,
-              backgroundColor:
-                engineStatus === 'online' ? '#22c55e' :
-                engineStatus === 'starting' ? '#f59e0b' :
-                engineStatus === 'checking' ? 'var(--text-hint, #9ca3af)' :
-                '#ef4444',
-              boxShadow:
-                engineStatus === 'online' ? '0 0 6px #22c55e88' :
-                engineStatus === 'starting' ? '0 0 6px #f59e0b88' :
-                engineStatus === 'checking' ? 'none' :
-                '0 0 6px #ef444488',
-              animation: (engineStatus === 'starting' || engineStatus === 'checking') ? 'pulse 1.5s ease-in-out infinite' : 'none',
-            }}
-          />
-          {/* Label — only when sidebar is expanded */}
-          <span
-            style={{
-              fontSize: '12px',
-              fontWeight: 500,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              color:
-                engineStatus === 'online' ? '#22c55e' :
-                engineStatus === 'starting' ? '#f59e0b' :
-                engineStatus === 'checking' ? 'var(--text-hint, #9ca3af)' :
-                '#ef4444',
-              opacity: sidebarOpen ? 1 : 0,
-              maxWidth: sidebarOpen ? '200px' : '0px',
-              transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          >
-            {engineStatus === 'online' ? 'Engine Online' : engineStatus === 'starting' ? 'Engine Starting' : engineStatus === 'checking' ? 'Checking...' : 'Engine Offline'}
-          </span>
+          {sidebarOpen ? (
+            multiMode ? (
+              /* Multi-indicator: Brain [dot] | Scanner [dot] | Studio [dot] */
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {indicators.map((ind, idx) => (
+                  <React.Fragment key={ind.label}>
+                    {idx > 0 && (
+                      <span style={{ color: 'var(--sidebar-border, #374151)', fontSize: '12px', userSelect: 'none' }}>|</span>
+                    )}
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        color: statusColor(ind.status),
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {ind.label}
+                      </span>
+                      <span style={{
+                        display: 'inline-block',
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        flexShrink: 0,
+                        backgroundColor: statusColor(ind.status),
+                        boxShadow: statusGlow(ind.status),
+                        animation: statusPulse(ind.status),
+                      }} />
+                    </span>
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              /* Single indicator: [dot] Engine Online */
+              <>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    backgroundColor: statusColor(engineStatus),
+                    boxShadow: statusGlow(engineStatus),
+                    animation: statusPulse(engineStatus),
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    color: statusColor(engineStatus),
+                  }}
+                >
+                  {engineStatus === 'online' ? 'Engine Online' : engineStatus === 'starting' ? 'Engine Starting' : engineStatus === 'checking' ? 'Checking...' : 'Engine Offline'}
+                </span>
+              </>
+            )
+          ) : (
+            /* Sidebar collapsed: dots stacked vertically */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+              {indicators.map(ind => (
+                <span
+                  key={ind.label}
+                  title={`${ind.label}: ${statusLabel(ind.status)}`}
+                  style={{
+                    display: 'inline-block',
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    backgroundColor: statusColor(ind.status),
+                    boxShadow: statusGlow(ind.status),
+                    animation: statusPulse(ind.status),
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

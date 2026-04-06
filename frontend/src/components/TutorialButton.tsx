@@ -11,6 +11,8 @@ import Sun01IconData from '@hugeicons/core-free-icons/Sun01Icon';
 import Sun02IconData from '@hugeicons/core-free-icons/Sun02Icon';
 import FireIconData from '@hugeicons/core-free-icons/FireIcon';
 import { useSettings } from '../contexts/SettingsContext';
+import { NeuroSwitch } from './ui/NeuroSwitch';
+import { NeuroSlider } from './ui/NeuroSlider';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import { OECS_LOGO_BASE64 } from '../utils/logoBase64';
 
@@ -279,13 +281,12 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
           {displayPanelOpen && (
             <div
               ref={displayPanelRef}
-              className="absolute right-[62px] rounded-2xl p-4 text-white"
+              className="absolute right-[62px] rounded-2xl p-4"
               style={{
                 bottom: '0px',
-                background: 'rgba(15, 15, 25, 0.88)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)',
+                background: 'var(--ng-track-bg)',
+                border: '1px solid var(--ng-thumb-border)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
                 filter: `brightness(${1 / (settings.brightness / 100)})`,
                 minWidth: '220px',
                 animation: 'fadeIn 0.2s ease',
@@ -296,87 +297,86 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               <div className="flex gap-6 justify-center mb-4">
                 {/* Brightness column */}
                 <div className="flex flex-col items-center gap-2">
-                  <Sun02 className="w-4 h-4" style={{ color: '#fbbf24' }} />
-                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">{t('tutorialButton.brightness')}</span>
-                  <input
-                    type="range"
-                    min="50"
-                    max="150"
-                    step="5"
+                  <Sun02 className="w-4 h-4" style={{ color: 'var(--ng-accent)' }} />
+                  <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-label, #444)' }}>
+                    {t('tutorialButton.brightness')}
+                  </span>
+                  <NeuroSlider
                     value={settings.brightness}
-                    onChange={(e) => updateSettings({ brightness: Number(e.target.value) })}
-                    className="vertical-slider"
+                    onChange={(v) => updateSettings({ brightness: v })}
+                    min={50}
+                    max={150}
+                    step={5}
+                    size="sm"
+                    orientation="vertical"
+                    aria-label="Brightness"
                   />
-                  <span className="text-xs font-semibold opacity-80">{settings.brightness}%</span>
+                  <span className="text-xs font-bold" style={{ color: 'var(--text-label, #444)' }}>
+                    {settings.brightness}%
+                  </span>
                 </div>
 
                 {/* Warm Tone column */}
                 <div className="flex flex-col items-center gap-2">
-                  <Fire className="w-4 h-4" style={{ color: '#f97316' }} />
-                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">{t('tutorialButton.warmth')}</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
+                  <Fire className="w-4 h-4" style={{ color: 'var(--ng-accent)' }} />
+                  <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-label, #444)' }}>
+                    {t('tutorialButton.warmth')}
+                  </span>
+                  <NeuroSlider
                     value={settings.warmTone}
-                    onChange={(e) => updateSettings({ warmTone: Number(e.target.value) })}
-                    className={`vertical-slider ${!settings.warmToneEnabled ? 'opacity-30 pointer-events-none' : ''}`}
+                    onChange={(v) => updateSettings({ warmTone: v })}
+                    min={0}
+                    max={100}
+                    step={5}
+                    size="sm"
+                    orientation="vertical"
+                    disabled={!settings.warmToneEnabled}
+                    aria-label="Warm tone"
                   />
-                  <span className="text-xs font-semibold opacity-80">{settings.warmTone}%</span>
+                  <span className="text-xs font-bold" style={{ color: 'var(--text-label, #444)' }}>
+                    {settings.warmTone}%
+                  </span>
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="w-full h-px bg-white/10 mb-3" />
+              <div className="w-full h-px mb-3" style={{ background: 'var(--ng-track-lo)' }} />
 
               {/* Row 2: Toggles */}
               <div className="flex gap-4 justify-center">
                 {/* Night Mode toggle */}
-                <button
-                  onClick={handleToggleTheme}
-                  className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-colors hover:bg-white/10"
-                >
+                <div className="flex flex-col items-center gap-1.5 px-3 py-2">
                   {isDarkMode ? (
-                    <Moon className="w-4 h-4" style={{ color: '#a5b4fc' }} />
+                    <Moon className="w-4 h-4" style={{ color: 'var(--ng-accent)' }} />
                   ) : (
-                    <Sun className="w-4 h-4" style={{ color: '#fbbf24' }} />
+                    <Sun className="w-4 h-4" style={{ color: 'var(--ng-accent)' }} />
                   )}
-                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">
+                  <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-label, #444)' }}>
                     {isDarkMode ? t('tutorialButton.dark') : t('tutorialButton.light')}
                   </span>
-                  <div
-                    className={`relative w-9 h-5 rounded-full transition-colors ${
-                      isDarkMode ? 'bg-indigo-500' : 'bg-white/20'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
-                        isDarkMode ? 'translate-x-4' : ''
-                      }`}
-                    />
-                  </div>
-                </button>
+                  <NeuroSwitch
+                    checked={isDarkMode}
+                    onChange={() => handleToggleTheme()}
+                    size="sm"
+                    offIcon={<Sun className="w-2.5 h-2.5" style={{ color: '#fbbf24' }} />}
+                    onIcon={<Moon className="w-2.5 h-2.5" style={{ color: '#a5b4fc' }} />}
+                    aria-label="Toggle theme"
+                  />
+                </div>
 
                 {/* Warm Tone toggle */}
-                <button
-                  onClick={() => updateSettings({ warmToneEnabled: !settings.warmToneEnabled })}
-                  className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-colors hover:bg-white/10"
-                >
-                  <Fire className="w-4 h-4" style={{ color: settings.warmToneEnabled ? '#f97316' : '#9ca3af' }} />
-                  <span className="text-[10px] font-medium tracking-wide uppercase opacity-70">{t('tutorialButton.warmth')}</span>
-                  <div
-                    className={`relative w-9 h-5 rounded-full transition-colors ${
-                      settings.warmToneEnabled ? 'bg-amber-500' : 'bg-white/20'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
-                        settings.warmToneEnabled ? 'translate-x-4' : ''
-                      }`}
-                    />
-                  </div>
-                </button>
+                <div className="flex flex-col items-center gap-1.5 px-3 py-2">
+                  <Fire className="w-4 h-4" style={{ color: settings.warmToneEnabled ? 'var(--ng-accent)' : 'var(--text-muted, #999)' }} />
+                  <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-label, #444)' }}>
+                    {t('tutorialButton.warmth')}
+                  </span>
+                  <NeuroSwitch
+                    checked={settings.warmToneEnabled}
+                    onChange={(v) => updateSettings({ warmToneEnabled: v })}
+                    size="sm"
+                    aria-label="Toggle warm tone"
+                  />
+                </div>
               </div>
             </div>
           )}

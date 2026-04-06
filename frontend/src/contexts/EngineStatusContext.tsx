@@ -2,22 +2,26 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { useNotification } from './NotificationContext';
 import { API_CONFIG } from '../config/api.config';
 
-type EngineStatus = 'online' | 'starting' | 'offline' | 'checking';
+type ModelStatus = 'online' | 'starting' | 'offline' | 'checking';
 
 interface EngineStatusContextValue {
-  engineStatus: EngineStatus;
+  engineStatus: ModelStatus;
+  scannerStatus: ModelStatus | null;   // null = OCR not enabled
+  studioStatus: ModelStatus | null;    // null = no diffusion model selected
   isEngineOnline: () => boolean;
 }
 
 const EngineStatusContext = createContext<EngineStatusContextValue | undefined>(undefined);
 
-const FAST_POLL = 3_000;   // 3s while waiting for model to load
-const SLOW_POLL = 30_000;  // 30s once engine is fully online
+const FAST_POLL = 3_000;
+const SLOW_POLL = 30_000;
 
 export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { notify, toastOnly } = useNotification();
-  const statusRef = useRef<EngineStatus>('checking');
-  const [engineStatus, setEngineStatus] = useState<EngineStatus>('checking');
+  const statusRef = useRef<ModelStatus>('checking');
+  const [engineStatus, setEngineStatus] = useState<ModelStatus>('checking');
+  const [scannerStatus, setScannerStatus] = useState<ModelStatus | null>(null);
+  const [studioStatus, setStudioStatus] = useState<ModelStatus | null>(null);
   const failCountRef = useRef(0);
 
   const isEngineOnline = useCallback(() => statusRef.current === 'online', []);
@@ -26,8 +30,11 @@ export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ 
     let timer: ReturnType<typeof setTimeout>;
     let cancelled = false;
 
+    const allOnline = () =>
+      statusRef.current === 'online';
+
     const schedule = () => {
-      const interval = statusRef.current === 'online' ? SLOW_POLL : FAST_POLL;
+      const interval = allOnline() ? SLOW_POLL : FAST_POLL;
       timer = setTimeout(loop, interval);
     };
 
@@ -46,11 +53,25 @@ export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         const data = await res.json();
         const prev = statusRef.current;
-        const newStatus: EngineStatus = data.model_loaded ? 'online' : 'starting';
+        const newStatus: ModelStatus = data.model_loaded ? 'online' : 'starting';
 
         failCountRef.current = 0;
         statusRef.current = newStatus;
         setEngineStatus(newStatus);
+
+        // Scanner (OCR) status
+        if (data.ocr_enabled) {
+          setScannerStatus(data.ocr_loaded ? 'online' : 'starting');
+        } else {
+          setScannerStatus(null);
+        }
+
+        // Studio (Diffusion) status
+        if (data.diffusion_active) {
+          setStudioStatus(data.diffusion_loaded ? 'online' : 'starting');
+        } else {
+          setStudioStatus(null);
+        }
 
         if (newStatus === 'online' && prev !== 'online') {
           if (prev === 'checking' || prev === 'starting') {
@@ -65,13 +86,14 @@ export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ 
         failCountRef.current += 1;
         const prev = statusRef.current;
 
-        // Require 2 consecutive failures before declaring offline from starting/checking
         if ((prev === 'starting' || prev === 'checking') && failCountRef.current < 2) {
-          return; // keep current state, retry on next poll
+          return;
         }
 
         statusRef.current = 'offline';
         setEngineStatus('offline');
+        setScannerStatus(s => s !== null ? 'offline' : null);
+        setStudioStatus(s => s !== null ? 'offline' : null);
 
         if (prev === 'online' || prev === 'starting') {
           notify('Engine is offline', 'error');
@@ -88,7 +110,7 @@ export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [notify, toastOnly]);
 
   return (
-    <EngineStatusContext.Provider value={{ engineStatus, isEngineOnline }}>
+    <EngineStatusContext.Provider value={{ engineStatus, scannerStatus, studioStatus, isEngineOnline }}>
       {children}
     </EngineStatusContext.Provider>
   );
