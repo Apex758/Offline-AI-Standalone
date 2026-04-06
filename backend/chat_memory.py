@@ -312,9 +312,9 @@ class ChatMemory:
 
             prompt = "<|begin_of_text|>"
             prompt += "<|start_header_id|>system<|end_header_id|>\n\n"
-            prompt += "You are a conversation summarizer. Write a concise 2-4 sentence summary of the conversation. "
-            prompt += "Capture the main topics discussed, key decisions, and any important context. "
-            prompt += "Write in third person (e.g. 'The user asked about...'). Return ONLY the summary, nothing else."
+            prompt += "You are a conversation summarizer. Write a concise 2-4 sentence summary.\n"
+            prompt += "Capture: (1) decisions made, (2) specific advice given, (3) action items mentioned.\n"
+            prompt += "Drop pleasantries and filler. Write in third person. Return ONLY the summary."
             prompt += "<|eot_id|>"
             prompt += "<|start_header_id|>user<|end_header_id|>\n\n"
             prompt += summary_instruction

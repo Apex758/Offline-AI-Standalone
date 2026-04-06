@@ -31,6 +31,33 @@ SMART_SEARCH_CORE_PROMPT = """You are a helpful assistant embedded in PEARL, an 
 - class-management: "My Classes" — manage students, classes, and quiz grades
 - settings: "Settings" — AI model selection, theme, font size, tutorials, tab colors
 - brain-dump: "Brain Dump" — quick voice/text notes that AI sorts into actionable items
+- storybook: "Storybook Creator" — create illustrated K-2 stories with TTS narration and curriculum alignment
+- achievements: "Achievements" — track teaching milestones, earn badges and trophies
+- performance-metrics: "Performance" — model benchmarks and system performance stats
+- support: "Support & Reporting" — FAQ help center and bug/issue reporting
+
+## App Features & Actions (actionName -> what it does)
+These are UI features triggered directly, not tool tabs.
+- toggleSplitView: "Split View" — view two tabs side by side at the same time
+- toggleNotifications: "Notifications" — open the notifications/generation queue panel
+- closeAllTabs: "Close All Tabs" — close all currently open tabs at once
+
+## Quick-Create Shortcuts (toolType -> opens that tool to start a new item)
+- lesson-planner: "Create New Lesson Plan"
+- quiz-generator: "Create New Quiz"
+- rubric-generator: "Create New Rubric"
+
+## Direct Settings Shortcuts (settingsSection -> scrolls to that specific setting)
+- font-size (Appearance panel) — adjust text/font size
+- settings-tab-colors (Appearance panel) — change tab accent colors
+- settings-appearance (Appearance panel) — theme light/dark/system, brightness, night tone
+- ai-model (Models panel) — select the AI/LLM model
+- diffusion-model (Models panel) — select the image generation model
+- settings-tutorials (General panel) — reset or manage tutorials
+- generation-mode (General panel) — queued vs simultaneous generation
+- visual-studio (Features panel) — enable/disable Worksheet and Image Studio
+- settings-reset (Danger panel) — reset all settings to defaults
+- settings-wipe (Danger panel) — wipe all app data
 
 ## Response Format
 Return ONLY valid JSON. No markdown, no explanation, no extra text. Just the JSON object.
@@ -41,18 +68,33 @@ Example for "how do I change tab colors":
 Example for "create a grade 5 math lesson plan":
 {"intent":"generation","summary":"Create a Grade 5 Math lesson plan","steps":["Click 'Lesson Plan' in the sidebar","Select Grade 5 from the dropdown","Choose Mathematics as the subject","Enter your topic","Click Generate"],"action":{"toolType":"lesson-planner","prefill":{"grade":"5","subject":"Mathematics"}},"confidence":0.9}
 
+Example for "i wanna make a fun storybook for kids":
+{"intent":"generation","summary":"Create an illustrated storybook for kids","steps":["Click 'Storybook Creator' in the sidebar","Enter a theme or story idea","Choose a grade level (K-2)","Select number of pages","Click Generate"],"action":{"toolType":"storybook","prefill":{}},"confidence":0.92}
+
 Example for "where are my saved quizzes":
 {"intent":"navigation","summary":"Find saved quizzes in My Resources","steps":["Click 'My Resources' in the sidebar","Use the search bar or filter by Quizzes"],"action":{"toolType":"resource-manager"},"confidence":0.9}
+
+Example for "split screen" or "show two tabs at once":
+{"intent":"navigation","summary":"Enable Split View to see two tabs side by side","steps":["Click the Split View button in the top toolbar (two-column icon)"],"action":{"actionName":"toggleSplitView"},"confidence":0.95}
+
+Example for "show my notifications" or "check generation queue":
+{"intent":"navigation","summary":"Open the Notifications panel","steps":["Click the bell icon in the top-right toolbar"],"action":{"actionName":"toggleNotifications"},"confidence":0.95}
+
+Example for "close everything" or "clear all tabs":
+{"intent":"navigation","summary":"Close all open tabs","steps":["Click the X button in the toolbar to close all tabs at once"],"action":{"actionName":"closeAllTabs"},"confidence":0.9}
 
 Rules:
 - The teacher is already inside the app. NEVER start steps with "Open the app" or "Launch PEARL". Start with the first in-app action (e.g., "Click 'Lesson Plan' in the sidebar").
 - "intent" must be exactly one of: "navigation", "generation", "settings", "info"
 - "steps" must be a JSON array of strings like ["step 1", "step 2"]
-- "action" is optional — only include when you can identify a specific tool
+- "action" is optional — only include when you can identify a specific tool, feature action, or setting
+- For app features (split view, notifications, close tabs), use "actionName" in the action object instead of "toolType"
+- For direct settings shortcuts, use "toolType":"settings" AND "settingsSection"
 - "confidence" is a number between 0 and 1
 - Keep "summary" under 15 words
 - For ALL settings-related queries, "action" MUST include both "toolType": "settings" AND "settingsSection". Never omit settingsSection for settings queries.
 - Valid settingsSection values: ai-model, diffusion-model, settings-appearance, font-size, settings-tab-colors, settings-tutorials, generation-mode, settings-notifications, visual-studio, settings-reset, brightness, night-tone, thinking-mode, ocr-model, feature-modules, sidebar-tools, writing-assistant, system-behavior, settings-wipe
+- If the query could map to multiple tools with equal likelihood, return the most commonly used one (lesson-planner > worksheet > quiz > rubric) and mention the alternative in the summary. Set confidence below 0.5 if genuinely unsure.
 """
 
 # ---------------------------------------------------------------------------
@@ -107,6 +149,18 @@ Two modes — Generator: Prompt (text area), Batch Size (number) -> Generate | E
 
 ### Brain Dump
 Voice recording or text note -> AI sorts into actionable items (tasks, lesson ideas, reminders)
+
+### Storybook Creator
+Theme / Story Idea (text), Grade Level (K-2 selector), Number of Pages (selector), Characters (optional text), Curriculum Alignment (optional toggle), TTS narration (toggle)
+
+### Achievements
+No form — view-only dashboard showing earned badges, locked milestones, and progress streaks.
+
+### Performance
+No form — displays model benchmark results, token speed, TTFT, and system resource usage.
+
+### Support & Reporting
+No form — FAQ accordion and a bug/issue report form (description + optional screenshot).
 """
 
 # ---------------------------------------------------------------------------
@@ -128,6 +182,7 @@ SMART_SEARCH_WORKFLOWS_CHUNK = """
 - Manage students: Click "My Classes" in the sidebar -> Add or edit students -> Create classes -> View quiz grades
 - Generate images: Click "Image Studio" in the sidebar -> Type a description -> Set batch size -> Click "Generate"
 - Track curriculum progress: Click "Progress Tracker" in the sidebar -> View overall completion -> Filter by grade or subject -> Click milestones to update status
+- Create a storybook: Click "Storybook Creator" in the sidebar -> Enter a theme or story idea -> Choose grade level (K-2) -> Select number of pages -> Optionally add characters or enable TTS narration -> Click "Generate"
 """
 
 # ---------------------------------------------------------------------------
@@ -137,7 +192,7 @@ SMART_SEARCH_TUTORIALS_CHUNK = """
 ## Tutorial System
 Most tools have built-in interactive tutorials (step-by-step walkthrough with highlights and tooltips). For general "how do I use [tool]?" questions, suggest the tutorial. For specific task queries, give direct steps instead.
 
-Tools with tutorials: Analytics Dashboard, Curriculum Browser, Progress Tracker, Lesson Planner, Early Childhood Planner, Multi-Level Planner, Integrated Lesson Planner, Quiz Builder, Rubric Builder, Worksheet Builder, Image Studio, Resource Manager, Settings, Ask PEARL, My Classes
+Tools with tutorials: Analytics Dashboard, Curriculum Browser, Progress Tracker, Lesson Planner, Early Childhood Planner, Multi-Level Planner, Integrated Lesson Planner, Quiz Builder, Rubric Builder, Worksheet Builder, Image Studio, Resource Manager, Settings, Ask PEARL, My Classes, Storybook Creator
 
 For general queries, include a step like: "Tip: Click the '?' tutorial button in the bottom-right corner of the tool to get an interactive guided walkthrough"
 """
@@ -154,10 +209,14 @@ CHUNK_KEYWORDS = {
     "tools": [
         "create", "make", "build", "generate", "plan", "quiz", "rubric",
         "worksheet", "image", "lesson", "slide", "presentation", "brain dump",
+        "storybook", "story", "book", "illustrated", "narration", "tts",
+        "achievement", "badge", "trophy", "milestone", "performance", "benchmark",
+        "speed", "support", "help", "bug", "report", "faq",
     ],
     "workflows": [
         "how", "steps", "guide", "help", "where", "find", "change", "use",
-        "what", "show", "do", "can",
+        "what", "show", "do", "can", "split", "screen", "notification",
+        "queue", "close", "tabs", "side by side",
     ],
     "tutorials": [
         "tutorial", "learn", "walkthrough", "guide", "how do i use",
@@ -192,12 +251,15 @@ SMART_SEARCH_TIER1_PROMPT = """You help teachers use the PEARL app. Return ONLY 
 
 The teacher is already inside the app. NEVER start steps with "Open the app" or "Launch PEARL". Start with the first in-app action.
 
-Tools: analytics, chat, lesson-planner, kindergarten-planner, multigrade-planner, cross-curricular-planner, quiz-generator, rubric-generator, worksheet-generator, image-studio, resource-manager, curriculum, curriculum-tracker, class-management, settings, brain-dump, presentation-builder
+Tools: analytics, chat, lesson-planner, kindergarten-planner, multigrade-planner, cross-curricular-planner, quiz-generator, rubric-generator, worksheet-generator, image-studio, resource-manager, curriculum, curriculum-tracker, class-management, settings, brain-dump, presentation-builder, storybook, achievements, performance-metrics, support
+
+Actions (use actionName instead of toolType): toggleSplitView (split screen), toggleNotifications (notification/queue panel), closeAllTabs (close all open tabs)
 
 Settings panels: Profile, Appearance, Models, General, Features, Discovery, Files, License, Danger
 Settings sections: ai-model, diffusion-model, settings-appearance, font-size, settings-tab-colors, settings-tutorials, generation-mode, settings-notifications, visual-studio, settings-reset, brightness, night-tone, thinking-mode, ocr-model, feature-modules, sidebar-tools, writing-assistant, system-behavior, settings-wipe
 
 For settings queries, always include settingsSection in action. Always tell the user which settings panel to click.
+For feature actions (split view, notifications, close tabs), use actionName in the action object.
 
 Tools with tutorials — suggest the tutorial button for general "how do I use X?" queries.
 

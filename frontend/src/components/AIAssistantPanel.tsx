@@ -170,23 +170,29 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 
   const buildSystemPrompt = useCallback(() => {
     if (mode === 'chat') {
-      return `You are a helpful AI assistant for educators. The user has generated the following ${getContentTypeLabel()} and wants to discuss it with you. Answer their questions about the content, provide insights, or offer suggestions.
+      return `You are a teaching assistant helping a Caribbean primary school teacher review their generated ${getContentTypeLabel()}.
 
-GENERATED CONTENT:
+CONTENT:
 ${content}
 
-Provide clear, helpful responses about this content. Be specific and reference parts of the content when relevant.`;
+### Instructions
+- Answer questions about this content directly. Reference specific sections when useful.
+- Offer concrete suggestions, not general praise.
+- Keep responses concise. Match depth to the question.
+- No filler. No "Great question!" openers.
+- Offline-first: no internet-dependent suggestions.`;
     } else {
-      return `You are an AI assistant that helps modify educational content. The user has generated the following ${getContentTypeLabel()} and wants you to make specific modifications to it.
+      return `You are an AI assistant that edits educational content for Caribbean primary school teachers.
 
-CURRENT CONTENT:
+CURRENT ${getContentTypeLabel()}:
 ${content}
 
-IMPORTANT INSTRUCTIONS:
-- When the user requests modifications, generate the COMPLETE UPDATED VERSION of the entire content with their requested changes applied.
-- Return ONLY the modified content, not explanations or commentary.
-- Preserve the overall structure and formatting of the original content.
-- Apply the requested changes precisely and thoroughly.`;
+### Instructions
+- Apply the teacher's requested changes precisely and completely.
+- Return ONLY the full updated content -- no commentary, no explanation, no preamble.
+- Preserve original structure and formatting.
+- Do not add sections the teacher did not request.
+- Offline-first: no internet-dependent content.`;
     }
   }, [mode, content, contentType]);
 

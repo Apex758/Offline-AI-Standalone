@@ -156,7 +156,9 @@ atexit.register(cleanup_all_processes)
 # Handle termination signals
 def signal_handler(signum, frame):
     cleanup_all_processes()
-    sys.exit(0)
+    # Do not call sys.exit() here — uvicorn manages its own shutdown lifecycle.
+    # Calling sys.exit() inside an asyncio event loop causes a noisy but harmless
+    # SystemExit traceback on hot-reload. Let the signal propagate naturally.
 
 if hasattr(signal, 'SIGTERM'):
     signal.signal(signal.SIGTERM, signal_handler)
@@ -729,7 +731,7 @@ async def autocomplete(request: AutocompleteRequest):
         if not text or len(text) < 10:
             return {"completion": ""}
 
-        prompt = f"Continue this text naturally with a few more words. Only output the continuation, nothing else:\n\n{text}"
+        prompt = f"You complete a teacher's sentence in an education app. Continue naturally in their voice and topic. Only output the continuation, nothing else. Do not change the subject or add new ideas.\n\n{text}"
 
         from inference_factory import get_inference_instance, resolve_inference_for_task
         from tier1_prompts import get_tier1_gen_params
@@ -788,11 +790,10 @@ async def organize_note(request: OrganizeNoteRequest):
         plain = re.sub(r'\s+', ' ', plain).strip()
 
         prompt = (
-            "You are organizing a sticky note. Rewrite the following messy notes into clean, "
-            "well-structured HTML suitable for a rich-text sticky note. Group related ideas under "
-            "short bold headings (<b>), use bullet lists (<ul><li>) for items, and keep it concise. "
-            "Only output the organized HTML, no explanation.\n\n"
-            f"Notes:\n{plain}"
+            "Organize this sticky note into clean HTML. Group related ideas under short bold headings (<b>), "
+            "use bullet lists (<ul><li>). Preserve the teacher's original phrasing -- organize, do not rewrite. "
+            "Only output the HTML."
+            f"\n\n{plain}"
         )
 
         from inference_factory import resolve_inference_for_task
@@ -899,7 +900,12 @@ async def smart_search(request: SmartSearchRequest):
                 if "action" in data and isinstance(data["action"], dict):
                     action = data["action"]
                     # Clean up action — remove template values
-                    if action.get("toolType") and "|" not in action["toolType"]:
+                    # Accept if toolType is valid OR if actionName is present
+                    valid_tool = action.get("toolType") and "|" not in action["toolType"]
+                    valid_action = action.get("actionName") in (
+                        "toggleSplitView", "toggleNotifications", "closeAllTabs"
+                    )
+                    if valid_tool or valid_action:
                         response["action"] = action
                 return response
 
@@ -2869,26 +2875,31 @@ def _build_brain_dump_prompt(matched_categories: list[str]) -> str:
             if action_type in BRAIN_DUMP_ACTION_DESCRIPTIONS:
                 action_lines.append(BRAIN_DUMP_ACTION_DESCRIPTIONS[action_type])
 
-    return f"""You are an AI assistant for the OECS Learning Hub, a teacher productivity app. Your job is to analyze a teacher's free-form thoughts ("brain dump") and extract actionable items that map to features in the app.
+    action_lines_text = chr(10).join(action_lines)
+    return f"""You parse a Caribbean primary school teacher's free-form notes into structured app actions.
 
 Available action types:
-{chr(10).join(action_lines)}
+{action_lines_text}
 
-Return ONLY a valid JSON object with two keys:
-- "actions": a JSON array where each item has:
-  - "type": one of the action types above
-  - "title": short descriptive title (max 60 chars)
-  - "description": brief explanation of what to create (1-2 sentences)
-  - "details": object with relevant fields for that action type
-- "unmatched": an array of text snippets from the user's input that you could NOT confidently map to any of the available action types. If everything was matched, use an empty array.
+Return ONLY a valid JSON object:
+{{
+  "actions": [
+    {{
+      "type": "<type from list above>",
+      "title": "<max 60 chars>",
+      "description": "<1-2 sentences>",
+      "details": {{"subject": "...", "grade": "...", "topic": "...", "date": "..."}}
+    }}
+  ],
+  "unmatched": ["<text snippets that don't fit any action type>"]
+}}
 
-If the text mentions dates, include them in details.date. If it mentions a subject/grade, include those.
-
-IMPORTANT: Always try your best to match text to actions, even if you are not fully confident. Make your best guess — the teacher will confirm or reject it.
-Only put text in "unmatched" if it truly does not relate to any available action type (e.g., greetings, off-topic remarks).
-Some sentences may be context or elaboration for other sentences — include that context in the relevant action's description or details, do NOT put it in unmatched.
-NEVER return both empty actions AND empty unmatched. If you genuinely cannot match anything, put ALL the text in "unmatched" so the teacher can clarify.
-Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
+Rules:
+- For each sentence: identify the intended action, pick the closest type, extract details.
+- If a sentence adds context to another action, fold it into that action's description -- do NOT put it in unmatched.
+- Only put text in "unmatched" if it genuinely cannot map to any action (e.g., greetings, personal reminders unrelated to teaching).
+- Never return both empty actions AND empty unmatched.
+- ONLY return the JSON object. No markdown, no explanation, no text before or after."""
 
 
 async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperature,
@@ -2946,19 +2957,18 @@ async def brain_dump_websocket(websocket: WebSocket):
                     continue
 
                 type_names = ", ".join(ALL_ACTION_TYPE_NAMES)
-                suggest_prompt_text = f"""The user wrote: "{unmatched_text}"
+                suggest_prompt_text = f"""Teacher wrote: "{unmatched_text}"
 
-Available tools in the app: {type_names}
+App tools: {type_names}
 
-Return a JSON array of objects. Each object should have:
-- "text": the relevant snippet from the user's input
-- "suggestedTypes": array of 1-3 tool names from the list above that MIGHT apply
-- "confidence": "low" or "medium"
-If nothing applies, return an empty array: []
-Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
+For each fragment that maps to a tool, return a JSON array:
+[{{"text": "<fragment>", "suggestedTypes": ["<tool>"], "confidence": "low"|"medium"}}]
+
+Only include fragments with a genuine match. If nothing fits, return [].
+Return ONLY the JSON array."""
 
                 suggest_full = "<|begin_of_text|>"
-                suggest_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou help match teacher notes to app features. Be generous — suggest plausible matches even if uncertain.<|eot_id|>"
+                suggest_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou match fragments of teacher notes to app features. Only suggest a tool if the text clearly implies that action. Return an empty array if nothing fits confidently.<|eot_id|>"
                 suggest_full += f"<|start_header_id|>user<|end_header_id|>\n\n{suggest_prompt_text}<|eot_id|>"
                 suggest_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
 
@@ -3008,20 +3018,22 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
                             _save_learned_keyword(word, category)
 
                 type_desc = BRAIN_DUMP_ACTION_DESCRIPTIONS.get(action_type, f'- "{action_type}": (unknown type)')
-                gen_prompt_text = f"""Based on the teacher's note: "{action_text}"
+                gen_prompt_text = f"""Teacher's note: "{action_text}"
 
-Create a single action of this type:
+Create one action of this type:
 {type_desc}
 
-Return ONLY a valid JSON object with:
-- "type": "{action_type}"
-- "title": short descriptive title (max 60 chars)
-- "description": brief explanation of what to create (1-2 sentences)
-- "details": object with relevant fields for that action type
-Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
+Return ONLY a valid JSON object:
+{{
+  "type": "{action_type}",
+  "title": "<max 60 chars>",
+  "description": "<1-2 sentences>",
+  "details": {{"subject": "...", "grade": "...", "topic": "...", "date": "..."}}
+}}
+No markdown, no explanation. Only the JSON object."""
 
                 gen_full = "<|begin_of_text|>"
-                gen_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou create structured actions for the OECS Learning Hub teacher app.<|eot_id|>"
+                gen_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou create structured actions for a Caribbean primary school teacher app. Return ONLY valid JSON objects.<|eot_id|>"
                 gen_full += f"<|start_header_id|>user<|end_header_id|>\n\n{gen_prompt_text}<|eot_id|>"
                 gen_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
 
@@ -3117,6 +3129,12 @@ async def educator_insights_websocket(websocket: WebSocket):
         {"key": "recommendations", "name": "Teaching Recommendations", "task": "insights-recommendations"},
         {"key": "synthesis", "name": "Final Synthesis", "task": "insights-synthesis"},
     ]
+
+    PREV_REPORT_TEMPLATE = (
+        "\n\nPREVIOUS ANALYSIS ({prev_date}):\n{prev_output_trimmed}\n\n"
+        "Flag specifically: what improved, what got worse, what stayed the same. "
+        "If nothing changed, say so in one bullet rather than repeating the previous analysis."
+    )
 
     try:
         while True:
@@ -3317,9 +3335,9 @@ async def educator_insights_websocket(websocket: WebSocket):
                     prev_output = prev_pass_outputs.get(pass_key, "")
                     if prev_output and not date_context.get("is_first_report"):
                         prev_date = date_context.get("from_date", "unknown")
-                        system_prompt += (
-                            f"\n\nPREVIOUS ANALYSIS (from {prev_date}):\n{prev_output[:300]}\n\n"
-                            "Also note any changes, improvements, or regressions compared to the previous analysis period."
+                        system_prompt += PREV_REPORT_TEMPLATE.format(
+                            prev_date=prev_date,
+                            prev_output_trimmed=prev_output[:300]
                         )
 
                 elif pass_key == "recommendations":
@@ -3361,9 +3379,10 @@ async def educator_insights_websocket(websocket: WebSocket):
                     # Add previous recommendations for comparison
                     prev_recs = prev_pass_outputs.get("recommendations", "")
                     if prev_recs and not date_context.get("is_first_report"):
-                        system_prompt += (
-                            f"\n\nPREVIOUS RECOMMENDATIONS:\n{prev_recs[:300]}\n\n"
-                            "Prioritize new recommendations that address recent changes. Note which prior recommendations have been addressed."
+                        prev_date = date_context.get("from_date", "unknown")
+                        system_prompt += PREV_REPORT_TEMPLATE.format(
+                            prev_date=prev_date,
+                            prev_output_trimmed=prev_recs[:300]
                         )
 
                 elif pass_key == "synthesis":
@@ -3380,12 +3399,10 @@ async def educator_insights_websocket(websocket: WebSocket):
                     # Add previous synthesis for progression narrative
                     prev_synthesis = prev_pass_outputs.get("synthesis", "")
                     if prev_synthesis and not date_context.get("is_first_report"):
-                        from_date = date_context.get("from_date", "unknown")
-                        to_date = date_context.get("to_date", "today")
-                        system_prompt += (
-                            f"\n\nPREVIOUS EXECUTIVE SUMMARY (from {from_date}):\n{prev_synthesis[:400]}\n\n"
-                            f"This report covers {from_date} to {to_date}. "
-                            "Highlight what has changed since the previous report — improvements, regressions, and areas that stayed the same."
+                        prev_date = date_context.get("from_date", "unknown")
+                        system_prompt += PREV_REPORT_TEMPLATE.format(
+                            prev_date=prev_date,
+                            prev_output_trimmed=prev_synthesis[:300]
                         )
                 else:
                     continue
@@ -3393,11 +3410,11 @@ async def educator_insights_websocket(websocket: WebSocket):
                 # Apply tone/depth progression based on how many reports have been generated
                 report_count = date_context.get("report_count", 0)
                 if report_count <= 2:
-                    tone_prefix = "This is an early report for a new user. Use a warm, educational tone. Briefly explain what each metric means and why it matters. "
+                    tone_prefix = "This teacher is new to the platform. Use a warm, direct tone. For each finding, briefly state what it means in plain language (one sentence max). "
                 elif report_count <= 7:
-                    tone_prefix = "This teacher has a few reports under their belt. Be direct but provide some context. Focus on changes since last report. "
+                    tone_prefix = "This teacher has some reports. Be direct. Highlight changes since the last report. Skip metric definitions. "
                 else:
-                    tone_prefix = "This is an experienced user. Be concise and data-driven. Skip explanations of metrics — focus on actionable deltas and trends. "
+                    tone_prefix = "Experienced user. Be concise and data-driven. Deltas and trends only. No metric explanations. "
                 system_prompt = tone_prefix + system_prompt
 
                 # Inject phase context header if phase-scoped
@@ -3756,22 +3773,23 @@ async def websocket_consultant(websocket: WebSocket):
                 if grade_char == 'A':
                     directive = (
                         f"The teacher is proud of their {trigger_dimension} performance. "
-                        f"Acknowledge the strong score enthusiastically. Explain exactly what they're doing right using the breakdown data. "
-                        f"Then give 1-2 forward-looking tips to maintain it as school phases change."
+                        f"Acknowledge with one specific, enthusiastic sentence using the exact score. "
+                        f"Then explain the 1-2 factors from the breakdown that are driving the strong result. "
+                        f"Give one forward-looking question: how will they maintain it when workload increases?"
                     )
                 elif grade_char in ('B', 'C'):
                     directive = (
-                        f"The teacher wants to push their {trigger_dimension} score from {grade} to the next grade. "
-                        f"Be encouraging — they're not far off. Pinpoint the 1-2 specific factors from the breakdown "
-                        f"that have the most leverage, and give concrete, actionable steps for each."
+                        f"The teacher wants to improve their {trigger_dimension} score from {grade}. "
+                        f"Be direct and encouraging. Identify the single factor from the breakdown with the most leverage. "
+                        f"Give one concrete, immediate step they can take this week. "
+                        f"Ask one focused question to understand the specific obstacle."
                     )
                 else:
                     directive = (
-                        f"The teacher is concerned about their low {trigger_dimension} score ({grade}, {score}/100). "
-                        f"Be empathetic but direct — do NOT ask what's wrong, you already know from the breakdown data. "
-                        f"Lead immediately with the specific bottleneck (use exact numbers from the breakdown), "
-                        f"explain why it matters to their overall grade, then give 2-3 concrete immediate steps. "
-                        f"End with one encouraging, targeted question to keep them engaged."
+                        f"The teacher is concerned about their {trigger_dimension} score ({grade}, {score}/100). "
+                        f"Do NOT ask what's wrong -- you already know from the breakdown data. "
+                        f"Open with the specific bottleneck (name it with the exact number from the breakdown). "
+                        f"Give exactly 2 concrete steps. End with one encouraging question to keep them engaged."
                     )
 
                 lines.append(f"\nCOACHING DIRECTIVE: {directive}")
@@ -3783,8 +3801,7 @@ async def websocket_consultant(websocket: WebSocket):
             if topic_context and not trigger_dimension:
                 topic_block = (
                     f"\n\nThe teacher has chosen to discuss '{topic_context}' in this session. "
-                    f"Keep your responses focused on this area, but let the teacher lead — "
-                    f"do not open with a formal assessment. Wait for their question and answer helpfully."
+                    f"Open with one focused question about this topic. Do not give a full assessment unprompted."
                 )
 
             system_prompt = base_prompt + metric_block + rec_block + trigger_block + topic_block
