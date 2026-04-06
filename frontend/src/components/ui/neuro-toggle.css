@@ -2,6 +2,11 @@
    Neuro-Glass Toggle System
    Neumorphism + Glassmorphism toggle components
    Dark mode: .dark class on <html> (Tailwind convention)
+
+   Accent color: set --ng-accent on any ancestor element to
+   override the default teal (#5ce0c4). Each tab sets its own
+   accent via inline style, e.g.:
+     <div style="--ng-accent: #8b5cf6">...</div>
    ============================================================= */
 
 /* ── Track base ─────────────────────────────────────────────── */
@@ -11,10 +16,10 @@
   cursor: pointer;
   background: var(--ng-track-bg);
   box-shadow:
-    8px 8px 20px var(--ng-track-lo),
-    -8px -8px 20px var(--ng-track-hi),
-    inset 2px 2px 6px rgba(255, 255, 255, 0.35),
-    inset -2px -2px 6px rgba(0, 0, 0, 0.08);
+    3px 3px 5px var(--ng-track-lo),
+    -3px -3px 5px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.22),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.04);
   transition: background 0.35s ease, box-shadow 0.35s ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -25,11 +30,11 @@
 
 .ng-track:focus-visible {
   box-shadow:
-    8px 8px 20px var(--ng-track-lo),
-    -8px -8px 20px var(--ng-track-hi),
-    inset 2px 2px 6px rgba(255, 255, 255, 0.35),
-    inset -2px -2px 6px rgba(0, 0, 0, 0.08),
-    0 0 0 3px rgba(var(--ng-teal-rgb), 0.45);
+    3px 3px 5px var(--ng-track-lo),
+    -3px -3px 5px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.22),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.04),
+    0 0 0 3px color-mix(in srgb, var(--ng-accent, #5ce0c4) 45%, transparent);
 }
 
 /* ── Track ON glass tint overlay ────────────────────────────── */
@@ -41,8 +46,8 @@
   opacity: 0;
   background: linear-gradient(
     135deg,
-    rgba(var(--ng-teal-rgb), 0.22),
-    rgba(var(--ng-blue-rgb), 0.15)
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 22%, transparent),
+    color-mix(in srgb, var(--ng-accent, #5ce0c4) 12%, transparent)
   );
   pointer-events: none;
   transition: opacity 0.35s ease;
@@ -55,19 +60,19 @@
 /* Dark mode — track inset shadows flip */
 .dark .ng-track {
   box-shadow:
-    8px 8px 20px var(--ng-track-lo),
-    -8px -8px 20px var(--ng-track-hi),
-    inset 2px 2px 6px rgba(255, 255, 255, 0.04),
-    inset -2px -2px 6px rgba(0, 0, 0, 0.40);
+    3px 3px 5px var(--ng-track-lo),
+    -3px -3px 5px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.22);
 }
 
 .dark .ng-track:focus-visible {
   box-shadow:
-    8px 8px 20px var(--ng-track-lo),
-    -8px -8px 20px var(--ng-track-hi),
-    inset 2px 2px 6px rgba(255, 255, 255, 0.04),
-    inset -2px -2px 6px rgba(0, 0, 0, 0.40),
-    0 0 0 3px rgba(var(--ng-teal-rgb), 0.35);
+    3px 3px 5px var(--ng-track-lo),
+    -3px -3px 5px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.22),
+    0 0 0 3px color-mix(in srgb, var(--ng-accent, #5ce0c4) 35%, transparent);
 }
 
 /* ── Disabled state ─────────────────────────────────────────── */
@@ -78,43 +83,43 @@
 
 /* ── Size variants ──────────────────────────────────────────── */
 
-/* sm: 36 × 20px — replaces w-7 h-4 / w-9 h-5 Tailwind toggles */
+/* sm: 36 × 20px */
 .ng-track.ng-sm {
   width: 36px;
   height: 20px;
   box-shadow:
-    4px 4px 10px var(--ng-track-lo),
-    -4px -4px 10px var(--ng-track-hi),
-    inset 1px 1px 3px rgba(255, 255, 255, 0.35),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.08);
+    2px 2px 3px var(--ng-track-lo),
+    -2px -2px 3px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.18),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.04);
 }
 .dark .ng-track.ng-sm {
   box-shadow:
-    4px 4px 10px var(--ng-track-lo),
-    -4px -4px 10px var(--ng-track-hi),
-    inset 1px 1px 3px rgba(255, 255, 255, 0.04),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.40);
+    2px 2px 3px var(--ng-track-lo),
+    -2px -2px 3px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.18);
 }
 
-/* md: 52 × 28px — standard panel toggle */
+/* md: 52 × 28px */
 .ng-track.ng-md {
   width: 52px;
   height: 28px;
   box-shadow:
-    6px 6px 14px var(--ng-track-lo),
-    -6px -6px 14px var(--ng-track-hi),
-    inset 1.5px 1.5px 4px rgba(255, 255, 255, 0.35),
-    inset -1.5px -1.5px 4px rgba(0, 0, 0, 0.08);
+    2px 2px 4px var(--ng-track-lo),
+    -2px -2px 4px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.18),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.04);
 }
 .dark .ng-track.ng-md {
   box-shadow:
-    6px 6px 14px var(--ng-track-lo),
-    -6px -6px 14px var(--ng-track-hi),
-    inset 1.5px 1.5px 4px rgba(255, 255, 255, 0.04),
-    inset -1.5px -1.5px 4px rgba(0, 0, 0, 0.40);
+    2px 2px 4px var(--ng-track-lo),
+    -2px -2px 4px var(--ng-track-hi),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.03),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.18);
 }
 
-/* lg: 72 × 40px — settings / prominent toggles */
+/* lg: 72 × 40px */
 .ng-track.ng-lg {
   width: 72px;
   height: 40px;
@@ -129,12 +134,12 @@
     var(--ng-thumb-bg-hi) 0%,
     var(--ng-thumb-bg-lo) 100%
   );
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   border: 1.5px solid var(--ng-thumb-border);
   box-shadow:
-    0 4px 16px var(--ng-thumb-shadow),
-    inset 0 1px 2px rgba(255, 255, 255, 0.60);
+    0 2px 6px var(--ng-thumb-shadow),
+    inset 0 1px 2px rgba(255, 255, 255, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -186,32 +191,24 @@
 .ng-track.ng-md.ng-on .ng-thumb  { transform: translateX(24px); }
 .ng-track.ng-lg.ng-on .ng-thumb  { transform: translateX(32px); }
 
-/* Thumb ON state — teal glow */
+/* Thumb ON state — accent glow */
 .ng-track.ng-on .ng-thumb {
-  background: linear-gradient(
-    145deg,
-    rgba(var(--ng-teal-rgb), 0.45) 0%,
-    rgba(var(--ng-blue-rgb), 0.30) 100%
-  );
-  border-color: rgba(var(--ng-teal-rgb), 0.50);
+  background: color-mix(in srgb, var(--ng-accent, #5ce0c4) 32%, transparent);
+  border-color: color-mix(in srgb, var(--ng-accent, #5ce0c4) 40%, transparent);
   box-shadow:
-    0 0 24px rgba(var(--ng-teal-rgb), 0.35),
-    0 4px 16px var(--ng-thumb-shadow),
-    inset 0 1px 2px rgba(255, 255, 255, 0.35);
+    0 0 10px color-mix(in srgb, var(--ng-accent, #5ce0c4) 20%, transparent),
+    0 2px 6px var(--ng-thumb-shadow),
+    inset 0 1px 2px rgba(255, 255, 255, 0.20);
 }
 
 /* Dark mode thumb — dimmer glow */
 .dark .ng-track.ng-on .ng-thumb {
-  background: linear-gradient(
-    145deg,
-    rgba(var(--ng-teal-rgb), 0.20) 0%,
-    rgba(var(--ng-blue-rgb), 0.12) 100%
-  );
-  border-color: rgba(var(--ng-teal-rgb), 0.35);
+  background: color-mix(in srgb, var(--ng-accent, #5ce0c4) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ng-accent, #5ce0c4) 28%, transparent);
   box-shadow:
-    0 0 28px rgba(var(--ng-teal-rgb), 0.25),
-    0 4px 16px var(--ng-thumb-shadow),
-    inset 0 1px 2px rgba(255, 255, 255, 0.08);
+    0 0 12px color-mix(in srgb, var(--ng-accent, #5ce0c4) 16%, transparent),
+    0 2px 6px var(--ng-thumb-shadow),
+    inset 0 1px 2px rgba(255, 255, 255, 0.05);
 }
 
 /* ── Icon swap inside thumb ─────────────────────────────────── */
@@ -225,7 +222,7 @@
 }
 .dark .ng-icon-off { color: #555; }
 
-.ng-icon-on { color: var(--ng-teal); }
+.ng-icon-on { color: var(--ng-accent, #5ce0c4); }
 
 @media (prefers-reduced-motion: no-preference) {
   .ng-icon-off,
@@ -254,7 +251,7 @@
 .ng-ripple {
   position: absolute;
   border-radius: 50%;
-  background: rgba(var(--ng-teal-rgb), 0.35);
+  background: color-mix(in srgb, var(--ng-accent, #5ce0c4) 35%, transparent);
   transform: scale(0);
   animation: ng-ripple-out 0.55s ease-out forwards;
   pointer-events: none;
@@ -278,20 +275,43 @@
   border-radius: 9999px;
   background: var(--ng-track-bg);
   box-shadow:
-    6px 6px 14px var(--ng-track-lo),
-    -6px -6px 14px var(--ng-track-hi),
-    inset 3px 3px 7px rgba(0, 0, 0, 0.08),
-    inset -3px -3px 7px rgba(255, 255, 255, 0.30);
+    2px 2px 4px var(--ng-track-lo),
+    -2px -2px 4px var(--ng-track-hi),
+    inset 1px 1px 3px rgba(0, 0, 0, 0.05),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.15);
   padding: 3px;
   transition: background 0.35s ease, box-shadow 0.35s ease;
 }
 
 .dark .ng-segment {
   box-shadow:
-    6px 6px 14px var(--ng-track-lo),
-    -6px -6px 14px var(--ng-track-hi),
-    inset 3px 3px 7px rgba(0, 0, 0, 0.35),
-    inset -3px -3px 7px rgba(255, 255, 255, 0.03);
+    2px 2px 4px var(--ng-track-lo),
+    -2px -2px 4px var(--ng-track-hi),
+    inset 1px 1px 3px rgba(0, 0, 0, 0.18),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.02);
+}
+
+/* ── Full-width variant ─────────────────────────────────────── */
+.ng-segment.w-full {
+  width: 100%;
+}
+
+.ng-segment.w-full .ng-segment-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* ── Rect variant — for text-label segments ─────────────────── */
+.ng-segment.ng-rect {
+  border-radius: 8px;
+}
+
+.ng-segment.ng-rect .ng-segment-pill {
+  border-radius: 6px;
+}
+
+.ng-segment.ng-rect .ng-segment-btn {
+  border-radius: 5px;
 }
 
 /* Sliding active pill */
@@ -300,14 +320,10 @@
   top: 3px;
   height: calc(100% - 6px);
   border-radius: 9999px;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--ng-teal-rgb), 0.88),
-    rgba(var(--ng-blue-rgb), 0.72)
-  );
+  background: color-mix(in srgb, var(--ng-accent, #5ce0c4) 82%, transparent);
   box-shadow:
-    0 2px 8px rgba(var(--ng-teal-rgb), 0.30),
-    inset 0 1px 2px rgba(255, 255, 255, 0.25);
+    0 1px 4px color-mix(in srgb, var(--ng-accent, #5ce0c4) 18%, transparent),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
   pointer-events: none;
   will-change: left, width;
   z-index: 0;
@@ -327,14 +343,10 @@
 }
 
 .dark .ng-segment-pill {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--ng-teal-rgb), 0.55),
-    rgba(var(--ng-blue-rgb), 0.40)
-  );
+  background: color-mix(in srgb, var(--ng-accent, #5ce0c4) 50%, transparent);
   box-shadow:
-    0 2px 12px rgba(var(--ng-teal-rgb), 0.20),
-    inset 0 1px 2px rgba(255, 255, 255, 0.08);
+    0 1px 4px color-mix(in srgb, var(--ng-accent, #5ce0c4) 14%, transparent),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 /* Segment buttons */
@@ -359,7 +371,7 @@
 }
 
 .ng-segment-btn:focus-visible {
-  box-shadow: 0 0 0 2px rgba(var(--ng-teal-rgb), 0.5);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ng-accent, #5ce0c4) 50%, transparent);
 }
 
 .ng-segment-btn.ng-seg-active {
@@ -400,13 +412,13 @@
 .ng-segment.ng-invert {
   background: rgba(255, 255, 255, 0.12);
   box-shadow:
-    inset 2px 2px 6px rgba(0, 0, 0, 0.25),
-    inset -2px -2px 6px rgba(255, 255, 255, 0.08);
+    inset 1px 1px 4px rgba(0, 0, 0, 0.20),
+    inset -1px -1px 4px rgba(255, 255, 255, 0.06);
 }
 
 .ng-segment.ng-invert .ng-segment-pill {
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.20);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
 }
 
 .ng-segment.ng-invert .ng-segment-btn {
@@ -438,22 +450,22 @@
   width: 24px;
   height: 24px;
   box-shadow:
-    3px 3px 7px var(--ng-track-lo),
-    -3px -3px 7px var(--ng-track-hi);
+    1px 1px 3px var(--ng-track-lo),
+    -1px -1px 3px var(--ng-track-hi);
 }
 .ng-chevron-btn.ng-chevron-md {
   width: 32px;
   height: 32px;
   box-shadow:
-    5px 5px 10px var(--ng-track-lo),
-    -5px -5px 10px var(--ng-track-hi);
+    2px 2px 4px var(--ng-track-lo),
+    -2px -2px 4px var(--ng-track-hi);
 }
 
 .dark .ng-chevron-btn {
   color: var(--text-hint);
   box-shadow:
-    3px 3px 7px var(--ng-track-lo),
-    -3px -3px 7px var(--ng-track-hi);
+    1px 1px 3px var(--ng-track-lo),
+    -1px -1px 3px var(--ng-track-hi);
 }
 
 .ng-chevron-btn:hover {
@@ -466,15 +478,15 @@
 .ng-chevron-btn:active,
 .ng-chevron-btn.ng-chevron-pressed {
   box-shadow:
-    inset 3px 3px 6px var(--ng-track-lo),
-    inset -3px -3px 6px var(--ng-track-hi);
+    inset 2px 2px 5px var(--ng-track-lo),
+    inset -2px -2px 5px var(--ng-track-hi);
 }
 
 .ng-chevron-btn:focus-visible {
   box-shadow:
-    3px 3px 7px var(--ng-track-lo),
-    -3px -3px 7px var(--ng-track-hi),
-    0 0 0 2px rgba(var(--ng-teal-rgb), 0.45);
+    2px 2px 5px var(--ng-track-lo),
+    -2px -2px 5px var(--ng-track-hi),
+    0 0 0 2px color-mix(in srgb, var(--ng-accent, #5ce0c4) 45%, transparent);
 }
 
 .ng-chevron-icon {

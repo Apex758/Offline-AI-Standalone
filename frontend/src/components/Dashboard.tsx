@@ -791,8 +791,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       colors[type] = variants;
     });
     
-    // Add default color for settings
-    colors['settings'] = generateColorVariants('#64748b'); // slate-500
+    // Add default color for settings (only if not customized)
+    if (!colors['settings']) colors['settings'] = generateColorVariants('#64748b'); // slate-500
 
     // Add default colors for support & reporting
     if (!colors['support']) colors['support'] = generateColorVariants('#3b82f6'); // blue-500
@@ -2297,7 +2297,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           top: 0,
           left: 0,
           bottom: 0,
-          width: sidebarOpen ? '300px' : '72px',
+          width: sidebarOpen ? '260px' : '72px',
           zIndex: 40,
           background: sidebarOpen ? 'var(--sidebar-bg)' : 'var(--sidebar-bg-collapsed)',
           color: 'var(--sidebar-text)',
@@ -2556,6 +2556,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               const SettIcon = iconMap[settingsTl.icon];
               const at = tabs.find(t => t.id === activeTabId);
               const isActiveSt = at?.type === settingsTl.type;
+              const settingsColor = settings.tabColors['settings'] ?? '#64748b';
               elements.push(
                 <div key="settings-wrapper" className="mt-2">
                   <button
@@ -2563,11 +2564,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     onClick={() => openTool(settingsTl)}
                     className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
                     title={!sidebarOpen ? tn(settingsTl) : ''}
-                    style={{ backgroundColor: 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    style={{ backgroundColor: isActiveSt ? 'var(--sidebar-active)' : 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveSt) { icon.style.color = settingsColor; icon.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActiveSt ? 'var(--sidebar-active)' : 'transparent'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveSt) { icon.style.color = 'var(--sidebar-text-muted)'; icon.style.filter = ''; } }}
                   >
-                    <SettIcon className={`w-5 h-5 flex-shrink-0 ${isActiveSt ? 'icon-glow' : ''}`} style={isActiveSt ? { color: '#64748b' } : { color: 'var(--sidebar-text-muted)' }} />
+                    <SettIcon className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveSt ? 'icon-glow' : ''}`} style={{ color: isActiveSt ? settingsColor : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
                     <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
                       <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}>{tn(settingsTl)}</p>
                     </div>

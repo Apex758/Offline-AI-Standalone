@@ -21,6 +21,12 @@ export interface NeuroSegmentProps<T extends string = string> {
   size?: 'sm' | 'md' | 'lg';
   /** invert: for use on dark/colored backgrounds */
   variant?: 'default' | 'invert';
+  /**
+   * pill: fully rounded (for icon-only segments)
+   * rect: rounded rectangle (for text-label segments)
+   * auto (default): rect when any option has a text label, pill otherwise
+   */
+  shape?: 'pill' | 'rect' | 'auto';
   className?: string;
   'aria-label'?: string;
 }
@@ -36,6 +42,7 @@ export function NeuroSegment<T extends string = string>({
   onChange,
   size = 'md',
   variant = 'default',
+  shape = 'auto',
   className = '',
   ...rest
 }: NeuroSegmentProps<T>) {
@@ -73,13 +80,16 @@ export function NeuroSegment<T extends string = string>({
   }, [updatePill]);
 
   const variantClass = variant === 'invert' ? ' ng-invert' : '';
+  const hasText = options.some((o) => o.label && o.label.trim().length > 0);
+  const shapeClass =
+    shape === 'rect' || (shape === 'auto' && hasText) ? ' ng-rect' : '';
 
   return (
     <div
       ref={containerRef}
       role="group"
       aria-label={rest['aria-label']}
-      className={`ng-segment ng-${size}${variantClass} ${className}`.trim()}
+      className={`ng-segment ng-${size}${variantClass}${shapeClass} ${className}`.trim()}
     >
       {/* Sliding pill */}
       <div

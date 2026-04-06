@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
@@ -61,6 +61,7 @@ import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
 import { useNotification } from '../contexts/NotificationContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { useTabProcessing } from '../contexts/TabBusyContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -412,6 +413,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const { notify } = useNotification();
   const { hasDiffusion, hasLama } = useCapabilities();
   const { guardOffline } = useOfflineGuard();
+  const { settings } = useSettings();
+  const tabColor = settings.tabColors['image-studio'] ?? '#ec4899';
 
   const IMAGE_STORAGE_KEY = `image-studio-${tabId}`;
 
@@ -500,6 +503,28 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // New editor tool state
   // ========================================
   const [editorTool, setEditorTool] = useState<EditorTool>('remove-object');
+  const editorToolContainerRef = useRef<HTMLDivElement>(null);
+  const editorToolBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [editorToolPill, setEditorToolPill] = useState({ left: 0, width: 0 });
+  const editorTools = [
+    { id: 'remove-object' as EditorTool, label: 'Object Remover', needsDiffusion: false, needsLama: true },
+    { id: 'remove-background' as EditorTool, label: 'Background Remover', needsDiffusion: false, needsLama: false },
+    { id: 'annotate' as EditorTool, label: 'Annotate', needsDiffusion: false, needsLama: false },
+    { id: 'coloring-page' as EditorTool, label: 'Coloring Page', needsDiffusion: false, needsLama: false },
+    { id: 'worksheet' as EditorTool, label: 'Worksheet Maker', needsDiffusion: false, needsLama: false },
+    { id: 'comic-maker' as EditorTool, label: 'Comic Maker', needsDiffusion: true, needsLama: false },
+  ];
+  const updateEditorToolPill = useCallback(() => {
+    const activeIdx = editorTools.findIndex(t => t.id === editorTool);
+    if (activeIdx === -1) return;
+    const btn = editorToolBtnRefs.current[activeIdx];
+    const container = editorToolContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setEditorToolPill({ left: br.left - cr.left, width: br.width });
+  }, [editorTool]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => { updateEditorToolPill(); }, [updateEditorToolPill]);
 
   // Annotation state
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
@@ -770,9 +795,19 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   useEffect(() => {
     try {
       if (uploadedImage || history.current) {
+        // Evict other image-studio keys to free quota before saving
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          if (k && k.startsWith('image-studio-') && k !== IMAGE_STORAGE_KEY) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach(k => sessionStorage.removeItem(k));
+
         sessionStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify({
           uploadedImage,
-          history
+          history: history.current
         }));
       }
     } catch (error) {
@@ -2017,7 +2052,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   }
 
   return (
-    <div className="h-full tab-content-bg flex flex-col" data-tutorial="image-studio-root">
+    <div className="h-full tab-content-bg flex flex-col" data-tutorial="image-studio-root" style={{ '--ng-accent': tabColor } as React.CSSProperties}>
       {/* Top Right Sliding Toggle */}
       <div className="flex justify-end p-4 border-b border-theme" data-tutorial="image-studio-tab-toggle">
         <NeuroSegment
@@ -2061,7 +2096,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <label className="block text-sm font-medium text-theme-label mb-2">
                       Visual Style
                     </label>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div
+                      className="ng-segment ng-rect w-full"
+                      style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}
+                    >
                       {[
                         {
                           id: 'cartoon_3d',
@@ -2129,31 +2167,32 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           ),
                           hint: 'Photorealistic, high-detail rendering',
                         },
-                      ].map((style) => (
-                        <button
-                          key={style.id}
-                          type="button"
-                          disabled={loadingStyles}
-                          onClick={() => setSelectedStyle(style.id)}
-                          className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer text-center
-                            ${selectedStyle === style.id
-                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md scale-[1.03]'
-                              : 'border-theme hover:border-blue-300 hover:bg-theme-subtle'
-                            }
-                            ${loadingStyles ? 'opacity-50 cursor-not-allowed' : ''}
-                          `}
-                        >
-                          <div className={`rounded-lg p-1 transition-all ${selectedStyle === style.id ? 'ring-2 ring-blue-400' : ''}`}>
-                            {style.icon}
-                          </div>
-                          <span className={`text-xs font-semibold leading-tight ${selectedStyle === style.id ? 'text-blue-600 dark:text-blue-400' : 'text-theme-label'}`}>
-                            {style.label}
-                          </span>
-                          {selectedStyle === style.id && (
-                            <span className="text-[10px] text-blue-500 leading-tight">{style.hint}</span>
-                          )}
-                        </button>
-                      ))}
+                      ].map((style) => {
+                        const active = selectedStyle === style.id;
+                        return (
+                          <button
+                            key={style.id}
+                            type="button"
+                            disabled={loadingStyles}
+                            onClick={() => setSelectedStyle(style.id)}
+                            className="ng-segment-btn flex-col gap-2 py-3"
+                            style={{
+                              height: 'auto',
+                              borderRadius: '5px',
+                              opacity: loadingStyles ? 0.5 : 1,
+                              cursor: loadingStyles ? 'not-allowed' : 'pointer',
+                              outline: active ? `2px solid ${tabColor}` : undefined,
+                              outlineOffset: '-2px',
+                              background: active ? `${tabColor}14` : undefined,
+                              color: active ? tabColor : undefined,
+                            }}
+                          >
+                            <div>{style.icon}</div>
+                            <span className="text-xs font-semibold leading-tight">{style.label}</span>
+                            {active && <span className="text-[10px] leading-tight opacity-75">{style.hint}</span>}
+                          </button>
+                        );
+                      })}
                     </div>
                     {styleProfiles[selectedStyle] && (
                       <p className="text-xs text-theme-hint mt-2">
@@ -2268,30 +2307,18 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   {activeModelName && !activeModelName.startsWith('sdxl-turbo') && (
                   <div>
                     <label className="block text-sm font-medium text-theme-label mb-2">Quality</label>
-                    <div className="flex gap-2">
-                      {([
-                        { label: 'Fast', steps: 2, hint: '~3s' },
-                        { label: 'Balanced', steps: 8, hint: '~10s' },
-                        { label: 'Quality', steps: 16, hint: '~25s' },
-                      ] as const).map(preset => {
-                        const active = numInferenceSteps === preset.steps;
-                        return (
-                          <button
-                            key={preset.label}
-                            type="button"
-                            onClick={() => setNumInferenceSteps(preset.steps)}
-                            className={`flex-1 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                              active
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                                : 'border-transparent bg-theme-secondary text-theme-label hover:bg-theme-hover'
-                            }`}
-                          >
-                            {preset.label}
-                            <span className="block text-[10px] font-normal text-theme-hint">{preset.hint}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <NeuroSegment
+                      options={[
+                        { value: '2',  label: 'Fast' },
+                        { value: '8',  label: 'Balanced' },
+                        { value: '16', label: 'Quality' },
+                      ]}
+                      value={String(numInferenceSteps)}
+                      onChange={(v) => setNumInferenceSteps(Number(v) as 2 | 8 | 16)}
+                      size="sm"
+                      shape="rect"
+                      className="w-full"
+                    />
                   </div>
                   )}
 
@@ -2876,7 +2903,16 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   <h3 className="text-sm font-semibold text-theme-label uppercase tracking-wide mb-3">Editor Tools</h3>
 
                   {/* Tool selector */}
-                  <div className="grid grid-cols-6 gap-1 mb-1 p-1 bg-theme-tertiary rounded-lg">
+                  <div
+                    ref={editorToolContainerRef}
+                    className="ng-segment w-full mb-1"
+                    style={{ position: 'relative' }}
+                  >
+                    <div
+                      className="ng-segment-pill"
+                      style={{ left: editorToolPill.left, width: editorToolPill.width }}
+                      aria-hidden="true"
+                    />
                     {([
                       { id: 'remove-object' as EditorTool, icon: Eraser, label: 'Object Remover', needsDiffusion: false, needsLama: true },
                       { id: 'remove-background' as EditorTool, icon: ImageOff, label: 'Background Remover', needsDiffusion: false, needsLama: false },
@@ -2884,16 +2920,18 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page', needsDiffusion: false, needsLama: false },
                       { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker', needsDiffusion: false, needsLama: false },
                       { id: 'comic-maker' as EditorTool, icon: BookOpen, label: 'Comic Maker', needsDiffusion: true, needsLama: false },
-                    ]).map(({ id, icon: Icon, label, needsDiffusion, needsLama }) => {
+                    ]).map(({ id, icon: ToolIcon, label, needsDiffusion, needsLama }, idx) => {
                       const toolLocked = (needsDiffusion && !hasDiffusion) || (needsLama && !hasLama);
                       return (
-                        <button key={id} onClick={() => { if (!toolLocked) setEditorTool(id); }}
+                        <button
+                          key={id}
+                          ref={el => { editorToolBtnRefs.current[idx] = el; }}
+                          onClick={() => { if (!toolLocked) setEditorTool(id); }}
                           title={toolLocked ? `${label} requires ${needsLama && !hasLama ? 'the LaMa model (big-lama.pt)' : 'a diffusion model'}` : label}
                           disabled={toolLocked}
-                          className={`p-2 rounded-md flex items-center justify-center transition ${
-                            editorTool === id ? 'bg-blue-600 text-white shadow' : 'text-theme-label hover:bg-theme-hover'
-                          } ${toolLocked ? 'opacity-30 cursor-not-allowed' : ''}`}>
-                          <Icon className="w-4 h-4" />
+                          className={`ng-segment-btn${editorTool === id ? ' ng-seg-active' : ''}${toolLocked ? ' ng-disabled' : ''}`}
+                        >
+                          <ToolIcon className="w-4 h-4" />
                         </button>
                       );
                     })}

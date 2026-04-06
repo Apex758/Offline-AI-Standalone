@@ -236,13 +236,14 @@ input, textarea, select {
   --ng-teal: #5ce0c4;
   --ng-teal-rgb: 99, 222, 200;
   --ng-blue-rgb: 56, 152, 236;
-  --ng-track-bg: #e0e5ec;
+  --ng-accent: #d4913f;
+  --ng-track-bg: #f7f8fc;
   --ng-track-hi: #ffffff;
-  --ng-track-lo: #b8bec7;
-  --ng-thumb-bg-hi: rgba(255, 255, 255, 0.55);
-  --ng-thumb-bg-lo: rgba(255, 255, 255, 0.15);
-  --ng-thumb-border: rgba(255, 255, 255, 0.45);
-  --ng-thumb-shadow: rgba(0, 0, 0, 0.12);
+  --ng-track-lo: #c4c9d4;
+  --ng-thumb-bg-hi: rgba(255, 252, 245, 0.70);
+  --ng-thumb-bg-lo: rgba(255, 252, 245, 0.30);
+  --ng-thumb-border: rgba(255, 252, 245, 0.50);
+  --ng-thumb-shadow: rgba(0, 0, 0, 0.10);
 }
 
 .dark {
@@ -334,13 +335,14 @@ input, textarea, select {
   --dash-hidden-text: #6b6966;
 
   /* Neuro-Glass toggle palette — dark mode */
-  --ng-track-bg: #1e2028;
-  --ng-track-hi: #2a2d36;
-  --ng-track-lo: #111318;
-  --ng-thumb-bg-hi: rgba(255, 255, 255, 0.08);
-  --ng-thumb-bg-lo: rgba(255, 255, 255, 0.02);
-  --ng-thumb-border: rgba(255, 255, 255, 0.10);
-  --ng-thumb-shadow: rgba(0, 0, 0, 0.40);
+  --ng-accent: #63d72a;
+  --ng-track-bg: #252320;
+  --ng-track-hi: #2f2c28;
+  --ng-track-lo: #131210;
+  --ng-thumb-bg-hi: rgba(249, 240, 220, 0.10);
+  --ng-thumb-bg-lo: rgba(249, 240, 220, 0.03);
+  --ng-thumb-border: rgba(249, 240, 220, 0.12);
+  --ng-thumb-shadow: rgba(0, 0, 0, 0.38);
 }
 
 /* ── Global dark mode for form inputs ── */

@@ -323,6 +323,7 @@ import Notification01IconData from '@hugeicons/core-free-icons/Notification01Ico
 import ArrowRight02IconData from '@hugeicons/core-free-icons/ArrowRight02Icon';
 import CircleArrowRight01IconData from '@hugeicons/core-free-icons/CircleArrowRight01Icon';
 import { NeuroSwitch } from './ui/NeuroSwitch';
+import { NeuroSegment } from './ui/NeuroSegment';
 
 const ArrowRightCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CircleArrowRight01IconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
@@ -1475,7 +1476,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   };
 
   return (
-    <div className="h-full tab-content-bg flex" data-tutorial="settings-welcome">
+    <div className="h-full tab-content-bg flex" data-tutorial="settings-welcome" style={{ '--ng-accent': settings.tabColors['settings'] ?? '#6b7280' } as React.CSSProperties}>
       {/* Left Sidebar Navigation */}
       <div className="w-1/4 flex-shrink-0 border-r border-theme-strong/30 bg-theme-surface/50 flex flex-col">
         <div className="px-7 pt-7 pb-4">
@@ -1871,31 +1872,17 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <CardDescription>{t('settingsPage.appearance.themeDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex gap-3">
-                      {([
-                        { value: 'light', label: t('settingsPage.appearance.light'), icon: Sun },
-                        { value: 'dark', label: t('settingsPage.appearance.dark'), icon: Moon },
-                        { value: 'system', label: t('settingsPage.appearance.system'), icon: Monitor },
-                      ] as const).map((option) => {
-                        const OptIcon = option.icon;
-                        return (
-                          <button
-                            key={option.value}
-                            onClick={() => updateSettings({ theme: option.value })}
-                            className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
-                              settings.theme === option.value
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-sm'
-                                : 'border-theme-strong/30 hover:border-theme-strong/60 bg-theme-surface'
-                            }`}
-                          >
-                            <OptIcon className={`w-5 h-5 ${settings.theme === option.value ? 'text-blue-600 dark:text-blue-400' : 'text-theme-secondary'}`} />
-                            <span className={`text-sm font-medium ${settings.theme === option.value ? 'text-blue-700 dark:text-blue-400' : 'text-theme-label'}`}>
-                              {option.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <NeuroSegment
+                      options={[
+                        { value: 'light', label: t('settingsPage.appearance.light'), icon: <Sun className="w-3.5 h-3.5" /> },
+                        { value: 'dark', label: t('settingsPage.appearance.dark'), icon: <Moon className="w-3.5 h-3.5" /> },
+                        { value: 'system', label: t('settingsPage.appearance.system'), icon: <Monitor className="w-3.5 h-3.5" /> },
+                      ]}
+                      value={settings.theme}
+                      onChange={(v) => updateSettings({ theme: v as 'light' | 'dark' | 'system' })}
+                      size="lg"
+                      className="w-full"
+                    />
                   </CardContent>
                 </Card>
 
@@ -1908,30 +1895,17 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <CardDescription>{t('settings.languageDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex gap-3">
-                      {([
-                        { value: 'en' as const, label: 'English' },
-                        { value: 'fr' as const, label: 'French' },
-                        { value: 'es' as const, label: 'Spanish' },
-                      ]).map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => updateSettings({ language: option.value })}
-                          className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
-                            settings.language === option.value
-                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-sm'
-                              : 'border-theme-strong/30 hover:border-theme-strong/60 bg-theme-surface'
-                          }`}
-                        >
-                          <span className={`text-lg ${settings.language === option.value ? 'text-blue-600 dark:text-blue-400' : 'text-theme-secondary'}`}>
-                            {option.value === 'en' ? 'EN' : option.value === 'fr' ? 'FR' : 'ES'}
-                          </span>
-                          <span className={`text-sm font-medium ${settings.language === option.value ? 'text-blue-700 dark:text-blue-400' : 'text-theme-label'}`}>
-                            {option.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                    <NeuroSegment
+                      options={[
+                        { value: 'en', label: 'English' },
+                        { value: 'fr', label: 'French' },
+                        { value: 'es', label: 'Spanish' },
+                      ]}
+                      value={settings.language}
+                      onChange={(v) => updateSettings({ language: v as 'en' | 'fr' | 'es' })}
+                      size="lg"
+                      className="w-full"
+                    />
                   </CardContent>
                 </Card>
 

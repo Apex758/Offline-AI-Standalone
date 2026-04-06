@@ -35,9 +35,12 @@ interface TeacherMetricsChartProps {
   showPhaseBands?: boolean;
   onChartMouseEnter?: () => void;
   onChartMouseLeave?: () => void;
+  currentScore?: number;
+  currentGrade?: string;
+  periodAvgColor?: string;
 }
 
-// --- Grade scale: A=80-100, B=70-79, C=60-69, D=50-59, E=40-49, F=0-39 ---
+// Grade scale: A=83-100, B=77-82, C=70-76, D=60-69, E=50-59, F=0-49
 const GRADE_COLORS: Record<string, string> = {
   A: '#22c55e',
   B: '#3b82f6',
@@ -47,14 +50,14 @@ const GRADE_COLORS: Record<string, string> = {
   F: '#ef4444',
 };
 
-// Ordered LOW-to-HIGH for the non-linear Y-axis transform
+// Ordered LOW-to-HIGH
 const SCORE_BANDS = [
-  { min: 0,  max: 40,  label: 'F', color: '#ef4444' },
-  { min: 40, max: 50,  label: 'E', color: '#f43f5e' },
-  { min: 50, max: 60,  label: 'D', color: '#f97316' },
-  { min: 60, max: 70,  label: 'C', color: '#eab308' },
-  { min: 70, max: 80,  label: 'B', color: '#3b82f6' },
-  { min: 80, max: 100, label: 'A', color: '#22c55e' },
+  { min: 0,  max: 50,  label: 'F', color: '#ef4444' },
+  { min: 50, max: 60,  label: 'E', color: '#f43f5e' },
+  { min: 60, max: 70,  label: 'D', color: '#f97316' },
+  { min: 70, max: 77,  label: 'C', color: '#eab308' },
+  { min: 77, max: 83,  label: 'B', color: '#3b82f6' },
+  { min: 83, max: 100, label: 'A', color: '#22c55e' },
 ];
 
 const PHASE_COLORS: Partial<Record<SchoolPhase, string>> = {
@@ -89,59 +92,25 @@ const DIMENSION_SERIES = [
 ];
 
 function getGradeColor(score: number): string {
-  if (score >= 80) return GRADE_COLORS.A;
-  if (score >= 70) return GRADE_COLORS.B;
-  if (score >= 60) return GRADE_COLORS.C;
-  if (score >= 50) return GRADE_COLORS.D;
-  if (score >= 40) return GRADE_COLORS.E;
+  if (score >= 83) return GRADE_COLORS.A;
+  if (score >= 77) return GRADE_COLORS.B;
+  if (score >= 70) return GRADE_COLORS.C;
+  if (score >= 60) return GRADE_COLORS.D;
+  if (score >= 50) return GRADE_COLORS.E;
   return GRADE_COLORS.F;
 }
 
 function getGradeLabel(score: number): string {
-  if (score >= 80) return 'A';
-  if (score >= 70) return 'B';
-  if (score >= 60) return 'C';
-  if (score >= 50) return 'D';
-  if (score >= 40) return 'E';
+  if (score >= 83) return 'A';
+  if (score >= 77) return 'B';
+  if (score >= 70) return 'C';
+  if (score >= 60) return 'D';
+  if (score >= 50) return 'E';
   return 'F';
 }
 
-// --- Non-linear Y-axis: focus band occupies 50% of visual height ---
-
-function getFocusBandIndex(score: number): number {
-  for (let i = SCORE_BANDS.length - 1; i >= 0; i--) {
-    if (score >= SCORE_BANDS[i].min) return i;
-  }
-  return 0;
-}
-
-// Returns 7 visual boundary positions [0, b1, b2, b3, b4, b5, 100].
-// Focus band gets 50% of visual height; each other band gets 10%.
-function buildVisualBounds(focusIdx: number): number[] {
-  const FOCUS_WEIGHT = 50;
-  const OTHER_WEIGHT = 50 / (SCORE_BANDS.length - 1); // 10 each
-  const bounds = [0];
-  let cum = 0;
-  for (let i = 0; i < SCORE_BANDS.length; i++) {
-    cum += i === focusIdx ? FOCUS_WEIGHT : OTHER_WEIGHT;
-    bounds.push(Math.round(cum * 1000) / 1000);
-  }
-  return bounds;
-}
-
-// Maps a raw score to its visual position [0–100] using the current band layout.
-function yTransform(score: number, vBounds: number[]): number {
-  const clamped = Math.max(0, Math.min(100, score));
-  for (let i = 0; i < SCORE_BANDS.length; i++) {
-    const { min, max } = SCORE_BANDS[i];
-    const isLast = i === SCORE_BANDS.length - 1;
-    if (clamped >= min && (clamped < max || isLast)) {
-      const t = (clamped - min) / (max - min);
-      return vBounds[i] + t * (vBounds[i + 1] - vBounds[i]);
-    }
-  }
-  return clamped;
-}
+// Linear Y-axis — raw score values used directly, grade boundaries at SCORE_BANDS min values
+const SNAPSHOT_COLOR = '#94a3b8';
 
 const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   data,
@@ -152,6 +121,9 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   showPhaseBands = true,
   onChartMouseEnter,
   onChartMouseLeave,
+  currentScore,
+  currentGrade,
+  periodAvgColor,
 }) => {
   const { t } = useTranslation();
   const { ref: chartContainerRef, width: chartWidth, height: chartContainerHeight } = useContainerSize();
@@ -174,29 +146,15 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
     }));
   }, [data]);
 
-  // Derive focus band from latest data point
-  const { focusIdx, vBounds } = useMemo(() => {
-    if (chartData.length === 0) {
-      const idx = 0;
-      return { focusIdx: idx, vBounds: buildVisualBounds(idx) };
-    }
-    const latest = chartData[chartData.length - 1].composite_score ?? 0;
-    const idx = getFocusBandIndex(latest);
-    return { focusIdx: idx, vBounds: buildVisualBounds(idx) };
-  }, [chartData]);
-
-  // Apply non-linear transform to all score fields
+  // Compute cumulative running average + stamp badge score onto every point
   const transformedData = useMemo(() => {
-    return chartData.map(snap => ({
-      ...snap,
-      composite_score_v:    yTransform(snap.composite_score    ?? 0, vBounds),
-      curriculum_score_v:   yTransform(snap.curriculum_score   ?? 0, vBounds),
-      performance_score_v:  yTransform(snap.performance_score  ?? 0, vBounds),
-      content_score_v:      yTransform(snap.content_score      ?? 0, vBounds),
-      attendance_score_v:   yTransform(snap.attendance_score   ?? 0, vBounds),
-      achievements_score_v: yTransform(snap.achievements_score ?? 0, vBounds),
-    }));
-  }, [chartData, vBounds]);
+    let runningSum = 0;
+    return chartData.map((snap, idx) => {
+      runningSum += snap.composite_score ?? 0;
+      const runningAvg = Math.round((runningSum / (idx + 1)) * 10) / 10;
+      return { ...snap, running_avg: runningAvg, badge_score: currentScore ?? null };
+    });
+  }, [chartData, currentScore]);
 
   // Build phase bands for ReferenceArea backgrounds
   const phaseBands = useMemo(() => {
@@ -216,20 +174,38 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
     return bands;
   }, [chartData]);
 
-  const latestGradeColor = useMemo(() => {
-    if (chartData.length === 0) return '#6b7280';
-    return getGradeColor(chartData[chartData.length - 1].composite_score ?? 0);
-  }, [chartData]);
+  // Badge area color — reflects the live badge's grade
+  const badgeAreaColor = useMemo(() => getGradeColor(currentScore ?? 0), [currentScore]);
 
-  // Y-axis ticks sit exactly at visual band boundaries
-  const yAxisTicks = useMemo(() => [...vBounds], [vBounds]);
+  // Period avg color — from the tab color set in Settings, fallback to a neutral
+  const avgColor = periodAvgColor ?? '#d97706';
+
+  // Y-axis ticks at each grade's start boundary only — no 100 to avoid duplicate A
+  const yAxisTicks = SCORE_BANDS.map(b => b.min);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     const snap = payload[0]?.payload;
     if (!snap) return null;
-    // Always show original (pre-transform) scores in the tooltip
-    const score = snap.composite_score ?? 0;
+    const snapshotScore = snap.composite_score ?? 0;
+    const badgeScore = currentScore ?? snapshotScore;
+    const badgeGrade = currentGrade ?? getGradeLabel(badgeScore);
+    const badgeColor = getGradeColor(badgeScore);
+
+    // Shared row renderer for snapshot + avg
+    const ScoreRow = ({ label: rowLabel, score, color }: { label: string; score: number; color: string }) => (
+      <div className="flex items-center gap-2 text-xs">
+        <span style={{ color: 'var(--dash-text-sub)', minWidth: 52 }}>{rowLabel}</span>
+        <span className="font-semibold" style={{ color }}>{score}</span>
+        <span
+          className="font-bold px-1 py-0.5 rounded ml-auto"
+          style={{ backgroundColor: color + '22', color, minWidth: '1.4rem', textAlign: 'center', fontSize: 10 }}
+        >
+          {getGradeLabel(score)}
+        </span>
+      </div>
+    );
+
     return (
       <div
         className="rounded-xl p-3"
@@ -237,66 +213,73 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
           backgroundColor: 'var(--dash-card-bg)',
           border: '1px solid var(--dash-border)',
           boxShadow: '0 8px 24px var(--dash-card-shadow)',
-          minWidth: 180,
+          minWidth: 200,
         }}
       >
-        <p className="font-semibold mb-1 text-xs" style={{ color: 'var(--dash-text)' }}>
+        {/* Date */}
+        <p className="font-semibold mb-2 text-xs" style={{ color: 'var(--dash-text)' }}>
           {(() => { try { return format(parseISO(label), 'MMM d, yyyy'); } catch { return label; } })()}
         </p>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg font-bold" style={{ color: getGradeColor(score) }}>
-            {score}
-          </span>
-          <span
-            className="text-xs font-semibold px-1.5 py-0.5 rounded"
+
+        {/* Badge — styled like the actual grade badge button */}
+        <div className="flex items-center justify-center mb-3">
+          <div
+            className="flex flex-col items-center justify-center rounded-xl px-4 py-2"
             style={{
-              backgroundColor: getGradeColor(score) + '20',
-              color: getGradeColor(score),
+              backgroundColor: badgeColor + '18',
+              border: `2px solid ${badgeColor + '55'}`,
+              minWidth: 64,
             }}
           >
-            {getGradeLabel(score)}
-          </span>
+            <span className="text-xl font-bold leading-none" style={{ color: badgeColor }}>{badgeScore}</span>
+            <span className="text-xs font-semibold mt-0.5" style={{ color: badgeColor }}>{badgeGrade}</span>
+          </div>
         </div>
+
+        {/* Snapshot + avg rows */}
+        <div className="flex flex-col gap-1.5 mb-2">
+          <ScoreRow label="Snapshot" score={snapshotScore} color={getGradeColor(snapshotScore)} />
+          {snap.running_avg !== undefined && (
+            <ScoreRow label="Period avg" score={snap.running_avg} color={getGradeColor(snap.running_avg)} />
+          )}
+        </div>
+
+        {/* Phase */}
         {snap.phase_label && (
-          <p className="text-xs mb-1" style={{ color: 'var(--dash-text-sub)' }}>
+          <p className="text-xs mb-2 pt-1.5" style={{ color: 'var(--dash-text-sub)', borderTop: '1px solid var(--dash-border)' }}>
             Phase: {snap.phase_label}
           </p>
         )}
-        {!compact && payload.slice(1).map((entry: any, i: number) => {
-          // Recover original score from the _v dataKey
-          const dimKey = entry.dataKey?.replace('_v', '');
-          const val = Math.round((snap[dimKey] ?? 0));
-          const grade = getGradeLabel(val);
-          const gradeColor = getGradeColor(val);
-          return (
-            <div key={i} className="flex items-center gap-2 text-xs mb-0.5">
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'inline-block' }} />
-              <span style={{ color: 'var(--dash-text-sub)' }}>{entry.name}</span>
-              <span className="font-semibold ml-auto" style={{ color: 'var(--dash-text)' }}>{val}</span>
-              <span className="font-bold text-[10px] px-1 py-0.5 rounded" style={{ backgroundColor: gradeColor + '22', color: gradeColor, minWidth: '1.4rem', textAlign: 'center' }}>{grade}</span>
-            </div>
-          );
-        })}
+
+        {/* Dimensions */}
+        {!compact && (
+          <div className="flex flex-col gap-0.5">
+            {payload.slice(2).map((entry: any, i: number) => {
+              const val = Math.round((snap[entry.dataKey] ?? 0));
+              const gradeColor = getGradeColor(val);
+              return (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'inline-block' }} />
+                  <span style={{ color: 'var(--dash-text-sub)' }}>{entry.name}</span>
+                  <span className="font-semibold ml-auto" style={{ color: 'var(--dash-text)' }}>{val}</span>
+                  <span className="font-bold text-[10px] px-1 py-0.5 rounded" style={{ backgroundColor: gradeColor + '22', color: gradeColor, minWidth: '1.4rem', textAlign: 'center' }}>{getGradeLabel(val)}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
 
   const CustomYAxisTick = ({ x, y, payload }: any) => {
-    const vPos = Math.round(payload.value * 1000) / 1000;
-    // Map visual tick position back to a grade label
-    let label = '';
-    let color = '#9ca3af';
-    for (let i = 0; i < SCORE_BANDS.length; i++) {
-      if (Math.abs(vPos - vBounds[i]) < 0.5) {
-        label = SCORE_BANDS[i].label;
-        color = SCORE_BANDS[i].color;
-        break;
-      }
-    }
-    if (!label) return null;
+    const val = payload.value;
+    // Find the grade label for this tick (boundary = start of that grade's band)
+    const band = SCORE_BANDS.find(b => b.min === val);
+    if (!band) return null;
     return (
-      <text x={x} y={y} dy={4} textAnchor="end" fontSize={11} fontWeight={700} fill={color}>
-        {label}
+      <text x={x} y={y} dy={4} textAnchor="end" fontSize={11} fontWeight={700} fill={band.color}>
+        {band.label}
       </text>
     );
   };
@@ -355,24 +338,18 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
         {chartWidth > 0 && chartContainerHeight > 0 && (
           <AreaChart width={chartWidth} height={chartContainerHeight} data={transformedData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
             <defs>
-              <linearGradient id="tmcGradientFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor={latestGradeColor} stopOpacity={0.45} />
-                <stop offset="95%" stopColor={latestGradeColor} stopOpacity={0.04} />
+              <linearGradient id="tmcAvgGradientFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor={avgColor} stopOpacity={0.45} />
+                <stop offset="95%" stopColor={avgColor} stopOpacity={0.04} />
+              </linearGradient>
+              <linearGradient id="tmcBadgeGradientFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor={badgeAreaColor} stopOpacity={0.45} />
+                <stop offset="95%" stopColor={badgeAreaColor} stopOpacity={0.04} />
               </linearGradient>
             </defs>
 
             <CartesianGrid strokeDasharray="3 3" stroke="var(--dash-border)" vertical={false} />
 
-            {/* Grade band backgrounds — focus band is more opaque */}
-            {SCORE_BANDS.map((band, i) => (
-              <ReferenceArea
-                key={`grade-band-${i}`}
-                y1={vBounds[i]}
-                y2={vBounds[i + 1]}
-                fill={band.color}
-                fillOpacity={i === focusIdx ? 0.08 : 0.02}
-              />
-            ))}
 
             {/* Phase background bands (layered on top of grade bands) */}
             {showPhaseBands && phaseBands.map((band, i) => (
@@ -385,12 +362,12 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               />
             ))}
 
-            {/* Grade boundary dashed lines at visual positions */}
-            {vBounds.slice(1, -1).map((vPos, i) => (
+            {/* Grade boundary dashed lines at raw score boundaries */}
+            {SCORE_BANDS.slice(1).map((band, i) => (
               <ReferenceLine
                 key={`grade-line-${i}`}
-                y={vPos}
-                stroke={SCORE_BANDS[i + 1].color}
+                y={band.min}
+                stroke={band.color}
                 strokeDasharray="5 5"
                 strokeOpacity={0.5}
               />
@@ -412,24 +389,52 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
             />
             <Tooltip content={<CustomTooltip />} />
 
-            {/* Composite score area (transformed) */}
+            {/* Badge area — color reflects live badge grade */}
             <Area
               type="monotone"
-              dataKey="composite_score_v"
-              name="Composite"
-              stroke={latestGradeColor}
-              strokeWidth={3}
-              fill="url(#tmcGradientFill)"
-              dot={{ r: 4, fill: latestGradeColor, strokeWidth: 0 }}
-              activeDot={{ r: 6, fill: latestGradeColor, strokeWidth: 0 }}
+              dataKey="badge_score"
+              name="Badge"
+              stroke={badgeAreaColor}
+              strokeWidth={2}
+              fill="url(#tmcBadgeGradientFill)"
+              dot={false}
+              activeDot={{ r: 5, fill: badgeAreaColor, strokeWidth: 0 }}
+              hide={hiddenSeries.has('badge_score')}
+              connectNulls
             />
 
-            {/* Dimension overlay lines (transformed, non-compact only) */}
+            {/* Period average area — color from Settings tab color */}
+            <Area
+              type="monotone"
+              dataKey="running_avg"
+              name="Period Avg"
+              stroke={avgColor}
+              strokeWidth={2.5}
+              fill="url(#tmcAvgGradientFill)"
+              dot={false}
+              activeDot={{ r: 5, fill: avgColor, strokeWidth: 0 }}
+              hide={hiddenSeries.has('running_avg')}
+            />
+
+            {/* Snapshot line — point-in-time composite at each report (no fill) */}
+            <Line
+              type="monotone"
+              dataKey="composite_score"
+              name="Snapshots"
+              stroke={SNAPSHOT_COLOR}
+              strokeWidth={2}
+              strokeDasharray="5 3"
+              dot={{ r: 4, fill: SNAPSHOT_COLOR, strokeWidth: 0 }}
+              activeDot={{ r: 6, fill: SNAPSHOT_COLOR, strokeWidth: 0 }}
+              hide={hiddenSeries.has('composite_score')}
+            />
+
+            {/* Dimension overlay lines (non-compact only) */}
             {!compact && DIMENSION_SERIES.map(s => (
               <Line
                 key={s.key}
                 type="monotone"
-                dataKey={`${s.key}_v`}
+                dataKey={s.key}
                 name={s.name}
                 stroke={s.color}
                 strokeWidth={1.5}
@@ -443,9 +448,84 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
         )}
       </div>
 
-      {/* Toggleable legend for dimension overlays */}
+      {/* Toggleable legend for snapshot line + dimension overlays */}
       {!compact && (
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2 px-1">
+          {/* Badge toggle */}
+          {currentScore !== undefined && (() => {
+            const hidden = hiddenSeries.has('badge_score');
+            return (
+              <button
+                onClick={() => toggleSeries('badge_score')}
+                className="flex items-center gap-1.5 transition-opacity"
+                style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+              >
+                <span style={{
+                  width: 16, height: 10, borderRadius: 3,
+                  background: hidden ? 'var(--dash-hidden-dot)' : badgeAreaColor + '55',
+                  border: `2px solid ${hidden ? 'var(--dash-hidden-dot)' : badgeAreaColor}`,
+                  flexShrink: 0, display: 'inline-block',
+                }} />
+                <span style={{
+                  fontSize: 13,
+                  color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text-sub)',
+                  textDecoration: hidden ? 'line-through' : 'none',
+                }}>
+                  Badge
+                </span>
+              </button>
+            );
+          })()}
+          {/* Period Avg toggle */}
+          {(() => {
+            const hidden = hiddenSeries.has('running_avg');
+            return (
+              <button
+                onClick={() => toggleSeries('running_avg')}
+                className="flex items-center gap-1.5 transition-opacity"
+                style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+              >
+                <span style={{
+                  width: 16, height: 10, borderRadius: 3,
+                  background: hidden ? 'var(--dash-hidden-dot)' : avgColor + '55',
+                  border: `2px solid ${hidden ? 'var(--dash-hidden-dot)' : avgColor}`,
+                  flexShrink: 0, display: 'inline-block',
+                }} />
+                <span style={{
+                  fontSize: 13,
+                  color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text-sub)',
+                  textDecoration: hidden ? 'line-through' : 'none',
+                }}>
+                  Period Avg
+                </span>
+              </button>
+            );
+          })()}
+          {/* Snapshots toggle */}
+          {(() => {
+            const hidden = hiddenSeries.has('composite_score');
+            return (
+              <button
+                onClick={() => toggleSeries('composite_score')}
+                className="flex items-center gap-1.5 transition-opacity"
+                style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+              >
+                <span style={{
+                  width: 16, height: 2, borderRadius: 1,
+                  background: hidden ? 'var(--dash-hidden-dot)' : SNAPSHOT_COLOR,
+                  flexShrink: 0, display: 'inline-block',
+                }} />
+                <span style={{
+                  fontSize: 13,
+                  color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text-sub)',
+                  textDecoration: hidden ? 'line-through' : 'none',
+                }}>
+                  Snapshots
+                </span>
+              </button>
+            );
+          })()}
+          {/* Dimension toggles */}
           {DIMENSION_SERIES.map(s => {
             const hidden = hiddenSeries.has(s.key);
             return (

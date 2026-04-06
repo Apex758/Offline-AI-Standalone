@@ -47,6 +47,7 @@ import { useTTS, useSTT } from '../hooks/useVoice';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import ImageModeSelector from './ui/ImageModeSelector';
+import { NeuroSegment } from './ui/NeuroSegment';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import KidsStorybookSkeletonDay from './KidsStorybookSkeletonDay';
 import KidsStorybookSkeletonNight from './KidsStorybookSkeletonNight';
@@ -2034,7 +2035,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   // ─── Render: Input view ──────────────────────────────────────────────────────
   if (view === 'input') {
     return (
-      <div className="flex h-full">
+      <div className="flex h-full" style={{ '--ng-accent': accentColor } as React.CSSProperties}>
       <div className="flex-1 h-full overflow-y-auto">
         <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
           {/* Header */}
@@ -2324,24 +2325,19 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Speakers */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-2">{t('storybook.narratorsVoices')}</label>
-            <div className="flex gap-2 mb-3">
-              {([1, 2, 3] as const).map(n => {
-                const active = formData.speakerCount === n;
-                return (
-                  <button
-                    key={n}
-                    onClick={() => setSpeakerCount(n)}
-                    className="flex-1 py-1.5 rounded-lg text-sm border-2 transition-all"
-                    style={{
-                      borderColor: active ? accentColor : 'transparent',
-                      background: active ? `${accentColor}18` : 'var(--bg-secondary)',
-                      color: active ? accentColor : undefined,
-                    }}
-                  >
-                    {n === 1 ? t('storybook.narratorOnly') : n === 2 ? t('storybook.oneCharacter') : t('storybook.twoCharacters')}
-                  </button>
-                );
-              })}
+            <div className="mb-3" style={{ '--ng-accent': accentColor } as React.CSSProperties}>
+              <NeuroSegment
+                options={[
+                  { value: '1', label: t('storybook.narratorOnly') },
+                  { value: '2', label: t('storybook.oneCharacter') },
+                  { value: '3', label: t('storybook.twoCharacters') },
+                ]}
+                value={String(formData.speakerCount)}
+                onChange={(v) => setSpeakerCount(Number(v) as 1 | 2 | 3)}
+                size="sm"
+                shape="rect"
+                className="w-full"
+              />
             </div>
             <div className="space-y-2">
               {formData.speakers.map((sp, i) => (
@@ -2467,7 +2463,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const currentPage = isCoverSelected ? null : parsedBook.pages[currentPageIdx];
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full" style={{ '--ng-accent': accentColor } as React.CSSProperties}>
     <div className="flex-1 h-full flex flex-col overflow-hidden">
       {/* Top bar */}
       <div className="shrink-0 border-b border-theme px-4 py-2 flex items-center gap-3" style={{ borderBottomColor: `${accentColor}33` }}>

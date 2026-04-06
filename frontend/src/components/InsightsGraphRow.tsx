@@ -60,6 +60,7 @@ interface InsightsGraphRowProps {
   insightsData?: InsightsData | null;
   loading?: boolean;
   onDimensionClick?: (dimension: string, ctx: DimensionClickContext) => void;
+  tabColor?: string;
 }
 
 const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
@@ -69,6 +70,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
   insightsData,
   loading = false,
   onDimensionClick,
+  tabColor,
 }) => {
   const { t } = useTranslation();
   const [panelOpen, setPanelOpen] = useState(false);
@@ -126,6 +128,9 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
               showPhaseBands={showPhaseBands}
               onChartMouseEnter={() => setChartAreaHovered(true)}
               onChartMouseLeave={() => setChartAreaHovered(false)}
+              currentScore={metrics ? Math.round(metrics.composite_score) : undefined}
+              currentGrade={metrics ? metrics.composite_grade : undefined}
+              periodAvgColor={tabColor}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-sm text-theme-secondary">

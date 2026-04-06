@@ -726,7 +726,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden relative">
+    <div className="flex flex-col h-full overflow-hidden relative" style={{ '--ng-accent': tabColor } as React.CSSProperties}>
       <style>{`
         .ei-settings-dropdown {
           position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
@@ -1148,6 +1148,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           previousMetrics={previousMetrics}
           insightsData={insightsData}
           loading={dataLoading && !teacherMetrics}
+          tabColor={tabColor}
           onDimensionClick={(dim, ctx) => {
             // Store context and reset conversation so each click gets a fresh focused session
             setCoachTriggerDimension(dim);

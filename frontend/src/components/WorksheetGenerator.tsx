@@ -215,6 +215,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const { enqueue, queueEnabled } = useQueue();
   // Curriculum data is loaded per grade+subject via CurriculumAlignmentFields
   const { settings } = useSettings();
+  const worksheetTabColor = settings.tabColors['worksheet-generator'] ?? '#8b5cf6';
   const LOCAL_STORAGE_KEY = `worksheet_state_${tabId}`;
 
   const getDefaultFormData = (): WorksheetFormData => ({
@@ -1297,7 +1298,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
   return (
-    <div className="h-full tab-content-bg grid grid-cols-2" data-tutorial="worksheet-generator-welcome">
+    <div className="h-full tab-content-bg grid grid-cols-2" style={{ '--ng-accent': worksheetTabColor } as React.CSSProperties} data-tutorial="worksheet-generator-welcome">
       {/* Left Panel - Configuration (50%) */}
       <div className="flex flex-col border-r border-theme overflow-y-auto">
         <div className="border-b border-theme p-4 flex items-center justify-between" data-tutorial="worksheet-generator-header">

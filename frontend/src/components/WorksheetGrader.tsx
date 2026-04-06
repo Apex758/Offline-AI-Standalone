@@ -332,7 +332,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
 
   if (graderMode === 'scan') {
     return (
-      <div className="flex flex-col h-full bg-theme-surface">
+      <div className="flex flex-col h-full bg-theme-surface" style={{ '--ng-accent': accentColor } as React.CSSProperties}>
         {/* Mode tabs */}
         <div className="flex items-center gap-4 px-6 pt-3 pb-2 border-b flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
           <NeuroSegment
@@ -358,7 +358,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
   }
 
   return (
-    <div className="flex flex-col h-full bg-theme-surface">
+    <div className="flex flex-col h-full bg-theme-surface" style={{ '--ng-accent': accentColor } as React.CSSProperties}>
 
       {/* Mode tabs + Header */}
       <div className="flex items-center gap-4 px-6 pt-3 pb-2 border-b flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>

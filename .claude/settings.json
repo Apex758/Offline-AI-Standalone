@@ -246,7 +246,8 @@
       "Bash(python -)",
       "Bash(grep -iE \"\\\\.\\(png|jpg|jpeg|webp\\)$\")",
       "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
-      "Bash(grep -n \"upcomingMilestones\\\\|progressBreakdown\\\\|milestones\\\\\\\\.map\\\\|milestone\\\\\\\\.grade\\\\|milestone\\\\\\\\.subject\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/AnalyticsDashboard.tsx\")"
+      "Bash(grep -n \"upcomingMilestones\\\\|progressBreakdown\\\\|milestones\\\\\\\\.map\\\\|milestone\\\\\\\\.grade\\\\|milestone\\\\\\\\.subject\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/AnalyticsDashboard.tsx\")",
+      "Read(//c/Users/LG/Pictures/Screenshots/**)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

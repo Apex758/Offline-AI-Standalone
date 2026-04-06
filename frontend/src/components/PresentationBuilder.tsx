@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import AIDisclaimer from './AIDisclaimer';
 import type { ImageMode } from '../types';
@@ -33,6 +33,7 @@ import axios from 'axios';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { Skeleton } from './ui/skeleton';
+import { NeuroSegment } from './ui/NeuroSegment';
 import { filterGrades, filterSubjects } from '../data/teacherConstants';
 // pptxgenjs is dynamically imported in exportPPTX() to avoid bundling upfront
 
@@ -1562,6 +1563,25 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   });
   const [slideCount, setSlideCount] = useState<number>(savedData?.slideCount ?? 8);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>(savedData?.presentationMode || 'kids');
+  const presImgContainerRef = useRef<HTMLDivElement>(null);
+  const presImgBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [presImgPill, setPresImgPill] = useState({ left: 0, width: 0 });
+  const updatePresImgPill = useCallback(() => {
+    const modes: ImageMode[] = ['none', 'suggested', ...(hasVision ? ['my-images' as ImageMode] : []), ...(hasDiffusion ? ['ai' as ImageMode] : [])];
+    const activeIdx = modes.indexOf(imageMode);
+    if (activeIdx === -1) return;
+    const btn = presImgBtnRefs.current[activeIdx];
+    const container = presImgContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setPresImgPill({ left: br.left - cr.left, width: br.width });
+  }, [imageMode, hasVision, hasDiffusion]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => { updatePresImgPill(); }, [updatePresImgPill]);
+  useEffect(() => {
+    const t = setTimeout(updatePresImgPill, 0);
+    return () => clearTimeout(t);
+  }, [updatePresImgPill]);
   const [maxImages, setMaxImages] = useState<number>(savedData?.maxImages ?? 0); // 0 = auto (AI decides)
   const [uploadedImages, setUploadedImages] = useState<Array<{ id: string; dataUri: string; filename: string }>>(savedData?.uploadedImages || []);
   const [generationPhase, setGenerationPhase] = useState<'idle' | 'analyzing' | 'generating'>('idle');
@@ -2298,20 +2318,19 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
             {/* Mode toggle */}
-            <div className="flex rounded-lg border border-theme-border overflow-hidden">
-              {(['scratch', 'lesson', 'prompt'] as const).map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => setInputMode(mode)}
-                  className={`flex-1 px-4 py-2.5 text-sm font-semibold transition-all ${inputMode === mode
-                    ? 'text-white'
-                    : 'bg-theme-secondary text-theme-muted hover:text-theme-heading'
-                  }`}
-                  style={inputMode === mode ? { background: tabColor } : undefined}
-                >
-                  {mode === 'scratch' ? t('presentation.fromScratch') : mode === 'lesson' ? t('presentation.fromLessonPlan') : t('presentation.freePrompt')}
-                </button>
-              ))}
+            <div style={{ '--ng-accent': tabColor } as React.CSSProperties}>
+              <NeuroSegment
+                options={[
+                  { value: 'scratch', label: t('presentation.fromScratch') },
+                  { value: 'lesson',  label: t('presentation.fromLessonPlan') },
+                  { value: 'prompt',  label: t('presentation.freePrompt') },
+                ]}
+                value={inputMode}
+                onChange={(v) => setInputMode(v as 'scratch' | 'lesson' | 'prompt')}
+                size="sm"
+                shape="rect"
+                className="w-full"
+              />
             </div>
 
             {inputMode === 'prompt' ? (
@@ -2501,7 +2520,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 <Icon icon={Presentation01Icon} className="w-4" style={{ color: tabColor }} />
                 {t('presentation.presentationStyle')}
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div
+                className="ng-segment ng-rect w-full"
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
+              >
                 {([
                   { id: 'kids' as PresentationMode, label: t('presentation.forStudents'), desc: t('presentation.studentDesc') },
                   { id: 'professional' as PresentationMode, label: t('presentation.professional'), desc: t('presentation.professionalDesc') },
@@ -2511,14 +2533,18 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     <button
                       key={opt.id}
                       onClick={() => setPresentationMode(opt.id)}
-                      className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center"
+                      className="ng-segment-btn flex-col gap-0.5 py-2.5"
                       style={{
-                        borderColor: active ? tabColor : 'var(--border-color, #333)',
-                        background: active ? `${tabColor}14` : 'transparent',
+                        height: 'auto',
+                        borderRadius: '5px',
+                        color: active ? tabColor : undefined,
+                        background: active ? `${tabColor}14` : undefined,
+                        outline: active ? `2px solid ${tabColor}55` : undefined,
+                        outlineOffset: '-2px',
                       }}
                     >
-                      <span className="text-xs font-bold" style={{ color: active ? tabColor : undefined }}>{opt.label}</span>
-                      <span className="text-[10px] text-theme-muted leading-tight">{opt.desc}</span>
+                      <span className="text-xs font-semibold leading-tight">{opt.label}</span>
+                      <span className="text-[10px] leading-tight" style={{ opacity: 0.7 }}>{opt.desc}</span>
                     </button>
                   );
                 })}
@@ -2533,30 +2559,35 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <Icon icon={Image01Icon} className="w-4" style={{ color: tabColor }} />
                   {t('presentation.images')}
                 </div>
-                <div className={`grid gap-2 ${hasDiffusion ? 'grid-cols-4' : hasVision ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                  {([
+                {(() => {
+                  const imgOpts = [
                     { id: 'none' as ImageMode, label: t('presentation.noImages'), desc: t('presentation.textOnly') },
                     { id: 'suggested' as ImageMode, label: t('presentation.suggested'), desc: t('presentation.aiSuggests') },
                     ...(hasVision ? [{ id: 'my-images' as ImageMode, label: t('presentation.myImages'), desc: t('presentation.uploadOwn') }] : []),
                     ...(hasDiffusion ? [{ id: 'ai' as ImageMode, label: t('presentation.aiGenerated'), desc: t('presentation.autoCreate') }] : []),
-                  ]).map(opt => {
-                    const active = imageMode === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        onClick={() => setImageMode(opt.id)}
-                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center"
-                        style={{
-                          borderColor: active ? tabColor : 'var(--border-color, #333)',
-                          background: active ? `${tabColor}14` : 'transparent',
-                        }}
-                      >
-                        <span className="text-xs font-bold" style={{ color: active ? tabColor : undefined }}>{opt.label}</span>
-                        <span className="text-[10px] text-theme-muted leading-tight">{opt.desc}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                  ];
+                  return (
+                    <div
+                      ref={presImgContainerRef}
+                      className="ng-segment ng-rect w-full"
+                      style={{ display: 'grid', gridTemplateColumns: `repeat(${imgOpts.length}, 1fr)`, '--ng-accent': tabColor } as React.CSSProperties}
+                    >
+                      <div className="ng-segment-pill" style={{ left: presImgPill.left, width: presImgPill.width }} aria-hidden="true" />
+                      {imgOpts.map((opt, idx) => (
+                        <button
+                          key={opt.id}
+                          ref={el => { presImgBtnRefs.current[idx] = el; }}
+                          onClick={() => setImageMode(opt.id)}
+                          className={`ng-segment-btn flex-col gap-0.5 py-2.5${imageMode === opt.id ? ' ng-seg-active' : ''}`}
+                          style={{ height: 'auto', borderRadius: '5px' }}
+                        >
+                          <span className="text-xs font-semibold leading-tight">{opt.label}</span>
+                          <span className="text-[10px] leading-tight" style={{ opacity: 0.7 }}>{opt.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Upload area for my-images mode */}
@@ -3111,17 +3142,19 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         {/* RIGHT: Tabs (Colours | Edit Slide | Layouts) */}
         <div className="w-[258px] flex-shrink-0 border-l border-theme bg-theme-secondary flex flex-col">
           {/* Tab switcher */}
-          <div className="flex border-b border-theme flex-shrink-0">
-            {(['color', 'edit', 'layouts'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setRightTab(tab)}
-                className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wide transition-all border-b-2 ${rightTab === tab ? '' : 'border-transparent text-theme-muted'}`}
-                style={rightTab === tab ? { color: primaryColor, borderBottomColor: primaryColor, background: `${primaryColor}12` } : undefined}
-              >
-                {tab === 'color' ? t('presentation.tabColours') : tab === 'edit' ? t('presentation.tabEditSlide') : t('presentation.tabThemes')}
-              </button>
-            ))}
+          <div className="flex-shrink-0 p-2 border-b border-theme" style={{ '--ng-accent': primaryColor } as React.CSSProperties}>
+            <NeuroSegment
+              options={[
+                { value: 'color',   label: t('presentation.tabColours') },
+                { value: 'edit',    label: t('presentation.tabEditSlide') },
+                { value: 'layouts', label: t('presentation.tabThemes') },
+              ]}
+              value={rightTab}
+              onChange={(v) => setRightTab(v as 'color' | 'edit' | 'layouts')}
+              size="sm"
+              shape="rect"
+              className="w-full"
+            />
           </div>
 
           <div className="flex-1 overflow-y-auto p-3.5">

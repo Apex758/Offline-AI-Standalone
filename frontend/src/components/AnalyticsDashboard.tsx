@@ -698,7 +698,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   }
 
   return (
-    <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--dash-bg)' }} data-tutorial="main-content">
+    <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--dash-bg)', '--ng-accent': 'var(--dash-primary)' } as React.CSSProperties} data-tutorial="main-content">
       {/* Header */}
       <header className="sticky top-0 z-20 backdrop-blur-sm" style={{
         backgroundColor: 'var(--dash-bg-alpha)',

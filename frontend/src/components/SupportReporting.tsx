@@ -68,6 +68,7 @@ import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import axios from 'axios';
 import { NeuroChevron } from './ui/NeuroChevron';
+import { NeuroSegment } from './ui/NeuroSegment';
 
 const METRICS_API = 'http://localhost:8000/api';
 const TICKETS_STORAGE_KEY = 'olh_support_tickets';
@@ -536,34 +537,16 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
         </div>
 
         {/* Flip Toggle */}
-        <div
-          className="flex items-center rounded-xl overflow-hidden"
-          style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-primary)' }}
-        >
-          <button
-            onClick={() => setFlipped(false)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all"
-            style={{
-              background: !flipped ? 'rgba(59,130,246,0.12)' : 'transparent',
-              color: !flipped ? 'rgb(59,130,246)' : 'var(--text-muted)',
-            }}
-          >
-            <HelpCircle className="w-3.5 h-3.5" />
-            Support
-          </button>
-          <div style={{ width: 1, height: 20, background: 'var(--border-primary)' }} />
-          <button
-            onClick={() => setFlipped(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all"
-            style={{
-              background: flipped ? 'rgba(239,68,68,0.12)' : 'transparent',
-              color: flipped ? 'rgb(239,68,68)' : 'var(--text-muted)',
-            }}
-          >
-            <AlertTriangle className="w-3.5 h-3.5" />
-            Report
-          </button>
-        </div>
+        <NeuroSegment
+          options={[
+            { value: 'support', label: 'Support', icon: <HelpCircle className="w-3.5 h-3.5" /> },
+            { value: 'report',  label: 'Report',  icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+          ]}
+          value={flipped ? 'report' : 'support'}
+          onChange={(v) => setFlipped(v === 'report')}
+          size="sm"
+          shape="rect"
+        />
       </div>
 
       {/* Card Flip Container */}

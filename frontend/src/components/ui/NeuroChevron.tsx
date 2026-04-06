@@ -26,6 +26,35 @@ export const NeuroChevron: React.FC<NeuroChevronProps> = ({
 
   const iconSize = size === 'sm' ? 12 : 16;
 
+  const iconEl = (
+    <svg
+      className={`ng-chevron-icon${expanded ? ' ng-chevron-expanded' : ''}`}
+      width={iconSize}
+      height={iconSize}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+
+  // When decorative (aria-hidden), render a span to avoid button-in-button nesting
+  if (rest['aria-hidden']) {
+    return (
+      <span
+        aria-hidden="true"
+        className={`ng-chevron-btn ng-chevron-${size} ${className}`.trim()}
+      >
+        {iconEl}
+      </span>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -35,24 +64,10 @@ export const NeuroChevron: React.FC<NeuroChevronProps> = ({
       onMouseLeave={() => setPressed(false)}
       aria-expanded={expanded}
       aria-label={rest['aria-label']}
-      aria-hidden={rest['aria-hidden']}
-      tabIndex={rest['aria-hidden'] ? -1 : 0}
+      tabIndex={0}
       className={`ng-chevron-btn ng-chevron-${size}${pressed ? ' ng-chevron-pressed' : ''} ${className}`.trim()}
     >
-      <svg
-        className={`ng-chevron-icon${expanded ? ' ng-chevron-expanded' : ''}`}
-        width={iconSize}
-        height={iconSize}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
+      {iconEl}
     </button>
   );
 };
