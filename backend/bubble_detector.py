@@ -112,6 +112,16 @@ def detect_tf_answer(
     }
 
 
+SEARCH_TOLERANCE_Y = 30  # pixels -- expand search window to handle position drift
+
+def _expand_regions_y(regions: list[dict], tolerance: int = SEARCH_TOLERANCE_Y) -> list[dict]:
+    """Expand each region's y by tolerance in both directions for position drift."""
+    return [
+        {**r, 'y': max(0, r['y'] - tolerance), 'h': r['h'] + 2 * tolerance}
+        for r in regions
+    ]
+
+
 def detect_answers_from_template(
     image: np.ndarray,
     regions: list[dict]
@@ -131,13 +141,13 @@ def detect_answers_from_template(
         q_type = region["type"]
 
         if q_type == "multiple-choice":
-            result = detect_mc_answer(image, region["bubbles"])
+            result = detect_mc_answer(image, _expand_regions_y(region["bubbles"]))
             result["question_index"] = q_idx
             result["type"] = q_type
             results.append(result)
 
         elif q_type == "true-false":
-            result = detect_tf_answer(image, region["checkboxes"])
+            result = detect_tf_answer(image, _expand_regions_y(region["checkboxes"]))
             result["question_index"] = q_idx
             result["type"] = q_type
             results.append(result)

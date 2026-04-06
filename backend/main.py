@@ -4202,6 +4202,129 @@ async def _ocr_per_question_regions(file_bytes: bytes, questions: list, ocr_serv
     return detected_answers
 
 
+async def _grade_detected_answers(
+    questions: list,
+    detected_answers: dict,
+    doc_type: str = 'quiz',
+    passage: str = '',
+) -> tuple:
+    """Grade detected answers using objective comparison + LLM for subjective.
+
+    Uses question 'type' from the answer key to route each question:
+    - Objective types (MC, TF, fill-blank, word-bank, matching) -> _grade_objective_question()
+    - Subjective types (short-answer, open-ended, essay, etc.) -> batched LLM grading
+
+    Returns: (details_dict, total_earned, total_max, unclear_list)
+    """
+    details = {}
+    unclear = []
+    subjective_questions = []
+
+    for i, q in enumerate(questions):
+        q_key = str(i)
+        student_answer = detected_answers.get(i, '')
+        pts = q.get('points', 1) or 1
+
+        # Check for unclear/blank answers
+        if not student_answer or student_answer.lower() in ('[unclear]', 'unclear', ''):
+            details[q_key] = {'answer': student_answer, 'earned': 0, 'max': pts}
+            unclear.append(i)
+            continue
+
+        qtype = (q.get('type') or '').lower()
+
+        # Objective types: direct comparison
+        if qtype in ('multiple-choice', 'true-false', 'fill-blank', 'word-bank', 'matching'):
+            grade_result = _grade_objective_question(q, student_answer)
+            if grade_result is not None:
+                details[q_key] = grade_result
+            else:
+                # _grade_objective_question returned None -> unknown sub-type, route to LLM
+                subjective_questions.append((q_key, q, student_answer))
+        else:
+            # Subjective types: short-answer, open-ended, essay, comprehension, etc.
+            subjective_questions.append((q_key, q, student_answer))
+
+    # Batch LLM grading for subjective questions
+    if subjective_questions:
+        try:
+            from inference_factory import get_inference_instance
+            inference = get_inference_instance()
+
+            subj_lines = []
+            for q_key, q, ans in subjective_questions:
+                pts = q.get('points', 1) or 1
+                ref = q.get('correctAnswer', '')
+                subj_lines.append(
+                    f"Q{q_key} [{q.get('type')}, {pts}pt]: \"{q.get('question', '')}\"\n"
+                    f"  Reference answer: {ref}\n"
+                    f"  Student wrote: {ans}"
+                )
+
+            passage_ctx = f'\n\nPassage context:\n\"\"\"{passage[:1500]}\"\"\"' if passage else ''
+            tool_name = "quiz_subjective_grading" if doc_type == 'quiz' else "worksheet_subjective_grading"
+
+            llm_prompt = (
+                f"Grade these subjective questions. Award partial credit "
+                f"(0 to max points) based on accuracy and completeness.{passage_ctx}\n\n"
+                + "\n\n".join(subj_lines)
+                + "\n\nReturn ONLY valid JSON:\n{\n"
+            )
+            # Add expected keys
+            for q_key, q, _ in subjective_questions:
+                pts = q.get('points', 1) or 1
+                llm_prompt += f'  "{q_key}": {{"earned": <0-{pts}>, "max": {pts}, "feedback": "brief reason"}},\n'
+            llm_prompt += "}"
+
+            import re as _re
+            response = await inference.generate(
+                tool_name=tool_name,
+                input_data="subjective grading",
+                prompt_template=llm_prompt,
+                max_tokens=500,
+                temperature=0.1,
+            )
+
+            raw_llm = response.get('result') or ''
+            json_match = _re.search(r'\{[\s\S]*\}', raw_llm)
+            if json_match:
+                llm_grades = json.loads(json_match.group())
+                for q_key, q, ans in subjective_questions:
+                    pts = q.get('points', 1) or 1
+                    g = llm_grades.get(q_key, {})
+                    details[q_key] = {
+                        'answer': ans,
+                        'earned': min(g.get('earned', 0), pts),
+                        'max': pts,
+                        'feedback': g.get('feedback', ''),
+                    }
+            else:
+                # LLM returned no parseable JSON
+                for q_key, q, ans in subjective_questions:
+                    pts = q.get('points', 1) or 1
+                    details[q_key] = {
+                        'answer': ans,
+                        'earned': 0,
+                        'max': pts,
+                        'feedback': 'Could not grade automatically - needs manual review',
+                    }
+        except Exception as e:
+            logger.error(f"LLM subjective grading failed: {e}")
+            for q_key, q, ans in subjective_questions:
+                pts = q.get('points', 1) or 1
+                details[q_key] = {
+                    'answer': ans,
+                    'earned': 0,
+                    'max': pts,
+                    'feedback': 'Could not grade automatically - needs manual review',
+                }
+
+    total_earned = sum(d.get('earned', 0) for d in details.values())
+    total_max = sum(d.get('max', 1) for d in details.values())
+
+    return details, total_earned, total_max, unclear
+
+
 @app.post("/api/smart-grade-stream")
 async def smart_grade_stream(
     student_files: List[UploadFile] = File(...),
@@ -4275,6 +4398,15 @@ async def smart_grade_stream(
                     # === QR PATH: fast auto-grade ===
                     result['grade_method'] = 'qr'
                     result['student_id'] = qr_data['student_id']
+                    # Verify QR doc_id matches request doc_id
+                    if qr_data.get('doc_id') and qr_data['doc_id'] != doc_id:
+                        result['qr_doc_id_warning'] = (
+                            f"Paper QR says {qr_data['doc_id']!r} but grading against {doc_id!r}"
+                        )
+                        logger.warning(
+                            f"smart-grade: doc_id mismatch for {filename}: "
+                            f"QR={qr_data['doc_id']!r} vs request={doc_id!r}"
+                        )
 
                     student = student_service.get_student(qr_data['student_id'])
                     if student:
@@ -4322,28 +4454,11 @@ async def smart_grade_stream(
                                     remapped[q_idx] = remap_mc_option(answer, q_map)
                         detected_answers = remapped
 
-                    # Grade against answer key
-                    score = 0
-                    total_pts = len(questions)
-                    details = {}
-                    for i, q in enumerate(questions):
-                        student_answer = detected_answers.get(i, '')
-                        correct = q.get('correctAnswer', '')
-                        pts = q.get('points', 1) or 1
-                        earned = 0
-                        if isinstance(correct, int):
-                            if student_answer.upper() == chr(65 + correct):
-                                earned = pts
-                        elif isinstance(correct, str):
-                            if student_answer.strip().lower() == correct.strip().lower():
-                                earned = pts
-                        score += earned
-                        details[str(i)] = {
-                            'answer': student_answer,
-                            'earned': earned,
-                            'max': pts,
-                        }
-                    total_pts = sum(q.get('points', 1) or 1 for q in questions)
+                    # Grade using shared helper (objective + LLM subjective)
+                    passage = answer_key.get('passage', '') if doc_type == 'worksheet' else ''
+                    details, score, total_pts, unclear_list = await _grade_detected_answers(
+                        questions, detected_answers, doc_type=doc_type, passage=passage
+                    )
                     percentage = round((score / total_pts * 100) if total_pts > 0 else 0, 1)
 
                     result.update({
@@ -4352,36 +4467,11 @@ async def smart_grade_stream(
                         'percentage': percentage,
                         'letter_grade': student_service.get_letter_grade(percentage),
                         'details': details,
+                        'unclear': unclear_list,
+                        'instance_id': instance.get('id') if instance else None,
+                        'doc_id': doc_id,
                     })
-
-                    # Save grade
-                    if result['student_id']:
-                        try:
-                            grade_data = {
-                                'student_id': result['student_id'],
-                                'score': score,
-                                'total_points': total_pts,
-                                'percentage': percentage,
-                                'letter_grade': result['letter_grade'],
-                                'answers': details,
-                            }
-                            if doc_type == 'quiz':
-                                grade_data['quiz_title'] = answer_key.get('quiz_title', '')
-                                grade_data['subject'] = answer_key.get('subject', '')
-                                grade_data['quiz_id'] = doc_id
-                                if instance:
-                                    grade_data['instance_id'] = instance.get('id')
-                                student_service.save_quiz_grade(grade_data)
-                            else:
-                                grade_data['worksheet_title'] = answer_key.get('worksheet_title', '')
-                                grade_data['subject'] = answer_key.get('subject', '')
-                                grade_data['worksheet_id'] = doc_id
-                                if instance:
-                                    grade_data['instance_id'] = instance.get('id')
-                                student_service.save_worksheet_grade(grade_data)
-                            result['saved'] = True
-                        except Exception as e:
-                            logger.error(f"Failed to save grade: {e}")
+                    # Grades are NOT auto-saved -- teacher reviews first via /api/confirm-grades
 
                     qr_graded += 1
 
@@ -9389,6 +9479,69 @@ async def export_calendar_ics(request: Request):
 
 # ── Scan-Grading Endpoints ──────────────────────────────────────────────────
 
+@app.post("/api/confirm-grades")
+async def confirm_grades(request: Request):
+    """Save teacher-reviewed grades to student records.
+
+    Called after the teacher reviews auto-graded results and optionally edits scores.
+    Uses upsert logic (duplicate protection) so re-confirming is safe.
+    """
+    body = await request.json()
+    doc_type = body.get("doc_type", "quiz")
+    doc_id = body.get("doc_id", "")
+    grades = body.get("grades", [])
+
+    if not grades:
+        return JSONResponse({"saved": 0, "failed": 0, "errors": []})
+
+    # Fetch answer key for title/subject metadata
+    if doc_type == "quiz":
+        answer_key = student_service.get_quiz_answer_key(doc_id)
+    else:
+        answer_key = student_service.get_worksheet_answer_key(doc_id)
+
+    saved = 0
+    failed = 0
+    errors = []
+
+    for grade in grades:
+        try:
+            student_id = grade.get("student_id")
+            if not student_id:
+                errors.append(f"Missing student_id for {grade.get('student_name', 'unknown')}")
+                failed += 1
+                continue
+
+            grade_data = {
+                "student_id": student_id,
+                "score": grade.get("score", 0),
+                "total_points": grade.get("total_points", 0),
+                "percentage": grade.get("percentage", 0),
+                "letter_grade": grade.get("letter_grade", ""),
+                "answers": grade.get("details", {}),
+                "instance_id": grade.get("instance_id"),
+            }
+
+            if doc_type == "quiz":
+                grade_data["quiz_title"] = answer_key.get("quiz_title", "") if answer_key else ""
+                grade_data["subject"] = answer_key.get("subject", "") if answer_key else ""
+                grade_data["quiz_id"] = doc_id
+                student_service.save_quiz_grade(grade_data)
+            else:
+                grade_data["worksheet_title"] = answer_key.get("worksheet_title", "") if answer_key else ""
+                grade_data["subject"] = answer_key.get("subject", "") if answer_key else ""
+                grade_data["worksheet_id"] = doc_id
+                student_service.save_worksheet_grade(grade_data)
+
+            saved += 1
+        except Exception as e:
+            logger.error(f"Failed to save grade for {grade.get('student_id')}: {e}")
+            errors.append(f"{grade.get('student_name', grade.get('student_id', 'unknown'))}: {str(e)}")
+            failed += 1
+
+    return JSONResponse({"saved": saved, "failed": failed, "errors": errors})
+
+
 @app.post("/api/save-answer-regions")
 async def save_answer_regions(request: Request):
     """Save answer region template for a document.
@@ -9833,6 +9986,16 @@ async def scan_grade_auto_stream(
                         for det in detections:
                             if det["status"] == "detected":
                                 detected_answers[det["question_index"]] = det["selected"]
+                            elif det["status"] == "needs_ocr" and det.get("cropped_image") is not None:
+                                try:
+                                    import ocr_service
+                                    if ocr_service.is_ocr_available():
+                                        import cv2
+                                        _, img_encoded = cv2.imencode('.png', det["cropped_image"])
+                                        ocr_text = await ocr_service.extract_text(img_encoded.tobytes())
+                                        detected_answers[det["question_index"]] = ocr_text.strip()
+                                except Exception:
+                                    detected_answers[det["question_index"]] = ""
                 else:
                     try:
                         import ocr_service
@@ -9854,44 +10017,15 @@ async def scan_grade_auto_stream(
                                 remapped[q_idx] = remap_mc_option(answer, q_map)
                     detected_answers = remapped
 
-                # Grade
-                score = 0
-                total = len(questions)
-                for i, q in enumerate(questions):
-                    student_answer = detected_answers.get(i, "")
-                    correct = q.get("correctAnswer", "")
-                    if isinstance(correct, int):
-                        if student_answer.upper() == chr(65 + correct):
-                            score += 1
-                    elif isinstance(correct, str):
-                        if student_answer.strip().lower() == correct.strip().lower():
-                            score += 1
-
+                # Grade using shared helper (objective + LLM subjective)
+                passage = answer_key.get('passage', '') if qr_data["type"] == 'worksheet' else ''
+                details, score, total, unclear_list = await _grade_detected_answers(
+                    questions, detected_answers, doc_type=qr_data["type"], passage=passage
+                )
                 percentage = round((score / total * 100) if total > 0 else 0, 1)
                 letter_grade = student_service.get_letter_grade(percentage)
 
-                # Save
-                if qr_data["student_id"]:
-                    grade_data = {
-                        "student_id": qr_data["student_id"],
-                        "score": score, "total_points": total,
-                        "percentage": percentage, "letter_grade": letter_grade,
-                        "answers": detected_answers,
-                    }
-                    if qr_data["type"] == "quiz":
-                        grade_data["quiz_title"] = answer_key.get("quiz_title", "")
-                        grade_data["subject"] = answer_key.get("subject", "")
-                        grade_data["quiz_id"] = qr_data["doc_id"]
-                        grade_data["instance_id"] = instance["id"] if instance else None
-                        student_service.save_quiz_grade(grade_data)
-                    else:
-                        grade_data["worksheet_title"] = answer_key.get("worksheet_title", "")
-                        grade_data["subject"] = answer_key.get("subject", "")
-                        grade_data["worksheet_id"] = qr_data["doc_id"]
-                        grade_data["instance_id"] = instance["id"] if instance else None
-                        student_service.save_worksheet_grade(grade_data)
-
-                yield f"data: {json.dumps({'event': 'graded', 'file_name': filename, 'student_name': student_name, 'score': score, 'total': total, 'percentage': percentage, 'letter_grade': letter_grade})}\n\n"
+                yield f"data: {json.dumps({'event': 'graded', 'file_name': filename, 'student_name': student_name, 'score': score, 'total': total, 'percentage': percentage, 'letter_grade': letter_grade, 'details': details})}\n\n"
                 graded_count += 1
                 total_pct += percentage
 

@@ -47,6 +47,27 @@ const ALIGNMENT_MARKERS: AlignmentMarker[] = [
 // Standard QR position (top-right, 5mm from edge, 20mm = ~76px square)
 const QR_POSITION = { x: PAGE_WIDTH_PX - 95, y: 19, w: 76, h: 76 };
 
+function estimateQuestionHeight(
+  q: { type?: string; question?: string; options?: unknown[] },
+): number {
+  const qType = (q.type || '').toLowerCase();
+  const textLines = Math.ceil((q.question || '').length / 60);
+  const textHeight = Math.max(30, textLines * 22);
+
+  if (qType.includes('multiple-choice') || qType === 'mc') {
+    return textHeight + 20 + ((q.options as any[])?.length || 4) * 28;
+  } else if (qType.includes('true') || qType.includes('false')) {
+    return textHeight + 40;
+  } else if (qType.includes('fill') || qType.includes('blank')) {
+    return textHeight + 40;
+  } else if (qType.includes('short') || qType.includes('open') || qType.includes('essay')) {
+    return textHeight + 80;
+  } else if (qType.includes('match')) {
+    return textHeight + 200;
+  }
+  return textHeight + 60;
+}
+
 /**
  * Generate answer region templates from bubble regions and question metadata.
  *
@@ -78,16 +99,15 @@ export function generateAnswerRegions(
   // These assume standard quiz layout: ~80px header, ~60px per question
   const CONTENT_TOP = 120; // below header + QR area
   const CONTENT_LEFT = 50; // left margin
-  const QUESTION_HEIGHT = 80; // estimated height per question block
   const OPTION_START_X = 70; // options indented from question
   const OPTION_SPACING_X = 130; // horizontal spacing between bubble options
+
+  let questionY = CONTENT_TOP;
 
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
     const qType = q.type?.toLowerCase() || '';
     const qBubbles = bubblesByQuestion.get(i);
-
-    const questionY = CONTENT_TOP + i * QUESTION_HEIGHT;
 
     if (qBubbles && qBubbles.length > 0) {
       // This question has bubbles -- it's MC or TF
@@ -142,8 +162,35 @@ export function generateAnswerRegions(
           h: 60,
         },
       });
+    } else if (qType.includes('match')) {
+      // Matching: emit as needs_ocr region covering the matching grid area
+      const matchingItemCount = (q as any).matchingItems?.columnA?.length ??
+                                 (q as any).options?.length ?? 8;
+      const estimatedHeight = 40 + matchingItemCount * 48;
+      regions.push({
+        question_index: i,
+        type: 'open-answer',
+        text_box: {
+          x: CONTENT_LEFT,
+          y: questionY,
+          w: Math.floor((PAGE_WIDTH_PX - 2 * CONTENT_LEFT) / 2),
+          h: Math.min(estimatedHeight, PAGE_HEIGHT_PX - questionY - 40),
+        },
+      });
+    } else if (qType.includes('word') || qType.includes('bank')) {
+      // Word-bank: emit as fill-blank OCR region
+      regions.push({
+        question_index: i,
+        type: 'fill-blank',
+        text_box: {
+          x: CONTENT_LEFT,
+          y: questionY + 20,
+          w: PAGE_WIDTH_PX - 2 * CONTENT_LEFT,
+          h: 35,
+        },
+      });
     }
-    // Skip question types we can't detect (matching, etc.)
+    questionY += estimateQuestionHeight(q);
   }
 
   return {

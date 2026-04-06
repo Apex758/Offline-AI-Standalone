@@ -223,7 +223,7 @@ function generateMathHTML(
 
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         ${questions.map((q, i) => `
-          <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+          <div data-q="${i}" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
               <div style="flex-shrink: 0; width: 2rem; height: 2rem; background-color: #dbeafe; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 600;">
                 ${i + 1}
@@ -304,7 +304,7 @@ function generateMultipleChoiceHTML(
       <!-- Questions -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         ${worksheet.questions.map((q, i) => `
-          <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+          <div data-q="${i}" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
               <div style="flex-shrink: 0; width: 2rem; height: 2rem; background-color: #dbeafe; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 600;">
                 ${i + 1}
@@ -408,7 +408,7 @@ function generateComprehensionHTML(
       <!-- Questions -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         ${worksheet.questions.map((q, i) => `
-          <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+          <div data-q="${i}" style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
               <div style="flex-shrink: 0; width: 2rem; height: 2rem; background-color: #dbeafe; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 600;">
                 ${i + 1}
@@ -601,7 +601,7 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
       <!-- Questions -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         ${worksheet.questions.map((q, i) => `
-          <div style="border-bottom: 1px solid #d1d5db; padding-bottom: 1rem;">
+          <div data-q="${i}" style="border-bottom: 1px solid #d1d5db; padding-bottom: 1rem;">
             <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
               <span style="font-weight: 700;">${i + 1}.</span>
               <div style="flex: 1;">

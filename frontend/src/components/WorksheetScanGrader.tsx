@@ -70,7 +70,7 @@ function letterColor(g: string) {
   return m[g] || 'text-gray-600 bg-gray-50 border-gray-200';
 }
 
-type Phase = 'worksheet-id' | 'upload-scans' | 'grading' | 'results';
+type Phase = 'worksheet-id' | 'upload-scans' | 'grading' | 'review' | 'confirmed';
 
 const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: initialWorksheetId, onClose }) => {
   const { t } = useTranslation();
@@ -97,6 +97,9 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
   const [results, setResults] = useState<ScanGradeResult[]>([]);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
   const [gradingSummary, setGradingSummary] = useState<{ qr_graded: number; ocr_graded: number; failed: number; total: number } | null>(null);
+  const [editedScores, setEditedScores] = useState<Record<number, Record<string, number>>>({});
+  const [confirming, setConfirming] = useState(false);
+  const [confirmResult, setConfirmResult] = useState<{ saved: number; failed: number; errors: string[] } | null>(null);
 
   // If initialWorksheetId provided, look it up immediately
   useEffect(() => {
@@ -204,7 +207,7 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
         }
       }
 
-      setPhase('results');
+      setPhase('review');
     } catch (err: any) {
       setWorksheetIdError(err?.message || 'Grading failed');
       setPhase('upload-scans');
@@ -216,6 +219,74 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
   const classAverage = results.length > 0
     ? Math.round(results.reduce((sum, r) => sum + (r.percentage || 0), 0) / results.length)
     : 0;
+
+  // Get the effective earned score for a question (edited or original)
+  const getEarnedScore = (studentIdx: number, qKey: string, originalEarned: number) => {
+    return editedScores[studentIdx]?.[qKey] ?? originalEarned;
+  };
+
+  // Calculate effective totals for a student (accounting for edits)
+  const getEffectiveTotals = (studentIdx: number, r: ScanGradeResult) => {
+    let totalEarned = 0;
+    let totalMax = 0;
+    for (const [qKey, detail] of Object.entries(r.details)) {
+      totalEarned += getEarnedScore(studentIdx, qKey, detail.earned);
+      totalMax += detail.max;
+    }
+    const percentage = totalMax > 0 ? Math.round((totalEarned / totalMax) * 1000) / 10 : 0;
+    const letterGrade = percentage >= 90 ? 'A' : percentage >= 80 ? 'B' : percentage >= 70 ? 'C' : percentage >= 60 ? 'D' : 'F';
+    return { score: totalEarned, totalPoints: totalMax, percentage, letterGrade };
+  };
+
+  // Handle score edit for a specific question
+  const handleScoreEdit = (studentIdx: number, qKey: string, newEarned: number, maxPts: number) => {
+    const clamped = Math.max(0, Math.min(newEarned, maxPts));
+    setEditedScores(prev => ({
+      ...prev,
+      [studentIdx]: {
+        ...(prev[studentIdx] || {}),
+        [qKey]: clamped
+      }
+    }));
+  };
+
+  // Confirm and save all grades
+  const handleConfirmGrades = async () => {
+    setConfirming(true);
+    try {
+      const grades = results.filter(r => !r.error && r.student_id).map((r, idx) => {
+        const effective = getEffectiveTotals(idx, r);
+        return {
+          student_id: r.student_id,
+          student_name: r.student_name,
+          score: effective.score,
+          total_points: effective.totalPoints,
+          percentage: effective.percentage,
+          letter_grade: effective.letterGrade,
+          details: Object.fromEntries(
+            Object.entries(r.details).map(([qKey, detail]) => [
+              qKey,
+              { ...detail, earned: getEarnedScore(results.indexOf(r), qKey, detail.earned) }
+            ])
+          ),
+          instance_id: (r as any).instance_id,
+          edited: !!editedScores[results.indexOf(r)],
+        };
+      });
+
+      const res = await axios.post(`${API_BASE}/api/confirm-grades`, {
+        doc_type: 'worksheet',
+        doc_id: worksheetId,
+        grades
+      });
+      setConfirmResult(res.data);
+      setPhase('confirmed');
+    } catch (err: any) {
+      alert('Failed to save grades: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   if (!hasOcr) {
     return (
@@ -401,8 +472,8 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
           </div>
         )}
 
-        {/* Phase 4: Results */}
-        {phase === 'results' && results.length > 0 && (
+        {/* Phase 4: Review */}
+        {phase === 'review' && results.length > 0 && (
           <div className="space-y-4">
             {/* Summary */}
             <div className="grid grid-cols-3 gap-3">
@@ -414,9 +485,9 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
                 <p className="text-2xl font-bold text-green-700">{classAverage}%</p>
                 <p className="text-xs text-green-600">{t('photoTransfer.classAverage')}</p>
               </div>
-              <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 text-center">
-                <p className="text-2xl font-bold text-purple-700">{results.filter(r => r.saved).length}</p>
-                <p className="text-xs text-purple-600">Auto-saved</p>
+              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-center">
+                <p className="text-2xl font-bold text-amber-700">{results.filter(r => !r.error).length}</p>
+                <p className="text-xs text-amber-600">Pending Review</p>
               </div>
             </div>
 
@@ -440,85 +511,150 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
               </div>
             )}
 
-            {/* Individual results */}
-            {results.map((r, idx) => (
-              <div key={idx} className="border border-theme-strong rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setExpandedResult(expandedResult === idx ? null : idx)}
-                  className="w-full flex items-center justify-between p-3 hover:bg-theme-subtle"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`px-2 py-1 text-sm font-bold rounded border ${letterColor(r.letter_grade)}`}>
-                      {r.letter_grade}
-                    </span>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-theme-label">
-                        {r.student_name || r.file_name}
-                      </p>
-                      {r.student_id && (
-                        <p className="text-xs text-theme-hint">ID: {r.student_id} {r.saved && '(saved)'}</p>
+            <p className="text-sm text-theme-muted">
+              Review grades below. Edit scores if needed, then confirm to save to student records.
+            </p>
+
+            {/* Individual review cards */}
+            {results.map((r, idx) => {
+              const effective = getEffectiveTotals(idx, r);
+              const isEdited = !!editedScores[idx];
+              return (
+                <div key={idx} className={`border rounded-lg overflow-hidden ${isEdited ? 'border-amber-400' : 'border-theme-strong'}`}>
+                  <button
+                    onClick={() => setExpandedResult(expandedResult === idx ? null : idx)}
+                    className="w-full flex items-center justify-between p-3 hover:bg-theme-subtle"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`px-2 py-1 text-sm font-bold rounded border ${letterColor(effective.letterGrade)}`}>
+                        {effective.letterGrade}
+                      </span>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-theme-label">
+                          {r.student_name || r.file_name}
+                        </p>
+                        {r.student_id && (
+                          <p className="text-xs text-theme-hint">
+                            ID: {r.student_id}
+                            {isEdited && <span className="ml-1 text-amber-600">(edited)</span>}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-theme-label">
+                        {effective.score}/{effective.totalPoints} ({effective.percentage}%)
+                      </span>
+                      {r.error ? (
+                        <AlertCircle className="w-4 h-4 text-red-500" />
+                      ) : (
+                        expandedResult === idx ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
                       )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-theme-label">
-                      {r.score}/{r.total_points} ({r.percentage}%)
-                    </span>
-                    {r.error ? (
-                      <AlertCircle className="w-4 h-4 text-red-500" />
-                    ) : (
-                      expandedResult === idx ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                    )}
-                  </div>
-                </button>
+                  </button>
 
-                {expandedResult === idx && !r.error && (
-                  <div className="border-t border-theme-strong p-3 space-y-2 bg-theme-surface">
-                    {Object.entries(r.details).map(([qNum, detail]) => (
-                      <div key={qNum} className="flex items-start justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          {detail.earned === detail.max ? (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                          ) : detail.earned > 0 ? (
-                            <AlertCircle className="w-4 h-4 text-yellow-500" />
-                          ) : (
-                            <XCircle className="w-4 h-4 text-red-500" />
-                          )}
-                          <span className="text-theme-label">Q{qNum}: {detail.answer || '[no answer]'}</span>
+                  {expandedResult === idx && !r.error && (
+                    <div className="border-t border-theme-strong p-3 space-y-2 bg-theme-surface">
+                      {(r as any).qr_doc_id_warning && (
+                        <div className="p-2 rounded bg-amber-50 border border-amber-200 text-xs text-amber-700 mb-2">
+                          {(r as any).qr_doc_id_warning}
                         </div>
-                        <span className="text-theme-hint">{detail.earned}/{detail.max}</span>
-                      </div>
-                    ))}
-                    {r.unclear.length > 0 && (
-                      <p className="text-xs text-amber-600 mt-1">
-                        Unclear questions: {r.unclear.join(', ')}
-                      </p>
-                    )}
-                  </div>
-                )}
+                      )}
+                      {Object.entries(r.details).map(([qNum, detail]) => {
+                        const editedEarned = getEarnedScore(idx, qNum, detail.earned);
+                        const isQEdited = editedScores[idx]?.[qNum] !== undefined;
+                        return (
+                          <div key={qNum} className="flex items-start justify-between text-sm">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                {editedEarned === detail.max ? (
+                                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                ) : editedEarned > 0 ? (
+                                  <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                                )}
+                                <span className="text-theme-label">Q{qNum}: {detail.answer || '[no answer]'}</span>
+                              </div>
+                              {detail.feedback && (
+                                <p className="text-xs text-theme-hint ml-6 mt-0.5">{detail.feedback}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleScoreEdit(idx, qNum, editedEarned - 1, detail.max); }}
+                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-red-100 text-red-500 text-xs font-bold"
+                              >-</button>
+                              <span className={`text-xs font-medium min-w-[2.5rem] text-center ${isQEdited ? 'text-amber-600' : 'text-theme-hint'}`}>
+                                {editedEarned}/{detail.max}
+                              </span>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleScoreEdit(idx, qNum, editedEarned + 1, detail.max); }}
+                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-green-100 text-green-500 text-xs font-bold"
+                              >+</button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {r.unclear.length > 0 && (
+                        <p className="text-xs text-amber-600 mt-1">
+                          Unclear questions: {r.unclear.join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-                {r.error && expandedResult === idx && (
-                  <div className="border-t border-red-200 p-3 bg-red-50 text-sm text-red-700">
-                    {r.error}
-                  </div>
-                )}
-              </div>
-            ))}
+                  {r.error && expandedResult === idx && (
+                    <div className="border-t border-red-200 p-3 bg-red-50 text-sm text-red-700">
+                      {r.error}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             <div className="flex gap-2">
               <button
-                onClick={() => { setPhase('upload-scans'); setScanFiles([]); setResults([]); }}
+                onClick={() => { setPhase('upload-scans'); setScanFiles([]); setResults([]); setEditedScores({}); }}
                 className="flex-1 px-4 py-2 border border-theme-strong rounded-lg text-sm hover:bg-theme-subtle"
               >
                 Grade More Scans
               </button>
               <button
-                onClick={onClose}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                onClick={handleConfirmGrades}
+                disabled={confirming || results.filter(r => !r.error && r.student_id).length === 0}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:bg-gray-400"
               >
-                Done
+                {confirming ? 'Saving...' : `Confirm & Save ${results.filter(r => !r.error && r.student_id).length} Grades`}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Phase 5: Confirmed */}
+        {phase === 'confirmed' && (
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <CheckCircle className="w-12 h-12 text-green-500" />
+            <h3 className="text-lg font-semibold text-theme-title">Grades Saved</h3>
+            {confirmResult && (
+              <div className="text-center space-y-1">
+                <p className="text-sm text-theme-label">{confirmResult.saved} grades saved to student records</p>
+                {confirmResult.failed > 0 && (
+                  <p className="text-sm text-red-600">{confirmResult.failed} failed to save</p>
+                )}
+                {confirmResult.errors.length > 0 && (
+                  <div className="mt-2 text-xs text-red-500 space-y-0.5">
+                    {confirmResult.errors.map((e, i) => <p key={i}>{e}</p>)}
+                  </div>
+                )}
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+            >
+              Done
+            </button>
           </div>
         )}
       </div>

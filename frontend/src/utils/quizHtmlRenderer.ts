@@ -238,9 +238,11 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     ">Questions</h2>
   `;
 
-  parsed.questions.forEach(question => {
+  parsed.questions.forEach((question, index) => {
     const correctLetter = correctAnswersMap.get(question.number);
-    
+
+    htmlContent += `<div data-q="${index}" style="position: relative;">`;
+
     // Question heading
     htmlContent += `
       <h3 style="
@@ -392,6 +394,8 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
         `;
       }
     }
+
+    htmlContent += `</div>`;
   });
 
   // Standalone Answer Key section removed — answers now render inline above.
