@@ -327,6 +327,7 @@ const ModelComparisonChart: React.FC<{
   textSummary: TextSummary[];
   imageSummary: ImageSummary[];
 }> = ({ textSummary, imageSummary }) => {
+  const { t } = useTranslation();
   const { ref: containerRef, width: chartWidth } = useContainerSize();
 
   // Build bar data: TPS for text models, steps/s for image models
