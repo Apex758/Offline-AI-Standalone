@@ -322,6 +322,7 @@ import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
 import Notification01IconData from '@hugeicons/core-free-icons/Notification01Icon';
 import ArrowRight02IconData from '@hugeicons/core-free-icons/ArrowRight02Icon';
 import CircleArrowRight01IconData from '@hugeicons/core-free-icons/CircleArrowRight01Icon';
+import { NeuroSwitch } from './ui/NeuroSwitch';
 
 const ArrowRightCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CircleArrowRight01IconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
@@ -2636,11 +2637,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                             When enabled, scanned worksheets are read by PaddleOCR-VL (0.9B, Q4, ~856MB) then graded by your text LLM. When disabled, the vision LLM handles both.
                           </p>
                         </div>
-                        <input
-                          type="checkbox"
+                        <NeuroSwitch
                           checked={ocrEnabled}
-                          onChange={(e) => handleOcrToggle(e.target.checked)}
-                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
+                          onChange={(v) => handleOcrToggle(v)}
+                          size="lg"
+                          aria-label="Use dedicated OCR for scan grading"
                         />
                       </label>
 
@@ -2799,11 +2800,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                               Route quick tasks (quiz, rubric, autocomplete) to a smaller, faster model
                             </p>
                           </div>
-                          <input
-                            type="checkbox"
+                          <NeuroSwitch
                             checked={dualModelEnabled}
-                            onChange={(e) => handleDualModelUpdate({ enabled: e.target.checked })}
-                            className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
+                            onChange={(v) => handleDualModelUpdate({ enabled: v })}
+                            size="lg"
+                            aria-label="Enable dual-model routing"
                           />
                         </label>
 

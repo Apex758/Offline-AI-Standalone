@@ -34,6 +34,7 @@ import PhaseHistoryNav from './PhaseHistoryNav';
 import PhaseBreakdownModal from './PhaseBreakdownModal';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
 import { DashboardSkeleton } from './ui/DashboardSkeleton';
+import { NeuroSwitch } from './ui/NeuroSwitch';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -916,18 +917,15 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 <Icon icon={Clock01IconData} className="w-5" />
               </button>
               {/* Phase History toggle */}
-              <button
-                onClick={() => setShowPhaseNav(v => !v)}
-                className={`p-2 rounded-lg transition-colors text-xs font-semibold ${
-                  showPhaseNav
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                    : 'hover:bg-theme-bg-tertiary text-theme-muted hover:text-theme-primary'
-                }`}
-                title="Academic Phases"
-                style={{ fontSize: 11, padding: '6px 10px', borderRadius: 8 }}
-              >
-                Phases
-              </button>
+              <div className="flex items-center gap-1.5" title="Academic Phases">
+                <span className="text-[11px] font-semibold text-theme-muted">Phases</span>
+                <NeuroSwitch
+                  checked={showPhaseNav}
+                  onChange={(v) => setShowPhaseNav(v)}
+                  size="sm"
+                  aria-label="Academic Phases"
+                />
+              </div>
               {/* Setup School Year button */}
               <button
                 onClick={() => setShowSchoolYearSetup(true)}

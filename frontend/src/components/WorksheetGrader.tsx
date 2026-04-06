@@ -20,6 +20,7 @@ import { ParsedWorksheet } from '../types/worksheet';
 import { useSettings } from '../contexts/SettingsContext';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import WorksheetScanGrader from './WorksheetScanGrader';
+import { NeuroSegment } from './ui/NeuroSegment';
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:8000';
@@ -333,22 +334,18 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
     return (
       <div className="flex flex-col h-full bg-theme-surface">
         {/* Mode tabs */}
-        <div className="flex border-b border-theme px-6 pt-3 flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
-          {([['vision', ClipboardCheck, t('grader.visionGrade')] as const, ['scan', SpellCheck, t('grader.scanGrade')] as const]).map(([mode, ModeIcon, label]) => (
-            <button
-              key={mode}
-              onClick={() => setGraderMode(mode)}
-              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition ${
-                graderMode === mode ? 'border-current' : 'border-transparent text-theme-muted hover:text-theme-label'
-              }`}
-              style={graderMode === mode ? { borderBottomColor: accentColor, color: accentColor } : {}}
-            >
-              <ModeIcon className="w-4 h-4" />
-              {label}
-            </button>
-          ))}
+        <div className="flex items-center gap-4 px-6 pt-3 pb-2 border-b flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
+          <NeuroSegment
+            options={[
+              { value: 'vision', label: t('grader.visionGrade'), icon: <ClipboardCheck className="w-4 h-4" /> },
+              { value: 'scan',   label: t('grader.scanGrade'),   icon: <SpellCheck className="w-4 h-4" /> },
+            ]}
+            value={graderMode}
+            onChange={(v) => setGraderMode(v as GraderMode)}
+            size="sm"
+          />
           <div className="flex-1" />
-          <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme self-center mb-2">
+          <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme">
             <RotateCcw className="w-4 h-4" />
             Back to Worksheet
           </button>
@@ -364,22 +361,18 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
     <div className="flex flex-col h-full bg-theme-surface">
 
       {/* Mode tabs + Header */}
-      <div className="flex border-b border-theme px-6 pt-3 flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
-        {([['vision', ClipboardCheck, 'Vision Grade'] as const, ['scan', SpellCheck, 'Scan Grade (OCR)'] as const]).map(([mode, ModeIcon, label]) => (
-          <button
-            key={mode}
-            onClick={() => setGraderMode(mode)}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition ${
-              graderMode === mode ? 'border-current' : 'border-transparent text-theme-muted hover:text-theme-label'
-            }`}
-            style={graderMode === mode ? { borderBottomColor: accentColor, color: accentColor } : {}}
-          >
-            <ModeIcon className="w-4 h-4" />
-            {label}
-          </button>
-        ))}
+      <div className="flex items-center gap-4 px-6 pt-3 pb-2 border-b flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
+        <NeuroSegment
+          options={[
+            { value: 'vision', label: 'Vision Grade',     icon: <ClipboardCheck className="w-4 h-4" /> },
+            { value: 'scan',   label: 'Scan Grade (OCR)', icon: <SpellCheck className="w-4 h-4" /> },
+          ]}
+          value={graderMode}
+          onChange={(v) => setGraderMode(v as GraderMode)}
+          size="sm"
+        />
         <div className="flex-1" />
-        <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme self-center mb-2">
+        <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme">
           <RotateCcw className="w-4 h-4" />
           Back to Worksheet
         </button>
@@ -401,24 +394,17 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
         {phase === 'select-source' && (
           <div className="max-w-2xl mx-auto">
             {/* Tabs */}
-            <div className="flex border-b border-theme mb-4">
-              {([
-                ['package', ClipboardCheck, t('grader.classWorksheets')] as const,
-                ['history', History, t('grader.worksheetHistory')] as const,
-                ['upload', Upload, t('grader.uploadTeacherVersion')] as const,
-              ]).map(([tab, TabIcon, label]) => (
-                <button
-                  key={tab}
-                  onClick={() => setSourceTab(tab)}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition ${
-                    sourceTab === tab ? 'border-current' : 'border-transparent text-theme-muted hover:text-theme-label'
-                  }`}
-                  style={sourceTab === tab ? { borderBottomColor: accentColor, color: accentColor } : {}}
-                >
-                  <TabIcon className="w-4 h-4" />
-                  {label}
-                </button>
-              ))}
+            <div className="mb-4">
+              <NeuroSegment
+                options={[
+                  { value: 'package', label: t('grader.classWorksheets'),     icon: <ClipboardCheck className="w-4 h-4" /> },
+                  { value: 'history', label: t('grader.worksheetHistory'),    icon: <History className="w-4 h-4" /> },
+                  { value: 'upload',  label: t('grader.uploadTeacherVersion'), icon: <Upload className="w-4 h-4" /> },
+                ]}
+                value={sourceTab}
+                onChange={(v) => setSourceTab(v as SourceType)}
+                size="sm"
+              />
             </div>
 
             {/* Class Worksheets (packages) */}

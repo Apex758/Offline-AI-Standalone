@@ -27,6 +27,7 @@ import CalendarCheckIconData from '@hugeicons/core-free-icons/CalendarCheckIn01I
 import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import ClockIconData from '@hugeicons/core-free-icons/Clock01Icon';
 import type { InsightsReport } from '../../types/insights';
+import { NeuroSwitch } from '../ui/NeuroSwitch';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -364,9 +365,12 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
                   ] as [keyof typeof DEFAULT_PREFS, string][]).map(([key, label]) => (
                     <label key={key} className="cc-toggle-row">
                       <span className="cc-toggle-label">{label}</span>
-                      <span className={`cc-toggle-switch${prefs[key] ? ' cc-toggle-on' : ''}`} onClick={() => updatePref(key, !prefs[key])}>
-                        <span className="cc-toggle-thumb" />
-                      </span>
+                      <NeuroSwitch
+                        checked={prefs[key]}
+                        onChange={(v) => updatePref(key, v)}
+                        size="sm"
+                        aria-label={label}
+                      />
                     </label>
                   ))}
                   <div className="cc-dropdown-divider" />
@@ -752,22 +756,8 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
           display: flex; flex-direction: column; gap: 0.35rem;
         }
         .cc-dropdown-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dash-text-sub, #94A3B8); margin-bottom: 0.15rem; }
-        .cc-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; cursor: pointer; padding: 0.2rem 0; }
+        .cc-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.2rem 0; }
         .cc-toggle-label { font-size: 0.7rem; color: var(--dash-text, #374151); }
-        .cc-toggle-switch {
-          width: 28px; height: 16px; border-radius: 8px;
-          background: var(--dash-border, #E8E8E0);
-          position: relative; cursor: pointer; flex-shrink: 0;
-          transition: background 0.2s ease;
-        }
-        .cc-toggle-switch.cc-toggle-on { background: var(--dash-primary, #1D362D); }
-        .cc-toggle-thumb {
-          position: absolute; top: 2px; left: 2px;
-          width: 12px; height: 12px; border-radius: 50%;
-          background: white; transition: transform 0.2s ease;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .cc-toggle-on .cc-toggle-thumb { transform: translateX(12px); }
         .cc-dropdown-divider { height: 1px; background: var(--dash-border, #E8E8E0); margin: 0.15rem 0; }
         .cc-dropdown-action {
           display: flex; align-items: center;

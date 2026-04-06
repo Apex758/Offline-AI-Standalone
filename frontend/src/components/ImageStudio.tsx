@@ -68,6 +68,7 @@ import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { Skeleton } from './ui/skeleton';
 import AIDisclaimer from './AIDisclaimer';
+import { NeuroSegment } from './ui/NeuroSegment';
 
 interface ImageStudioProps {
   tabId: string;
@@ -2019,33 +2020,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     <div className="h-full tab-content-bg flex flex-col" data-tutorial="image-studio-root">
       {/* Top Right Sliding Toggle */}
       <div className="flex justify-end p-4 border-b border-theme" data-tutorial="image-studio-tab-toggle">
-        <div className="relative flex bg-theme-tertiary rounded-lg p-1">
-          <div
-            className={`absolute top-1 bottom-1 w-1/2 bg-blue-600 rounded-md transition-all duration-300 ease-in-out ${
-              activeTab === 'generator' ? 'left-1' : 'left-1/2'
-            }`}
-          />
-           <button
-             onClick={() => { if (hasDiffusion) setActiveTab('generator'); }}
-             disabled={!hasDiffusion}
-             title={!hasDiffusion ? 'Requires a diffusion model' : undefined}
-             className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
-               activeTab === 'generator' ? 'text-white' : 'text-theme-label hover:text-theme-title'
-             } ${!hasDiffusion ? 'opacity-40 cursor-not-allowed' : ''}`}
-           >
-            <Palette className="w-4 h-4 mr-2" />
-            {t('imageStudioUI.imageGenerator')}
-          </button>
-           <button
-             onClick={() => setActiveTab('editor')}
-             className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
-               activeTab === 'editor' ? 'text-white' : 'text-theme-label hover:text-theme-title'
-             }`}
-           >
-            <Eraser className="w-4 h-4 mr-2" />
-            Image Editor
-          </button>
-        </div>
+        <NeuroSegment
+          options={[
+            { value: 'generator', label: t('imageStudioUI.imageGenerator'), icon: <Palette className="w-4 h-4" />, disabled: !hasDiffusion },
+            { value: 'editor',    label: 'Image Editor',                     icon: <Eraser className="w-4 h-4" /> },
+          ]}
+          value={activeTab}
+          onChange={(v) => setActiveTab(v as 'generator' | 'editor')}
+          size="md"
+        />
       </div>
 
       {/* Error Display */}

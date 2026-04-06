@@ -80,6 +80,7 @@ import { getTrophyImageForTier, type TrophyTier } from '../assets/trophyImages';
 import type { NewlyEarnedAchievement } from '../types/achievement';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
+import { NeuroSegment } from './ui/NeuroSegment';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -939,29 +940,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Progress scope toggle */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ fontSize: 12, color: 'var(--dash-text-sub)', fontWeight: 500 }}>{t('analytics.progressView')}</span>
-                <div style={{ display: 'inline-flex', borderRadius: 6, border: '1px solid var(--dash-border)', overflow: 'hidden' }}>
-                  {(['overall', 'phase'] as const).map(mode => {
-                    const active = dashProgressScope === mode;
-                    return (
-                      <button
-                        key={mode}
-                        onClick={() => setDashProgressScope(mode)}
-                        style={{
-                          padding: '3px 12px',
-                          fontSize: 12,
-                          fontWeight: active ? 600 : 400,
-                          background: active ? 'var(--dash-primary)' : 'transparent',
-                          color: active ? '#fff' : 'var(--dash-text-sub)',
-                          border: 'none',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        {mode === 'overall' ? t('analytics.overall') : t('analytics.phase')}
-                      </button>
-                    );
-                  })}
-                </div>
+                <NeuroSegment
+                  options={[
+                    { value: 'overall', label: t('analytics.overall') },
+                    { value: 'phase',   label: t('analytics.phase') },
+                  ]}
+                  value={dashProgressScope}
+                  onChange={setDashProgressScope}
+                  size="sm"
+                  aria-label={t('analytics.progressView')}
+                />
                 {dashProgressScope === 'phase' && dashPhase && (
                   <span style={{ fontSize: 11, color: dashPhase.color, fontWeight: 600 }}>
                     {t('analytics.viewingPhase', { phase: dashPhase.phase_label })}

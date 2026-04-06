@@ -28,10 +28,11 @@ const DIMENSION_CONFIG: Record<string, { icon: any; color: string }> = {
 };
 
 function getGradeColor(score: number): string {
-  if (score >= 90) return '#22c55e';
-  if (score >= 80) return '#3b82f6';
-  if (score >= 70) return '#eab308';
-  if (score >= 60) return '#f97316';
+  if (score >= 80) return '#22c55e';
+  if (score >= 70) return '#3b82f6';
+  if (score >= 60) return '#eab308';
+  if (score >= 50) return '#f97316';
+  if (score >= 40) return '#f43f5e';
   return '#ef4444';
 }
 
@@ -72,6 +73,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
   const { t } = useTranslation();
   const [panelOpen, setPanelOpen] = useState(false);
   const [phasePopoverOpen, setPhasePopoverOpen] = useState(false);
+  const [chartAreaHovered, setChartAreaHovered] = useState(false);
   const [showPhaseBands, setShowPhaseBands] = useState(true);
   const [expandedDimension, setExpandedDimension] = useState<string | null>(null);
   const phaseBadgeRef = useRef<HTMLButtonElement>(null);
@@ -122,6 +124,8 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
               phaseBadgeRef={phaseBadgeRef}
               onPhaseClick={() => setPhasePopoverOpen(p => !p)}
               showPhaseBands={showPhaseBands}
+              onChartMouseEnter={() => setChartAreaHovered(true)}
+              onChartMouseLeave={() => setChartAreaHovered(false)}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-sm text-theme-secondary">
@@ -154,7 +158,10 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
               {/* 5 data metrics stacked vertically below the grade */}
               {insightsData && (
-                <div className="flex flex-col items-end gap-3 bg-theme-bg/85 backdrop-blur-sm rounded-lg px-3.5 py-3 border border-theme-border/60" style={{ minWidth: '10.5rem' }}>
+                <div
+                  className={`flex flex-col items-end gap-3 bg-theme-bg/85 backdrop-blur-sm rounded-lg px-3.5 py-3 border border-theme-border/60 transition-opacity duration-150 ${chartAreaHovered ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                  style={{ minWidth: '10.5rem' }}
+                >
                   {/* Curriculum */}
                   <div className="flex flex-col items-end leading-none gap-1">
                     <span className="text-xs font-bold uppercase tracking-widest text-theme-muted">{t('insights.curriculum')}</span>

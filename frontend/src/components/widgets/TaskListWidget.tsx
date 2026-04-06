@@ -25,6 +25,7 @@ const ListTodo: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 import { format, parseISO } from 'date-fns';
 import type { Task } from '../../types/task';
 import { groupTasksByStatus } from '../../lib/analyticsHelpers';
+import { NeuroChevron } from '../ui/NeuroChevron';
 
 interface TaskListWidgetProps {
   tasks: Task[];
@@ -319,15 +320,12 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--dash-task-bg)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <div
-                    className="transition-transform"
-                    style={{
-                      transform: showCompleted ? 'rotate(0deg)' : 'rotate(-90deg)',
-                      color: 'var(--dash-text-faint)',
-                    }}
-                  >
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </div>
+                  <NeuroChevron
+                    expanded={showCompleted}
+                    onToggle={() => {}}
+                    size="sm"
+                    aria-hidden={true}
+                  />
                   <span
                     className="text-[11px] font-semibold uppercase tracking-wider"
                     style={{ color: 'var(--dash-text-faint)' }}

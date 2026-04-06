@@ -21,6 +21,7 @@ const Send: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import SmartTextArea from './SmartTextArea';
+import { NeuroSegment } from './ui/NeuroSegment';
 
 interface AIAssistantPanelProps {
   isOpen: boolean;
@@ -270,40 +271,21 @@ ${content}
           </p>
 
           {/* Mode Toggle */}
-          <div className="flex gap-2 bg-white/10 rounded-lg p-1">
-            <button
-              onClick={() => {
-                if (wsRef.current) wsRef.current.close();
-                setMode('chat');
-                streamingContentRef.current = '';
-                setStreamingMessage('');
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition ${
-                mode === 'chat'
-                  ? 'bg-white text-purple-600 font-semibold'
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              <MessageSquare className="w-4 h-4" />
-              Chat
-            </button>
-            <button
-              onClick={() => {
-                if (wsRef.current) wsRef.current.close();
-                setMode('modify');
-                streamingContentRef.current = '';
-                setStreamingMessage('');
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition ${
-                mode === 'modify'
-                  ? 'bg-white text-purple-600 font-semibold'
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              <Wand2 className="w-4 h-4" />
-              Modify
-            </button>
-          </div>
+          <NeuroSegment
+            options={[
+              { value: 'chat',   label: 'Chat',   icon: <MessageSquare className="w-4 h-4" /> },
+              { value: 'modify', label: 'Modify', icon: <Wand2 className="w-4 h-4" /> },
+            ]}
+            value={mode}
+            onChange={(v) => {
+              if (wsRef.current) wsRef.current.close();
+              setMode(v as 'chat' | 'modify');
+              streamingContentRef.current = '';
+              setStreamingMessage('');
+            }}
+            size="md"
+            variant="invert"
+          />
         </div>
 
         {/* Info Banner */}

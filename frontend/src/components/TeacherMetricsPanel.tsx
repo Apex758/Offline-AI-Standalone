@@ -11,6 +11,7 @@ import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import type { TeacherMetrics, MetricSnapshot, DimensionMetric } from '../types/insights';
 import TeacherMetricsChart from './charts/TeacherMetricsChart';
+import { NeuroChevron } from './ui/NeuroChevron';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -132,12 +133,12 @@ const TeacherMetricsPanel: React.FC<TeacherMetricsPanelProps> = ({
         </div>
 
         {/* Expand chevron */}
-        <svg
-          className={`w-5 h-5 text-theme-muted transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <NeuroChevron
+          expanded={expanded}
+          onToggle={toggleExpanded}
+          size="md"
+          aria-hidden={true}
+        />
       </button>
 
       {/* Expanded content */}

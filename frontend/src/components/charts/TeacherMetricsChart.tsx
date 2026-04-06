@@ -29,12 +29,15 @@ const PHASE_COLORS_SOLID: Partial<Record<SchoolPhase, string>> = {
 interface TeacherMetricsChartProps {
   data: MetricSnapshot[];
   height?: number;
-  compact?: boolean; // compact mode hides dimension overlays + legend
+  compact?: boolean;
   phaseBadgeRef?: React.Ref<HTMLButtonElement>;
   onPhaseClick?: () => void;
   showPhaseBands?: boolean;
+  onChartMouseEnter?: () => void;
+  onChartMouseLeave?: () => void;
 }
 
+// --- Grade scale: A=80-100, B=70-79, C=60-69, D=50-59, E=40-49, F=0-39 ---
 const GRADE_COLORS: Record<string, string> = {
   A: '#22c55e',
   B: '#3b82f6',
@@ -44,12 +47,14 @@ const GRADE_COLORS: Record<string, string> = {
   F: '#ef4444',
 };
 
-const GRADE_BANDS = [
-  { min: 90, max: 100, label: 'A', color: '#22c55e' },
-  { min: 80, max: 90,  label: 'B', color: '#3b82f6' },
-  { min: 70, max: 80,  label: 'C', color: '#eab308' },
-  { min: 60, max: 70,  label: 'D', color: '#f97316' },
-  { min: 0,  max: 60,  label: 'F', color: '#ef4444' },
+// Ordered LOW-to-HIGH for the non-linear Y-axis transform
+const SCORE_BANDS = [
+  { min: 0,  max: 40,  label: 'F', color: '#ef4444' },
+  { min: 40, max: 50,  label: 'E', color: '#f43f5e' },
+  { min: 50, max: 60,  label: 'D', color: '#f97316' },
+  { min: 60, max: 70,  label: 'C', color: '#eab308' },
+  { min: 70, max: 80,  label: 'B', color: '#3b82f6' },
+  { min: 80, max: 100, label: 'A', color: '#22c55e' },
 ];
 
 const PHASE_COLORS: Partial<Record<SchoolPhase, string>> = {
@@ -75,15 +80,6 @@ const PHASE_COLORS: Partial<Record<SchoolPhase, string>> = {
   end_of_year_exam:     'rgba(220,38,38,0.09)',
 };
 
-// Which phases belong to Semester 1 vs Semester 2 (for divider rendering)
-const SEMESTER_1_PHASES = new Set<SchoolPhase>([
-  'start_of_year', 'early_year', 'mid_year',
-  'semester_1_early', 'midterm_1_prep', 'midterm_1', 'semester_1_late',
-]);
-const SEMESTER_2_PHASES = new Set<SchoolPhase>([
-  'semester_2_early', 'midterm_2_prep', 'midterm_2', 'semester_2_late', 'end_of_year_exam',
-]);
-
 const DIMENSION_SERIES = [
   { key: 'curriculum_score',   name: 'Curriculum',   color: '#3b82f6' },
   { key: 'performance_score',  name: 'Performance',  color: '#22c55e' },
@@ -93,26 +89,58 @@ const DIMENSION_SERIES = [
 ];
 
 function getGradeColor(score: number): string {
-  if (score >= 90) return GRADE_COLORS.A;
-  if (score >= 80) return GRADE_COLORS.B;
-  if (score >= 70) return GRADE_COLORS.C;
-  if (score >= 60) return GRADE_COLORS.D;
-  if (score >= 50) return GRADE_COLORS.E;
+  if (score >= 80) return GRADE_COLORS.A;
+  if (score >= 70) return GRADE_COLORS.B;
+  if (score >= 60) return GRADE_COLORS.C;
+  if (score >= 50) return GRADE_COLORS.D;
+  if (score >= 40) return GRADE_COLORS.E;
   return GRADE_COLORS.F;
 }
 
 function getGradeLabel(score: number): string {
-  if (score >= 97) return 'A+';
-  if (score >= 93) return 'A';
-  if (score >= 90) return 'A-';
-  if (score >= 87) return 'B+';
-  if (score >= 83) return 'B';
-  if (score >= 80) return 'B-';
-  if (score >= 77) return 'C+';
-  if (score >= 73) return 'C';
-  if (score >= 70) return 'C-';
-  if (score >= 60) return 'D';
+  if (score >= 80) return 'A';
+  if (score >= 70) return 'B';
+  if (score >= 60) return 'C';
+  if (score >= 50) return 'D';
+  if (score >= 40) return 'E';
   return 'F';
+}
+
+// --- Non-linear Y-axis: focus band occupies 50% of visual height ---
+
+function getFocusBandIndex(score: number): number {
+  for (let i = SCORE_BANDS.length - 1; i >= 0; i--) {
+    if (score >= SCORE_BANDS[i].min) return i;
+  }
+  return 0;
+}
+
+// Returns 7 visual boundary positions [0, b1, b2, b3, b4, b5, 100].
+// Focus band gets 50% of visual height; each other band gets 10%.
+function buildVisualBounds(focusIdx: number): number[] {
+  const FOCUS_WEIGHT = 50;
+  const OTHER_WEIGHT = 50 / (SCORE_BANDS.length - 1); // 10 each
+  const bounds = [0];
+  let cum = 0;
+  for (let i = 0; i < SCORE_BANDS.length; i++) {
+    cum += i === focusIdx ? FOCUS_WEIGHT : OTHER_WEIGHT;
+    bounds.push(Math.round(cum * 1000) / 1000);
+  }
+  return bounds;
+}
+
+// Maps a raw score to its visual position [0–100] using the current band layout.
+function yTransform(score: number, vBounds: number[]): number {
+  const clamped = Math.max(0, Math.min(100, score));
+  for (let i = 0; i < SCORE_BANDS.length; i++) {
+    const { min, max } = SCORE_BANDS[i];
+    const isLast = i === SCORE_BANDS.length - 1;
+    if (clamped >= min && (clamped < max || isLast)) {
+      const t = (clamped - min) / (max - min);
+      return vBounds[i] + t * (vBounds[i + 1] - vBounds[i]);
+    }
+  }
+  return clamped;
 }
 
 const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
@@ -122,6 +150,8 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   phaseBadgeRef,
   onPhaseClick,
   showPhaseBands = true,
+  onChartMouseEnter,
+  onChartMouseLeave,
 }) => {
   const { t } = useTranslation();
   const { ref: chartContainerRef, width: chartWidth, height: chartContainerHeight } = useContainerSize();
@@ -134,7 +164,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
       return next;
     });
 
-  // Build chart data with formatted dates
+  // Build base chart data with formatted dates
   const chartData = useMemo(() => {
     return data.map(snap => ({
       ...snap,
@@ -143,6 +173,30 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
       })(),
     }));
   }, [data]);
+
+  // Derive focus band from latest data point
+  const { focusIdx, vBounds } = useMemo(() => {
+    if (chartData.length === 0) {
+      const idx = 0;
+      return { focusIdx: idx, vBounds: buildVisualBounds(idx) };
+    }
+    const latest = chartData[chartData.length - 1].composite_score ?? 0;
+    const idx = getFocusBandIndex(latest);
+    return { focusIdx: idx, vBounds: buildVisualBounds(idx) };
+  }, [chartData]);
+
+  // Apply non-linear transform to all score fields
+  const transformedData = useMemo(() => {
+    return chartData.map(snap => ({
+      ...snap,
+      composite_score_v:    yTransform(snap.composite_score    ?? 0, vBounds),
+      curriculum_score_v:   yTransform(snap.curriculum_score   ?? 0, vBounds),
+      performance_score_v:  yTransform(snap.performance_score  ?? 0, vBounds),
+      content_score_v:      yTransform(snap.content_score      ?? 0, vBounds),
+      attendance_score_v:   yTransform(snap.attendance_score   ?? 0, vBounds),
+      achievements_score_v: yTransform(snap.achievements_score ?? 0, vBounds),
+    }));
+  }, [chartData, vBounds]);
 
   // Build phase bands for ReferenceArea backgrounds
   const phaseBands = useMemo(() => {
@@ -164,13 +218,18 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
   const latestGradeColor = useMemo(() => {
     if (chartData.length === 0) return '#6b7280';
-    return getGradeColor(chartData[chartData.length - 1].composite_score);
+    return getGradeColor(chartData[chartData.length - 1].composite_score ?? 0);
   }, [chartData]);
+
+  // Y-axis ticks sit exactly at visual band boundaries
+  const yAxisTicks = useMemo(() => [...vBounds], [vBounds]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     const snap = payload[0]?.payload;
     if (!snap) return null;
+    // Always show original (pre-transform) scores in the tooltip
+    const score = snap.composite_score ?? 0;
     return (
       <div
         className="rounded-xl p-3"
@@ -185,20 +244,17 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
           {(() => { try { return format(parseISO(label), 'MMM d, yyyy'); } catch { return label; } })()}
         </p>
         <div className="flex items-center gap-2 mb-2">
-          <span
-            className="text-lg font-bold"
-            style={{ color: getGradeColor(snap.composite_score) }}
-          >
-            {snap.composite_score}
+          <span className="text-lg font-bold" style={{ color: getGradeColor(score) }}>
+            {score}
           </span>
           <span
             className="text-xs font-semibold px-1.5 py-0.5 rounded"
             style={{
-              backgroundColor: getGradeColor(snap.composite_score) + '20',
-              color: getGradeColor(snap.composite_score),
+              backgroundColor: getGradeColor(score) + '20',
+              color: getGradeColor(score),
             }}
           >
-            {getGradeLabel(snap.composite_score)}
+            {getGradeLabel(score)}
           </span>
         </div>
         {snap.phase_label && (
@@ -207,7 +263,9 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
           </p>
         )}
         {!compact && payload.slice(1).map((entry: any, i: number) => {
-          const val = Math.round(entry.value);
+          // Recover original score from the _v dataKey
+          const dimKey = entry.dataKey?.replace('_v', '');
+          const val = Math.round((snap[dimKey] ?? 0));
           const grade = getGradeLabel(val);
           const gradeColor = getGradeColor(val);
           return (
@@ -223,29 +281,21 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
     );
   };
 
-  const formatYAxis = (value: number) => {
-    if (value >= 90) return 'A';
-    if (value >= 80) return 'B';
-    if (value >= 70) return 'C';
-    if (value >= 60) return 'D';
-    if (value >= 50) return 'E';
-    if (value === 0) return 'F';
-    return '';
-  };
-
   const CustomYAxisTick = ({ x, y, payload }: any) => {
-    const label = formatYAxis(payload.value);
+    const vPos = Math.round(payload.value * 1000) / 1000;
+    // Map visual tick position back to a grade label
+    let label = '';
+    let color = '#9ca3af';
+    for (let i = 0; i < SCORE_BANDS.length; i++) {
+      if (Math.abs(vPos - vBounds[i]) < 0.5) {
+        label = SCORE_BANDS[i].label;
+        color = SCORE_BANDS[i].color;
+        break;
+      }
+    }
     if (!label) return null;
     return (
-      <text
-        x={x}
-        y={y}
-        dy={4}
-        textAnchor="end"
-        fontSize={11}
-        fontWeight={700}
-        fill={getGradeColor(payload.value)}
-      >
+      <text x={x} y={y} dy={4} textAnchor="end" fontSize={11} fontWeight={700} fill={color}>
         {label}
       </text>
     );
@@ -294,9 +344,16 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
         </div>
       )}
 
-      <div ref={chartContainerRef} className="flex-1" style={{ width: '100%', outline: 'none' }} onMouseDown={e => e.preventDefault()}>
+      <div
+        ref={chartContainerRef}
+        className="flex-1"
+        style={{ width: '100%', outline: 'none' }}
+        onMouseDown={e => e.preventDefault()}
+        onMouseEnter={onChartMouseEnter}
+        onMouseLeave={onChartMouseLeave}
+      >
         {chartWidth > 0 && chartContainerHeight > 0 && (
-          <AreaChart width={chartWidth} height={chartContainerHeight} data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
+          <AreaChart width={chartWidth} height={chartContainerHeight} data={transformedData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
             <defs>
               <linearGradient id="tmcGradientFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor={latestGradeColor} stopOpacity={0.45} />
@@ -306,10 +363,21 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
             <CartesianGrid strokeDasharray="3 3" stroke="var(--dash-border)" vertical={false} />
 
-            {/* Phase background bands */}
+            {/* Grade band backgrounds — focus band is more opaque */}
+            {SCORE_BANDS.map((band, i) => (
+              <ReferenceArea
+                key={`grade-band-${i}`}
+                y1={vBounds[i]}
+                y2={vBounds[i + 1]}
+                fill={band.color}
+                fillOpacity={i === focusIdx ? 0.08 : 0.02}
+              />
+            ))}
+
+            {/* Phase background bands (layered on top of grade bands) */}
             {showPhaseBands && phaseBands.map((band, i) => (
               <ReferenceArea
-                key={i}
+                key={`phase-${i}`}
                 x1={band.x1}
                 x2={band.x2}
                 fill={PHASE_COLORS[band.phase] || 'transparent'}
@@ -317,14 +385,14 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               />
             ))}
 
-            {/* Grade boundary reference lines */}
-            {[50, 60, 70, 80, 90].map(boundary => (
+            {/* Grade boundary dashed lines at visual positions */}
+            {vBounds.slice(1, -1).map((vPos, i) => (
               <ReferenceLine
-                key={boundary}
-                y={boundary}
-                stroke="var(--dash-border)"
+                key={`grade-line-${i}`}
+                y={vPos}
+                stroke={SCORE_BANDS[i + 1].color}
                 strokeDasharray="5 5"
-                strokeOpacity={0.6}
+                strokeOpacity={0.5}
               />
             ))}
 
@@ -337,17 +405,17 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
             />
             <YAxis
               domain={[0, 100]}
-              ticks={[0, 50, 60, 70, 80, 90]}
+              ticks={yAxisTicks}
               tick={<CustomYAxisTick />}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip content={<CustomTooltip />} />
 
-            {/* Composite score area */}
+            {/* Composite score area (transformed) */}
             <Area
               type="monotone"
-              dataKey="composite_score"
+              dataKey="composite_score_v"
               name="Composite"
               stroke={latestGradeColor}
               strokeWidth={3}
@@ -356,12 +424,12 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               activeDot={{ r: 6, fill: latestGradeColor, strokeWidth: 0 }}
             />
 
-            {/* Dimension overlay lines (only in non-compact mode) */}
+            {/* Dimension overlay lines (transformed, non-compact only) */}
             {!compact && DIMENSION_SERIES.map(s => (
               <Line
                 key={s.key}
                 type="monotone"
-                dataKey={s.key}
+                dataKey={`${s.key}_v`}
                 name={s.name}
                 stroke={s.color}
                 strokeWidth={1.5}

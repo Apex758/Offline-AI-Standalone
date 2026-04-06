@@ -90,6 +90,7 @@ import {
 import {
   buildSpeechBubbleSVG, shouldUseBubble, getTailDirection,
 } from '../utils/speechBubble';
+import { NeuroSwitch } from './ui/NeuroSwitch';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -486,12 +487,12 @@ function ExportSettingsPanel({
               <p className="text-sm font-medium text-theme-label">{t('storybook.includeAudio')}</p>
               <p className="text-xs text-theme-muted">{t('storybook.includeAudioDesc')}</p>
             </div>
-            <div
-              onClick={() => update('includeAudioInHTML', !settings.includeAudioInHTML)}
-              className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${settings.includeAudioInHTML ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-            >
-              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${settings.includeAudioInHTML ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
-            </div>
+            <NeuroSwitch
+              checked={settings.includeAudioInHTML}
+              onChange={(v) => update('includeAudioInHTML', v)}
+              size="md"
+              aria-label={t('storybook.includeAudio')}
+            />
           </label>
 
           {/* Include comprehension questions */}
@@ -500,12 +501,12 @@ function ExportSettingsPanel({
               <p className="text-sm font-medium text-theme-label">{t('storybook.comprehensionQuestions')}</p>
               <p className="text-xs text-theme-muted">{t('storybook.comprehensionDesc')}</p>
             </div>
-            <div
-              onClick={() => update('includeComprehensionQuestions', !settings.includeComprehensionQuestions)}
-              className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${settings.includeComprehensionQuestions ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-            >
-              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${settings.includeComprehensionQuestions ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
-            </div>
+            <NeuroSwitch
+              checked={settings.includeComprehensionQuestions}
+              onChange={(v) => update('includeComprehensionQuestions', v)}
+              size="md"
+              aria-label={t('storybook.comprehensionQuestions')}
+            />
           </label>
         </div>
         <div className="p-4 border-t border-theme">
@@ -2144,19 +2145,17 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {formData.subject && formData.gradeLevel && (
             <div>
               {/* Standalone toggle */}
-              <button
-                type="button"
-                onClick={() => updateForm('useCurriculum', !formData.useCurriculum)}
-                className="flex items-center gap-1.5 group mb-3"
-                title={formData.useCurriculum ? t('storybook.curriculumEnabled') : t('storybook.curriculumDisabled')}
-              >
-                <span className="text-sm font-medium text-theme-label group-hover:text-theme-heading transition-colors">
+              <div className="flex items-center gap-1.5 mb-3">
+                <span className="text-sm font-medium text-theme-label">
                   {t('storybook.alignCurriculum')}
                 </span>
-                <div className={`relative w-7 h-4 rounded-full transition-colors ${formData.useCurriculum ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${formData.useCurriculum ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                </div>
-              </button>
+                <NeuroSwitch
+                  checked={formData.useCurriculum}
+                  onChange={(v) => updateForm('useCurriculum', v)}
+                  size="sm"
+                  aria-label={t('storybook.alignCurriculum')}
+                />
+              </div>
 
               {/* Strand / ELO / SCO fields — only when curriculum is on */}
               {formData.useCurriculum && (

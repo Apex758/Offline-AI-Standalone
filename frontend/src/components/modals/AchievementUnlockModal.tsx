@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
+import FireworksOverlay from '../effects/FireworksOverlay';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
@@ -252,6 +253,11 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
           100% { opacity: 0.15; transform: rotate(360deg) scale(1); }
         }
       `}</style>
+
+      {/* Fireworks — only for real unlocks, fires behind the card */}
+      {!viewOnly && show && !hiding && (
+        <FireworksOverlay rarity={achievement.rarity} />
+      )}
 
       {/* Sparkle/confetti particles — only for unlock, not view */}
       {!viewOnly && show && !hiding && Array.from({ length: 50 }).map((_, i) => {

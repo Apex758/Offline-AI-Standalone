@@ -19,6 +19,7 @@ import type { MilestoneStats } from '../../types/milestone';
 import type { Milestone } from '../../types/milestone';
 import type { CurriculumView } from '../../types/analytics';
 import { GRADE_VALUE_MAP } from '../../data/teacherConstants';
+import { NeuroSegment } from '../ui/NeuroSegment';
 
 interface CurriculumProgressWidgetProps {
   stats: MilestoneStats | null;
@@ -312,26 +313,13 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
         </div>
 
         {/* View Toggle */}
-        <div
-          className="flex items-center space-x-1 rounded-lg p-1"
+        <NeuroSegment
+          options={viewButtons.map((btn) => ({ value: btn.value, label: btn.label }))}
+          value={view}
+          onChange={onViewChange}
+          size="sm"
           data-tutorial="analytics-curriculum-views"
-          style={{ backgroundColor: 'var(--dash-gold-a25)' }}
-        >
-          {viewButtons.map((btn) => (
-            <button
-              key={btn.value}
-              onClick={() => onViewChange(btn.value)}
-              className="flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-              style={{
-                backgroundColor: view === btn.value ? 'var(--dash-primary)' : 'transparent',
-                color: view === btn.value ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
-                boxShadow: view === btn.value ? `0 2px 4px var(--dash-primary-a25)` : 'none'
-              }}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
+        />
       </div>
 
       {/* Content */}

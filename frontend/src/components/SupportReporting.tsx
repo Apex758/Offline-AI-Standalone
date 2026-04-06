@@ -67,6 +67,7 @@ import { useTranslation } from 'react-i18next';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import axios from 'axios';
+import { NeuroChevron } from './ui/NeuroChevron';
 
 const METRICS_API = 'http://localhost:8000/api';
 const TICKETS_STORAGE_KEY = 'olh_support_tickets';
@@ -662,10 +663,12 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                             <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{(cat as any).titleKey ? t((cat as any).titleKey) : cat.title}</p>
                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cat.description} · {cat.items.length} question{cat.items.length !== 1 ? 's' : ''}</p>
                           </div>
-                          {isExp
-                            ? <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
-                            : <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
-                          }
+                          <NeuroChevron
+                            expanded={isExp}
+                            onToggle={() => toggleCategory(cat.id)}
+                            size="sm"
+                            aria-hidden={true}
+                          />
                         </button>
                         {isExp && (
                           <div className="px-4 pb-3 space-y-1" style={{ borderTop: '1px solid var(--border-primary)' }}>
@@ -684,10 +687,12 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                   >
                                     <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: isOpen ? cat.color : 'var(--text-muted)' }} />
                                     <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>{item.question}</span>
-                                    {isOpen
-                                      ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />
-                                      : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />
-                                    }
+                                    <NeuroChevron
+                                      expanded={isOpen}
+                                      onToggle={() => {}}
+                                      size="sm"
+                                      aria-hidden={true}
+                                    />
                                   </button>
                                   {isOpen && (
                                     <div className="ml-9 mr-3 mt-1 mb-2">
@@ -938,7 +943,12 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                   <p className="text-sm font-medium mt-0.5 truncate" style={{ color: 'var(--text-primary)' }}>{ticket.subject}</p>
                                 </div>
                                 <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{new Date(ticket.createdAt).toLocaleDateString()}</span>
-                                {isExp ? <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} /> : <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />}
+                                <NeuroChevron
+                                  expanded={isExp}
+                                  onToggle={() => setExpandedTicket(isExp ? null : ticket.id)}
+                                  size="sm"
+                                  aria-hidden={true}
+                                />
                               </button>
                               {isExp && (
                                 <div className="px-4 pb-4" style={{ borderTop: '1px solid var(--border-primary)' }}>

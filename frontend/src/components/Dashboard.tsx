@@ -47,6 +47,7 @@ import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
 import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
+import { useEngineStatus } from '../hooks/useEngineStatus';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -601,6 +602,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return tab.title;
   };
   const { hasDiffusion } = useCapabilities();
+  const { status: engineStatus } = useEngineStatus();
 
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
@@ -2578,53 +2580,56 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           })()}
         </div>
 
+        {/* Engine status indicator */}
         <div
-          className="p-4"
           style={{
             borderTop: '1px solid var(--sidebar-border)',
-            opacity: sidebarOpen ? 1 : 0,
-            transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            pointerEvents: sidebarOpen ? 'auto' : 'none'
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
+          title={!sidebarOpen ? (engineStatus === 'online' ? 'Engine Online' : engineStatus === 'checking' ? 'Engine Checking...' : 'Engine Offline') : ''}
         >
-          <button
-            onClick={() => {
-              const busyTabs = tabs.filter(t => isTabWorking(t.id));
-              if (busyTabs.length > 0) {
-                setGenerationAlertTarget('window');
-                setGenerationAlertCount(busyTabs.length);
-                setGenerationAlertAction(() => () => onLogout());
-                setShowGenerationAlert(true);
-                return;
-              }
-              onLogout();
-            }}
-            className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition text-red-400 hover:text-red-300`}
-            title={!sidebarOpen ? t('sidebar.logout') : ''}
+          {/* Status dot */}
+          <span
             style={{
-              display: 'none',
-              backgroundColor: 'transparent',
-              transition: 'background-color 0.2s'
+              display: 'inline-block',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              flexShrink: 0,
+              backgroundColor:
+                engineStatus === 'online' ? '#22c55e' :
+                engineStatus === 'checking' ? '#f59e0b' :
+                '#ef4444',
+              boxShadow:
+                engineStatus === 'online' ? '0 0 6px #22c55e88' :
+                engineStatus === 'checking' ? '0 0 6px #f59e0b88' :
+                '0 0 6px #ef444488',
+              animation: engineStatus === 'checking' ? 'pulse 1.5s ease-in-out infinite' : 'none',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+          />
+          {/* Label — only when sidebar is expanded */}
+          <span
+            style={{
+              fontSize: '12px',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              color:
+                engineStatus === 'online' ? '#22c55e' :
+                engineStatus === 'checking' ? '#f59e0b' :
+                '#ef4444',
+              opacity: sidebarOpen ? 1 : 0,
+              maxWidth: sidebarOpen ? '200px' : '0px',
+              transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span
-              className="text-sm font-medium"
-              style={{
-                opacity: sidebarOpen ? 1 : 0,
-                transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                pointerEvents: sidebarOpen ? 'auto' : 'none'
-              }}
-            >
-              {t('sidebar.logout')}
-            </span>
-          </button>
+            {engineStatus === 'online' ? 'Engine Online' : engineStatus === 'checking' ? 'Checking...' : 'Engine Offline'}
+          </span>
         </div>
       </div>
 

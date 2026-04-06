@@ -86,6 +86,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import ImageModeSelector from './ui/ImageModeSelector';
 import type { ImageMode } from '../types';
+import { NeuroSegment } from './ui/NeuroSegment';
 
 
 // Curriculum types removed — now using curriculumLoader directly
@@ -422,7 +423,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
     return 'student';
   });
-  const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingStructured, setIsEditingStructured] = useState(false);
   const [isGrading, setIsGrading] = useState(false);
@@ -2083,72 +2083,16 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   Grade
                 </button>
 
-                <div className="relative">
-                  <button
-                    onClick={() => setShowVersionMenu(!showVersionMenu)}
-                    className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
-                    data-tutorial="worksheet-generator-view-toggle"
-                  >
-                    <FileText className="w-3.5 h-3.5 mr-1.5" />
-                    {viewMode === 'teacher' ? 'Teacher Version' : 'Student Version'}
-                    <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
-                  </button>
-
-                  {showVersionMenu && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setShowVersionMenu(false)}
-                      />
-
-                      <div className="absolute left-0 mt-2 w-56 rounded-lg z-20 overflow-hidden widget-glass">
-                        <div className="py-1">
-                          <button
-                            onClick={() => {
-                              setViewMode('student');
-                              setShowVersionMenu(false);
-                            }}
-                            className={`w-full text-left px-4 py-2 hover:bg-theme-subtle flex items-center justify-between transition ${
-                              viewMode === 'student' ? 'bg-blue-50' : ''
-                            }`}
-                          >
-                            <div className="flex items-center">
-                              <Users className="w-4 h-4 mr-3 text-blue-600" />
-                              <div>
-                                <div className="text-sm font-medium text-theme-title">Student Version</div>
-                                <div className="text-xs text-theme-hint">Hide answers</div>
-                              </div>
-                            </div>
-                            {viewMode === 'student' && (
-                              <Check className="w-4 h-4 text-blue-600" />
-                            )}
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setViewMode('teacher');
-                              setShowVersionMenu(false);
-                            }}
-                            className={`w-full text-left px-4 py-2 hover:bg-theme-subtle flex items-center justify-between transition ${
-                              viewMode === 'teacher' ? 'bg-blue-50' : ''
-                            }`}
-                          >
-                            <div className="flex items-center">
-                              <GraduationCap className="w-4 h-4 mr-3 text-green-600" />
-                              <div>
-                                <div className="text-sm font-medium text-theme-title">Teacher Version</div>
-                                <div className="text-xs text-theme-hint">Show answers</div>
-                              </div>
-                            </div>
-                            {viewMode === 'teacher' && (
-                              <Check className="w-4 h-4 text-green-600" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                <NeuroSegment
+                  options={[
+                    { value: 'student', label: 'Student', icon: <Users className="w-3.5 h-3.5" /> },
+                    { value: 'teacher', label: 'Teacher', icon: <GraduationCap className="w-3.5 h-3.5" /> },
+                  ]}
+                  value={viewMode}
+                  onChange={(v) => setViewMode(v as 'student' | 'teacher')}
+                  size="sm"
+                  aria-label="View version"
+                />
 
                 <ExportButton
                   dataType="worksheet"
