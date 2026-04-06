@@ -149,17 +149,21 @@ PHASE_WEIGHT_PROFILES = {
     "post_exam":          {"curriculum": 0.15, "content": 0.15, "performance": 0.35, "attendance": 0.15, "achievements": 0.20},
     "vacation":           {"curriculum": 0.30, "content": 0.30, "performance": 0.05, "attendance": 0.05, "achievements": 0.30},
     "reopening":          {"curriculum": 0.30, "content": 0.25, "performance": 0.10, "attendance": 0.25, "achievements": 0.10},
-    # ── Caribbean two-semester phases ────────────────────────────────────────
-    "semester_1_early":     {"curriculum": 0.28, "content": 0.27, "performance": 0.15, "attendance": 0.18, "achievements": 0.12},
-    "midterm_1_prep":       {"curriculum": 0.15, "content": 0.20, "performance": 0.35, "attendance": 0.15, "achievements": 0.15},
-    "midterm_1":            {"curriculum": 0.10, "content": 0.10, "performance": 0.42, "attendance": 0.22, "achievements": 0.16},
-    "semester_1_late":      {"curriculum": 0.20, "content": 0.20, "performance": 0.30, "attendance": 0.18, "achievements": 0.12},
-    "inter_semester_break": {"curriculum": 0.30, "content": 0.32, "performance": 0.05, "attendance": 0.05, "achievements": 0.28},
-    "semester_2_early":     {"curriculum": 0.28, "content": 0.25, "performance": 0.15, "attendance": 0.22, "achievements": 0.10},
-    "midterm_2_prep":       {"curriculum": 0.15, "content": 0.20, "performance": 0.35, "attendance": 0.15, "achievements": 0.15},
-    "midterm_2":            {"curriculum": 0.10, "content": 0.10, "performance": 0.42, "attendance": 0.22, "achievements": 0.16},
-    "semester_2_late":      {"curriculum": 0.15, "content": 0.15, "performance": 0.38, "attendance": 0.15, "achievements": 0.17},
+    # ── Caribbean three-term phases ──────────────────────────────────────────
+    "term_1_early":         {"curriculum": 0.28, "content": 0.27, "performance": 0.15, "attendance": 0.18, "achievements": 0.12},
+    "term_1_midterm_prep":  {"curriculum": 0.15, "content": 0.20, "performance": 0.35, "attendance": 0.15, "achievements": 0.15},
+    "term_1_midterm":       {"curriculum": 0.10, "content": 0.10, "performance": 0.42, "attendance": 0.22, "achievements": 0.16},
+    "term_1_late":          {"curriculum": 0.20, "content": 0.20, "performance": 0.30, "attendance": 0.18, "achievements": 0.12},
+    "christmas_break":      {"curriculum": 0.30, "content": 0.32, "performance": 0.05, "attendance": 0.05, "achievements": 0.28},
+    "term_2_early":         {"curriculum": 0.28, "content": 0.25, "performance": 0.15, "attendance": 0.22, "achievements": 0.10},
+    "term_2_midterm_prep":  {"curriculum": 0.15, "content": 0.20, "performance": 0.35, "attendance": 0.15, "achievements": 0.15},
+    "term_2_midterm":       {"curriculum": 0.10, "content": 0.10, "performance": 0.42, "attendance": 0.22, "achievements": 0.16},
+    "term_2_late":          {"curriculum": 0.20, "content": 0.20, "performance": 0.30, "attendance": 0.18, "achievements": 0.12},
+    "easter_break":         {"curriculum": 0.30, "content": 0.32, "performance": 0.05, "attendance": 0.05, "achievements": 0.28},
+    "term_3_early":         {"curriculum": 0.20, "content": 0.20, "performance": 0.25, "attendance": 0.20, "achievements": 0.15},
+    "term_3_late":          {"curriculum": 0.15, "content": 0.15, "performance": 0.38, "attendance": 0.15, "achievements": 0.17},
     "end_of_year_exam":     {"curriculum": 0.10, "content": 0.08, "performance": 0.48, "attendance": 0.20, "achievements": 0.14},
+    "summer_vacation":      {"curriculum": 0.30, "content": 0.30, "performance": 0.05, "attendance": 0.05, "achievements": 0.30},
 }
 
 PHASE_LABELS = {
@@ -173,16 +177,20 @@ PHASE_LABELS = {
     "vacation": "Vacation",
     "reopening": "Reopening",
     # Caribbean
-    "semester_1_early":     "Semester 1 — Early",
-    "midterm_1_prep":       "Mid-Term 1 Prep",
-    "midterm_1":            "Mid-Term 1",
-    "semester_1_late":      "Semester 1 — Late",
-    "inter_semester_break": "Inter-Semester Break",
-    "semester_2_early":     "Semester 2 — Early",
-    "midterm_2_prep":       "Mid-Term 2 Prep",
-    "midterm_2":            "Mid-Term 2",
-    "semester_2_late":      "Semester 2 — Late",
+    "term_1_early":         "Term 1 — Early",
+    "term_1_midterm_prep":  "Term 1 Mid-Term Prep",
+    "term_1_midterm":       "Term 1 Mid-Term",
+    "term_1_late":          "Term 1 — Late",
+    "christmas_break":      "Christmas Break",
+    "term_2_early":         "Term 2 — Early",
+    "term_2_midterm_prep":  "Term 2 Mid-Term Prep",
+    "term_2_midterm":       "Term 2 Mid-Term",
+    "term_2_late":          "Term 2 — Late",
+    "easter_break":         "Easter Break",
+    "term_3_early":         "Term 3 — Early",
+    "term_3_late":          "Term 3 — Late",
     "end_of_year_exam":     "End-of-Year Exams",
+    "summer_vacation":      "Summer Vacation",
 }
 
 EQUAL_WEIGHTS = {"curriculum": 0.20, "content": 0.20, "performance": 0.20, "attendance": 0.20, "achievements": 0.20}
@@ -216,7 +224,7 @@ def detect_school_phase(teacher_id: str) -> dict:
     today = datetime.now().date()
 
     # ── Caribbean two-semester: use academic_phases table ──
-    if config.get("structure_type") == "caribbean_two_semester":
+    if config.get("structure_type") == "caribbean_three_term":
         try:
             phase_row = school_year_service.get_phase_for_date(teacher_id)
         except Exception:

@@ -321,7 +321,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
     const textarea = chatTextareaRef.current;
     if (textarea) {
-      textarea.style.height = '28px'; // reset to min
+      textarea.style.height = '48px'; // reset to min
       textarea.style.height = Math.min(textarea.scrollHeight, 220) + 'px';
     }
   }, [input]);
@@ -1973,7 +1973,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           )}
           <div className="flex items-center space-x-2 mx-auto" style={{ maxWidth: '1000px', width: '100%' }}>
             {/* Input field with mic (left) and brain (right) inside */}
-            <div className={`flex-1 flex items-center border rounded-xl px-2 py-1 transition ${
+            <div className={`flex-1 flex items-center border rounded-xl px-2 pt-1 pb-0 transition ${
               stt.isListening ? 'border-red-400 bg-red-50 dark:bg-red-900/10' : 'border-theme-strong focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent'
             }`} style={{ minHeight: '56px' }}>
               {/* Mic button — left side */}
@@ -1997,9 +1997,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 onChange={setInput}
                 onKeyDown={handleKeyDown}
                 placeholder={stt.isListening ? 'Listening...' : t('chat.placeholder')}
-                className="flex-1 resize-none outline-none bg-transparent dark:text-gray-100 overflow-y-auto leading-5"
+                className="flex-1 resize-none outline-none bg-transparent dark:text-gray-100 overflow-y-auto"
                 rows={1}
-                style={{ minHeight: '22px', maxHeight: '220px', padding: '0 8px' }}
+                style={{ minHeight: '48px', maxHeight: '220px', padding: '0 8px', fontSize: '18px', lineHeight: '48px' }}
                 disabled={loading}
                 data-tutorial="chat-input"
               />

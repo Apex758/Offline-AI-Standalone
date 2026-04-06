@@ -18,22 +18,24 @@ router = APIRouter(prefix="/api/teacher-metrics", tags=["teacher-metrics"])
 
 
 class CaribbeanSetupDates(BaseModel):
-    year_start:       str
-    sem1_end:         str
-    break_end:        str
-    year_end:         str
-    midterm1_start:   str
-    midterm1_end:     str
-    midterm2_start:   str
-    midterm2_end:     str
-    final_exam_start: Optional[str] = None
-    final_exam_end:   Optional[str] = None
+    year_start:          str
+    term1_end:           str
+    christmas_break_end: str
+    term2_end:           str
+    easter_break_end:    str
+    year_end:            str
+    midterm1_start:      str
+    midterm1_end:        str
+    midterm2_start:      str
+    midterm2_end:        str
+    final_exam_start:    Optional[str] = None
+    final_exam_end:      Optional[str] = None
 
 
 class SchoolYearSetupRequest(BaseModel):
     teacher_id:     str = "default_teacher"
     label:          str
-    structure_type: str = "caribbean_two_semester"
+    structure_type: str = "caribbean_three_term"
     dates:          CaribbeanSetupDates
 
 
@@ -137,7 +139,7 @@ async def setup_caribbean_year(body: SchoolYearSetupRequest):
             "start_date":    body.dates.year_start,
             "end_date":      body.dates.year_end,
             "is_active":     1,
-            "structure_type": "caribbean_two_semester",
+            "structure_type": "caribbean_three_term",
         })
 
         # Build and save the academic phases

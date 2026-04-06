@@ -1200,7 +1200,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         const fp = ctAllPhases.find(p => p.id === filters.phase);
         if (!fp) return null;
         // Build a minimal CurrentPhaseInfo-compatible object
-        const PHASE_C: Record<string, string> = { midterm_1: '#f97316', midterm_2: '#f97316', midterm_1_prep: '#fbbf24', midterm_2_prep: '#fbbf24', inter_semester_break: '#eab308', end_of_year_exam: '#ef4444' };
+        const PHASE_C: Record<string, string> = { term_1_early: '#3b82f6', term_1_midterm_prep: '#f97316', term_1_midterm: '#ef4444', term_1_late: '#6366f1', christmas_break: '#eab308', term_2_early: '#22c55e', term_2_midterm_prep: '#f97316', term_2_midterm: '#ef4444', term_2_late: '#14b8a6', easter_break: '#a855f7', term_3_early: '#06b6d4', term_3_late: '#0ea5e9', end_of_year_exam: '#ef4444', summer_vacation: '#84cc16' };
         const SEM_C: Record<string, string> = { 'Semester 1': '#3b82f6', 'Semester 2': '#22c55e' };
         const c = PHASE_C[fp.phase_key] || (fp.semester ? SEM_C[fp.semester] || '#6b7280' : '#6b7280');
         return <PhaseContextBanner phase={{ id: fp.id, phase_key: fp.phase_key, phase_label: fp.phase_label, semester: fp.semester, start_date: fp.start_date, end_date: fp.end_date, days_remaining: 0, color: c }} onClear={() => setFilters(f => ({ ...f, phase: '' }))} />;

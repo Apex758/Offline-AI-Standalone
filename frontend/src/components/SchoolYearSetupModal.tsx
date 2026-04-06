@@ -58,7 +58,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
   const { t } = useTranslation();
   const STEPS = [t('calendar.structure'), t('calendar.keyDates'), t('calendar.midterms'), t('calendar.finalExams'), t('calendar.preview')];
   const [step, setStep] = useState(0);
-  const [structureType, setStructureType] = useState<'caribbean_two_semester' | 'generic'>('caribbean_two_semester');
+  const [structureType, setStructureType] = useState<'caribbean_three_term' | 'generic'>('caribbean_three_term');
   const [label, setLabel] = useState('');
   const [dates, setDates] = useState<CaribbeanDates>(defaultDates);
   const [saving, setSaving] = useState(false);
@@ -68,7 +68,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
     setDates(prev => ({ ...prev, [key]: value }));
 
   const canProceed = (): boolean => {
-    if (step === 0) return structureType === 'caribbean_two_semester' || structureType === 'generic';
+    if (step === 0) return structureType === 'caribbean_three_term' || structureType === 'generic';
     if (step === 1) return !!(label && dates.year_start && dates.sem1_end && dates.break_end && dates.year_end);
     if (step === 2) return !!(dates.midterm1_start && dates.midterm1_end && dates.midterm2_start && dates.midterm2_end);
     if (step === 3) return !!(dates.final_exam_start && dates.final_exam_end);
@@ -164,7 +164,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
             School Year Setup
           </p>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--dash-text)', margin: 0 }}>
-            {structureType === 'caribbean_two_semester' ? t('calendar.caribbeanCalendar') : t('calendar.customSchoolYear')}
+            {structureType === 'caribbean_three_term' ? t('calendar.caribbeanCalendar') : t('calendar.customSchoolYear')}
           </h2>
         </div>
 
@@ -191,7 +191,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
               Choose the academic structure that matches your school system.
             </p>
             {[
-              { type: 'caribbean_two_semester', title: 'Caribbean (2 Semesters + Midterms)', desc: 'Semester 1 → Mid-Term 1 → Break → Semester 2 → Mid-Term 2 → End-of-Year Exams' },
+              { type: 'caribbean_three_term', title: 'Caribbean (3 Terms)', desc: 'Term 1 → Christmas Break → Term 2 → Easter Break → Term 3 → End-of-Year Exams' },
               { type: 'generic', title: 'Generic (Custom)', desc: 'Standard school year without predefined semester structure.' },
             ].map(opt => (
               <div

@@ -7,10 +7,12 @@ const GENERIC_PHASE_ORDER: SchoolPhase[] = [
 ];
 
 const CARIBBEAN_PHASE_ORDER: SchoolPhase[] = [
-  'semester_1_early', 'midterm_1_prep', 'midterm_1', 'semester_1_late',
-  'inter_semester_break',
-  'semester_2_early', 'midterm_2_prep', 'midterm_2', 'semester_2_late',
-  'end_of_year_exam',
+  'term_1_early', 'term_1_midterm_prep', 'term_1_midterm', 'term_1_late',
+  'christmas_break',
+  'term_2_early', 'term_2_midterm_prep', 'term_2_midterm', 'term_2_late',
+  'easter_break',
+  'term_3_early', 'term_3_late', 'end_of_year_exam',
+  'summer_vacation',
 ];
 
 const PHASE_COLORS_SOLID: Partial<Record<SchoolPhase, string>> = {
@@ -24,16 +26,20 @@ const PHASE_COLORS_SOLID: Partial<Record<SchoolPhase, string>> = {
   vacation:      '#eab308',
   reopening:     '#06b6d4',
   // Caribbean
-  semester_1_early:     '#3b82f6',
-  midterm_1_prep:       '#f97316',
-  midterm_1:            '#ef4444',
-  semester_1_late:      '#6366f1',
-  inter_semester_break: '#eab308',
-  semester_2_early:     '#22c55e',
-  midterm_2_prep:       '#f97316',
-  midterm_2:            '#ef4444',
-  semester_2_late:      '#14b8a6',
+  term_1_early:         '#3b82f6',
+  term_1_midterm_prep:  '#f97316',
+  term_1_midterm:       '#ef4444',
+  term_1_late:          '#6366f1',
+  christmas_break:      '#eab308',
+  term_2_early:         '#22c55e',
+  term_2_midterm_prep:  '#f97316',
+  term_2_midterm:       '#ef4444',
+  term_2_late:          '#14b8a6',
+  easter_break:         '#a855f7',
+  term_3_early:         '#06b6d4',
+  term_3_late:          '#0ea5e9',
   end_of_year_exam:     '#dc2626',
+  summer_vacation:      '#84cc16',
 };
 
 const PHASE_LABELS: Partial<Record<SchoolPhase, string>> = {
@@ -46,28 +52,22 @@ const PHASE_LABELS: Partial<Record<SchoolPhase, string>> = {
   vacation:      'Vacation',
   reopening:     'Reopen',
   // Caribbean
-  semester_1_early:     'S1 Early',
-  midterm_1_prep:       'MT1 Prep',
-  midterm_1:            'Mid-Term 1',
-  semester_1_late:      'S1 Late',
-  inter_semester_break: 'Break',
-  semester_2_early:     'S2 Early',
-  midterm_2_prep:       'MT2 Prep',
-  midterm_2:            'Mid-Term 2',
-  semester_2_late:      'S2 Late',
+  term_1_early:         'T1 Early',
+  term_1_midterm_prep:  'T1 MT Prep',
+  term_1_midterm:       'T1 Mid-Term',
+  term_1_late:          'T1 Late',
+  christmas_break:      'Christmas',
+  term_2_early:         'T2 Early',
+  term_2_midterm_prep:  'T2 MT Prep',
+  term_2_midterm:       'T2 Mid-Term',
+  term_2_late:          'T2 Late',
+  easter_break:         'Easter',
+  term_3_early:         'T3 Early',
+  term_3_late:          'T3 Late',
   end_of_year_exam:     'Finals',
+  summer_vacation:      'Summer',
 };
 
-// Semester boundary: which phase starts Semester 2?
-const SEMESTER_2_START: SchoolPhase = 'semester_2_early';
-
-/** Returns a CSS linear-gradient that blends from the previous phase colour → current → next */
-function getSectionGradient(phases: SchoolPhase[], index: number): string {
-  const curr = PHASE_COLORS_SOLID[phases[index]] || '#6b7280';
-  const prev = index > 0 ? (PHASE_COLORS_SOLID[phases[index - 1]] || '#6b7280') : curr;
-  const next = index < phases.length - 1 ? (PHASE_COLORS_SOLID[phases[index + 1]] || '#6b7280') : curr;
-  return `linear-gradient(to right, ${prev} 0%, ${curr} 40%, ${curr} 60%, ${next} 100%)`;
-}
 
 interface YearPhasePopoverProps {
   currentPhase: SchoolPhase;
@@ -105,9 +105,12 @@ const YearPhasePopover: React.FC<YearPhasePopoverProps> = ({
 
   // For Caribbean, split phases into S1, break, S2 rows
   const caribbeanRows: { label: string | null; phases: SchoolPhase[] }[] = [
-    { label: 'Semester 1', phases: ['semester_1_early', 'midterm_1_prep', 'midterm_1', 'semester_1_late'] },
-    { label: null,         phases: ['inter_semester_break'] },
-    { label: 'Semester 2', phases: ['semester_2_early', 'midterm_2_prep', 'midterm_2', 'semester_2_late', 'end_of_year_exam'] },
+    { label: 'Term 1', phases: ['term_1_early', 'term_1_midterm_prep', 'term_1_midterm', 'term_1_late'] },
+    { label: null,      phases: ['christmas_break'] },
+    { label: 'Term 2', phases: ['term_2_early', 'term_2_midterm_prep', 'term_2_midterm', 'term_2_late'] },
+    { label: null,      phases: ['easter_break'] },
+    { label: 'Term 3', phases: ['term_3_early', 'term_3_late', 'end_of_year_exam'] },
+    { label: null,      phases: ['summer_vacation'] },
   ];
 
   return (
@@ -142,7 +145,7 @@ const YearPhasePopover: React.FC<YearPhasePopoverProps> = ({
                     key={phase}
                     className="flex-1 transition-opacity"
                     style={{
-                      background: getSectionGradient(row.phases, idx),
+                      background: PHASE_COLORS_SOLID[phase] || '#6b7280',
                       opacity: phase === currentPhase ? 1 : 0.25,
                     }}
                     title={PHASE_LABELS[phase] || phase}
@@ -187,7 +190,7 @@ const YearPhasePopover: React.FC<YearPhasePopoverProps> = ({
                 key={phase}
                 className="flex-1 transition-opacity"
                 style={{
-                  background: getSectionGradient(phaseOrder, idx),
+                  background: PHASE_COLORS_SOLID[phase] || '#6b7280',
                   opacity: phase === currentPhase ? 1 : 0.25,
                 }}
               />

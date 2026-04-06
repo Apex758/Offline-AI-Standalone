@@ -984,9 +984,20 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {dashPhaseProgress.map(p => {
                     const PHASE_C: Record<string, string> = {
-                      midterm_1: '#f97316', midterm_2: '#f97316',
-                      midterm_1_prep: '#fbbf24', midterm_2_prep: '#fbbf24',
-                      inter_semester_break: '#eab308', end_of_year_exam: '#ef4444',
+                      term_1_early: '#3b82f6',
+                      term_1_midterm_prep: '#f97316',
+                      term_1_midterm: '#ef4444',
+                      term_1_late: '#6366f1',
+                      christmas_break: '#eab308',
+                      term_2_early: '#22c55e',
+                      term_2_midterm_prep: '#f97316',
+                      term_2_midterm: '#ef4444',
+                      term_2_late: '#14b8a6',
+                      easter_break: '#a855f7',
+                      term_3_early: '#06b6d4',
+                      term_3_late: '#0ea5e9',
+                      end_of_year_exam: '#ef4444',
+                      summer_vacation: '#84cc16',
                     };
                     const SEM_C: Record<string, string> = { 'Semester 1': '#3b82f6', 'Semester 2': '#22c55e' };
                     const color = PHASE_C[p.key] || (p.semester ? SEM_C[p.semester] || '#6b7280' : '#6b7280');

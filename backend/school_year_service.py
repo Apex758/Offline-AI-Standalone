@@ -375,35 +375,41 @@ def get_due_reminders(teacher_id: str, window_minutes: int = 1) -> list[dict]:
 # ── Caribbean Academic Phase Setup ────────────────────────────────────────────
 
 CARIBBEAN_PHASE_DEFS = [
-    # (phase_key, phase_label, semester, order)
-    ('semester_1_early',     'Semester 1 — Early',       'Semester 1', 1),
-    ('midterm_1_prep',       'Mid-Term 1 Prep',          'Semester 1', 2),
-    ('midterm_1',            'Mid-Term 1',               'Semester 1', 3),
-    ('semester_1_late',      'Semester 1 — Late',        'Semester 1', 4),
-    ('inter_semester_break', 'Inter-Semester Break',     None,         5),
-    ('semester_2_early',     'Semester 2 — Early',       'Semester 2', 6),
-    ('midterm_2_prep',       'Mid-Term 2 Prep',          'Semester 2', 7),
-    ('midterm_2',            'Mid-Term 2',               'Semester 2', 8),
-    ('semester_2_late',      'Semester 2 — Late',        'Semester 2', 9),
-    ('end_of_year_exam',     'End-of-Year Exams',        'Semester 2', 10),
+    # (phase_key, phase_label, term, order)
+    ('term_1_early',         'Term 1 -- Early',           'Term 1',  1),
+    ('term_1_midterm_prep',  'Term 1 Mid-Term Prep',     'Term 1',  2),
+    ('term_1_midterm',       'Term 1 Mid-Term',          'Term 1',  3),
+    ('term_1_late',          'Term 1 -- Late',            'Term 1',  4),
+    ('christmas_break',      'Christmas Break',          None,      5),
+    ('term_2_early',         'Term 2 -- Early',           'Term 2',  6),
+    ('term_2_midterm_prep',  'Term 2 Mid-Term Prep',     'Term 2',  7),
+    ('term_2_midterm',       'Term 2 Mid-Term',          'Term 2',  8),
+    ('term_2_late',          'Term 2 -- Late',            'Term 2',  9),
+    ('easter_break',         'Easter Break',             None,     10),
+    ('term_3_early',         'Term 3 -- Early',           'Term 3', 11),
+    ('term_3_late',          'Term 3 -- Late',            'Term 3', 12),
+    ('end_of_year_exam',     'End-of-Year Exams',        'Term 3', 13),
+    ('summer_vacation',      'Summer Vacation',          None,     14),
 ]
 
 
 def build_caribbean_phases(config_id: str, teacher_id: str, dates: dict) -> list[dict]:
     """
-    Build academic_phases records from Caribbean setup wizard dates.
+    Build academic_phases records from Caribbean 3-term setup wizard dates.
 
     dates = {
-        'year_start':       'YYYY-MM-DD',   # School year start
-        'sem1_end':         'YYYY-MM-DD',   # Last day of Semester 1
-        'break_end':        'YYYY-MM-DD',   # Last day of inter-semester break (Semester 2 start = break_end + 1 day)
+        'year_start':       'YYYY-MM-DD',   # School year start (Term 1 start)
+        'term1_end':        'YYYY-MM-DD',   # Last day of Term 1
+        'christmas_break_end': 'YYYY-MM-DD', # Last day of Christmas break
+        'term2_end':        'YYYY-MM-DD',   # Last day of Term 2
+        'easter_break_end': 'YYYY-MM-DD',   # Last day of Easter break
         'year_end':         'YYYY-MM-DD',   # Last day of school year
         'midterm1_start':   'YYYY-MM-DD',
         'midterm1_end':     'YYYY-MM-DD',
         'midterm2_start':   'YYYY-MM-DD',
         'midterm2_end':     'YYYY-MM-DD',
-        'final_exam_start': 'YYYY-MM-DD',
-        'final_exam_end':   'YYYY-MM-DD',
+        'final_exam_start': 'YYYY-MM-DD',   # optional
+        'final_exam_end':   'YYYY-MM-DD',   # optional
     }
     """
     from datetime import date as _date, timedelta as _td
@@ -411,35 +417,59 @@ def build_caribbean_phases(config_id: str, teacher_id: str, dates: dict) -> list
     def d(s):
         return _date.fromisoformat(s)
 
-    year_start       = d(dates['year_start'])
-    sem1_end         = d(dates['sem1_end'])
-    break_start      = sem1_end + _td(days=1)
-    break_end        = d(dates['break_end'])
-    sem2_start       = break_end + _td(days=1)
-    year_end         = d(dates['year_end'])
-    mt1_start        = d(dates['midterm1_start'])
-    mt1_end          = d(dates['midterm1_end'])
-    mt2_start        = d(dates['midterm2_start'])
-    mt2_end          = d(dates['midterm2_end'])
-    fe_start         = d(dates.get('final_exam_start') or str(year_end - _td(days=13)))
-    fe_end           = d(dates.get('final_exam_end') or str(year_end))
+    year_start         = d(dates['year_start'])
+    term1_end          = d(dates['term1_end'])
+    christmas_start    = term1_end + _td(days=1)
+    christmas_end      = d(dates['christmas_break_end'])
+    term2_start        = christmas_end + _td(days=1)
+    term2_end          = d(dates['term2_end'])
+    easter_start       = term2_end + _td(days=1)
+    easter_end         = d(dates['easter_break_end'])
+    term3_start        = easter_end + _td(days=1)
+    year_end           = d(dates['year_end'])
+    mt1_start          = d(dates['midterm1_start'])
+    mt1_end            = d(dates['midterm1_end'])
+    mt2_start          = d(dates['midterm2_start'])
+    mt2_end            = d(dates['midterm2_end'])
+    fe_start           = d(dates.get('final_exam_start') or str(year_end - _td(days=13)))
+    fe_end             = d(dates.get('final_exam_end') or str(year_end))
 
     # Prep window = 7 days before each midterm
-    mt1_prep_start   = mt1_start - _td(days=7)
-    mt2_prep_start   = mt2_start - _td(days=7)
+    mt1_prep_start     = mt1_start - _td(days=7)
+    mt2_prep_start     = mt2_start - _td(days=7)
+
+    # Summer vacation starts day after last exam
+    summer_start       = fe_end + _td(days=1)
+    # Summer ends at year_end if year_end > fe_end, otherwise same day
+    summer_end         = year_end if year_end > fe_end else fe_end
 
     phase_date_map = {
-        'semester_1_early':     (year_start,      mt1_prep_start - _td(days=1)),
-        'midterm_1_prep':       (mt1_prep_start,  mt1_start - _td(days=1)),
-        'midterm_1':            (mt1_start,       mt1_end),
-        'semester_1_late':      (mt1_end + _td(days=1), sem1_end),
-        'inter_semester_break': (break_start,     break_end),
-        'semester_2_early':     (sem2_start,      mt2_prep_start - _td(days=1)),
-        'midterm_2_prep':       (mt2_prep_start,  mt2_start - _td(days=1)),
-        'midterm_2':            (mt2_start,       mt2_end),
-        'semester_2_late':      (mt2_end + _td(days=1), fe_start - _td(days=1)),
+        'term_1_early':         (year_start,      mt1_prep_start - _td(days=1)),
+        'term_1_midterm_prep':  (mt1_prep_start,  mt1_start - _td(days=1)),
+        'term_1_midterm':       (mt1_start,       mt1_end),
+        'term_1_late':          (mt1_end + _td(days=1), term1_end),
+        'christmas_break':      (christmas_start, christmas_end),
+        'term_2_early':         (term2_start,     mt2_prep_start - _td(days=1)),
+        'term_2_midterm_prep':  (mt2_prep_start,  mt2_start - _td(days=1)),
+        'term_2_midterm':       (mt2_start,       mt2_end),
+        'term_2_late':          (mt2_end + _td(days=1), term2_end),
+        'easter_break':         (easter_start,    easter_end),
+        'term_3_early':         (term3_start,     fe_start - _td(days=1)),
+        'term_3_late':          (fe_start - _td(days=1), fe_start - _td(days=1)),  # placeholder
         'end_of_year_exam':     (fe_start,        fe_end),
+        'summer_vacation':      (summer_start,    summer_end),
     }
+
+    # Better: split term 3 into early and late around midpoint
+    term3_days = (fe_start - _td(days=1) - term3_start).days
+    if term3_days > 7:
+        term3_mid = term3_start + _td(days=term3_days // 2)
+        phase_date_map['term_3_early'] = (term3_start, term3_mid)
+        phase_date_map['term_3_late']  = (term3_mid + _td(days=1), fe_start - _td(days=1))
+    else:
+        # Short term 3: early covers it all, late is just 1 day before exam
+        phase_date_map['term_3_early'] = (term3_start, fe_start - _td(days=2))
+        phase_date_map['term_3_late']  = (fe_start - _td(days=1), fe_start - _td(days=1))
 
     phases = []
     for (phase_key, phase_label, semester, order) in CARIBBEAN_PHASE_DEFS:

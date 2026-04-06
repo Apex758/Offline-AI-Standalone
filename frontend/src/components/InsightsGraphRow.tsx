@@ -157,7 +157,12 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
                   {Math.round(metrics.composite_score)}
                 </span>
                 <span className="text-xs font-semibold" style={{ color: compositeColor }}>
-                  {metrics.composite_grade}
+                  {metrics.composite_grade[0]}
+                  {metrics.composite_grade.slice(1) && (
+                    <sup style={{ fontSize: '0.65em', lineHeight: 0, verticalAlign: 'super' }}>
+                      {metrics.composite_grade.slice(1)}
+                    </sup>
+                  )}
                 </span>
               </button>
 

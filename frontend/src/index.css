@@ -1307,3 +1307,10 @@ button[style*="background-color: rgb(59"] {
 .rich-text > *:first-child {
   margin-top: 0;
 }
+
+/* Chat input placeholder */
+[data-tutorial="chat-input"]::placeholder {
+  font-style: italic;
+  font-size: 14px;
+  opacity: 0.5;
+}

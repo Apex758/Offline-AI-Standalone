@@ -15,20 +15,24 @@ Each dimension is scored 0-100, then multiplied by its phase weight to produce a
 | Vacation | 0.30 | 0.30 | 0.05 | 0.05 | 0.30 |
 | Reopening | 0.30 | 0.25 | 0.10 | 0.25 | 0.10 |
 
-## Caribbean Two-Semester Phases
+## Caribbean Three-Term Phases
 
 | Phase | Curriculum | Content | Performance | Attendance | Achievements |
 |-------|-----------|---------|-------------|------------|-------------|
-| Semester 1 — Early | 0.28 | 0.27 | 0.15 | 0.18 | 0.12 |
-| Mid-Term 1 Prep | 0.15 | 0.20 | 0.35 | 0.15 | 0.15 |
-| Mid-Term 1 | 0.10 | 0.10 | 0.42 | 0.22 | 0.16 |
-| Semester 1 — Late | 0.20 | 0.20 | 0.30 | 0.18 | 0.12 |
-| Inter-Semester Break | 0.30 | 0.32 | 0.05 | 0.05 | 0.28 |
-| Semester 2 — Early | 0.28 | 0.25 | 0.15 | 0.22 | 0.10 |
-| Mid-Term 2 Prep | 0.15 | 0.20 | 0.35 | 0.15 | 0.15 |
-| Mid-Term 2 | 0.10 | 0.10 | 0.42 | 0.22 | 0.16 |
-| Semester 2 — Late | 0.15 | 0.15 | 0.38 | 0.15 | 0.17 |
+| Term 1 — Early | 0.28 | 0.27 | 0.15 | 0.18 | 0.12 |
+| Term 1 Mid-Term Prep | 0.15 | 0.20 | 0.35 | 0.15 | 0.15 |
+| Term 1 Mid-Term | 0.10 | 0.10 | 0.42 | 0.22 | 0.16 |
+| Term 1 — Late | 0.20 | 0.20 | 0.30 | 0.18 | 0.12 |
+| Christmas Break | 0.30 | 0.32 | 0.05 | 0.05 | 0.28 |
+| Term 2 — Early | 0.28 | 0.25 | 0.15 | 0.22 | 0.10 |
+| Term 2 Mid-Term Prep | 0.15 | 0.20 | 0.35 | 0.15 | 0.15 |
+| Term 2 Mid-Term | 0.10 | 0.10 | 0.42 | 0.22 | 0.16 |
+| Term 2 — Late | 0.20 | 0.20 | 0.30 | 0.18 | 0.12 |
+| Easter Break | 0.30 | 0.32 | 0.05 | 0.05 | 0.28 |
+| Term 3 — Early | 0.20 | 0.20 | 0.25 | 0.20 | 0.15 |
+| Term 3 — Late | 0.15 | 0.15 | 0.38 | 0.15 | 0.17 |
 | End-of-Year Exams | 0.10 | 0.08 | 0.48 | 0.20 | 0.14 |
+| Summer Vacation | 0.30 | 0.30 | 0.05 | 0.05 | 0.30 |
 
 ## Fallback
 

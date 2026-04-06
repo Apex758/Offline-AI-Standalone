@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { GradeSubjectMapping, SUBJECTS } from '../data/teacherConstants';
 import { FeatureModuleId, NudgeState } from '../types/feature-disclosure';
 import { getEnabledSidebarItems } from '../lib/featureModules';
@@ -502,7 +502,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateSettings = (updates: Partial<Settings>) => {
+  const updateSettings = useCallback((updates: Partial<Settings>) => {
     setSettings(prevSettings => {
       const newSettings = { ...prevSettings, ...updates };
 
@@ -524,14 +524,14 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
       return newSettings;
     });
-  };
+  }, []);
 
-  const resetSettings = () => {
+  const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
     saveSettingsToStorage(DEFAULT_SETTINGS);
-  };
+  }, []);
 
-  const markTutorialComplete = (tutorialId: string) => {
+  const markTutorialComplete = useCallback((tutorialId: string) => {
     setSettings(prevSettings => {
       const newCompletedTutorials = prevSettings.tutorials.completedTutorials.includes(tutorialId)
         ? prevSettings.tutorials.completedTutorials
@@ -545,18 +545,18 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         }
       };
     });
-  };
+  }, []);
 
-  const isTutorialCompleted = (tutorialId: string): boolean => {
+  const isTutorialCompleted = useCallback((tutorialId: string): boolean => {
     return settings.tutorials.completedTutorials.includes(tutorialId);
-  };
+  }, [settings]);
 
-  const isSidebarItemEnabled = (id: string): boolean => {
+  const isSidebarItemEnabled = useCallback((id: string): boolean => {
     const item = settings.sidebarOrder.find(i => i.id === id);
     return item?.enabled ?? false;
-  };
+  }, [settings]);
 
-  const markFeatureDiscovered = (featureId: string) => {
+  const markFeatureDiscovered = useCallback((featureId: string) => {
     setSettings(prevSettings => {
       if ((prevSettings.discoveredFeatures || []).includes(featureId)) {
         return prevSettings;
@@ -566,20 +566,20 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         discoveredFeatures: [...(prevSettings.discoveredFeatures || []), featureId],
       };
     });
-  };
+  }, []);
 
-  const isFeatureDiscovered = (featureId: string): boolean => {
+  const isFeatureDiscovered = useCallback((featureId: string): boolean => {
     return (settings.discoveredFeatures || []).includes(featureId);
-  };
+  }, [settings]);
 
-  const resetTutorials = () => {
+  const resetTutorials = useCallback(() => {
     setSettings(prevSettings => ({
       ...prevSettings,
       tutorials: DEFAULT_SETTINGS.tutorials
     }));
-  };
+  }, []);
 
-  const setWelcomeSeen = (seen: boolean) => {
+  const setWelcomeSeen = useCallback((seen: boolean) => {
     setSettings(prevSettings => ({
       ...prevSettings,
       tutorials: {
@@ -587,12 +587,12 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         hasSeenWelcome: seen
       }
     }));
-  };
+  }, []);
 
   // --- Setup wizard ---
   const hasCompletedSetup = settings.tutorials.hasCompletedSetup ?? false;
 
-  const completeSetup = (modules: FeatureModuleId[], profile?: Partial<UserProfile>) => {
+  const completeSetup = useCallback((modules: FeatureModuleId[], profile?: Partial<UserProfile>) => {
     const enabledItems = getEnabledSidebarItems(modules);
     setSettings(prev => {
       const newSidebarOrder = prev.sidebarOrder.map(item => ({
@@ -613,9 +613,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         sidebarOrder: newSidebarOrder,
       };
     });
-  };
+  }, []);
 
-  const resetSetup = () => {
+  const resetSetup = useCallback(() => {
     setSettings(prev => ({
       ...prev,
       tutorials: {
@@ -624,14 +624,14 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         enabledModules: [],
       },
     }));
-  };
+  }, []);
 
   // --- Module toggling ---
-  const isModuleEnabled = (moduleId: FeatureModuleId): boolean => {
+  const isModuleEnabled = useCallback((moduleId: FeatureModuleId): boolean => {
     return (settings.tutorials.enabledModules || []).includes(moduleId);
-  };
+  }, [settings]);
 
-  const toggleModule = (moduleId: FeatureModuleId) => {
+  const toggleModule = useCallback((moduleId: FeatureModuleId) => {
     setSettings(prev => {
       const current = prev.tutorials.enabledModules || [];
       const newModules = current.includes(moduleId)
@@ -648,10 +648,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         sidebarOrder: newSidebarOrder,
       };
     });
-  };
+  }, []);
 
   // --- Nudge system ---
-  const dismissNudge = (nudgeId: string) => {
+  const dismissNudge = useCallback((nudgeId: string) => {
     setSettings(prev => ({
       ...prev,
       nudgeState: {
@@ -663,24 +663,24 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         },
       },
     }));
-  };
+  }, []);
 
-  const shouldShowNudge = (nudgeId: string): boolean => {
+  const shouldShowNudge = useCallback((nudgeId: string): boolean => {
     const state = settings.nudgeState || { dismissedNudges: [], nudgeCooldowns: {} };
     if (state.dismissedNudges.includes(nudgeId)) return false;
     const lastDismissed = state.nudgeCooldowns[nudgeId];
     if (lastDismissed && Date.now() - lastDismissed < NUDGE_COOLDOWN_MS) return false;
     return true;
-  };
+  }, [settings]);
 
   // --- Per-tool child visibility ---
-  const isToolChildEnabled = (groupId: string, toolType: string): boolean => {
+  const isToolChildEnabled = useCallback((groupId: string, toolType: string): boolean => {
     const group = settings.sidebarOrder.find(i => i.id === groupId);
     if (!group || !group.enabled) return false;
     return !(group.disabledChildren ?? []).includes(toolType);
-  };
+  }, [settings]);
 
-  const toggleToolChild = (groupId: string, toolType: string, enabled: boolean) => {
+  const toggleToolChild = useCallback((groupId: string, toolType: string, enabled: boolean) => {
     setSettings(prev => ({
       ...prev,
       sidebarOrder: prev.sidebarOrder.map(item => {
@@ -692,10 +692,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         return { ...item, disabledChildren: next };
       }),
     }));
-  };
+  }, []);
 
   // --- Workflow progression ---
-  const trackToolVisit = (toolType: string) => {
+  const trackToolVisit = useCallback((toolType: string) => {
     setSettings(prev => {
       if (prev.workflowProgress.visitedTools.includes(toolType)) return prev;
       return {
@@ -706,9 +706,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         },
       };
     });
-  };
+  }, []);
 
-  const dismissProgression = (toolType: string) => {
+  const dismissProgression = useCallback((toolType: string) => {
     setSettings(prev => {
       if (prev.workflowProgress.dismissedProgressions.includes(toolType)) return prev;
       return {
@@ -719,9 +719,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         },
       };
     });
-  };
+  }, []);
 
-  const value: SettingsContextValue = {
+  const value: SettingsContextValue = useMemo(() => ({
     settings,
     updateSettings,
     resetSettings,
@@ -743,7 +743,11 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     toggleToolChild,
     trackToolVisit,
     dismissProgression,
-  };
+  }), [settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted,
+    resetTutorials, setWelcomeSeen, isSidebarItemEnabled, markFeatureDiscovered,
+    isFeatureDiscovered, hasCompletedSetup, completeSetup, resetSetup, dismissNudge,
+    shouldShowNudge, isModuleEnabled, toggleModule, isToolChildEnabled, toggleToolChild,
+    trackToolVisit, dismissProgression]);
 
   return (
     <SettingsContext.Provider value={value}>

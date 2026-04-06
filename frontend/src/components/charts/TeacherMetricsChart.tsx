@@ -14,16 +14,20 @@ const PHASE_COLORS_SOLID: Partial<Record<SchoolPhase, string>> = {
   pre_exam: '#f97316', exam_period: '#ef4444', post_exam: '#a855f7',
   vacation: '#eab308', reopening: '#06b6d4',
   // Caribbean
-  semester_1_early:     '#3b82f6',
-  midterm_1_prep:       '#f97316',
-  midterm_1:            '#ef4444',
-  semester_1_late:      '#6366f1',
-  inter_semester_break: '#eab308',
-  semester_2_early:     '#22c55e',
-  midterm_2_prep:       '#f97316',
-  midterm_2:            '#ef4444',
-  semester_2_late:      '#14b8a6',
+  term_1_early:         '#3b82f6',
+  term_1_midterm_prep:  '#f97316',
+  term_1_midterm:       '#ef4444',
+  term_1_late:          '#6366f1',
+  christmas_break:      '#eab308',
+  term_2_early:         '#22c55e',
+  term_2_midterm_prep:  '#f97316',
+  term_2_midterm:       '#ef4444',
+  term_2_late:          '#14b8a6',
+  easter_break:         '#a855f7',
+  term_3_early:         '#06b6d4',
+  term_3_late:          '#0ea5e9',
   end_of_year_exam:     '#dc2626',
+  summer_vacation:      '#84cc16',
 };
 
 interface TeacherMetricsChartProps {
@@ -61,26 +65,30 @@ const SCORE_BANDS = [
 ];
 
 const PHASE_COLORS: Partial<Record<SchoolPhase, string>> = {
-  // Generic
-  start_of_year: 'rgba(59,130,246,0.06)',
-  early_year: 'rgba(34,197,94,0.06)',
-  mid_year: 'rgba(107,114,128,0.04)',
-  pre_exam: 'rgba(249,115,22,0.08)',
-  exam_period: 'rgba(239,68,68,0.08)',
-  post_exam: 'rgba(168,85,247,0.06)',
-  vacation: 'rgba(234,179,8,0.06)',
-  reopening: 'rgba(6,182,212,0.06)',
+  // Generic — solid color blocks at consistent opacity
+  start_of_year: 'rgba(59,130,246,0.12)',
+  early_year:    'rgba(34,197,94,0.12)',
+  mid_year:      'rgba(107,114,128,0.10)',
+  pre_exam:      'rgba(249,115,22,0.14)',
+  exam_period:   'rgba(239,68,68,0.14)',
+  post_exam:     'rgba(168,85,247,0.12)',
+  vacation:      'rgba(234,179,8,0.12)',
+  reopening:     'rgba(6,182,212,0.12)',
   // Caribbean
-  semester_1_early:     'rgba(59,130,246,0.06)',
-  midterm_1_prep:       'rgba(249,115,22,0.07)',
-  midterm_1:            'rgba(239,68,68,0.08)',
-  semester_1_late:      'rgba(99,102,241,0.06)',
-  inter_semester_break: 'rgba(234,179,8,0.06)',
-  semester_2_early:     'rgba(34,197,94,0.06)',
-  midterm_2_prep:       'rgba(249,115,22,0.07)',
-  midterm_2:            'rgba(239,68,68,0.08)',
-  semester_2_late:      'rgba(20,184,166,0.06)',
-  end_of_year_exam:     'rgba(220,38,38,0.09)',
+  term_1_early:         'rgba(59,130,246,0.12)',
+  term_1_midterm_prep:  'rgba(249,115,22,0.14)',
+  term_1_midterm:       'rgba(239,68,68,0.14)',
+  term_1_late:          'rgba(99,102,241,0.12)',
+  christmas_break:      'rgba(234,179,8,0.12)',
+  term_2_early:         'rgba(34,197,94,0.12)',
+  term_2_midterm_prep:  'rgba(249,115,22,0.14)',
+  term_2_midterm:       'rgba(239,68,68,0.14)',
+  term_2_late:          'rgba(20,184,166,0.12)',
+  easter_break:         'rgba(168,85,247,0.12)',
+  term_3_early:         'rgba(6,182,212,0.12)',
+  term_3_late:          'rgba(14,165,233,0.12)',
+  end_of_year_exam:     'rgba(220,38,38,0.15)',
+  summer_vacation:      'rgba(132,204,22,0.12)',
 };
 
 const DIMENSION_SERIES = [
@@ -101,16 +109,37 @@ function getGradeColor(score: number): string {
 }
 
 function getGradeLabel(score: number): string {
-  if (score >= 83) return 'A';
-  if (score >= 77) return 'B';
-  if (score >= 70) return 'C';
+  if (score >= 87) return 'A+';
+  if (score >= 85) return 'A';
+  if (score >= 83) return 'A-';
+  if (score >= 81) return 'B+';
+  if (score >= 79) return 'B';
+  if (score >= 77) return 'B-';
+  if (score >= 75) return 'C+';
+  if (score >= 72) return 'C';
+  if (score >= 70) return 'C-';
   if (score >= 60) return 'D';
   if (score >= 50) return 'E';
   return 'F';
 }
 
+// Renders a grade string with superscript +/- modifier (JSX only, not SVG)
+function GradeText({ grade, style }: { grade: string; style?: React.CSSProperties }) {
+  const base = grade[0];
+  const mod  = grade.slice(1);
+  return (
+    <span style={style}>
+      {base}
+      {mod && <sup style={{ fontSize: '0.65em', lineHeight: 0, verticalAlign: 'super' }}>{mod}</sup>}
+    </span>
+  );
+}
+
 // Linear Y-axis — raw score values used directly, grade boundaries at SCORE_BANDS min values
 const SNAPSHOT_COLOR = '#94a3b8';
+// A+ visual reference: same gap as B→A (83-77=6), so A+ sits at 83+6=89
+const APLUS_Y = 89;
+const APLUS_COLOR = '#22c55e';
 
 const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   data,
@@ -146,13 +175,33 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
     }));
   }, [data]);
 
-  // Compute cumulative running average + stamp badge score onto every point
+  // Compute cumulative running average + stamp badge score; clamp all values to APLUS_Y cap
   const transformedData = useMemo(() => {
+    const cap = (v: number | null | undefined) => v == null ? null : Math.min(v, APLUS_Y);
     let runningSum = 0;
     return chartData.map((snap, idx) => {
       runningSum += snap.composite_score ?? 0;
       const runningAvg = Math.round((runningSum / (idx + 1)) * 10) / 10;
-      return { ...snap, running_avg: runningAvg, badge_score: currentScore ?? null };
+      return {
+        ...snap,
+        // Raw values preserved for tooltip display
+        composite_score_raw:    snap.composite_score,
+        curriculum_score_raw:   snap.curriculum_score,
+        performance_score_raw:  snap.performance_score,
+        content_score_raw:      snap.content_score,
+        attendance_score_raw:   snap.attendance_score,
+        achievements_score_raw: snap.achievements_score,
+        running_avg_raw:        runningAvg,
+        // Capped values used for chart rendering
+        composite_score:      cap(snap.composite_score),
+        curriculum_score:     cap(snap.curriculum_score),
+        performance_score:    cap(snap.performance_score),
+        content_score:        cap(snap.content_score),
+        attendance_score:     cap(snap.attendance_score),
+        achievements_score:   cap(snap.achievements_score),
+        running_avg:          cap(runningAvg),
+        badge_score:          cap(currentScore ?? null),
+      };
     });
   }, [chartData, currentScore]);
 
@@ -180,14 +229,14 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   // Period avg color — from the tab color set in Settings, fallback to a neutral
   const avgColor = periodAvgColor ?? '#d97706';
 
-  // Y-axis ticks at each grade's start boundary only — no 100 to avoid duplicate A
-  const yAxisTicks = SCORE_BANDS.map(b => b.min);
+  // Y-axis ticks: grade boundaries + A+ cap
+  const yAxisTicks = [...SCORE_BANDS.map(b => b.min), APLUS_Y];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     const snap = payload[0]?.payload;
     if (!snap) return null;
-    const snapshotScore = snap.composite_score ?? 0;
+    const snapshotScore = snap.composite_score_raw ?? snap.composite_score ?? 0;
     const badgeScore = currentScore ?? snapshotScore;
     const badgeGrade = currentGrade ?? getGradeLabel(badgeScore);
     const badgeColor = getGradeColor(badgeScore);
@@ -201,7 +250,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
           className="font-bold px-1 py-0.5 rounded ml-auto"
           style={{ backgroundColor: color + '22', color, minWidth: '1.4rem', textAlign: 'center', fontSize: 10 }}
         >
-          {getGradeLabel(score)}
+          <GradeText grade={getGradeLabel(score)} />
         </span>
       </div>
     );
@@ -232,15 +281,17 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
             }}
           >
             <span className="text-xl font-bold leading-none" style={{ color: badgeColor }}>{badgeScore}</span>
-            <span className="text-xs font-semibold mt-0.5" style={{ color: badgeColor }}>{badgeGrade}</span>
+            <span className="text-xs font-semibold mt-0.5" style={{ color: badgeColor }}>
+              <GradeText grade={badgeGrade} />
+            </span>
           </div>
         </div>
 
         {/* Snapshot + avg rows */}
         <div className="flex flex-col gap-1.5 mb-2">
           <ScoreRow label="Snapshot" score={snapshotScore} color={getGradeColor(snapshotScore)} />
-          {snap.running_avg !== undefined && (
-            <ScoreRow label="Period avg" score={snap.running_avg} color={getGradeColor(snap.running_avg)} />
+          {snap.running_avg_raw !== undefined && (
+            <ScoreRow label="Period avg" score={snap.running_avg_raw} color={getGradeColor(snap.running_avg_raw)} />
           )}
         </div>
 
@@ -255,14 +306,15 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
         {!compact && (
           <div className="flex flex-col gap-0.5">
             {payload.slice(2).map((entry: any, i: number) => {
-              const val = Math.round((snap[entry.dataKey] ?? 0));
+              const rawKey = entry.dataKey + '_raw';
+              const val = Math.round((snap[rawKey] ?? snap[entry.dataKey] ?? 0));
               const gradeColor = getGradeColor(val);
               return (
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'inline-block' }} />
                   <span style={{ color: 'var(--dash-text-sub)' }}>{entry.name}</span>
                   <span className="font-semibold ml-auto" style={{ color: 'var(--dash-text)' }}>{val}</span>
-                  <span className="font-bold text-[10px] px-1 py-0.5 rounded" style={{ backgroundColor: gradeColor + '22', color: gradeColor, minWidth: '1.4rem', textAlign: 'center' }}>{getGradeLabel(val)}</span>
+                  <span className="font-bold text-[10px] px-1 py-0.5 rounded" style={{ backgroundColor: gradeColor + '22', color: gradeColor, minWidth: '1.4rem', textAlign: 'center' }}><GradeText grade={getGradeLabel(val)} /></span>
                 </div>
               );
             })}
@@ -274,7 +326,13 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
   const CustomYAxisTick = ({ x, y, payload }: any) => {
     const val = payload.value;
-    // Find the grade label for this tick (boundary = start of that grade's band)
+    if (val === APLUS_Y) {
+      return (
+        <text x={x} y={y} dy={4} textAnchor="end" fontSize={11} fontWeight={700} fill={APLUS_COLOR}>
+          A+
+        </text>
+      );
+    }
     const band = SCORE_BANDS.find(b => b.min === val);
     if (!band) return null;
     return (
@@ -362,7 +420,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               />
             ))}
 
-            {/* Grade boundary dashed lines at raw score boundaries */}
+            {/* Grade boundary dashed lines */}
             {SCORE_BANDS.slice(1).map((band, i) => (
               <ReferenceLine
                 key={`grade-line-${i}`}
@@ -372,6 +430,13 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
                 strokeOpacity={0.5}
               />
             ))}
+            {/* A+ cap line — same gap above A as B→A */}
+            <ReferenceLine
+              y={APLUS_Y}
+              stroke={APLUS_COLOR}
+              strokeDasharray="5 5"
+              strokeOpacity={0.5}
+            />
 
             <XAxis
               dataKey="computed_at"
@@ -381,7 +446,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               tickLine={false}
             />
             <YAxis
-              domain={[0, 100]}
+              domain={[0, APLUS_Y]}
               ticks={yAxisTicks}
               tick={<CustomYAxisTick />}
               axisLine={false}
@@ -395,7 +460,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               dataKey="badge_score"
               name="Badge"
               stroke={badgeAreaColor}
-              strokeWidth={2}
+              strokeWidth={3}
               fill="url(#tmcBadgeGradientFill)"
               dot={false}
               activeDot={{ r: 5, fill: badgeAreaColor, strokeWidth: 0 }}
@@ -409,7 +474,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               dataKey="running_avg"
               name="Period Avg"
               stroke={avgColor}
-              strokeWidth={2.5}
+              strokeWidth={3}
               fill="url(#tmcAvgGradientFill)"
               dot={false}
               activeDot={{ r: 5, fill: avgColor, strokeWidth: 0 }}
@@ -438,7 +503,6 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
                 name={s.name}
                 stroke={s.color}
                 strokeWidth={1.5}
-                strokeDasharray="4 4"
                 dot={false}
                 activeDot={{ r: 3 }}
                 hide={hiddenSeries.has(s.key)}

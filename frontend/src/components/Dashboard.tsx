@@ -586,6 +586,31 @@ const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string;
   'presentation-builder': { storagePrefix: '', plannerType: 'presentation', generatedKey: 'slides' },
 };
 
+/**
+ * Memoized wrapper for tab content panels.
+ * Skips re-rendering inactive tabs whose data hasn't changed,
+ * preventing expensive re-renders when only activeTabId changes.
+ */
+const TabPanel = React.memo(({
+  tab,
+  isActive,
+  renderContent
+}: {
+  tab: Tab;
+  isActive: boolean;
+  renderContent: (tab: Tab, isActive: boolean) => React.ReactNode;
+}) => {
+  return <>{renderContent(tab, isActive)}</>;
+}, (prev, next) => {
+  // Always re-render if active state changed
+  if (prev.isActive !== next.isActive) return false;
+  // Always re-render active tabs (they need fresh callbacks)
+  if (next.isActive) return false;
+  // Skip re-render for inactive tabs with same id and data
+  if (prev.tab.id === next.tab.id && prev.tab.data === next.tab.data) return true;
+  return false;
+});
+
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled, isToolChildEnabled, trackToolVisit } = useSettings();
   const { t } = useTranslation();
@@ -2179,13 +2204,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         {tabs.map(tab => {
           if (!isSplit) {
             // Normal mode: absolute positioned, show/hide by display
+            const isTabActive = tab.id === activeTabId;
             return (
               <div
                 key={tab.id}
                 className="absolute inset-0"
-                style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
+                style={{ display: isTabActive ? 'block' : 'none' }}
               >
-                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>{renderSingleTabContent(tab, tab.id === activeTabId)}</React.Suspense>
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>
+                  <TabPanel tab={tab} isActive={isTabActive} renderContent={renderSingleTabContent} />
+                </React.Suspense>
               </div>
             );
           }
@@ -2198,7 +2226,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             // Hidden tab — keep mounted but invisible
             return (
               <div key={tab.id} style={{ display: 'none' }}>
-                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>{renderSingleTabContent(tab, false)}</React.Suspense>
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>
+                  <TabPanel tab={tab} isActive={false} renderContent={renderSingleTabContent} />
+                </React.Suspense>
               </div>
             );
           }
@@ -2230,7 +2260,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 zIndex: 1
               }}
             >
-              <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>{renderSingleTabContent(tab, true)}</React.Suspense>
+              <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">{t('common.loading')}</div></div>}>
+                <TabPanel tab={tab} isActive={true} renderContent={renderSingleTabContent} />
+              </React.Suspense>
             </div>
           );
         })}

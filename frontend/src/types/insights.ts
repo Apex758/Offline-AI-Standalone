@@ -86,11 +86,13 @@ export type SchoolPhase =
   // Generic phases
   | 'start_of_year' | 'early_year' | 'mid_year' | 'pre_exam'
   | 'exam_period' | 'post_exam' | 'vacation' | 'reopening'
-  // Caribbean two-semester phases
-  | 'semester_1_early' | 'midterm_1_prep' | 'midterm_1' | 'semester_1_late'
-  | 'inter_semester_break'
-  | 'semester_2_early' | 'midterm_2_prep' | 'midterm_2' | 'semester_2_late'
-  | 'end_of_year_exam';
+  // Caribbean three-term phases
+  | 'term_1_early' | 'term_1_midterm_prep' | 'term_1_midterm' | 'term_1_late'
+  | 'christmas_break'
+  | 'term_2_early' | 'term_2_midterm_prep' | 'term_2_midterm' | 'term_2_late'
+  | 'easter_break'
+  | 'term_3_early' | 'term_3_late' | 'end_of_year_exam'
+  | 'summer_vacation';
 
 export interface DimensionMetric {
   score: number;
@@ -185,7 +187,7 @@ export interface SchoolYearConfig {
   start_date: string;
   end_date: string;
   is_active: number;
-  structure_type: 'generic' | 'caribbean_two_semester';
+  structure_type: 'generic' | 'caribbean_three_term';
 }
 
 // ── Educator Coach ───────────────────────────────────────────────────────────
