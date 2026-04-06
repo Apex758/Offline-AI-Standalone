@@ -291,7 +291,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       return;
     }
 
-    setLoading(true);
+    // Only show loading skeleton on first load, not on background refetches
+    if (allResourcesData.length === 0) {
+      setLoading(true);
+    }
     try {
       // Load resources
       const [lessonPlans, rubrics, quizzes, kindergarten, multigrade, crossCurricular, worksheets, images, presentations] = await Promise.all([
@@ -564,7 +567,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     setShowProfileEdit(false);
   };
 
-  if (loading) {
+  if (loading && allResourcesData.length === 0) {
     return (
       <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--dash-bg)' }}>
         {/* Header Skeleton */}

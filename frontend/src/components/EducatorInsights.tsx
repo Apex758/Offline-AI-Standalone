@@ -1535,7 +1535,7 @@ const InsightSection: React.FC<InsightSectionProps> = ({
         <div className="flex items-center gap-2 mb-2">
           <Icon icon={icon} className="w-5 text-theme-muted" />
           <span className="text-sm font-medium text-theme-muted">{name}</span>
-          <span className="text-xs text-theme-muted ml-auto">{t('educator.noDataAvailable')}</span>
+          <span className="text-xs text-theme-muted ml-auto">No data available</span>
         </div>
         <p className="text-xs text-theme-muted ml-7">{emptyMsg}</p>
       </div>

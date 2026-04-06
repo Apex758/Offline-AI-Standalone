@@ -240,7 +240,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const [hasSynced, setHasSynced] = useState(false);
 
   const loadMilestones = async () => {
-    setLoading(true);
+    // Only show skeleton on first load
+    if (milestones.length === 0) {
+      setLoading(true);
+    }
     try {
       // On first load, always initialize/sync to pick up curriculum changes
       if (!hasSynced && !filters.grade && !filters.subject && !filters.status) {
@@ -998,7 +1001,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     );
   };
 
-  if (loading) {
+  if (loading && milestones.length === 0) {
     return <TreeBrowserSkeleton accentColor={accentColor} />;
   }
 

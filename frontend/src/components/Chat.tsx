@@ -1629,7 +1629,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   if (initialLoad) {
     return (
-      <div className="flex h-full tab-content-bg">
+      <div className="flex h-full tab-content-bg overflow-hidden">
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <div className="border-b border-theme p-4 flex items-center justify-between">
@@ -1680,7 +1680,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   }
 
   return (
-    <div className="flex h-full tab-content-bg relative" data-tutorial="chat-welcome"
+    <div className="flex h-full tab-content-bg relative overflow-hidden" data-tutorial="chat-welcome"
       onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
       <div className="flex-1 flex flex-col" onClick={(e) => {
         e.stopPropagation();
@@ -1731,7 +1731,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4" data-tutorial="chat-history">
+        <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4" data-tutorial="chat-history">
           {messages.length === 0 && !streamingMessage ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center max-w-md">
