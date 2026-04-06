@@ -440,10 +440,16 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const setTabProcessingImg = useTabProcessing('image-generation');
   useEffect(() => { setTabProcessingImg(generationState === 'generating'); }, [generationState, setTabProcessingImg]);
 
-  // Preload diffusion pipeline in background when tab opens
+  // Preload is handled centrally by Dashboard.tsx on tab switch
+
+  // Eagerly pre-encode prompt for Flux (debounced) to hide T5-XXL latency
   useEffect(() => {
-    axios.post('http://localhost:8000/api/image-service/preload').catch(() => {});
-  }, []);
+    if (!prompt || prompt.length < 5) return;
+    const timer = setTimeout(() => {
+      axios.post('http://localhost:8000/api/image-service/prepare-prompt', { prompt }).catch(() => {});
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [prompt]);
   const [imageSlots, setImageSlots] = useState<Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}>>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);

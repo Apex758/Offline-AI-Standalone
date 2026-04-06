@@ -935,6 +935,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }, 80);
   }, [activeTabId, tabs]);
 
+  // Preload diffusion pipeline when switching to image-capable tabs,
+  // and auto-unload after 5 min when all image tabs are closed
+  const diffusionUnloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const IMAGE_TAB_TYPES = useMemo(() => new Set(['image-studio', 'storybook']), []);
+  const DIFFUSION_IDLE_MS = 5 * 60 * 1000; // 5 minutes
+
+  useEffect(() => {
+    const hasImageTab = tabs.some(t => IMAGE_TAB_TYPES.has(t.type));
+    const activeTab = activeTabId ? tabs.find(t => t.id === activeTabId) : null;
+    const activeIsImage = activeTab ? IMAGE_TAB_TYPES.has(activeTab.type) : false;
+
+    // Preload when switching to an image tab
+    if (activeIsImage) {
+      if (diffusionUnloadTimer.current) {
+        clearTimeout(diffusionUnloadTimer.current);
+        diffusionUnloadTimer.current = null;
+      }
+      fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
+      return;
+    }
+
+    // No image tabs open at all -- start 5-min unload timer
+    if (!hasImageTab && !diffusionUnloadTimer.current) {
+      diffusionUnloadTimer.current = setTimeout(() => {
+        fetch('http://localhost:8000/api/image-service/unload', { method: 'POST' }).catch(() => {});
+        diffusionUnloadTimer.current = null;
+      }, DIFFUSION_IDLE_MS);
+    }
+  }, [activeTabId, tabs, IMAGE_TAB_TYPES]);
+
   // Auto-scroll sidebar to the active tool when sidebar opens
   useEffect(() => {
     if (sidebarOpen && activeTabId && sidebarScrollRef.current) {

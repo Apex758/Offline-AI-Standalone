@@ -8334,16 +8334,19 @@ async def generate_image(request: Request):
         
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
-        width = data.get('width', 1024)
-        height = data.get('height', 512)
+        model_info = get_image_model_info()
+        _default_w = model_info.get('default_width', 1024)
+        _default_h = model_info.get('default_height', 512)
+        width = data.get('width', _default_w)
+        height = data.get('height', _default_h)
         num_steps = data.get('numInferenceSteps', None)
-        
+
         if not prompt:
             return JSONResponse(
                 status_code=400,
                 content={"error": "Prompt is required"}
             )
-        
+
         # Validate dimensions
         if width < 256 or width > 2048 or height < 256 or height > 2048:
             return JSONResponse(
@@ -8402,8 +8405,11 @@ async def generate_image_base64(request: Request):
 
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
-        width = data.get('width', 1024)
-        height = data.get('height', 512)
+        model_info = get_image_model_info()
+        _default_w = model_info.get('default_width', 1024)
+        _default_h = model_info.get('default_height', 512)
+        width = data.get('width', _default_w)
+        height = data.get('height', _default_h)
         num_steps = data.get('numInferenceSteps', None)
         init_image_b64 = data.get('initImage')
         strength = data.get('strength', 0.5)
@@ -8498,8 +8504,11 @@ async def generate_batch_images_base64(request: Request):
 
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
-        width = data.get('width', 1024)
-        height = data.get('height', 512)
+        model_info = get_image_model_info()
+        _default_w = model_info.get('default_width', 1024)
+        _default_h = model_info.get('default_height', 512)
+        width = data.get('width', _default_w)
+        height = data.get('height', _default_h)
         num_steps = data.get('numInferenceSteps', None)
         num_images = data.get('numImages', 1)
 
@@ -8586,8 +8595,11 @@ async def generate_image_from_seed(request: Request):
 
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
-        width = data.get('width', 1024)
-        height = data.get('height', 512)
+        model_info = get_image_model_info()
+        _default_w = model_info.get('default_width', 1024)
+        _default_h = model_info.get('default_height', 512)
+        width = data.get('width', _default_w)
+        height = data.get('height', _default_h)
         num_steps = data.get('numInferenceSteps', None)
         seed = data.get('seed')
         init_image_b64 = data.get('initImage')
@@ -8925,19 +8937,75 @@ async def get_image_service_status():
         )
 
 
+_image_preload_lock: asyncio.Lock = None
+
 @app.post("/api/image-service/preload")
 async def preload_image_pipeline():
     """Preload the image generation pipeline in the background so first request is fast."""
+    global _image_preload_lock
+    if _image_preload_lock is None:
+        _image_preload_lock = asyncio.Lock()
+
     try:
         image_service = get_image_service()
         if image_service.pipeline is not None:
             return JSONResponse(content={"status": "already_loaded"})
-        success = image_service.initialize_pipeline()
-        return JSONResponse(content={
-            "status": "loaded" if success else "failed"
-        })
+
+        async with _image_preload_lock:
+            # Double-check after acquiring lock
+            if image_service.pipeline is not None:
+                return JSONResponse(content={"status": "already_loaded"})
+            loop = asyncio.get_event_loop()
+            success = await loop.run_in_executor(None, image_service.initialize_pipeline)
+            return JSONResponse(content={
+                "status": "loaded" if success else "failed"
+            })
     except Exception as e:
         logger.error(f"Error preloading image pipeline: {e}")
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
+
+
+@app.post("/api/image-service/unload")
+async def unload_image_pipeline():
+    """Unload the diffusion pipeline to free memory.
+
+    Called by the frontend when all image-related tabs are closed
+    and no generation is expected soon.
+    """
+    try:
+        image_service = get_image_service()
+        if image_service.pipeline is None:
+            return JSONResponse(content={"status": "already_unloaded"})
+        loop = asyncio.get_event_loop()
+        freed = await loop.run_in_executor(None, image_service.unload_pipeline)
+        return JSONResponse(content={
+            "status": "unloaded" if freed else "nothing_to_unload"
+        })
+    except Exception as e:
+        logger.error(f"Error unloading image pipeline: {e}")
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
+
+
+@app.post("/api/image-service/prepare-prompt")
+async def prepare_image_prompt(request: Request):
+    """Eagerly encode a prompt for Flux OpenVINO to hide T5-XXL latency.
+
+    Call this while the user is typing/configuring to pre-cache embeddings.
+    """
+    try:
+        data = await request.json()
+        prompt = data.get("prompt", "").strip()
+        if not prompt:
+            return JSONResponse(content={"status": "skipped", "reason": "empty prompt"})
+
+        image_service = get_image_service()
+        loop = asyncio.get_event_loop()
+        cached = await loop.run_in_executor(None, image_service.prepare_prompt, prompt)
+        return JSONResponse(content={
+            "status": "cached" if cached else "skipped",
+        })
+    except Exception as e:
+        logger.error(f"Error preparing prompt: {e}")
         return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 

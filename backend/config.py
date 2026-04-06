@@ -171,7 +171,21 @@ def scan_diffusion_models():
             folder_path = IMAGE_MODELS_DIR / folder
             if folder_path.is_dir() and folder not in exclude_dirs:
                 if reg_key not in seen_names:
-                    total_size = sum(f.stat().st_size for f in folder_path.rglob('*') if f.is_file())
+                    # For GGUF variants sharing a folder, only count the
+                    # variant-specific model file + shared support files
+                    gguf_file = reg_info.get("gguf_file")
+                    if gguf_file:
+                        variant_files = [folder_path / gguf_file]
+                        # Add shared support files (clip, t5xxl, vae)
+                        for f in folder_path.iterdir():
+                            if f.is_file() and f.name != gguf_file and not f.name.startswith('.'):
+                                # Skip other GGUF model variants in same folder
+                                if f.suffix == '.gguf' and 'schnell' in f.name.lower():
+                                    continue
+                                variant_files.append(f)
+                        total_size = sum(f.stat().st_size for f in variant_files if f.exists())
+                    else:
+                        total_size = sum(f.stat().st_size for f in folder_path.rglob('*') if f.is_file())
                     size_mb = total_size / (1024 * 1024)
                     models.append({
                         "name": reg_key,
@@ -237,8 +251,10 @@ IMAGE_MODEL_REGISTRY = {
         "folder":      "flux-schnell",
         "backend":     "openvino_flux",
         "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
-        "steps":       3,
+        "steps":       2,
         "guidance":    0.0,
+        "default_width":  512,
+        "default_height": 512,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
         "ram_required_gb":  8,
@@ -249,8 +265,10 @@ IMAGE_MODEL_REGISTRY = {
         "backend":     "sd_cpp_flux",
         "gguf_file":   "flux1-schnell-Q5_K_M.gguf",
         "description": "FLUX.1 Schnell Q5_K_M (GGUF) — high quality, ~8.4 GB",
-        "steps":       3,
+        "steps":       2,
         "guidance":    1.0,
+        "default_width":  512,
+        "default_height": 512,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
         "ram_required_gb":  12,
@@ -261,8 +279,10 @@ IMAGE_MODEL_REGISTRY = {
         "backend":     "sd_cpp_flux",
         "gguf_file":   "flux1-schnell-Q4_K_M.gguf",
         "description": "FLUX.1 Schnell Q4_K_M (GGUF) — good quality, ~6.9 GB",
-        "steps":       3,
+        "steps":       2,
         "guidance":    1.0,
+        "default_width":  512,
+        "default_height": 512,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
         "ram_required_gb":  10,

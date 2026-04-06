@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import logging
+import threading
 import requests
 import time
 import atexit
@@ -224,20 +225,74 @@ def _truncate_to_clip_tokens(prompt: str, max_tokens: int = 75) -> str:
     return truncated
 
 
+def _get_physical_core_count() -> int:
+    """Return the number of physical CPU cores (not logical/hyperthreaded)."""
+    try:
+        import psutil
+        return psutil.cpu_count(logical=False) or os.cpu_count() or 4
+    except ImportError:
+        return os.cpu_count() or 4
+
+
+def _detect_cpu_features() -> dict:
+    """Detect CPU features relevant to OpenVINO optimization."""
+    features = {"bf16": False, "avx512": False}
+    try:
+        from openvino.runtime import Core
+        core = Core()
+        caps = str(core.get_property("CPU", "OPTIMIZATION_CAPABILITIES")).lower()
+        if "bf16" in caps:
+            features["bf16"] = True
+        if "avx512" in caps:
+            features["avx512"] = True
+        logger.info(f"CPU optimization capabilities: {caps}")
+    except Exception as e:
+        logger.debug(f"Could not detect CPU features: {e}")
+    return features
+
+
 def _load_flux_schnell_ov(model_path: Path):
     """Load FLUX.1 Schnell INT4 via OpenVINO.
 
     Uses OVDiffusionPipeline with a reshape skip to work around a shape
     inference bug in optimum-intel's dynamic reshape for FLUX transformers.
+    Configures OpenVINO for optimal CPU latency with model caching.
     """
     from optimum.intel.openvino import modeling_diffusion, OVDiffusionPipeline
+
+    # Build OpenVINO config for optimal CPU inference latency
+    cache_dir = str(model_path / ".ov_cache_v1")
+    physical_cores = _get_physical_core_count()
+
+    # Detect CPU capabilities for precision selection
+    cpu_features = _detect_cpu_features()
+    precision = "bf16" if cpu_features.get("bf16") else "f16"
+
+    ov_config = {
+        "CACHE_DIR": cache_dir,
+        "PERFORMANCE_HINT": "LATENCY",
+        "NUM_STREAMS": "1",
+        "INFERENCE_PRECISION_HINT": precision,
+        "INFERENCE_NUM_THREADS": str(physical_cores),
+        "ENABLE_HYPER_THREADING": "NO",
+        "AFFINITY": "CORE",
+    }
+    logger.info(
+        f"OpenVINO Flux config: threads={physical_cores}, precision={precision}, "
+        f"bf16={cpu_features.get('bf16')}, cache={cache_dir}"
+    )
+
     # Skip the automatic reshape in __init__ which fails on FLUX models
     _orig_reshape = modeling_diffusion.OVDiffusionPipeline.reshape
     modeling_diffusion.OVDiffusionPipeline.reshape = lambda self, *a, **kw: None
     try:
-        pipe = OVDiffusionPipeline.from_pretrained(str(model_path), compile=True)
+        pipe = OVDiffusionPipeline.from_pretrained(
+            str(model_path), compile=False, ov_config=ov_config
+        )
     finally:
         modeling_diffusion.OVDiffusionPipeline.reshape = _orig_reshape
+
+    pipe.compile()
     return pipe
 
 
@@ -265,13 +320,25 @@ def _load_flux_schnell_gguf(model_path: Path, gguf_file: str = None):
     logger.info(f"  T5-XXL: t5-v1_1-xxl-encoder-Q8_0.gguf")
     logger.info(f"  VAE:    ae.safetensors")
 
-    sd = StableDiffusion(
+    n_threads = _get_physical_core_count()
+    logger.info(f"FLUX GGUF using {n_threads} threads (physical cores)")
+
+    # Build kwargs; flash_attn may not be supported in all sd.cpp versions
+    kwargs = dict(
         diffusion_model_path=diffusion_path,
         clip_l_path=clip_l_path,
         t5xxl_path=t5xxl_path,
         vae_path=vae_path,
         vae_decode_only=True,
+        n_threads=n_threads,
     )
+    import inspect
+    sd_params = inspect.signature(StableDiffusion.__init__).parameters
+    if "flash_attn" in sd_params:
+        kwargs["flash_attn"] = True
+        logger.info("Enabled flash_attn for FLUX GGUF")
+
+    sd = StableDiffusion(**kwargs)
     return sd
 
 
@@ -300,6 +367,8 @@ class ImageService:
         self.img2img_pipeline = None  # Separate img2img pipeline for OpenVINO
         self.model_info = {}
         self.model_key = None
+        self._prompt_cache = {}  # LRU prompt embedding cache for Flux OV
+        self._prompt_cache_max = 10
 
 
         try:
@@ -374,32 +443,58 @@ class ImageService:
         else:
             logger.info(f"IOPaint cache already exists: {lama_cache_file}")
 
+    _pipeline_lock = threading.Lock()
+
     def initialize_pipeline(self) -> bool:
-        """Initialize the image generation pipeline (lazy loading)."""
+        """Initialize the image generation pipeline (lazy loading, thread-safe)."""
         if self.pipeline is not None:
             return True
 
-        if not self.model_path.exists():
-            logger.error(f"Model folder not found: {self.model_path}")
-            return False
+        with self._pipeline_lock:
+            # Double-check after acquiring lock
+            if self.pipeline is not None:
+                return True
 
-        backend = self.model_info.get("backend", "openvino")
-        loader = _LOADERS.get(backend)
-        if loader is None:
-            logger.error(f"No loader for backend: {backend}")
-            return False
+            if not self.model_path.exists():
+                logger.error(f"Model folder not found: {self.model_path}")
+                return False
 
-        try:
-            logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
-            if backend == "sd_cpp_flux":
-                self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
-            else:
-                self.pipeline = loader(self.model_path)
-            logger.info("Pipeline loaded successfully.")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to initialize pipeline ({self.model_key}): {e}")
-            return False
+            backend = self.model_info.get("backend", "openvino")
+            loader = _LOADERS.get(backend)
+            if loader is None:
+                logger.error(f"No loader for backend: {backend}")
+                return False
+
+            try:
+                logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
+                if backend == "sd_cpp_flux":
+                    self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
+                else:
+                    self.pipeline = loader(self.model_path)
+                logger.info("Pipeline loaded successfully.")
+
+                # Warmup: run a tiny dummy inference to pre-allocate buffers
+                if backend == "openvino_flux":
+                    try:
+                        logger.info("Running warmup inference for Flux OpenVINO...")
+                        _warmup_start = time.time()
+                        self.pipeline(
+                            prompt="warmup",
+                            num_inference_steps=1,
+                            guidance_scale=0.0,
+                            height=64, width=64,
+                            output_type="np",
+                        )
+                        logger.info(f"Warmup done in {time.time() - _warmup_start:.1f}s")
+                    except Exception as warmup_err:
+                        logger.warning(f"Warmup inference failed (non-fatal): {warmup_err}")
+
+                return True
+            except Exception as e:
+                logger.error(f"Failed to initialize pipeline ({self.model_key}): {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                return False
 
     def initialize_sdxl(self) -> bool:
         """Backward-compatible alias for initialize_pipeline."""
@@ -504,6 +599,47 @@ class ImageService:
         """Async wrapper for is_iopaint_running - won't block event loop"""
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.is_iopaint_running)
+
+    def prepare_prompt(self, prompt: str) -> bool:
+        """Pre-encode a prompt and cache the embeddings (Flux OpenVINO only).
+
+        Call this while the user is still configuring settings to hide
+        the T5-XXL encoding latency. Returns True if embeddings were cached.
+        """
+        backend = self.model_info.get("backend", "openvino")
+        if backend != "openvino_flux":
+            return False
+        if not self.initialize_pipeline():
+            return False
+
+        import hashlib
+        prompt = _truncate_to_clip_tokens(prompt, max_tokens=75)
+        prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
+
+        if prompt_hash in self._prompt_cache:
+            return True  # Already cached
+
+        try:
+            if not hasattr(self.pipeline, 'encode_prompt'):
+                return False
+            logger.info(f"Eagerly encoding prompt: {prompt[:40]}...")
+            enc_start = time.time()
+            enc_result = self.pipeline.encode_prompt(prompt=prompt)
+            p_embeds = enc_result[0]
+            p_pooled = enc_result[1] if len(enc_result) > 1 else None
+
+            if len(self._prompt_cache) >= self._prompt_cache_max:
+                oldest_key = next(iter(self._prompt_cache))
+                del self._prompt_cache[oldest_key]
+            self._prompt_cache[prompt_hash] = {
+                "prompt_embeds": p_embeds,
+                "pooled_prompt_embeds": p_pooled,
+            }
+            logger.info(f"Prompt pre-encoded in {time.time() - enc_start:.1f}s")
+            return True
+        except Exception as e:
+            logger.debug(f"Eager prompt encoding failed: {e}")
+            return False
 
     def generate_image(self,
                         prompt: str,
@@ -620,13 +756,67 @@ class ImageService:
                 # FLUX INT4 OpenVINO — no negative_prompt or img2img support
                 if init_image is not None:
                     logger.warning("FLUX Schnell does not support img2img — init_image ignored")
-                result = self.pipeline(
-                    prompt=prompt,
-                    num_inference_steps=num_inference_steps,
-                    guidance_scale=guidance_scale,
-                    height=height, width=width,
-                    output_type="np",
-                )
+
+                # Try to use cached prompt embeddings for repeat prompts
+                import hashlib
+                prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
+                cached = self._prompt_cache.get(prompt_hash)
+
+                if cached is not None:
+                    logger.info("Using cached prompt embeddings")
+                    result = self.pipeline(
+                        prompt_embeds=cached["prompt_embeds"],
+                        pooled_prompt_embeds=cached["pooled_prompt_embeds"],
+                        num_inference_steps=num_inference_steps,
+                        guidance_scale=guidance_scale,
+                        height=height, width=width,
+                        output_type="np",
+                    )
+                else:
+                    # Try to encode and cache prompt separately
+                    try:
+                        if hasattr(self.pipeline, 'encode_prompt'):
+                            enc_result = self.pipeline.encode_prompt(prompt=prompt)
+                            p_embeds = enc_result[0]
+                            p_pooled = enc_result[1] if len(enc_result) > 1 else None
+
+                            # Cache it (evict oldest if full)
+                            if len(self._prompt_cache) >= self._prompt_cache_max:
+                                oldest_key = next(iter(self._prompt_cache))
+                                del self._prompt_cache[oldest_key]
+                            self._prompt_cache[prompt_hash] = {
+                                "prompt_embeds": p_embeds,
+                                "pooled_prompt_embeds": p_pooled,
+                            }
+
+                            kwargs = {
+                                "prompt_embeds": p_embeds,
+                                "num_inference_steps": num_inference_steps,
+                                "guidance_scale": guidance_scale,
+                                "height": height, "width": width,
+                                "output_type": "np",
+                            }
+                            if p_pooled is not None:
+                                kwargs["pooled_prompt_embeds"] = p_pooled
+                            result = self.pipeline(**kwargs)
+                        else:
+                            # Fallback: no encode_prompt method available
+                            result = self.pipeline(
+                                prompt=prompt,
+                                num_inference_steps=num_inference_steps,
+                                guidance_scale=guidance_scale,
+                                height=height, width=width,
+                                output_type="np",
+                            )
+                    except Exception as cache_err:
+                        logger.debug(f"Prompt caching failed, using direct call: {cache_err}")
+                        result = self.pipeline(
+                            prompt=prompt,
+                            num_inference_steps=num_inference_steps,
+                            guidance_scale=guidance_scale,
+                            height=height, width=width,
+                            output_type="np",
+                        )
 
             elif backend == "sd_cpp_flux":
                 # FLUX GGUF via stable-diffusion.cpp — no negative_prompt or img2img
@@ -697,6 +887,8 @@ class ImageService:
 
         except Exception as e:
             logger.error(f"Error generating image: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return None
 
     def generate_batch_images(self,
@@ -791,6 +983,30 @@ class ImageService:
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
+
+    def unload_pipeline(self):
+        """Unload the diffusion pipeline to free memory, but keep the service alive."""
+        import gc
+        freed = False
+        if self.pipeline:
+            try:
+                del self.pipeline
+                self.pipeline = None
+                freed = True
+                logger.info("Diffusion pipeline unloaded to free memory")
+            except Exception as e:
+                logger.error(f"Error unloading pipeline: {e}")
+        if self.img2img_pipeline:
+            try:
+                del self.img2img_pipeline
+                self.img2img_pipeline = None
+                freed = True
+            except Exception as e:
+                logger.error(f"Error unloading img2img pipeline: {e}")
+        self._prompt_cache.clear()
+        if freed:
+            gc.collect()
+        return freed
 
     def cleanup(self):
         """Cleanup resources and stop IOPaint"""

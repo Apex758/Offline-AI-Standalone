@@ -268,7 +268,18 @@
       "Bash(grep -rn \"372\" \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\\\\\" --include=\"*.py\" | grep -v \".pyc\" | head -20)",
       "Bash(python \"c:/tmp/patch_handlers.py\")",
       "Bash(python -c \"import py_compile; py_compile.compile\\('main.py', doraise=True\\); print\\('OK'\\)\")",
-      "Bash(python -c \"import py_compile; py_compile.compile\\('llama_inference.py', doraise=True\\); print\\('OK'\\)\")"
+      "Bash(python -c \"import py_compile; py_compile.compile\\('llama_inference.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(curl -s \"https://huggingface.co/unsloth/Z-Image-Turbo-GGUF/tree/main\")",
+      "Bash(./venv/Scripts/python.exe -c \"import inspect; from stable_diffusion_cpp import StableDiffusion; params = inspect.signature\\(StableDiffusion.__init__\\).parameters; print\\([p for p in params]\\)\")",
+      "Bash(ls \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\\\\venv\\\\Scripts\\\\python\"*)",
+      "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/\"*.exe)",
+      "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/python\"*)",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/python.exe\" -c \"import inspect; from stable_diffusion_cpp import StableDiffusion; params = inspect.signature\\(StableDiffusion.__init__\\).parameters; print\\(list\\(params.keys\\(\\)\\)\\)\")",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/python.exe\" -c \"import stable_diffusion_cpp; print\\(dir\\(stable_diffusion_cpp\\)\\)\")",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/pip.exe\" show stable-diffusion-cpp-python)",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/pip.exe\" install \"Pillow==10.4.0\")",
+      "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/\"*.txt)",
+      "Bash(du -sh \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/flux-schnell-gguf/\"*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
