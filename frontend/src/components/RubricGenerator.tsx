@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
@@ -559,6 +560,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     return '';
   });
 
+  const streamingContent = useStreamingRenderer({
+    text: streamingRubric || generatedRubric,
+    isStreaming: !!(loading && streamingRubric),
+    fullFormatter: () => formatRubricText(streamingRubric || generatedRubric, tabColor, false),
+    accentColor: tabColor,
+  });
+
   const assignmentTypes = [
     'Essay', 'Presentation', 'Project', 'Lab Report', 'Creative Writing', 
     'Research Paper', 'Group Work', 'Portfolio', 'Performance', 'Other'
@@ -1076,7 +1084,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1 rounded-xl p-6 widget-glass">
-                      {formatRubricText(streamingRubric || generatedRubric, tabColor, !!streamingRubric)}
+                      {streamingContent}
                       {loading && streamingRubric && (
                         <span className="inline-flex items-center ml-1">
                           <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>

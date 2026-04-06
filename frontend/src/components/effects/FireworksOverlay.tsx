@@ -53,15 +53,8 @@ export default function FireworksOverlay({ rarity }: FireworksOverlayProps) {
 
     fwRef.current.start();
 
-    // Fire hard for 5s then let in-flight particles decay naturally
-    const stopTimer = setTimeout(() => {
-      fwRef.current?.stop();
-    }, 5000);
-
     return () => {
-      clearTimeout(stopTimer);
       fwRef.current?.stop();
-      fwRef.current?.destroy();
       fwRef.current = null;
     };
   }, [rarity]);

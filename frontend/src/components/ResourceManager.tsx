@@ -13,6 +13,7 @@ import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
 import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import Link01IconData from '@hugeicons/core-free-icons/Link01Icon';
@@ -46,6 +47,7 @@ const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) =
 const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
 const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
 const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookBookmark01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
 const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
 const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
 const Link2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Link01IconData} {...p} />;
@@ -104,7 +106,8 @@ const resourceTypes = [
   { key: 'multigrade', labelKey: 'resources.multigrade', icon: Users },
   { key: 'cross-curricular', labelKey: 'resources.crossCurricular', icon: Link2 },
   { key: 'images', labelKey: 'resources.images', icon: Image },
-  { key: 'presentation', labelKey: 'resources.presentations', icon: Presentation }
+  { key: 'presentation', labelKey: 'resources.presentations', icon: Presentation },
+  { key: 'storybook', labelKey: 'resources.storybooks', icon: BookOpen }
 ];
 
 const ResourceManager: React.FC<ResourceManagerProps> = ({
@@ -278,6 +281,26 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         axios.get('http://localhost:8000/api/presentation-history').catch(() => ({ data: [] }))
       ]);
 
+      // Load storybooks from localStorage
+      let storybookResources: any[] = [];
+      try {
+        const raw = localStorage.getItem('storybook_history');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            storybookResources = parsed.map((s: any) => ({
+              id: s.id,
+              title: s.formData?.title || s.parsedBook?.title || 'Untitled Storybook',
+              timestamp: s.savedAt,
+              type: 'storybook',
+              formData: s.formData,
+            }));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load storybook history:', e);
+      }
+
       const allResources: Resource[] = [
         ...lessonPlans.data.map((r: any) => ({ ...r, type: 'lesson' })),
         ...quizzes.data.map((r: any) => ({ ...r, type: 'quiz' })),
@@ -287,7 +310,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),
         ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' })),
         ...images.data.map((r: any) => ({ ...r, type: 'images' })),
-        ...presentations.data.map((r: any) => ({ ...r, type: 'presentation' }))
+        ...presentations.data.map((r: any) => ({ ...r, type: 'presentation' })),
+        ...storybookResources
       ];
 
       setResources(allResources);
@@ -436,7 +460,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'multigrade': Users,
       'cross-curricular': Link2,
       'images': Image,
-      'presentation': Presentation
+      'presentation': Presentation,
+      'storybook': BookOpen
     };
     const Icon = icons[type] || FileText;
     return Icon;
@@ -452,7 +477,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'multigrade': 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700',
       'cross-curricular': 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700',
       'images': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700',
-      'presentation': 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700'
+      'presentation': 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700',
+      'storybook': 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-700'
     };
     return colors[type] || 'bg-theme-tertiary text-theme-label border-theme';
   };
@@ -467,7 +493,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'multigrade': 'bg-indigo-500',
       'cross-curricular': 'bg-teal-500',
       'images': 'bg-green-500',
-      'presentation': 'bg-orange-500'
+      'presentation': 'bg-orange-500',
+      'storybook': 'bg-rose-500'
     };
     return colors[type] || 'bg-gray-500';
   };

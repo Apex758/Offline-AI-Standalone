@@ -907,18 +907,21 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     // Standalone tools
     { type: 'analytics', label: t('sidebar.myOverview'), defaultColor: '#3b82f6' },
     { type: 'educator-insights', label: t('sidebar.educatorInsights'), defaultColor: '#d97706' },
-    { type: 'chat', label: t('sidebar.askPearl'), defaultColor: '#3b82f6' },
+    { type: 'chat', label: t('sidebar.askPearl'), defaultColor: '#2563eb' },
     { type: 'curriculum', label: t('sidebar.curriculumBrowser'), defaultColor: '#8b5cf6' },
     // Planning & Prep group
     { type: 'brain-dump', label: t('sidebar.brainDump'), defaultColor: '#a855f7' },
     { type: 'resource-manager', label: t('sidebar.myResources'), defaultColor: '#84cc16' },
+    { type: 'school-year-calendar', label: t('sidebar.schoolYear'), defaultColor: '#0d9488' },
+    { type: 'photo-transfer', label: t('sidebar.photoTransfer'), defaultColor: '#818cf8' },
     // Assessment Tools group
     { type: 'quiz-generator', label: t('sidebar.quizBuilder'), defaultColor: '#14b8a6' },
-    { type: 'rubric-generator', label: t('sidebar.rubricBuilder'), defaultColor: '#f97316' },
+    { type: 'rubric-generator', label: t('sidebar.rubricBuilder'), defaultColor: '#fb923c' },
     // My Classroom group
-    { type: 'class-management', label: t('sidebar.myClasses'), defaultColor: '#f97316' },
+    { type: 'class-management', label: t('sidebar.myClasses'), defaultColor: '#dc2626' },
     { type: 'curriculum-tracker', label: t('sidebar.progressTracker'), defaultColor: '#10b981' },
-    { type: 'achievements', label: t('sidebar.achievements'), defaultColor: '#f59e0b' },
+    { type: 'achievements', label: t('sidebar.achievements'), defaultColor: '#eab308' },
+    { type: 'curriculum-plan', label: t('sidebar.curriculumPlan'), defaultColor: '#059669' },
     // Lesson planners group
     { type: 'lesson-planner', label: t('sidebar.lessonPlan'), defaultColor: '#f59e0b' },
     { type: 'kindergarten-planner', label: t('sidebar.earlyChildhood'), defaultColor: '#ec4899' },
@@ -926,17 +929,17 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     { type: 'cross-curricular-planner', label: t('sidebar.integratedLesson'), defaultColor: '#6366f1' },
     // Visual studio group
     ...(settings.sidebarOrder.find(i => i.id === 'visual-studio')?.enabled ? [
-      { type: 'worksheet-generator', label: t('sidebar.worksheetBuilder'), defaultColor: '#8b5cf6' },
-      { type: 'image-studio', label: t('sidebar.imageStudio'), defaultColor: '#ec4899' },
-      { type: 'presentation-builder', label: t('sidebar.slideDeck'), defaultColor: '#f97316' },
-      { type: 'storybook', label: t('sidebar.storybookCreator'), defaultColor: '#a855f7' },
+      { type: 'worksheet-generator', label: t('sidebar.worksheetBuilder'), defaultColor: '#7c3aed' },
+      { type: 'image-studio', label: t('sidebar.imageStudio'), defaultColor: '#f472b6' },
+      { type: 'presentation-builder', label: t('sidebar.slideDeck'), defaultColor: '#c2410c' },
+      { type: 'storybook', label: t('sidebar.storybookCreator'), defaultColor: '#c084fc' },
     ] : []),
     // Performance metrics
     ...(settings.sidebarOrder.find(i => i.id === 'performance-metrics')?.enabled ? [
       { type: 'performance-metrics', label: t('sidebar.performance'), defaultColor: '#10b981' },
     ] : []),
     // Bottom tools
-    { type: 'support', label: t('sidebar.supportReporting'), defaultColor: '#3b82f6' },
+    { type: 'support', label: t('sidebar.supportReporting'), defaultColor: '#0ea5e9' },
     { type: 'settings', label: t('sidebar.settings'), defaultColor: '#6b7280' },
   ];
 
@@ -3301,7 +3304,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           <Rocket className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-theme-label">{t('settingsPage.features.startOnBoot')}</p>
-                            <p className="text-xs text-theme-hint">Automatically launch OECS Learning Hub when you log in to Windows</p>
+                            <p className="text-xs text-theme-hint">Automatically launch OECS Class Coworker when you log in to Windows</p>
                           </div>
                         </div>
                         <input
@@ -3644,7 +3647,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     </div>
                     <div className="flex-1">
                       <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.featureDiscovery.title')}</h2>
-                      <p className="text-sm text-theme-muted mt-1">Explore everything the Learning Hub can do</p>
+                      <p className="text-sm text-theme-muted mt-1">Explore everything the Class Coworker can do</p>
                       <p className="text-sm text-theme-secondary mt-2 font-medium">{discoveredCount} of {totalCount} features explored</p>
                     </div>
                   </div>
@@ -4109,33 +4112,32 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
 function LicenseSection() {
   const { t } = useTranslation();
-  const { isLicensed, email, schoolName, loading, error, activate, deactivate } = useLicense();
-  const [licenseEmail, setLicenseEmail] = useState('');
-  const [licenseCode, setLicenseCode] = useState('');
+  const { isLicensed, oakLicense, teacherName, schoolId, territoryId, loading, error, activate, deactivate } = useLicense();
+  const [oakInput, setOakInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleActivate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    await activate(licenseEmail.trim(), licenseCode.trim().toUpperCase());
+    await activate(oakInput.trim().toUpperCase());
     setSubmitting(false);
   };
 
   return (
     <div className="space-y-6">
       <div className="mb-2">
-        <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.license.title')}</h2>
-        <p className="text-sm text-theme-muted mt-1">Enter a license code to receive automatic updates. The app works fully without a license.</p>
+        <h2 className="text-2xl font-bold text-theme-title">OAK License</h2>
+        <p className="text-sm text-theme-muted mt-1">Enter your OECS Authentication Key (OAK) to enable updates and cloud support.</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="w-4.5 h-4.5 text-theme-secondary" />
-            License Status
+            OAK License Status
           </CardTitle>
           <CardDescription>
-            A valid license enables automatic updates when new versions are available
+            A valid OAK license enables automatic updates and cloud-based support
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -4146,10 +4148,12 @@ function LicenseSection() {
                   <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">License Active</p>
-                  {email && <p className="text-xs text-emerald-600 dark:text-emerald-400">{email}</p>}
-                  {schoolName && <p className="text-xs text-emerald-600 dark:text-emerald-400">{schoolName}</p>}
-                  <p className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">Automatic updates are enabled</p>
+                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">OAK License Active</p>
+                  {teacherName && <p className="text-xs text-emerald-600 dark:text-emerald-400">{teacherName}</p>}
+                  {schoolId && <p className="text-xs text-emerald-600 dark:text-emerald-400">School: {schoolId}</p>}
+                  {territoryId && <p className="text-xs text-emerald-600 dark:text-emerald-400">Territory: {territoryId}</p>}
+                  {oakLicense && <p className="text-xs text-emerald-500 dark:text-emerald-500 mt-1 font-mono">{oakLicense}</p>}
+                  <p className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">Updates and cloud support are enabled</p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -4164,7 +4168,7 @@ function LicenseSection() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    if (confirm('Deactivate your license? You will no longer receive automatic updates.')) {
+                    if (confirm('Deactivate your OAK license? You will no longer receive automatic updates or cloud support.')) {
                       deactivate();
                     }
                   }}
@@ -4178,26 +4182,16 @@ function LicenseSection() {
             <form onSubmit={handleActivate} className="space-y-4">
               <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  The app works fully without a license. A license code is only needed to receive automatic updates.
+                  The app works fully without a license. An OAK license enables automatic updates and cloud-based support reporting.
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-label mb-1">Email address</label>
-                <Input
-                  type="email"
-                  placeholder="you@school.edu"
-                  value={licenseEmail}
-                  onChange={e => setLicenseEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-theme-label mb-1">{t('settingsPage.license.licenseCode')}</label>
+                <label className="block text-sm font-medium text-theme-label mb-1">OAK License</label>
                 <Input
                   type="text"
-                  placeholder={t('settingsPage.license.licenseCodePlaceholder')}
-                  value={licenseCode}
-                  onChange={e => setLicenseCode(e.target.value)}
+                  placeholder="OAK-XXXX-XXXX-XXXXXXXX"
+                  value={oakInput}
+                  onChange={e => setOakInput(e.target.value)}
                   required
                   className="font-mono tracking-wider"
                 />
@@ -4208,7 +4202,7 @@ function LicenseSection() {
                 </div>
               )}
               <Button type="submit" disabled={submitting || loading} className="w-full">
-                {submitting ? 'Validating...' : 'Activate License'}
+                {submitting ? 'Validating...' : 'Activate OAK License'}
               </Button>
             </form>
           )}

@@ -1320,3 +1320,18 @@ button[style*="background-color: rgb(59"] {
   font-size: 14px;
   opacity: 0.5;
 }
+
+/* ========================================
+   Streaming Content Fluidity
+   ======================================== */
+.streaming-content {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+.streaming-content > * {
+  animation: streamFadeIn 0.08s ease-out both;
+}
+@keyframes streamFadeIn {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}

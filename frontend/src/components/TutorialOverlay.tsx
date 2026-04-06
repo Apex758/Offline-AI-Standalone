@@ -781,7 +781,7 @@ export const getAnalyticsDashboardSteps = (t: (key: string) => string): Tutorial
 export const dashboardWalkthroughSteps: TutorialStep[] = [
   {
     target: '[data-tutorial="main-sidebar"]',
-    title: 'Welcome to OECS Learning Hub!',
+    title: 'Welcome to OECS Class Coworker!',
     description: 'This is your teaching toolkit sidebar. Here you\'ll find all the tools to create lesson plans, quizzes, rubrics, and more. The sidebar auto-collapses when you hover away to give you more workspace.',
     position: 'right',
   },

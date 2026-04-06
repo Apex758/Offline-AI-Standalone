@@ -1,4 +1,4 @@
-# OECS Learning Hub - Frozen Dependencies (2026-01-13)
+# OECS Class Coworker - Frozen Dependencies (2026-01-13)
 # Generated lock file - install exactly these versions for reproducibility
 
 # Core API

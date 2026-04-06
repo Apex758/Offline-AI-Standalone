@@ -1,4 +1,4 @@
-Write-Host "=== Building OECS Learning Hub (Complete Build) ===" -ForegroundColor Cyan
+Write-Host "=== Building OECS Class Coworker (Complete Build) ===" -ForegroundColor Cyan
 
 # Step 0: Pre-build cleanup
 Write-Host "`n[0/9] Pre-build cleanup..." -ForegroundColor Yellow
@@ -143,7 +143,7 @@ New-Item -ItemType Directory -Path $releaseDir | Out-Null
 # Copy installer
 $installer = Get-ChildItem "dist-electron\*.exe" | Select-Object -First 1
 if ($installer) {
-    Copy-Item $installer.FullName "$releaseDir\OECS-Learning-Hub-Setup.exe"
+    Copy-Item $installer.FullName "$releaseDir\OECS-Class-Coworker-Setup.exe"
     Write-Host "Copied installer" -ForegroundColor Green
 } else {
     Write-Host "ERROR: Installer not found!" -ForegroundColor Red
@@ -164,9 +164,9 @@ if ($hasImageModels) {
 }
 
 # Create README
-$readmeText = "OECS LEARNING HUB - INSTALLATION`n`n"
+$readmeText = "OECS CLASS COWORKER - INSTALLATION`n`n"
 $readmeText += "FILES:`n"
-$readmeText += "1. OECS-Learning-Hub-Setup.exe (includes all models)`n"
+$readmeText += "1. OECS-Class-Coworker-Setup.exe (includes all models)`n"
 $readmeText += "2. models/ folder (optional - for manual installation)`n`n"
 $readmeText += "INSTALL:`n"
 $readmeText += "Run the .exe installer - all models will be installed automatically`n`n"

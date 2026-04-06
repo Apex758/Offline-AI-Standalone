@@ -30,6 +30,7 @@ const SERIES = [
   { key: 'worksheets',   name: 'Worksheets',           toolType: 'worksheet-generator' },
   { key: 'images',       name: 'Images',               toolType: 'image-studio' },
   { key: 'presentations', name: 'Presentations',       toolType: 'presentation-builder' },
+  { key: 'storybooks',    name: 'Storybooks',          toolType: 'storybook' },
 ];
 
 const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({

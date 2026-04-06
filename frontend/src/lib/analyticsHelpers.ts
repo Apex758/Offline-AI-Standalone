@@ -59,7 +59,8 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
     crossCurricular: 0,
     worksheets: 0,
     images: 0,
-    presentations: 0
+    presentations: 0,
+    storybooks: 0
   });
 
   // Initialize buckets across the range
@@ -126,6 +127,9 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
             case 'presentation':
               data.presentations++;
               break;
+            case 'storybook':
+              data.storybooks++;
+              break;
           }
         }
       }
@@ -151,7 +155,8 @@ export function calculateDistribution(resources: any[], tabColors: { [key: strin
     'cross-curricular': 'Integrated Lesson Plans',
     worksheet: 'Worksheets',
     image: 'Images',
-    presentation: 'Presentations'
+    presentation: 'Presentations',
+    storybook: 'Storybooks'
   };
 
   // Map resource types to tool types for color lookup
@@ -164,7 +169,8 @@ export function calculateDistribution(resources: any[], tabColors: { [key: strin
     'cross-curricular': 'cross-curricular-planner',
     worksheet: 'worksheet-generator',
     image: 'image-studio',
-    presentation: 'presentation-builder'
+    presentation: 'presentation-builder',
+    storybook: 'storybook'
   };
 
   // Get color for a resource type

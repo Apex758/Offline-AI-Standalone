@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
@@ -51,6 +52,7 @@ const PanelRightClose: React.FC<{ className?: string; style?: React.CSSPropertie
 const PanelRightOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PanelRightOpenIconData} {...p} />;
 import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
+import ScanTemplatePreview from './ScanTemplatePreview';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
 import QuizGrader from './QuizGrader';
@@ -276,6 +278,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<'teacher' | 'student'>('teacher');
+  const [scanMode, setScanMode] = useState(false);
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
 
@@ -333,6 +336,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || contextLoading;
+
+  const streamingContent = useStreamingRenderer({
+    text: streamingQuiz || generatedQuiz,
+    isStreaming: !!(loading && streamingQuiz),
+    fullFormatter: () => formatQuizText(streamingQuiz || generatedQuiz, tabColor),
+    accentColor: tabColor,
+  });
 
   // Computed values for class quiz display
   const viewingStudent = selectedStudentIdx !== null && classQuizData ? classQuizData[selectedStudentIdx] : null;
@@ -998,6 +1008,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           </>
                         )}
                       </div>
+                      <label className="flex items-center gap-1.5 cursor-pointer select-none ml-2" title="Scan-ready layout for auto-grading">
+                        <span className="text-[11px] text-theme-muted font-medium">Scan</span>
+                        <div className="relative">
+                          <input type="checkbox" checked={scanMode} onChange={e => setScanMode(e.target.checked)} className="sr-only peer" />
+                          <div className="w-8 h-[18px] bg-gray-300 rounded-full peer-checked:bg-blue-600 transition-colors" />
+                          <div className="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full transition-transform peer-checked:translate-x-[14px]" />
+                        </div>
+                      </label>
                       <ExportButton
                         dataType="quiz"
                         data={{
@@ -1027,6 +1045,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           accentColor={tabColor}
                           parsedQuiz={parsedQuiz}
                           classQuizData={classQuizData}
+                          scanMode={scanMode}
                           className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                         />
                       )}
@@ -1128,8 +1147,18 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1">
-                      {displayParsedQuiz && !loading ? (
-                        // ✅ Conditionally render based on effectiveVersion (student view when viewing class quiz student)
+                      {scanMode && displayParsedQuiz ? (
+                        <ScanTemplatePreview
+                          questions={displayParsedQuiz.questions}
+                          docMeta={{
+                            title: formData.subject ? `${formData.subject} Quiz` : 'Quiz',
+                            subject: formData.subject,
+                            gradeLevel: formData.gradeLevel,
+                            docId: currentQuizId || 'preview'
+                          }}
+                        />
+                      ) : displayParsedQuiz && !loading ? (
+                        // Conditionally render based on effectiveVersion (student view when viewing class quiz student)
                         <div className="space-y-6">
                           {displayParsedQuiz.questions.map((question, qIndex) => {
                             const correctAnswerIndex = question.correctAnswer as number;
@@ -1264,7 +1293,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       ) : (
                         // Fallback to text rendering for streaming or non-parsed content
                         <>
-                          {formatQuizText(streamingQuiz || generatedQuiz, tabColor)}
+                          {streamingContent}
                           {loading && streamingQuiz && (
                             <span className="inline-flex items-center ml-1">
                               <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>

@@ -1,6 +1,6 @@
 # Performance Optimization Report & Full-Stack Guide
 
-What was done to speed up the OECS Learning Hub, and lessons learned for building fast full-stack apps.
+What was done to speed up the OECS Class Coworker, and lessons learned for building fast full-stack apps.
 
 ---
 

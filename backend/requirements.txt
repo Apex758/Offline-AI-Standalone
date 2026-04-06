@@ -1,5 +1,5 @@
 # ========================================
-# OECS Learning Hub - Backend Dependencies
+# OECS Class Coworker - Backend Dependencies
 # ========================================
 
 # --- API / Backend ---

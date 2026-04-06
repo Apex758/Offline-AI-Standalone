@@ -4,13 +4,15 @@ import { supabase } from '../lib/supabase';
 interface LicenseState {
   isLicensed: boolean;
   loading: boolean;
-  email: string | null;
-  schoolName: string | null;
+  oakLicense: string | null;
+  teacherName: string | null;
+  schoolId: string | null;
+  territoryId: string | null;
   error: string | null;
 }
 
 interface LicenseContextType extends LicenseState {
-  activate: (email: string, code: string) => Promise<boolean>;
+  activate: (oakLicense: string) => Promise<boolean>;
   deactivate: () => void;
 }
 
@@ -28,58 +30,65 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<LicenseState>({
     isLicensed: false,
     loading: true,
-    email: null,
-    schoolName: null,
+    oakLicense: null,
+    teacherName: null,
+    schoolId: null,
+    territoryId: null,
     error: null,
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem('oecs_license');
+    const stored = localStorage.getItem('oecs_oak_license');
     if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        revalidate(parsed.email, parsed.code);
-      } catch {
-        localStorage.removeItem('oecs_license');
-        setState(s => ({ ...s, loading: false }));
-      }
+      revalidate(stored);
     } else {
       setState(s => ({ ...s, loading: false }));
     }
   }, []);
 
-  async function revalidate(email: string, code: string) {
+  async function revalidate(oakLicense: string) {
     try {
       const deviceId = getDeviceId();
-      const { data, error } = await supabase.rpc('validate_license', {
-        p_email: email,
-        p_code: code,
+      const { data, error } = await supabase.rpc('validate_oak', {
+        p_oak_license: oakLicense,
         p_device_id: deviceId,
       });
 
       if (error || !data?.valid) {
-        localStorage.removeItem('oecs_license');
-        setState({ isLicensed: false, loading: false, email: null, schoolName: null, error: null });
+        // License failed server validation -- clear it
+        localStorage.removeItem('oecs_oak_license');
+        setState({
+          isLicensed: false,
+          loading: false,
+          oakLicense: null,
+          teacherName: null,
+          schoolId: null,
+          territoryId: null,
+          error: null,
+        });
         return;
       }
 
       setState({
         isLicensed: true,
         loading: false,
-        email,
-        schoolName: data.school_name,
+        oakLicense,
+        teacherName: data.teacher_name,
+        schoolId: data.school_id,
+        territoryId: data.territory_id,
         error: null,
       });
     } catch {
-      // Offline — trust cached license
-      const stored = localStorage.getItem('oecs_license');
+      // Offline -- trust the cached OAK license string
+      const stored = localStorage.getItem('oecs_oak_license');
       if (stored) {
-        const parsed = JSON.parse(stored);
         setState({
           isLicensed: true,
           loading: false,
-          email: parsed.email,
-          schoolName: null,
+          oakLicense: stored,
+          teacherName: null,
+          schoolId: null,
+          territoryId: null,
           error: null,
         });
       } else {
@@ -88,14 +97,13 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function activate(email: string, code: string): Promise<boolean> {
+  async function activate(oakLicense: string): Promise<boolean> {
     setState(s => ({ ...s, loading: true, error: null }));
 
     try {
       const deviceId = getDeviceId();
-      const { data, error } = await supabase.rpc('validate_license', {
-        p_email: email,
-        p_code: code,
+      const { data, error } = await supabase.rpc('validate_oak', {
+        p_oak_license: oakLicense,
         p_device_id: deviceId,
       });
 
@@ -108,13 +116,16 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      localStorage.setItem('oecs_license', JSON.stringify({ email, code }));
+      // Store just the OAK license string (not JSON)
+      localStorage.setItem('oecs_oak_license', oakLicense);
 
       setState({
         isLicensed: true,
         loading: false,
-        email,
-        schoolName: data.school_name,
+        oakLicense,
+        teacherName: data.teacher_name,
+        schoolId: data.school_id,
+        territoryId: data.territory_id,
         error: null,
       });
       return true;
@@ -125,8 +136,16 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
   }
 
   function deactivate() {
-    localStorage.removeItem('oecs_license');
-    setState({ isLicensed: false, loading: false, email: null, schoolName: null, error: null });
+    localStorage.removeItem('oecs_oak_license');
+    setState({
+      isLicensed: false,
+      loading: false,
+      oakLicense: null,
+      teacherName: null,
+      schoolId: null,
+      territoryId: null,
+      error: null,
+    });
   }
 
   return (

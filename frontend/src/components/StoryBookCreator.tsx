@@ -126,16 +126,24 @@ const DEFAULT_FORM: StorybookFormData = {
 
 // ─── Progressive JSON Parser ──────────────────────────────────────────────────
 
-function tryParsePartialPages(raw: string): StoryPage[] {
+function tryParsePartialPages(raw: string, scanFrom: number = 0): { pages: StoryPage[], nextScanFrom: number } {
   const pages: StoryPage[] = [];
-  const arrStart = raw.indexOf('"pages"');
-  if (arrStart === -1) return pages;
-  const bracketStart = raw.indexOf('[', arrStart);
-  if (bracketStart === -1) return pages;
+  let startIdx: number;
+
+  if (scanFrom > 0) {
+    startIdx = scanFrom;
+  } else {
+    const arrStart = raw.indexOf('"pages"');
+    if (arrStart === -1) return { pages, nextScanFrom: 0 };
+    const bracketStart = raw.indexOf('[', arrStart);
+    if (bracketStart === -1) return { pages, nextScanFrom: 0 };
+    startIdx = bracketStart + 1;
+  }
 
   let depth = 0;
   let objStart = -1;
-  for (let i = bracketStart + 1; i < raw.length; i++) {
+  let lastObjEnd = startIdx;
+  for (let i = startIdx; i < raw.length; i++) {
     const ch = raw[i];
     if (ch === '{') {
       if (depth === 0) objStart = i;
@@ -156,12 +164,13 @@ function tryParsePartialPages(raw: string): StoryPage[] {
               textAnimation: obj.textAnimation || 'fadeIn',
             });
           }
-        } catch { /* incomplete JSON — skip */ }
+          lastObjEnd = i + 1;
+        } catch { /* incomplete JSON -- skip */ }
         objStart = -1;
       }
     }
   }
-  return pages;
+  return { pages, nextScanFrom: lastObjEnd };
 }
 
 function tryParseFullBook(raw: string): ParsedStorybook | null {
@@ -1505,17 +1514,26 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
   // Track which page the AI is currently streaming (for auto-advance in editor)
   const prevLivePagesCountRef = useRef(0);
+  const pageScanOffsetRef = useRef(0);
+  const cachedParsedPagesRef = useRef<StoryPage[]>([]);
 
   useEffect(() => {
-    if (!streamingContent) return;
-    const partial = tryParsePartialPages(streamingContent);
-    if (partial.length > 0) {
-      setLivePages(partial);
+    if (!streamingContent) {
+      pageScanOffsetRef.current = 0;
+      cachedParsedPagesRef.current = [];
+      return;
+    }
+    const { pages: newPages, nextScanFrom } = tryParsePartialPages(streamingContent, pageScanOffsetRef.current);
+    if (newPages.length > 0) {
+      const allPages = [...cachedParsedPagesRef.current, ...newPages];
+      cachedParsedPagesRef.current = allPages;
+      pageScanOffsetRef.current = nextScanFrom;
+      setLivePages(allPages);
 
       // Transition from skeleton to editor as soon as first page arrives
-      if (view === 'streaming' && partial.length >= 1) {
+      if (view === 'streaming' && allPages.length >= 1) {
         // Build a temporary parsedBook with completed pages + placeholders for remaining
-        const completedPages: StoryPage[] = partial.map(p => ({
+        const completedPages: StoryPage[] = allPages.map(p => ({
           ...p,
           bundledSceneId: findBestScene(p.sceneId).id,
         }));
@@ -1532,7 +1550,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             textAnimation: 'fadeIn',
           });
         }
-        const allPages = [...completedPages, ...placeholders];
+        const combinedPages = [...completedPages, ...placeholders];
         setParsedBook(prev => {
           // Preserve any top-level fields if we already have a partial book
           const base = prev || { title: formData.title || 'Generating...', gradeLevel: formData.gradeLevel, pages: [], scenes: [], styleSuffix: '' };
@@ -1543,7 +1561,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             subtitle: `${gl}${formData.subject ? ' • ' + formData.subject : ''}`,
             authorName: formData.authorName || undefined,
           };
-          return { ...base, pages: allPages, coverPage };
+          return { ...base, pages: combinedPages, coverPage };
         });
         setCurrentPageIdx(0);
         setView('editor');
@@ -1552,7 +1570,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         setParsedBook(prev => {
           if (!prev) return prev;
           const updatedPages = [...prev.pages];
-          for (const lp of partial) {
+          for (const lp of allPages) {
             const idx = lp.pageNumber - 1;
             if (idx >= 0 && idx < updatedPages.length) {
               updatedPages[idx] = {
@@ -1566,12 +1584,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         });
 
         // Auto-advance to the page currently being written
-        if (partial.length > prevLivePagesCountRef.current) {
+        if (allPages.length > prevLivePagesCountRef.current) {
           // A new page just started — navigate to it
-          setCurrentPageIdx(partial.length - 1);
+          setCurrentPageIdx(allPages.length - 1);
         }
       }
-      prevLivePagesCountRef.current = partial.length;
+      prevLivePagesCountRef.current = allPages.length;
     }
 
     if (!isStreaming && streamingContent) {

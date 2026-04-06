@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
@@ -535,6 +536,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
+
+  const streamingContent = useStreamingRenderer({
+    text: streamingPlan || generatedPlan,
+    isStreaming: !!(loading && streamingPlan),
+    fullFormatter: () => formatCrossCurricularText(streamingPlan || generatedPlan, tabColor),
+    accentColor: tabColor,
+  });
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -1203,7 +1211,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1 rounded-xl p-6 widget-glass">
-                      {formatCrossCurricularText(streamingPlan || generatedPlan, tabColor)}
+                      {streamingContent}
                       {loading && streamingPlan && (
                         <span className="inline-flex items-center ml-1">
                           <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>

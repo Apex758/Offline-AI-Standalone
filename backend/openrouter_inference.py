@@ -107,7 +107,7 @@ class OpenRouterInference:
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
                 "HTTP-Referer": "https://your-app.com",  # Optional but recommended
-                "X-Title": "OECS Learning Hub",  # Optional but helpful for tracking
+                "X-Title": "OECS Class Coworker",  # Optional but helpful for tracking
             }
             
             # Make async HTTP request
@@ -184,7 +184,7 @@ class OpenRouterInference:
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
                 "HTTP-Referer": "https://your-app.com",
-                "X-Title": "OECS Learning Hub",
+                "X-Title": "OECS Class Coworker",
             }
 
             # ✅ FIX: Use chunked reading with proper SSE parsing

@@ -25,7 +25,7 @@ def _get_cert_dir() -> Path:
     """Return the directory where we store the self-signed cert."""
     if os.name == "nt":
         app_data = os.environ.get("APPDATA", os.path.expanduser("~"))
-        d = Path(app_data) / "OECS Learning Hub" / "ssl"
+        d = Path(app_data) / "OECS Class Coworker" / "ssl"
     else:
         d = Path.home() / ".olh_ai_education" / "ssl"
     d.mkdir(parents=True, exist_ok=True)
@@ -88,7 +88,7 @@ def _generate_with_cryptography(cert_path: Path, key_path: Path):
     # Build cert
     subject = issuer = x509.Name([
         x509.NameAttribute(NameOID.COMMON_NAME, "OECS Photo Transfer"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "OECS Learning Hub"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "OECS Class Coworker"),
     ])
 
     # Add SAN with all local IPs
@@ -133,7 +133,7 @@ def _generate_with_openssl(cert_path: Path, key_path: Path):
         "openssl", "req", "-x509", "-newkey", "rsa:2048",
         "-keyout", str(key_path), "-out", str(cert_path),
         "-days", "365", "-nodes",
-        "-subj", "/CN=OECS Photo Transfer/O=OECS Learning Hub",
+        "-subj", "/CN=OECS Photo Transfer/O=OECS Class Coworker",
         "-addext", f"subjectAltName={san}",
     ], check=True, capture_output=True)
 

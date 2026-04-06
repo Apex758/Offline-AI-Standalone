@@ -2,7 +2,7 @@
 
 > **Version:** 2.0 — QR-Linked Auto-Matching Architecture
 > **Last Updated:** 2026-04-03
-> **App:** OECS Learning Hub (Electron + React + FastAPI)
+> **App:** OECS Class Coworker (Electron + React + FastAPI)
 
 ---
 
@@ -1522,6 +1522,6 @@ This is a major usability improvement — the teacher can photograph a messy sta
 
 ## Summary
 
-This plan builds on the existing OECS Learning Hub infrastructure. The key innovation is the **per-student QR code** on every printed page, which eliminates manual matching and enables automatic identification of both the document and the student. Combined with **pixel-density detection** for MC/TF questions and **targeted OCR** for open-ended answers, this creates a fast, accurate, and fully offline grading pipeline.
+This plan builds on the existing OECS Class Coworker infrastructure. The key innovation is the **per-student QR code** on every printed page, which eliminates manual matching and enables automatic identification of both the document and the student. Combined with **pixel-density detection** for MC/TF questions and **targeted OCR** for open-ended answers, this creates a fast, accurate, and fully offline grading pipeline.
 
 The implementation is broken into 5 phases, with Phase 1 (QR + database) and Phase 2 (generation + export) being the highest priority — everything else builds on those foundations.

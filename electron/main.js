@@ -27,7 +27,7 @@ if (UPDATE_TOKEN) {
 }
 
 // Configure logging paths
-const logsDir = path.join(app.getPath('appData'), 'OECS Learning Hub', 'logs');
+const logsDir = path.join(app.getPath('appData'), 'OECS Class Coworker', 'logs');
 
 // Ensure logs directory exists
 if (!fs.existsSync(logsDir)) {
@@ -465,7 +465,7 @@ function createWindow() {
     minWidth: 1000,
     minHeight: 600,
     icon: path.join(__dirname, '..', 'frontend', 'public', 'OECS.png'),
-    title: 'OECS Learning Hub',
+    title: 'OECS Class Coworker',
     frame: true, // Frameless for splashscreen effect
     center: true,
     webPreferences: {
@@ -605,7 +605,7 @@ function loadMainContent() {
   }
 }
 
-app.setName('OECS Learning Hub');
+app.setName('OECS Class Coworker');
 
 // IPC handlers for splashscreen communication
 ipcMain.on('splashscreen-complete', () => {
@@ -733,11 +733,11 @@ function createTray() {
   }
 
   tray = new Tray(trayIcon);
-  tray.setToolTip('OECS Learning Hub');
+  tray.setToolTip('OECS Class Coworker');
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Show OECS Learning Hub',
+      label: 'Show OECS Class Coworker',
       click: () => {
         if (mainWindow) {
           mainWindow.show();

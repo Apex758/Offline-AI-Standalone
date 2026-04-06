@@ -1,6 +1,6 @@
 {
   "sidebar": {
-    "header": "OECS Learning Hub",
+    "header": "OECS Class Coworker",
     "tools": "Tools",
     "myOverview": "My Overview",
     "educatorInsights": "Educator Insights",
@@ -149,7 +149,7 @@
       "stopCloseAll": "Stop & close all"
     },
     "welcome": {
-      "title": "Welcome to the OECS Learning Hub!",
+      "title": "Welcome to the OECS Class Coworker!",
       "subtitle": "Empowering Teachers Across the Eastern Caribbean",
       "getStarted": "Get Started"
     }
@@ -260,6 +260,7 @@
     "multigrade": "Multigrade",
     "images": "Images",
     "presentations": "Presentations",
+    "storybooks": "Storybooks",
     "searchResources": "Search resources...",
     "select": "Select",
     "noResultsHint": "Try adjusting your search query",
@@ -662,7 +663,7 @@
     "ocrUnavailable": "OCR Scan Grading Unavailable"
   },
   "setupWizard": {
-    "welcome": "Welcome to the OECS Learning Hub",
+    "welcome": "Welcome to the OECS Class Coworker",
     "subtitle": "Empowering Teachers Across the Eastern Caribbean",
     "quickSetup": "This takes less than a minute. You can always change your choices later in Settings.",
     "getStarted": "Get Started",
@@ -1422,7 +1423,7 @@
     "enterSplitView": "Enter Split View",
     "closeAllTabsExit": "Close All Tabs and Exit Split View",
     "notifications": "Notifications",
-    "welcomeTitle": "OECS Learning Hub",
+    "welcomeTitle": "OECS Class Coworker",
     "welcomeSubtitle": "Select a tool from the sidebar to get started",
     "rightClickOptions": "Right-click for options",
     "tips": {
@@ -1527,7 +1528,7 @@
     },
     "dashboard": {
       "step1": {
-        "title": "Welcome to OECS Learning Hub!",
+        "title": "Welcome to OECS Class Coworker!",
         "description": "This is your teaching toolkit sidebar. Here you will find all the tools to create lesson plans, quizzes, rubrics, and more. The sidebar auto-collapses when you hover away to give you more workspace."
       },
       "step2": {

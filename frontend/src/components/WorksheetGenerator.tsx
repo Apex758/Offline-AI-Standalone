@@ -72,6 +72,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
+import ScanTemplatePreview from './ScanTemplatePreview';
 import WorksheetStructuredEditor from './WorksheetStructuredEditor';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
@@ -311,6 +312,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumPage[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
+  const [scanMode, setScanMode] = useState(false);
 
   // ✅ Read streaming content from context (read-only, no setter!)
   const streamingWorksheet = getStreamingContent(tabId || '', ENDPOINT);
@@ -2207,6 +2209,18 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 <div className="transform scale-90 origin-top">
                   {renderTemplateWithLoading()}
                 </div>
+              ) : scanMode && parsedWorksheet ? (
+                <div className="transform scale-90 origin-top">
+                  <ScanTemplatePreview
+                    questions={parsedWorksheet.questions}
+                    docMeta={{
+                      title: formData.worksheetTitle || formData.subject ? `${formData.subject} Worksheet` : 'Worksheet',
+                      subject: formData.subject,
+                      gradeLevel: formData.gradeLevel,
+                      docId: currentWorksheetId || 'preview'
+                    }}
+                  />
+                </div>
               ) : parsedWorksheet ? (
                 <div className="transform scale-90 origin-top">
                    {formData.selectedTemplate === 'multiple-choice' && (
@@ -2352,6 +2366,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   <Printer className="w-3.5 h-3.5 mr-1.5" />
                   Print This
                 </button>
+                <label className="flex items-center gap-1.5 cursor-pointer select-none ml-2" title="Scan-ready layout for auto-grading">
+                  <span className="text-[11px] text-theme-muted font-medium">Scan</span>
+                  <div className="relative">
+                    <input type="checkbox" checked={scanMode} onChange={e => setScanMode(e.target.checked)} className="sr-only peer" />
+                    <div className="w-8 h-[18px] bg-gray-300 rounded-full peer-checked:bg-blue-600 transition-colors" />
+                    <div className="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full transition-transform peer-checked:translate-x-[14px]" />
+                  </div>
+                </label>
                 <ExportButton
                   dataType="worksheet"
                   data={{
@@ -2380,6 +2402,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     generatedWorksheet={generatedWorksheet}
                     studentVersions={worksheetPackage.studentVersions}
                     generatedImages={generatedImages}
+                    scanMode={scanMode}
                     className="!px-3 !py-1.5 !text-xs"
                   />
                 )}

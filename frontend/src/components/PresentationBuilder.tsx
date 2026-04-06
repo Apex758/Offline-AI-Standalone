@@ -1464,16 +1464,24 @@ function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth, e
    PROGRESSIVE JSON PARSING
 ═══════════════════════════════════════ */
 
-function tryParsePartialSlides(raw: string): Slide[] {
+function tryParsePartialSlides(raw: string, scanFrom: number = 0): { slides: Slide[], nextScanFrom: number } {
   const slides: Slide[] = [];
-  const arrStart = raw.indexOf('"slides"');
-  if (arrStart === -1) return slides;
-  const bracketStart = raw.indexOf('[', arrStart);
-  if (bracketStart === -1) return slides;
+  let startIdx: number;
+
+  if (scanFrom > 0) {
+    startIdx = scanFrom;
+  } else {
+    const arrStart = raw.indexOf('"slides"');
+    if (arrStart === -1) return { slides, nextScanFrom: 0 };
+    const bracketStart = raw.indexOf('[', arrStart);
+    if (bracketStart === -1) return { slides, nextScanFrom: 0 };
+    startIdx = bracketStart + 1;
+  }
 
   let depth = 0;
   let objStart = -1;
-  for (let i = bracketStart + 1; i < raw.length; i++) {
+  let lastObjEnd = startIdx;
+  for (let i = startIdx; i < raw.length; i++) {
     const ch = raw[i];
     if (ch === '{') {
       if (depth === 0) objStart = i;
@@ -1490,12 +1498,13 @@ function tryParsePartialSlides(raw: string): Slide[] {
               content: obj.content || {},
             });
           }
+          lastObjEnd = i + 1;
         } catch { /* incomplete JSON object, skip */ }
         objStart = -1;
       }
     }
   }
-  return slides;
+  return { slides, nextScanFrom: lastObjEnd };
 }
 
 /* ═══════════════════════════════════════
@@ -1675,21 +1684,27 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const isStreaming = getIsStreaming(tabId, ENDPOINT);
   const prevIsStreamingRef = useRef(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const parseScanOffsetRef = useRef(0);
+  const cachedParsedSlidesRef = useRef<Slide[]>([]);
 
   // Progressive slide parsing during streaming
   useEffect(() => {
     if (isStreaming && streamingContent) {
-      const parsed = tryParsePartialSlides(streamingContent);
-      if (parsed.length > streamingSlides.length) {
-        setStreamingSlides(parsed);
-        setSlides(parsed);
-        if (parsed.length > 0) {
-          setSel(parsed.length - 1);
-        }
+      const { slides: newSlides, nextScanFrom } = tryParsePartialSlides(streamingContent, parseScanOffsetRef.current);
+      if (newSlides.length > 0) {
+        const allSlides = [...cachedParsedSlidesRef.current, ...newSlides];
+        cachedParsedSlidesRef.current = allSlides;
+        parseScanOffsetRef.current = nextScanFrom;
+        setStreamingSlides(allSlides);
+        setSlides(allSlides);
+        setSel(allSlides.length - 1);
       }
       if (view !== 'editor') {
         setView('editor');
       }
+    } else if (!isStreaming) {
+      parseScanOffsetRef.current = 0;
+      cachedParsedSlidesRef.current = [];
     }
   }, [streamTick, isStreaming, streamingContent]);
 

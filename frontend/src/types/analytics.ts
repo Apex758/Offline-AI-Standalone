@@ -10,6 +10,7 @@ export interface ResourceTrendData {
   worksheets: number;
   images: number;
   presentations: number;
+  storybooks: number;
 }
 
 export interface DistributionData {

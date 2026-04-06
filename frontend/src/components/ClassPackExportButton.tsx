@@ -13,6 +13,7 @@ import type { ParsedWorksheet } from '../types/worksheet';
 import type { StudentWorksheetVersion } from '../types/worksheet';
 import { addBubblesToHtml } from '../utils/bubblePostProcessor';
 import { generateAnswerRegions } from '../utils/answerRegionGenerator';
+import { generateScanTemplate } from '../utils/scanTemplateRenderer';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -32,6 +33,7 @@ interface QuizClassPackProps {
   accentColor: string;
   parsedQuiz: ParsedQuiz;
   classQuizData: Array<{ id: string; name: string; questionOrder: number[] }>;
+  scanMode?: boolean;
   className?: string;
 }
 
@@ -45,6 +47,7 @@ interface WorksheetClassPackProps {
   generatedWorksheet: string;
   studentVersions: StudentWorksheetVersion[];
   generatedImages?: string[];
+  scanMode?: boolean;
   className?: string;
 }
 
@@ -71,6 +74,7 @@ const ClassPackExportButton: React.FC<ClassPackExportButtonProps> = (props) => {
         shuffled_word_bank?: any;
       }> = [];
       const rawHtmlPerStudent: Record<string, string> = {};
+      let firstScanSlots: any = null;
 
       if (props.dataType === 'quiz') {
         const { parsedQuiz, classQuizData, formData, accentColor, docId } = props;
@@ -84,38 +88,55 @@ const ClassPackExportButton: React.FC<ClassPackExportButtonProps> = (props) => {
             questions: student.questionOrder.map(i => parsedQuiz.questions[i])
           };
 
-          // Generate HTML for this student's version (student copy - no answers)
-          const exportData = prepareQuizForExport(
-            quizToDisplayText(studentQuiz),
-            formData,
-            accentColor,
-            {
-              showAnswerKey: false,
-              showExplanations: false,
-              boldCorrectAnswers: false,
-              scanMode: true
-            },
-            { name: student.name, id: student.id },
-            docId
-          );
-
-          // Post-process HTML to add scannable bubbles
-          const bubbleResult = addBubblesToHtml(exportData.rawHtml);
-          rawHtmlPerStudent[student.id] = bubbleResult.html;
-
-          // Save bubble regions from first student (all have same layout)
-          if (studentVersionsPayload.length === 0 && bubbleResult.regions.length > 0) {
-            const template = generateAnswerRegions(
-              bubbleResult.regions,
-              parsedQuiz.questions.map(q => ({ type: q.type, question: q.question })),
-              docId,
-              'quiz'
+          if (props.scanMode) {
+            const scanResult = generateScanTemplate(
+              studentQuiz.questions,
+              {
+                title: formData.subject ? `${formData.subject} Quiz` : 'Quiz',
+                subject: formData.subject || '',
+                gradeLevel: formData.gradeLevel || '',
+                docId: docId
+              }
             );
-            // Save answer region template to backend
-            axios.post('http://localhost:8000/api/save-answer-regions', template).catch(e =>
-              console.warn('Failed to save answer regions:', e)
+            rawHtmlPerStudent[student.id] = scanResult.html;
+            if (studentVersionsPayload.length === 0 && scanResult.slots.length > 0) {
+              firstScanSlots = scanResult.slots;
+            }
+          } else {
+            // Generate HTML for this student's version (student copy - no answers)
+            const exportData = prepareQuizForExport(
+              quizToDisplayText(studentQuiz),
+              formData,
+              accentColor,
+              {
+                showAnswerKey: false,
+                showExplanations: false,
+                boldCorrectAnswers: false,
+                scanMode: true
+              },
+              { name: student.name, id: student.id },
+              docId
             );
+
+            // Post-process HTML to add scannable bubbles
+            const bubbleResult = addBubblesToHtml(exportData.rawHtml);
+            rawHtmlPerStudent[student.id] = bubbleResult.html;
+
+            // Save bubble regions from first student (all have same layout)
+            if (studentVersionsPayload.length === 0 && bubbleResult.regions.length > 0) {
+              const template = generateAnswerRegions(
+                bubbleResult.regions,
+                parsedQuiz.questions.map(q => ({ type: q.type, question: q.question })),
+                docId,
+                'quiz'
+              );
+              // Save answer region template to backend
+              axios.post('http://localhost:8000/api/save-answer-regions', template).catch(e =>
+                console.warn('Failed to save answer regions:', e)
+              );
+            }
           }
+
           studentVersionsPayload.push({
             student_id: student.id,
             name: student.name,
@@ -135,32 +156,48 @@ const ClassPackExportButton: React.FC<ClassPackExportButtonProps> = (props) => {
             questions: version.questions
           };
 
-          // Generate HTML for this student's version
-          const exportData = prepareWorksheetForExport(
-            generatedWorksheet,
-            studentParsedWorksheet,
-            { ...formData, viewMode: 'student' },
-            accentColor,
-            generatedImages,
-            docId,
-            true // scanMode
-          );
-
-          // Post-process HTML to add scannable bubbles
-          const bubbleResult = addBubblesToHtml(exportData.rawHtml);
-          rawHtmlPerStudent[version.student.id] = bubbleResult.html;
-
-          // Save bubble regions from first student (all have same layout)
-          if (studentVersionsPayload.length === 0 && bubbleResult.regions.length > 0) {
-            const template = generateAnswerRegions(
-              bubbleResult.regions,
-              parsedWorksheet.questions.map(q => ({ type: q.type, question: q.question })),
+          if (props.scanMode) {
+            const scanResult = generateScanTemplate(
+              studentParsedWorksheet.questions,
+              {
+                title: formData.worksheetTitle || (formData.subject ? `${formData.subject} Worksheet` : 'Worksheet'),
+                subject: formData.subject || '',
+                gradeLevel: formData.gradeLevel || '',
+                docId: docId
+              }
+            );
+            rawHtmlPerStudent[version.student.id] = scanResult.html;
+            if (studentVersionsPayload.length === 0 && scanResult.slots.length > 0) {
+              firstScanSlots = scanResult.slots;
+            }
+          } else {
+            // Generate HTML for this student's version
+            const exportData = prepareWorksheetForExport(
+              generatedWorksheet,
+              studentParsedWorksheet,
+              { ...formData, viewMode: 'student' },
+              accentColor,
+              generatedImages,
               docId,
-              'worksheet'
+              true // scanMode
             );
-            axios.post('http://localhost:8000/api/save-answer-regions', template).catch(e =>
-              console.warn('Failed to save answer regions:', e)
-            );
+
+            // Post-process HTML to add scannable bubbles
+            const bubbleResult = addBubblesToHtml(exportData.rawHtml);
+            rawHtmlPerStudent[version.student.id] = bubbleResult.html;
+
+            // Save bubble regions from first student (all have same layout)
+            if (studentVersionsPayload.length === 0 && bubbleResult.regions.length > 0) {
+              const template = generateAnswerRegions(
+                bubbleResult.regions,
+                parsedWorksheet.questions.map(q => ({ type: q.type, question: q.question })),
+                docId,
+                'worksheet'
+              );
+              axios.post('http://localhost:8000/api/save-answer-regions', template).catch(e =>
+                console.warn('Failed to save answer regions:', e)
+              );
+            }
           }
 
           // Build question_order from index mapping
@@ -193,7 +230,9 @@ const ClassPackExportButton: React.FC<ClassPackExportButtonProps> = (props) => {
           doc_id: props.docId,
           student_versions: studentVersionsPayload,
           format: format,
-          raw_html_per_student: rawHtmlPerStudent
+          raw_html_per_student: rawHtmlPerStudent,
+          scan_mode: !!props.scanMode,
+          slots_json: firstScanSlots ? JSON.stringify(firstScanSlots) : undefined
         },
         {
           responseType: 'blob',

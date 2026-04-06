@@ -84,16 +84,16 @@ def identify_corners(markers: list[dict], img_shape: tuple) -> dict | None:
 
 
 def align_scanned_page(image_bytes: bytes,
-                       target_width: int = 612,
-                       target_height: int = 792,
-                       marker_margin: int = 20) -> tuple[np.ndarray | None, dict]:
+                       target_width: int = 595,
+                       target_height: int = 842,
+                       marker_margin: int = 14) -> tuple[np.ndarray | None, dict]:
     """Detect alignment markers and apply perspective correction.
 
     Args:
         image_bytes: Raw image bytes
-        target_width: Expected page width in points
-        target_height: Expected page height in points
-        marker_margin: Expected distance of marker centers from page edge
+        target_width: Expected page width in points (default: 595 = A4)
+        target_height: Expected page height in points (default: 842 = A4)
+        marker_margin: Expected distance of marker centers from page edge (default: 14pt ~= 5mm)
 
     Returns:
         (aligned_image, info_dict) or (None, error_dict)

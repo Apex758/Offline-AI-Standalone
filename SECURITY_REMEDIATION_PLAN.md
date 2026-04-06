@@ -1,7 +1,7 @@
 # Comprehensive Security Remediation Plan
 
 ## Context
-An adversarial review of the OECS Learning Hub uncovered 17 critical/high and 24+ medium severity issues across the Electron + React + FastAPI stack. The app is offline-first with a LAN-accessible Photo Transfer feature, so fixes must preserve that functionality while locking down everything else. Backend `main.py` is 9,516 lines; splitting it is out of scope.
+An adversarial review of the OECS Class Coworker uncovered 17 critical/high and 24+ medium severity issues across the Electron + React + FastAPI stack. The app is offline-first with a LAN-accessible Photo Transfer feature, so fixes must preserve that functionality while locking down everything else. Backend `main.py` is 9,516 lines; splitting it is out of scope.
 
 ---
 

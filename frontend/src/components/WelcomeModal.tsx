@@ -58,7 +58,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
         <div className="p-8" style={{ backgroundColor: '#FDFDF8' }}>
           <div className="space-y-4 mb-8">
             <p className="text-lg leading-relaxed" style={{ color: '#020D03' }}>
-              The OECS Learning Hub is designed to help teachers create engaging lesson plans, quizzes, rubrics, and more - all tailored to the OECS curriculum.
+              The OECS Class Coworker is designed to help teachers create engaging lesson plans, quizzes, rubrics, and more - all tailored to the OECS curriculum.
             </p>
 
             <div className="rounded-lg p-4" style={{ backgroundColor: '#F8E59D', border: '1px solid #E8EAE3' }}>

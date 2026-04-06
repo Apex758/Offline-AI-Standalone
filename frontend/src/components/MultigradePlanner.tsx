@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
@@ -307,6 +308,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
+
+  const streamingContent = useStreamingRenderer({
+    text: streamingPlan || generatedPlan,
+    isStreaming: !!(loading && streamingPlan),
+    fullFormatter: () => formatMultigradeText(streamingPlan || generatedPlan, tabColor, false),
+    accentColor: tabColor,
+  });
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [multigradeHistories, setMultigradeHistories] = useState<MultigradeHistory[]>([]);
@@ -1010,11 +1018,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1 rounded-xl p-6 widget-glass">
-                      {formatMultigradeText(
-                        streamingPlan || generatedPlan, 
-                        tabColor,
-                        !!streamingPlan  // ✅ TRUE when streaming, FALSE when complete
-                      )}
+                      {streamingContent}
                       {loading && streamingPlan && (
                         <span className="inline-flex items-center ml-1">
                           <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>

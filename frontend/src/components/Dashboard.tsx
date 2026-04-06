@@ -2515,6 +2515,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               const activeGroupTool = !sidebarOpen && activeTab ? groupTools.find(t => t.type === activeTab.type) : null;
               const GroupIcon = activeGroupTool ? iconMap[activeGroupTool.icon] : defaultIcon;
               const groupToolColor = activeGroupTool ? settings.tabColors[activeGroupTool.type as keyof typeof settings.tabColors] : undefined;
+              const expandedActiveColor = sidebarOpen && activeTab ? (() => { const match = groupTools.find(t => t.type === activeTab.type); return match ? settings.tabColors[match.type as keyof typeof settings.tabColors] : undefined; })() : undefined;
               return (
                 <div className="mt-2" data-tutorial={groupId === 'lesson-planners' ? 'lesson-planners-group' : undefined} key={groupId}>
                   <button
@@ -2522,9 +2523,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     data-tutorial-click={groupId === 'lesson-planners' ? 'lesson-planners-group' : undefined}
                     className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
                     title={!sidebarOpen ? (activeGroupTool ? tn(activeGroupTool) : label) : ''}
-                    style={{ backgroundColor: 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
+                    style={{ backgroundColor: expandedActiveColor ? `${expandedActiveColor}18` : 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = expandedActiveColor ? `${expandedActiveColor}18` : 'transparent'; }}
                   >
                     <GroupIcon className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeGroupTool ? 'icon-glow' : ''}`} style={{ color: activeGroupTool && groupToolColor ? groupToolColor : 'var(--sidebar-text-muted)', transition: 'color 0.3s, filter 0.3s' }} />
                     <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>

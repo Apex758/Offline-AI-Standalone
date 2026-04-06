@@ -36,7 +36,7 @@ def get_app_data_path(subfolder: str = "") -> Path:
     """
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Learning Hub' / 'cache'
+        data_dir = Path(app_data) / 'OECS Class Coworker' / 'cache'
     else:
         data_dir = Path.home() / '.olh_ai_education' / 'cache'
     if subfolder:

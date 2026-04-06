@@ -28,6 +28,9 @@ export interface TabColors {
   'achievements': string;
   'storybook': string;
   'educator-insights': string;
+  'curriculum-plan': string;
+  'school-year-calendar': string;
+  'photo-transfer': string;
 }
 
 export interface TutorialState {
@@ -172,27 +175,30 @@ export const DEFAULT_SETTINGS: Settings = {
   fontSize: 100,
   tabColors: {
     'analytics': '#3b82f6',
-    'chat': '#3b82f6',
+    'chat': '#2563eb',
     'curriculum': '#8b5cf6',
     'lesson-planner': '#f59e0b',
     'kindergarten-planner': '#ec4899',
     'multigrade-planner': '#06b6d4',
     'cross-curricular-planner': '#6366f1',
     'quiz-generator': '#14b8a6',
-    'rubric-generator': '#f97316',
+    'rubric-generator': '#fb923c',
     'resource-manager': '#84cc16',
     'curriculum-tracker': '#22c55e',
-    'worksheet-generator': '#8b5cf6',
-    'image-studio': '#ec4899',
-    'class-management': '#f97316',
-    'support': '#3b82f6',
+    'worksheet-generator': '#7c3aed',
+    'image-studio': '#f472b6',
+    'class-management': '#dc2626',
+    'support': '#0ea5e9',
     'settings': '#6b7280',
     'brain-dump': '#a855f7',
     'performance-metrics': '#10b981',
-    'presentation-builder': '#f97316',
-    'achievements': '#f59e0b',
-    'storybook': '#a855f7',
+    'presentation-builder': '#c2410c',
+    'achievements': '#eab308',
+    'storybook': '#c084fc',
     'educator-insights': '#d97706',
+    'curriculum-plan': '#059669',
+    'school-year-calendar': '#0d9488',
+    'photo-transfer': '#818cf8',
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',

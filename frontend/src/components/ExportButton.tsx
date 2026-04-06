@@ -25,6 +25,7 @@ import { prepareRubricForExport } from '../utils/rubricHtmlRenderer';
 import { prepareMultigradeForExport } from '../utils/multigradeHtmlRenderer';
 import { prepareKindergartenForExport } from '../utils/kindergartenHtmlRenderer';
 import { prepareCrossCurricularForExport } from '../utils/crossCurricularHtmlRenderer';
+import { generateScanTemplate } from '../utils/scanTemplateRenderer';
 
 interface ExportButtonProps {
   dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular' | 'worksheet';
@@ -46,6 +47,7 @@ interface ExportButtonProps {
     studentInfo?: { name: string; id: string };
     quizId?: string;
     worksheetId?: string;
+    scanMode?: boolean;
   };
   filename?: string;
   className?: string;
@@ -88,7 +90,27 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       let exportData;
       let title;
 
-      if (dataType === 'worksheet') {
+      if (data.scanMode && (dataType === 'quiz' || dataType === 'worksheet')) {
+        const questions = dataType === 'quiz' ? data.parsedQuiz?.questions : data.parsedWorksheet?.questions;
+        if (questions) {
+          const scanResult = generateScanTemplate(
+            questions,
+            {
+              title: data.formData?.subject
+                ? `${data.formData.subject} ${dataType === 'quiz' ? 'Quiz' : 'Worksheet'}`
+                : dataType === 'quiz' ? 'Quiz' : 'Worksheet',
+              subject: data.formData?.subject || '',
+              gradeLevel: data.formData?.gradeLevel || '',
+              docId: data.quizId || data.worksheetId || ''
+            },
+            qrCodeBase64
+          );
+          exportData = { rawHtml: scanResult.html };
+        }
+        title = data.formData?.subject
+          ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
+          : dataType === 'quiz' ? 'Quiz' : 'Worksheet';
+      } else if (dataType === 'worksheet') {
         // Handle worksheet export
         exportData = prepareWorksheetForExport(
           data.content,

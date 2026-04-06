@@ -529,21 +529,31 @@ class LlamaInference:
                     prompt_token_ids = self.model.tokenize(
                         prompt.encode("utf-8"), add_bos=True, special=True
                     )
-                    max_prompt_tokens = self.n_ctx - max_tokens - 64
-                    if len(prompt_token_ids) > max_prompt_tokens:
-                        logger.warning(f"Prompt too long: {len(prompt_token_ids)} tokens (max {max_prompt_tokens}). Truncating.")
-                        prompt_token_ids = prompt_token_ids[:max_prompt_tokens]
+                    available = self.n_ctx - len(prompt_token_ids) - 64
+                    if available < max_tokens:
+                        if available >= 256:
+                            logger.warning(f"Prompt uses {len(prompt_token_ids)} tokens, clamping max_tokens {max_tokens} -> {available} to fit n_ctx={self.n_ctx}")
+                            max_tokens = available
+                        else:
+                            logger.warning(f"Prompt too long: {len(prompt_token_ids)} tokens, only {available} left for generation (n_ctx={self.n_ctx}). Truncating prompt.")
+                            max_prompt_tokens = self.n_ctx - max_tokens - 64
+                            prompt_token_ids = prompt_token_ids[:max_prompt_tokens]
                 except Exception as te:
                     logger.warning(f"Special tokenization failed: {te}")
                     prompt_token_ids = None
             elif not use_chat:
                 try:
                     prompt_tokens = self.model.tokenize(prompt.encode("utf-8"))
-                    max_prompt_tokens = self.n_ctx - max_tokens - 64
-                    if len(prompt_tokens) > max_prompt_tokens:
-                        logger.warning(f"Prompt too long: {len(prompt_tokens)} tokens (max {max_prompt_tokens}). Truncating.")
-                        prompt_tokens = prompt_tokens[:max_prompt_tokens]
-                        prompt = self.model.detokenize(prompt_tokens).decode("utf-8", errors="replace")
+                    available = self.n_ctx - len(prompt_tokens) - 64
+                    if available < max_tokens:
+                        if available >= 256:
+                            logger.warning(f"Prompt uses {len(prompt_tokens)} tokens, clamping max_tokens {max_tokens} -> {available} to fit n_ctx={self.n_ctx}")
+                            max_tokens = available
+                        else:
+                            logger.warning(f"Prompt too long: {len(prompt_tokens)} tokens, only {available} left for generation (n_ctx={self.n_ctx}). Truncating prompt.")
+                            max_prompt_tokens = self.n_ctx - max_tokens - 64
+                            prompt_tokens = prompt_tokens[:max_prompt_tokens]
+                            prompt = self.model.detokenize(prompt_tokens).decode("utf-8", errors="replace")
                 except Exception as te:
                     logger.warning(f"Token count check failed: {te}")
 
@@ -671,7 +681,7 @@ class LlamaInference:
                 try:
                     item = await loop.run_in_executor(
                         None,
-                        lambda: token_queue.get(timeout=0.1)
+                        lambda: token_queue.get(timeout=0.01)
                     )
                 except queue.Empty:
                     await asyncio.sleep(0)
@@ -918,7 +928,7 @@ class LlamaInference:
                 try:
                     item = await loop.run_in_executor(
                         None,
-                        lambda: token_queue.get(timeout=0.1)
+                        lambda: token_queue.get(timeout=0.01)
                     )
                 except queue.Empty:
                     await asyncio.sleep(0)

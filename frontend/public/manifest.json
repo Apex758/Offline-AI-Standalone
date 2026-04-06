@@ -1,6 +1,6 @@
 {
-  "name": "OECS Learning Hub",
-  "short_name": "OECS Hub",
+  "name": "OECS Class Coworker",
+  "short_name": "OECS Coworker",
   "description": "A platform for OECS teachers to share and access educational resources",
   "start_url": "/",
   "display": "standalone",

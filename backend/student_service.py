@@ -11,7 +11,7 @@ from pathlib import Path
 def _get_db_path() -> str:
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Learning Hub' / 'data'
+        data_dir = Path(app_data) / 'OECS Class Coworker' / 'data'
     else:
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -222,6 +222,11 @@ def init_db():
                 conn.execute(f'ALTER TABLE worksheet_grades ADD COLUMN {col} TEXT')
             except Exception:
                 pass
+        # Add slots_json to answer_region_templates
+        try:
+            conn.execute('ALTER TABLE answer_region_templates ADD COLUMN slots_json TEXT')
+        except Exception:
+            pass  # Column already exists
         conn.execute('CREATE INDEX IF NOT EXISTS idx_quiz_grades_student ON quiz_grades(student_id)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_worksheet_grades_student ON worksheet_grades(student_id)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_quiz_instances_student ON quiz_instances(student_id)')
@@ -955,18 +960,20 @@ def list_worksheet_instances(worksheet_id: str) -> list[dict]:
 def save_answer_region_template(doc_id: str, doc_type: str, regions: list,
                                  alignment_markers: list = None,
                                  qr_position: dict = None,
-                                 page_size: str = 'letter') -> dict:
+                                 page_size: str = 'letter',
+                                 slots_json: str = None) -> dict:
     """Save the coordinate layout for a generated document."""
     conn = _get_conn()
     try:
         conn.execute('''
             INSERT OR REPLACE INTO answer_region_templates
-            (id, doc_type, page_size, regions, alignment_markers, qr_position)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (id, doc_type, page_size, regions, alignment_markers, qr_position, slots_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', (doc_id, doc_type, page_size,
               json.dumps(regions),
               json.dumps(alignment_markers) if alignment_markers else None,
-              json.dumps(qr_position) if qr_position else None))
+              json.dumps(qr_position) if qr_position else None,
+              slots_json))
         conn.commit()
         row = conn.execute(
             'SELECT * FROM answer_region_templates WHERE id = ?', (doc_id,)

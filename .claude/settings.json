@@ -253,13 +253,39 @@
       "Bash(npm run:*)",
       "Bash(tail -100 logs/*.log)",
       "Bash(ls -la *.log)",
-      "Bash(curl -s http://localhost:8000/api/health)"
+      "Bash(curl -s http://localhost:8000/api/health)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\SSO SandBox Demo\\\\sso-demo/app/api/oak/generate\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\SSO SandBox Demo\\\\sso-demo/app/api/oak/validate\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\SSO SandBox Demo\\\\sso-demo/app/api/oak/revoke\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\SSO SandBox Demo\\\\sso-demo/app/api/oak/download-link\")",
+      "Bash(mkdir -p \"C:/Users/LG/Desktop/Projects/SSO SandBox Demo/sso-demo/app/api/support/submit\")",
+      "Bash(mkdir -p \"C:/Users/LG/Desktop/Projects/SSO SandBox Demo/sso-demo/app/api/support/check\")",
+      "Bash(mkdir -p \"C:/Users/LG/Desktop/Projects/SSO SandBox Demo/sso-demo/app/api/support/list\")",
+      "Bash(mkdir -p \"C:/Users/LG/Desktop/Projects/SSO SandBox Demo/sso-demo/app/api/support/[id]/respond\")",
+      "Bash(xxd -l 10 \"C:/Users/LG/Desktop/Projects/SSO SandBox Demo/sso-demo/components/Navbar.tsx\")",
+      "Bash(xxd)",
+      "Bash(grep -iE \"\\\\.\\(env|md|txt|cfg|ini|toml|yaml|yml\\)$|tsconfig|webpack|forge|vite|tailwind|postcss|eslint\")",
+      "Bash(grep -rn \"372\" \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\\\\\" --include=\"*.py\" | grep -v \".pyc\" | head -20)",
+      "Bash(python \"c:/tmp/patch_handlers.py\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('main.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('llama_inference.py', doraise=True\\); print\\('OK'\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
       "C:\\Users\\LG\\.claude",
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\backend",
-      "\\tmp"
+      "\\tmp",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\support\\submit",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\oak\\generate",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\support\\check",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\oak\\validate",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\support\\list",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\oak\\revoke",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\support\\[id]\\respond",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\oak\\download-link",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\dashboard",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\oak\\licenses\\[id]",
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\components"
     ]
   }
 }

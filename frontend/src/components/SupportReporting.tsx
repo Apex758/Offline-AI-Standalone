@@ -63,10 +63,12 @@ const Bug: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) =
 const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
 const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
+import { useLicense } from '../contexts/LicenseContext';
 import { useTranslation } from 'react-i18next';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import axios from 'axios';
+import { supabase } from '../lib/supabase';
 import { NeuroChevron } from './ui/NeuroChevron';
 import { NeuroSegment } from './ui/NeuroSegment';
 
@@ -202,7 +204,7 @@ interface Ticket {
   id: string; category: string; subject: string; description: string;
   priority: 'low' | 'medium' | 'high'; status: 'open' | 'in-review' | 'resolved';
   createdAt: string; screenshot?: string; systemSnapshot?: SystemSnapshot;
-  sent?: boolean;
+  sent?: boolean; cloudReportId?: string; adminResponse?: string;
 }
 
 // ─── FAQ Data ───────────────────────────────────────────────────────────
@@ -210,7 +212,7 @@ interface Ticket {
 const FAQ_DATA: FAQCategory[] = [
   {
     id: 'getting-started', title: 'Getting Started', titleKey: 'support.gettingStarted', icon: Lightbulb, color: '#f59e0b',
-    description: 'Learn the basics of navigating and using the Learning Hub',
+    description: 'Learn the basics of navigating and using the Class Coworker',
     items: [
       { question: 'How do I navigate between different tools?', answer: 'Use the sidebar on the left side of the screen. Hover over it to expand and see all available tools. Click any tool to open it in a new tab. You can have multiple tabs open at once and switch between them using the tab bar at the top.' },
       { question: 'How do I use the command palette?', answer: 'Press Ctrl+K (or Cmd+K on Mac) to open the command palette. You can search for any tool, setting, or action. Just start typing and select from the results. This is the fastest way to navigate the app.' },
@@ -329,6 +331,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; icon: React.
 const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, onDataChange, initialScreenshot }) => {
   const { settings } = useSettings();
   const { t } = useTranslation();
+  const { isLicensed, oakLicense } = useLicense();
 
   // Which face is showing: false = Support (front), true = Reporting (back)
   const [flipped, setFlipped] = useState<boolean>(savedData?.flipped || false);
@@ -492,6 +495,94 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  // -- Cloud sync: send ticket to Supabase via RPC --
+  const [sendingToCloud, setSendingToCloud] = useState<string | null>(null);
+
+  const handleSendToCloud = async (ticket: Ticket) => {
+    if (!oakLicense || ticket.sent) return;
+    setSendingToCloud(ticket.id);
+    try {
+      // Map local category to the type enum expected by the RPC
+      const typeMap: Record<string, string> = {
+        bug: 'bug', feature: 'feature', content: 'ui',
+        performance: 'performance', question: 'ui', other: 'bug',
+      };
+      const reportType = typeMap[ticket.category] || 'bug';
+
+      const { data, error } = await supabase.rpc('submit_support_report', {
+        p_oak_license: oakLicense,
+        p_title: ticket.subject,
+        p_type: reportType,
+        p_description: ticket.description,
+        p_system_snapshot: ticket.systemSnapshot || null,
+        p_screenshot_url: null, // screenshots stay local for now
+      });
+
+      if (error || !data?.success) {
+        console.error('Failed to send ticket to cloud:', error || data?.error);
+        return;
+      }
+
+      // Mark as sent and store the cloud report ID
+      const updated = tickets.map(t =>
+        t.id === ticket.id ? { ...t, sent: true, cloudReportId: data.report_id } : t
+      );
+      setTickets(updated);
+    } catch (err) {
+      console.error('Cloud sync error:', err);
+    } finally {
+      setSendingToCloud(null);
+    }
+  };
+
+  // -- Cloud sync: poll for resolved reports --
+  useEffect(() => {
+    if (!isLicensed || !oakLicense) return;
+
+    const checkCloudUpdates = async () => {
+      try {
+        const { data, error } = await supabase.rpc('check_support_updates', {
+          p_oak_license: oakLicense,
+        });
+        if (error || !data || !Array.isArray(data)) return;
+
+        // Match resolved cloud reports to local tickets
+        const resolvedMap = new Map<string, string>();
+        for (const report of data) {
+          if (report.admin_response) {
+            resolvedMap.set(report.report_id, report.admin_response);
+          }
+        }
+
+        if (resolvedMap.size === 0) return;
+
+        let anyUpdated = false;
+        const updated = tickets.map(t => {
+          if (t.cloudReportId && resolvedMap.has(t.cloudReportId) && !t.adminResponse) {
+            anyUpdated = true;
+            return {
+              ...t,
+              status: 'resolved' as const,
+              adminResponse: resolvedMap.get(t.cloudReportId),
+            };
+          }
+          return t;
+        });
+
+        if (anyUpdated) {
+          setTickets(updated);
+        }
+      } catch {
+        // Offline or error - silently ignore
+      }
+    };
+
+    // Check on mount and every 5 minutes
+    checkCloudUpdates();
+    const interval = setInterval(checkCloudUpdates, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [isLicensed, oakLicense]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredTickets = tickets
     .filter(t => filterStatus === 'all' || t.status === filterStatus)
@@ -1037,13 +1128,36 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                     </div>
                                   )}
 
+                                  {/* Admin response (from cloud) */}
+                                  {ticket.adminResponse && (
+                                    <div className="mt-3 p-3 rounded-lg" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                                      <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#10b981' }}>Admin Response</p>
+                                      <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{ticket.adminResponse}</p>
+                                    </div>
+                                  )}
+
                                   <div className="flex items-center gap-4 mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                                     <span>Category: {catInfo?.label}</span>
                                     <span>Priority: {ticket.priority}</span>
                                     <span>Created: {new Date(ticket.createdAt).toLocaleString()}</span>
+                                    {isLicensed && !ticket.sent && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleSendToCloud(ticket); }}
+                                        disabled={sendingToCloud === ticket.id}
+                                        className="ml-auto flex items-center gap-1 px-2 py-1 rounded-md transition-colors"
+                                        style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#3b82f6' }}
+                                      >
+                                        <Send className="w-3 h-3" /> {sendingToCloud === ticket.id ? 'Sending...' : 'Send to Cloud'}
+                                      </button>
+                                    )}
+                                    {ticket.sent && (
+                                      <span className="ml-auto flex items-center gap-1 px-2 py-1 text-xs" style={{ color: '#10b981' }}>
+                                        <CheckCircle className="w-3 h-3" /> Sent
+                                      </span>
+                                    )}
                                     <button
                                       onClick={(e) => { e.stopPropagation(); handleExportTicket(ticket); }}
-                                      className="ml-auto flex items-center gap-1 px-2 py-1 rounded-md transition-colors"
+                                      className={`${!isLicensed || ticket.sent ? 'ml-auto' : ''} flex items-center gap-1 px-2 py-1 rounded-md transition-colors`}
                                       style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-primary)', color: 'var(--text-secondary)' }}
                                     >
                                       <FileText className="w-3 h-3" /> Export

@@ -1,29 +1,5 @@
 [
   {
-    "id": "draft_quiz-generator-1775366382692_1775367331493",
-    "title": "Language Arts - 1",
-    "timestamp": "2026-04-05T05:35:31.493Z",
-    "plannerType": "quiz",
-    "formData": {
-      "subject": "Language Arts",
-      "gradeLevel": "1",
-      "learningOutcomes": "",
-      "questionTypes": [
-        "Multiple Choice"
-      ],
-      "cognitiveLevels": [
-        "Knowledge"
-      ],
-      "timeLimitPerQuestion": "",
-      "numberOfQuestions": "10",
-      "strand": "",
-      "essentialOutcomes": "",
-      "specificOutcomes": ""
-    },
-    "step": 1,
-    "curriculumMatches": []
-  },
-  {
     "id": "draft_lesson-planner-1775415441031_1775427200456",
     "title": "Language Arts - h - 4",
     "timestamp": "2026-04-05T22:13:20.456Z",

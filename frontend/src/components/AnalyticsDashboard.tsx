@@ -311,6 +311,25 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       ]);
 
       // Combine all resources with type labels
+      // Load storybooks from localStorage
+      let storybookResources: any[] = [];
+      try {
+        const raw = localStorage.getItem('storybook_history');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            storybookResources = parsed.map((s: any) => ({
+              id: s.id,
+              title: s.formData?.title || s.parsedBook?.title || 'Untitled Storybook',
+              timestamp: s.savedAt,
+              type: 'storybook',
+            }));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load storybook history:', e);
+      }
+
       const allResources = [
         ...lessonPlans.data.map((r: any) => ({ ...r, type: 'lesson' })),
         ...rubrics.data.map((r: any) => ({ ...r, type: 'rubric' })),
@@ -320,7 +339,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' })),
         ...worksheets.data.map((r: any) => ({ ...r, type: 'worksheet' })),
         ...images.data.map((r: any) => ({ ...r, type: 'image' })),
-        ...presentations.data.map((r: any) => ({ ...r, type: 'presentation' }))
+        ...presentations.data.map((r: any) => ({ ...r, type: 'presentation' })),
+        ...storybookResources
       ];
 
       setAllResourcesData(allResources);

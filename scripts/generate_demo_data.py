@@ -1,5 +1,5 @@
 """
-Generate demo data for the OECS Learning Hub app.
+Generate demo data for the OECS Class Coworker app.
 
 Produces a JSON backup file that can be imported via Settings > Import
 to populate a fresh app with a full academic year of realistic teacher data.
@@ -1495,7 +1495,7 @@ def generate_demo_data(school_year: int = 2024, num_students: int = 25, seed: in
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate demo data for OECS Learning Hub")
+    parser = argparse.ArgumentParser(description="Generate demo data for OECS Class Coworker")
     parser.add_argument("--school-year", type=int, default=2024,
                        help="Starting year of school year (default: 2024 for 2024-2025)")
     parser.add_argument("--num-students", type=int, default=25,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -375,6 +376,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       console.error('Failed to restore step:', e);
     }
     return 1;
+  });
+
+  const streamingContent = useStreamingRenderer({
+    text: streamingPlan || generatedPlan,
+    isStreaming: !!(loading && streamingPlan),
+    fullFormatter: () => formatLessonText(streamingPlan || generatedPlan, tabColor),
+    accentColor: tabColor,
   });
 
   // ✅ ADDED: Restore state from localStorage when switching tabs
@@ -1063,7 +1071,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 {/* Add an id for HTML export */}
                 <div id="lesson-plan-html-export" className="prose prose-lg max-w-none">
                   <div className="space-y-1">
-                    {formatLessonText(streamingPlan || generatedPlan, tabColor)}
+                    {streamingContent}
                     {loading && streamingPlan && (
                       <span className="inline-flex items-center ml-1">
                         <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>

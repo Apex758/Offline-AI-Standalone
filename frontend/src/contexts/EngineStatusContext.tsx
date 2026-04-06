@@ -86,7 +86,10 @@ export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ 
         failCountRef.current += 1;
         const prev = statusRef.current;
 
-        if ((prev === 'starting' || prev === 'checking') && failCountRef.current < 2) {
+        // Grace period: don't flicker indicators on transient failures.
+        // Require 2 consecutive failures from starting/checking, 3 from online.
+        const threshold = prev === 'online' ? 3 : 2;
+        if (failCountRef.current < threshold) {
           return;
         }
 
