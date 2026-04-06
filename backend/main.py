@@ -1007,6 +1007,8 @@ async def websocket_chat(websocket: WebSocket):
             thinking_enabled = message_data.get("thinking_enabled", False)
             # Teacher profile context (grade/subject awareness)
             profile_context = message_data.get("profile_context", "")
+            # Context files attached from the frontend file picker
+            context_files = message_data.get("context_files", None) or message_data.get("contextFiles", None)
 
             if not user_message:
                 continue
@@ -1100,6 +1102,12 @@ async def websocket_chat(websocket: WebSocket):
 
             # Separate image files from text files
             reference_files = message_data.get("reference_files", None)
+            # Merge context_files into reference_files so they go through the same pipeline
+            if context_files and not reference_files:
+                reference_files = context_files
+            elif context_files and reference_files:
+                if isinstance(reference_files, list) and isinstance(context_files, list):
+                    reference_files = reference_files + context_files
             image_files = []
             text_files = []
             if reference_files and len(reference_files) > 0:
@@ -1273,7 +1281,7 @@ async def websocket_chat(websocket: WebSocket):
                         if chat_id:
                             try:
                                 memory = get_chat_memory()
-                                asyncio.create_task(memory.maybe_update_summary(chat_id))
+                                asyncio.create_task(memory.maybe_update_summary(chat_id, prompt_format=prompt_fmt))
                             except Exception as e:
                                 logger.warning(f"Summary trigger failed: {e}")
 
@@ -2239,6 +2247,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
             prompt = data.get("prompt", "")
             job_id = data.get("jobId") or data.get("id") or "cross-curricular"
             generation_mode = data.get("generationMode", "queued")
+            form_data = data.get("formData", {})
 
             if not prompt:
                 continue
@@ -2500,6 +2509,7 @@ async def presentation_websocket(websocket: WebSocket):
             job_id = data.get("jobId") or data.get("id") or "presentation"
             generation_mode = data.get("generationMode", "queued")
             suggested_mode = data.get("suggestedMode", False)
+            form_data = data.get("formData", {})
 
             if not prompt:
                 continue
@@ -2804,6 +2814,11 @@ BRAIN_DUMP_CATEGORIES = {
         "keywords": ["student", "attend", "attendance", "roster", "enroll", "absent",
                      "register", "class list", "pupil", "manage class", "add student",
                      "roll call", "present"],
+    },
+    "creative": {
+        "types": ["storybook"],
+        "keywords": ["story", "storybook", "book", "read aloud", "tale", "narrative",
+                     "picture book", "fiction", "reading corner", "characters", "once upon"],
     },
 }
 

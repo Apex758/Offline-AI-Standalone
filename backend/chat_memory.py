@@ -282,7 +282,7 @@ class ChatMemory:
 
         return "\n".join(lines)
 
-    async def maybe_update_summary(self, chat_id: str):
+    async def maybe_update_summary(self, chat_id: str, prompt_format: str = "llama"):
         """
         Check if summary needs updating and regenerate if so.
         Called as a fire-and-forget background task after assistant responds.
@@ -310,18 +310,32 @@ class ChatMemory:
             else:
                 summary_instruction = ""
 
-            prompt = "<|begin_of_text|>"
-            prompt += "<|start_header_id|>system<|end_header_id|>\n\n"
-            prompt += "You are a conversation summarizer. Write a concise 2-4 sentence summary.\n"
-            prompt += "Capture: (1) decisions made, (2) specific advice given, (3) action items mentioned.\n"
-            prompt += "Drop pleasantries and filler. Write in third person. Return ONLY the summary."
-            prompt += "<|eot_id|>"
-            prompt += "<|start_header_id|>user<|end_header_id|>\n\n"
-            prompt += summary_instruction
-            prompt += f"Conversation:\n{conversation_text[:3000]}\n\n"
-            prompt += "Write a concise summary:"
-            prompt += "<|eot_id|>"
-            prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            system_text = (
+                "You are a conversation summarizer. Write a concise 2-4 sentence summary.\n"
+                "Capture: (1) decisions made, (2) specific advice given, (3) action items mentioned.\n"
+                "Drop pleasantries and filler. Write in third person. Return ONLY the summary."
+            )
+            user_text = summary_instruction + f"Conversation:\n{conversation_text[:3000]}\n\nWrite a concise summary:"
+
+            # Build format-aware prompt
+            fmt = (prompt_format or "llama").lower()
+            if fmt == "chatml":
+                prompt = f"<|im_start|>system\n{system_text}<|im_end|>\n<|im_start|>user\n{user_text}<|im_end|>\n<|im_start|>assistant\n"
+            elif fmt in ("phi", "phi-4", "phi4"):
+                prompt = f"<|system|>\n{system_text}<|end|>\n<|user|>\n{user_text}<|end|>\n<|assistant|>\n"
+            elif fmt in ("gemma", "gemma2", "gemma4"):
+                prompt = f"<start_of_turn>user\n{system_text}\n\n{user_text}<end_of_turn>\n<start_of_turn>model\n"
+            else:  # llama (default)
+                prompt = (
+                    "<|begin_of_text|>"
+                    "<|start_header_id|>system<|end_header_id|>\n\n"
+                    f"{system_text}"
+                    "<|eot_id|>"
+                    "<|start_header_id|>user<|end_header_id|>\n\n"
+                    f"{user_text}"
+                    "<|eot_id|>"
+                    "<|start_header_id|>assistant<|end_header_id|>\n\n"
+                )
 
             result = await inference.generate(
                 tool_name="conversation_summary",
