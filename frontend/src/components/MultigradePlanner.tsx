@@ -51,6 +51,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
+import { MaterialsSelector } from './ui/MaterialsSelector';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -747,7 +748,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       if (!formData.topic) errors.topic = true;
       if (!formData.totalStudents) errors.totalStudents = true;
       if (!formData.duration) errors.duration = true;
-      if (!formData.materials) errors.materials = true;
       if (!formData.strand) errors.strand = true;
       if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
       if (!formData.specificOutcomes) errors.specificOutcomes = true;
@@ -1201,16 +1201,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     </div>
 
                     <div data-tutorial="multigrade-planner-resources">
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Materials <span className="text-red-500">*</span>
-                      </label>
-                      <SmartTextArea
+                      <MaterialsSelector
                         value={formData.materials}
                         onChange={(val) => handleInputChange('materials', val)}
-                        rows={3}
-                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.materials ? 'validation-error' : ''}`}
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        data-validation-error={validationErrors.materials ? 'true' : undefined}
+                        tabColor={tabColor}
                       />
                     </div>
                   </div>
@@ -1393,7 +1387,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
             <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex items-center justify-between">
-                <div>
+                <div className="flex items-center gap-3">
+                  <AIDisclaimer inline />
                   {step > 1 && (
                     <button
                       onClick={() => handleStepChange(step - 1)}
@@ -1451,7 +1446,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
             </div>
           </>
         )}
-        <AIDisclaimer />
       </div>
 
       {/* History Panel */}

@@ -58,6 +58,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import SmartTextArea from './SmartTextArea';
+import { MaterialsSelector } from './ui/MaterialsSelector';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -623,7 +624,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     if (step === 2) {
       if (formData.pedagogicalStrategies.length === 0) errors.pedagogicalStrategies = true;
       if (formData.learningStyles.length === 0) errors.learningStyles = true;
-      if (!formData.materials) errors.materials = true;
       if (!formData.prerequisiteSkills) errors.prerequisiteSkills = true;
     }
     setValidationErrors(errors);
@@ -1393,17 +1393,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     </div>
 
                     <div data-tutorial="lesson-planner-materials">
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Materials <span className="text-red-500">*</span>
-                      </label>
-                      <SmartTextArea
+                      <MaterialsSelector
                         value={formData.materials}
                         onChange={(val) => handleInputChange('materials', val)}
-                        rows={3}
-                        data-validation-error={validationErrors.materials ? 'true' : undefined}
-                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.materials ? 'validation-error' : ''}`}
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        placeholder="Resources needed for the lesson (e.g., chart paper, colored markers, projector)"
+                        tabColor={tabColor}
                       />
                     </div>
 
@@ -1492,7 +1485,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             {/* Footer Navigation */}
             <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex items-center justify-between">
-                <div>
+                <div className="flex items-center gap-3">
+                  <AIDisclaimer inline />
                   {step > 1 && (
                     <button
                       onClick={() => handleStepChange(step - 1)}
@@ -1549,7 +1543,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             </div>
           </>
         )}
-        <AIDisclaimer />
       </div>
 
       {/* History Panel - Always available */}

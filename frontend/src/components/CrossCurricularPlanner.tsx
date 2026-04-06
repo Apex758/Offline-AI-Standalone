@@ -51,6 +51,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
+import { MaterialsSelector } from './ui/MaterialsSelector';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -1510,10 +1511,11 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {displayStep === 7 && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-theme-label mb-2">Materials and Resources</label>
-                      <SmartTextArea value={formData.materials} onChange={(val) => handleInputChange('materials', val)} rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="All materials needed across subjects" />
+                      <MaterialsSelector
+                        value={formData.materials}
+                        onChange={(val) => handleInputChange('materials', val)}
+                        tabColor={tabColor}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Suggested Cross-Curricular Connections</label>
@@ -1529,8 +1531,9 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
             </div>
 
             <div className="border-t border-theme p-4 bg-theme-secondary">
-              <div className="max-w-3xl mx-auto flex justify-between">
-                <div>
+              <div className="max-w-3xl mx-auto flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AIDisclaimer inline />
                   {step > 1 && (
                     <button onClick={() => handleStepChange(step - 1)} className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg">
                       <ChevronLeft className="w-5 h-5 mr-1" />Previous
@@ -1572,7 +1575,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
             </div>
           </>
         )}
-        <AIDisclaimer />
       </div>
 
       {/* History Panel */}
