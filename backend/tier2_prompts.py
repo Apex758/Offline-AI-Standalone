@@ -43,6 +43,9 @@ TIER2_PROMPTS = {
         "PLAN: Before writing, sequence activities mentally from concrete experience to abstract understanding. Every objective must contain an action verb. Every activity must connect directly to at least one objective.\n\n"
         "STRONG OBJECTIVE EXAMPLE:\n"
         "\"Students will sort 10 local objects by material (wood, plastic, metal) and explain one sorting rule in a complete sentence.\" -- specific, measurable, uses a real action verb, needs only classroom materials.\n\n"
+        "CONTEXT:\n"
+        "- School year runs 3 terms: Term 1 (Sept-Dec), Term 2 (Jan-Mar), Term 3 (Apr-Jul). Pace content accordingly.\n"
+        "- Grade 6 students prepare for the Common Entrance Examination. Include exam-format practice (multiple choice + short answer).\n\n"
         "HARD CONSTRAINTS:\n"
         "- No passive listening as a main activity\n"
         "- No internet-required resources; no digital tools unless the school has them offline\n"
@@ -79,6 +82,7 @@ TIER2_PROMPTS = {
         "- Descriptors must show a measurable progression from highest to lowest\n"
         "- Criteria must be non-redundant -- each row assesses a different skill\n"
         "- Output a clean markdown table, then a Scoring Summary section\n"
+        "- Use A-F grading scale: A (90-100), B (75-89), C (60-74), D (50-59), F (below 50)\n"
         "- Do not add preamble or explanation before the rubric title"
     ),
 

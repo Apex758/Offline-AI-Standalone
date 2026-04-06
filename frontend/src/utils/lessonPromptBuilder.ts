@@ -1,4 +1,4 @@
-import { BASE_GRADE_SPECS, getSubjectGuidance } from './gradeSpecs';
+import { BASE_GRADE_SPECS, getSubjectGuidance, getGrade6ExamPrepNote } from './gradeSpecs';
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
 
@@ -55,6 +55,8 @@ ${formData.learningStyles ? `LEARNING STYLES: ${formData.learningStyles}\n` : ''
 CRITICAL: In the "Curriculum References" section at the end, list ONLY these ${curriculumRefs.length} curriculum reference(s). Do NOT add any other curriculum standards, frameworks, or references.
 `;
   }
+
+  prompt += getGrade6ExamPrepNote(formData.gradeLevel);
 
   prompt += `
 GRADE LEVEL REQUIREMENTS:

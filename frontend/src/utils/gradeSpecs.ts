@@ -98,6 +98,45 @@ export const BASE_GRADE_SPECS: Record<string, BaseGradeSpec> = {
   }
 };
 
+/** Caribbean / OECS academic context */
+export const CARIBBEAN_ACADEMIC_CONTEXT = {
+  schoolYear: {
+    structure: '3 terms',
+    term1: { name: 'Term 1', start: 'mid-September', end: 'mid-December' },
+    term2: { name: 'Term 2', start: 'early January', end: 'late March' },
+    term3: { name: 'Term 3', start: 'mid-April', end: 'late June/early July' },
+  },
+  gradingSystem: {
+    scale: 'A-F',
+    bands: { A: '90-100', B: '75-89', C: '60-74', D: '50-59', F: 'below 50' },
+  },
+  grade6: {
+    highStakesExam: 'Common Entrance Examination',
+    examTiming: 'End of Grade 6 (typically May)',
+    examSubjects: ['Mathematics', 'English Language', 'Composition'],
+    prepNote: 'Grade 6 teachers should prioritize exam-format practice from Term 2 onwards.',
+  },
+  curriculum: {
+    framework: 'Bridges / OECS Curriculum Framework',
+    primaryLanguage: 'English',
+    resourceProfile: 'Resource-limited -- whiteboard, chalk, exercise books as baseline',
+  },
+};
+
+/**
+ * Returns a Grade 6 Common Entrance Exam context note.
+ * Only returns content for Grade 6; empty string for all other grades.
+ */
+export function getGrade6ExamPrepNote(grade: string): string {
+  if (grade === '6' || grade === 'Grade 6') {
+    return '\nGRADE 6 CONTEXT: Students are preparing for the Common Entrance Examination. ' +
+      'Prioritise exam-format questions (multiple choice + short answer). ' +
+      'Use A-F grading (A: 90-100, B: 75-89, C: 60-74, D: 50-59, F: below 50). ' +
+      'Focus on Mathematics, English Language, and Composition.\n';
+  }
+  return '';
+}
+
 /**
  * General subject guidance used by lesson planner, rubric, multigrade, and cross-curricular.
  * Worksheet and quiz have their own specialized versions.

@@ -83,6 +83,7 @@ TIER1_PROMPTS = {
 
     "lesson-plan": (
         "You are a lesson plan writer for OECS Caribbean primary schools. Fill in the template below. Be specific. No internet resources. No passive listening activities. No vague objectives.\n\n"
+        "CONTEXT: School year runs 3 terms (Sept-Dec, Jan-Mar, Apr-Jul). Grade 6 students prepare for the Common Entrance Exam -- include exam-format practice.\n\n"
         "STRONG OBJECTIVE: \"Students will sort 10 local objects by material and explain one sorting rule aloud.\" (action verb + measurable + realistic materials)\n\n"
         "Before writing each section, ask: concrete to abstract -- does this activity build toward the objective?\n\n"
         "---\n\n"
@@ -139,7 +140,8 @@ TIER1_PROMPTS = {
         "- BAD: \"Shows good understanding\" GOOD: \"Identifies all 4 key concepts with correct examples\"\n"
         "- BAD: \"Developing skills\" GOOD: \"Completes 2 of 4 steps; makes one arithmetic error\"\n"
         "- Adjacent levels must differ by a specific, visible degree -- not by adjectives\n"
-        "- Criteria rows must each assess a DIFFERENT skill\n\n"
+        "- Criteria rows must each assess a DIFFERENT skill\n"
+        "- Use A-F grading scale: A (90-100), B (75-89), C (60-74), D (50-59), F (below 50)\n\n"
         "OUTPUT FORMAT:\n"
         "| Criteria | [Level 1] | [Level 2] | [Level 3] | [Level 4] |\n"
         "|----------|-----------|-----------|-----------|----------|\n"

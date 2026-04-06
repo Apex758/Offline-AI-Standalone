@@ -1,5 +1,6 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
+import { getGrade6ExamPrepNote } from './gradeSpecs';
 
 interface QuizFormData {
   subject: string;
@@ -272,7 +273,7 @@ export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string,
     const systemPrompt = `You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning.
 
 TARGET STUDENTS: Grade ${formData.gradeLevel} (${gradeSpec.name}), typically aged ${gradeSpec.ageRange}
-
+${getGrade6ExamPrepNote(formData.gradeLevel)}
 GRADE LEVEL REQUIREMENTS:
 - Reading Level: ${gradeSpec.readingLevel}
 - Sentence Structure: ${gradeSpec.sentenceStructure}
@@ -313,7 +314,7 @@ SUBJECT: ${formData.subject}
 GRADE: ${formData.gradeLevel}
 TARGET STUDENTS: Typically aged ${gradeSpec.ageRange}
 STRAND: ${formData.strand}
-${curriculumSection}
+${getGrade6ExamPrepNote(formData.gradeLevel)}${curriculumSection}
 GRADE LEVEL REQUIREMENTS:
 - Reading Level: ${gradeSpec.readingLevel}
 - Sentence Structure: ${gradeSpec.sentenceStructure}
