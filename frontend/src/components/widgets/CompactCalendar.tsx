@@ -310,8 +310,8 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
               })}
             </div>
             <div className="cc-legend" data-tutorial="analytics-calendar-legend">
-              <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-resource" /><span>Resources</span></div>
-              <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-task" /><span>Tasks</span></div>
+              <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-resource" /><span>{t('widgets.resources')}</span></div>
+              <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-task" /><span>{t('widgets.tasks')}</span></div>
               <div className="cc-legend-item"><div className="cc-legend-dot cc-dot-milestone" /><span>{t('widgets.milestones')}</span></div>
             </div>
           </div>

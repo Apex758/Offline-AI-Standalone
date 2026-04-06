@@ -199,10 +199,10 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     } = {
       lesson: { icon: BookMarked, color: '#1D362D', bg: '#1D362D15', label: t('calendar.lesson') },
       quiz: { icon: ListChecks, color: '#F2A631', bg: '#F2A63115', label: t('calendar.quiz') },
-      rubric: { icon: FileText, color: '#552A01', bg: '#552A0115', label: 'Rubric' },
-      kindergarten: { icon: GraduationCap, color: '#1D362D', bg: '#1D362D15', label: 'Early Childhood' },
-      multigrade: { icon: Users, color: '#552A01', bg: '#552A0115', label: 'Multi-Level' },
-      'cross-curricular': { icon: School, color: '#F2A631', bg: '#F2A63115', label: 'Integrated Lesson' }
+      rubric: { icon: FileText, color: '#552A01', bg: '#552A0115', label: t('calendar.rubric') },
+      kindergarten: { icon: GraduationCap, color: '#1D362D', bg: '#1D362D15', label: t('calendar.earlyChildhood') },
+      multigrade: { icon: Users, color: '#552A01', bg: '#552A0115', label: t('calendar.multiLevel') },
+      'cross-curricular': { icon: School, color: '#F2A631', bg: '#F2A63115', label: t('calendar.integratedLesson') }
     };
     return configs[type] || configs.lesson;
   };
@@ -373,7 +373,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="cal-header-title">Calendar</h2>
+              <h2 className="cal-header-title">{t('calendar.title')}</h2>
               <p className="cal-header-subtitle">
                 {format(currentMonth, 'MMMM yyyy')}
               </p>
@@ -381,7 +381,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
           </div>
           <div className="cal-header-actions">
             <button onClick={goToToday} className="cal-today-btn">
-              Today
+              {t('calendar.today')}
             </button>
             <button onClick={onClose} className="cal-close-btn">
               <X className="w-5 h-5" />
@@ -523,7 +523,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
             {/* Legend */}
             <div className="cal-legend">
               <div className="cal-legend-group">
-                <span className="cal-legend-label">Activity:</span>
+                <span className="cal-legend-label">{t('calendar.activity')}</span>
                 <div className="cal-legend-items">
                   <div className="cal-legend-item">
                     <div className="cal-legend-swatch cal-legend-low" />
@@ -543,15 +543,15 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 <div className="cal-legend-items">
                   <div className="cal-legend-item">
                     <div className="cal-legend-dot" style={{ backgroundColor: '#1D362D' }} />
-                    <span>Resources</span>
+                    <span>{t('calendar.resources')}</span>
                   </div>
                   <div className="cal-legend-item">
                     <div className="cal-legend-dot" style={{ backgroundColor: '#F2A631' }} />
-                    <span>Tasks</span>
+                    <span>{t('calendar.tasks')}</span>
                   </div>
                   <div className="cal-legend-item">
                     <div className="cal-legend-dot" style={{ backgroundColor: '#8B5CF6' }} />
-                    <span>Milestones</span>
+                    <span>{t('calendar.milestones')}</span>
                   </div>
                 </div>
               </div>
@@ -569,17 +569,17 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 <div className="cal-date-counts">
                   {selectedResources.length > 0 && (
                     <span className="cal-count-badge cal-count-resource">
-                      {selectedResources.length} resource{selectedResources.length !== 1 ? 's' : ''}
+                      {t('calendar.resourceCount', { count: selectedResources.length })}
                     </span>
                   )}
                   {selectedTasks.length > 0 && (
                     <span className="cal-count-badge cal-count-task">
-                      {selectedTasks.length} task{selectedTasks.length !== 1 ? 's' : ''}
+                      {t('calendar.taskCount', { count: selectedTasks.length })}
                     </span>
                   )}
                   {selectedMilestones.length > 0 && (
                     <span className="cal-count-badge cal-count-milestone">
-                      {selectedMilestones.length} milestone{selectedMilestones.length !== 1 ? 's' : ''}
+                      {t('calendar.milestoneCount', { count: selectedMilestones.length })}
                     </span>
                   )}
                 </div>
@@ -593,9 +593,9 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                   <div className="cal-empty-icon">
                     <CalendarIcon className="w-8 h-8" />
                   </div>
-                  <p className="cal-empty-title">Nothing here yet</p>
+                  <p className="cal-empty-title">{t('calendar.nothingHere')}</p>
                   <p className="cal-empty-subtitle">
-                    No activity on {format(selectedDate, 'MMM d, yyyy')}
+                    {t('calendar.noActivity', { date: format(selectedDate, 'MMM d, yyyy') })}
                   </p>
                 </div>
               ) : (
@@ -605,7 +605,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     <div className="cal-section">
                       <h4 className="cal-section-title">
                         <BookMarked className="w-4 h-4" />
-                        Resources
+                        {t('calendar.resources')}
                       </h4>
                       <div className="cal-section-list">
                         {selectedResources.map((resource) => {
@@ -643,7 +643,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                                 <button
                                   onClick={() => onEditResource?.(resource.type, resource)}
                                   className="cal-action-btn cal-action-edit"
-                                  title="Edit"
+                                  title={t('calendar.edit')}
                                 >
                                   <Edit className="w-3.5 h-3.5" />
                                 </button>
@@ -660,7 +660,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     <div className="cal-section">
                       <h4 className="cal-section-title">
                         <ListChecks className="w-4 h-4" />
-                        Tasks
+                        {t('calendar.tasks')}
                       </h4>
                       <div className="cal-section-list">
                         {selectedTasks.map((task) => (
@@ -701,7 +701,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     <div className="cal-section">
                       <h4 className="cal-section-title">
                         <GraduationCap className="w-4 h-4" />
-                        Milestones
+                        {t('calendar.milestones')}
                       </h4>
                       <div className="cal-section-list">
                         {selectedMilestones.map((milestone, idx) => (
@@ -723,7 +723,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     <div className="cal-section">
                       <h4 className="cal-section-title">
                         <Bulb className="w-4 h-4" />
-                        Insight Reminders
+                        {t('calendar.insightReminders')}
                       </h4>
                       <div className="cal-section-list">
                         {insightsReminders.map((reminder, idx) => (
@@ -732,7 +732,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                               <p className="cal-milestone-title">{reminder.dimension}</p>
                               <p className="cal-milestone-strand">{reminder.suggestion}</p>
                               <p className="cal-milestone-strand" style={{ fontSize: '0.65rem', opacity: 0.6, marginTop: 2 }}>
-                                {reminder.streak_count} consecutive reports
+                                {t('calendar.consecutiveReports', { count: reminder.streak_count })}
                               </p>
                             </div>
                           </div>
@@ -747,7 +747,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
               {onTaskAdd && (
                 <button onClick={onTaskAdd} className="cal-add-task-btn">
                   <Plus className="w-4 h-4" />
-                  <span>Add Task</span>
+                  <span>{t('calendar.addTask')}</span>
                 </button>
               )}
             </div>

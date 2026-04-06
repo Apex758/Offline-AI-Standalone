@@ -592,6 +592,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const tools = useMemo(() => getTools(t), [t]);
   // Translate a tool name using the i18n key map, falling back to the original name
   const tn = (tool: Tool) => SIDEBAR_I18N[tool.id] ? t(SIDEBAR_I18N[tool.id]) : tool.name;
+  // Derive the display label for a tab — re-evaluates on language change for standard tool tabs
+  const getTabLabel = (tab: Tab) => {
+    if (tab.toolId) {
+      const tool = tools.find(tl => tl.id === tab.toolId);
+      if (tool) return tn(tool);
+    }
+    return tab.title;
+  };
   const { hasDiffusion } = useCapabilities();
 
   // Import the real tutorial context at the top level
@@ -1110,6 +1118,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
       title: tn(tool),
+      toolId: tool.id,
       type: tool.type,
       active: true,
       data: initialData || {}
@@ -1822,6 +1831,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     const newTab: Tab = {
                       id: `tab-${Date.now()}`,
                       title: tn(tool),
+                      toolId: tool.id,
                       type: tool.type as Tool['type'],
                       active: true
                     };
@@ -2107,6 +2117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   const newTab: Tab = {
                     id: `tab-${Date.now()}`,
                     title: tn(tool),
+                    toolId: tool.id,
                     type: tool.type as Tool['type'],
                     active: true,
                     data: tabData
@@ -2699,7 +2710,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                       }}
                     >
-                      {tab.title}
+                      {getTabLabel(tab)}
                     </span>
                     <button
                       onClick={(e) => {
@@ -2835,7 +2846,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                               WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                             }}
                           >
-                            {tab.title}
+                            {getTabLabel(tab)}
                           </span>
                           <button
                             onClick={(e) => {

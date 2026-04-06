@@ -23,7 +23,7 @@ const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties 
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
-import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, getTeacherGrades, getTeacherSubjects, GradeSubjectMapping } from '../data/teacherConstants';
+import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, GRADE_VALUE_MAP, getTeacherGrades, getTeacherSubjects, GradeSubjectMapping } from '../data/teacherConstants';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import { useNotification } from '../contexts/NotificationContext';
 import axios from 'axios';
@@ -337,8 +337,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           _cacheMilestoneStats = stats;
           setUpcomingMilestones(milestones);
           _cacheUpcomingMilestones = milestones;
-          setProgressBreakdown(progressData.byGradeSubject || []);
-          _cacheProgressBreakdown = progressData.byGradeSubject || [];
+          // Normalize grade labels from DB format ("Grade 2" -> "2", "Kindergarten" -> "K")
+          const normalizedBreakdown = (progressData.byGradeSubject || []).map((item: any) => ({
+            ...item,
+            grade: GRADE_VALUE_MAP[item.grade]?.toUpperCase() || item.grade,
+          }));
+          setProgressBreakdown(normalizedBreakdown);
+          _cacheProgressBreakdown = normalizedBreakdown;
         } catch (e: any) {
           console.error('Error loading milestones:', e?.response?.data || e?.message || e);
           setMilestoneStats(null);
@@ -387,6 +392,56 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const activityFeed = useMemo(() => {
     return generateActivityFeed(allResourcesData, tasks, upcomingMilestones);
   }, [allResourcesData, tasks, upcomingMilestones]);
+
+  // Filter progress data by profile settings
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
+  const filteredProgressBreakdown = useMemo(() => {
+    if (!filterOn) return progressBreakdown;
+    const tGrades = getTeacherGrades(gradeMapping);
+    const tSubjects = getTeacherSubjects(gradeMapping);
+    if (tGrades.length === 0 && tSubjects.length === 0) return progressBreakdown;
+    return progressBreakdown.filter(item => {
+      const gradeKey = item.grade.toLowerCase();
+      const gradeOk = tGrades.length === 0 || tGrades.includes(gradeKey);
+      if (!gradeOk) return false;
+      if (gradeKey === 'k') return true;
+      const gradeSubjectList = gradeMapping[gradeKey] || [];
+      return gradeSubjectList.length === 0 || gradeSubjectList.includes(item.subject);
+    });
+  }, [progressBreakdown, filterOn, gradeMapping]);
+
+  const filteredUpcomingMilestones = useMemo(() => {
+    if (!filterOn) return upcomingMilestones;
+    const tGrades = getTeacherGrades(gradeMapping);
+    if (tGrades.length === 0) return upcomingMilestones;
+    return upcomingMilestones.filter(m => {
+      const gradeKey = (GRADE_VALUE_MAP[m.grade] || m.grade).toLowerCase();
+      const gradeOk = tGrades.includes(gradeKey);
+      if (!gradeOk) return false;
+      if (gradeKey === 'k') return true;
+      const gradeSubjectList = gradeMapping[gradeKey] || [];
+      return gradeSubjectList.length === 0 || gradeSubjectList.includes(m.subject);
+    });
+  }, [upcomingMilestones, filterOn, gradeMapping]);
+
+  // Recalculate stats from filtered breakdown to match profile
+  const filteredMilestoneStats = useMemo((): MilestoneStats | null => {
+    if (!milestoneStats) return null;
+    if (!filterOn) return milestoneStats;
+    const total = filteredProgressBreakdown.reduce((s, i) => s + i.total, 0);
+    const completed = filteredProgressBreakdown.reduce((s, i) => s + i.completed, 0);
+    const inProgress = filteredProgressBreakdown.reduce((s, i) => s + i.in_progress, 0);
+    const notStarted = total - completed - inProgress;
+    return {
+      ...milestoneStats,
+      totalMilestones: total,
+      completed,
+      inProgress,
+      notStarted,
+      completionPercentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
+  }, [milestoneStats, filteredProgressBreakdown, filterOn]);
 
   // Group resources and tasks by date
   const resourcesByDate = useMemo(() => {
@@ -683,7 +738,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 {userName}
               </h1>
               <p className="text-sm" style={{ color: 'var(--dash-text-sub)' }}>
-                Your Teaching Hub
+                {t('analytics.teachingHub')}
               </p>
             </div>
           </div>
@@ -695,7 +750,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 {quickStats.totalResources}
               </div>
               <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
-                Resources
+                {t('analytics.resources')}
               </div>
             </div>
             <div
@@ -710,7 +765,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <div
                 className="cursor-pointer"
                 onClick={() => showcase.length > 0 ? setShowShowcase(true) : onCreateTab?.('achievements')}
-                title={showcase.length > 0 ? 'Show showcase' : 'View Achievements'}
+                title={showcase.length > 0 ? t('analytics.showShowcase') : t('analytics.viewAchievements')}
                 style={{
                   opacity: showShowcase ? 0 : 1,
                   transform: showShowcase ? 'rotateX(90deg)' : 'rotateX(0deg)',
@@ -729,7 +784,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   {earned.length}/{totalAvailable}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
-                  Achievements
+                  {t('analytics.achievements')}
                 </div>
               </div>
               {/* Showcase view — inline mini trophy cards */}
@@ -780,7 +835,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   {/* Collapse arrow — overlaid on right edge, visible on hover */}
                   <div
                     onClick={(e) => { e.stopPropagation(); setShowShowcase(false); }}
-                    title="Show stats"
+                    title={t('analytics.showStats')}
                     className="group-hover:!opacity-100"
                     style={{
                       position: 'absolute',
@@ -819,7 +874,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 {quickStats.completionRate}%
               </div>
               <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
-                Tasks Done
+                {t('analytics.tasksDone')}
               </div>
             </div>
             {dashPhase && (
@@ -841,7 +896,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     {dashPhase.phase_label}
                   </div>
                   <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
-                    {dashPhase.days_remaining}d left
+                    {t('analytics.daysLeft', { count: dashPhase.days_remaining })}
                   </div>
                 </div>
               </>
@@ -883,7 +938,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <div>
               {/* Progress scope toggle */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <span style={{ fontSize: 12, color: 'var(--dash-text-sub)', fontWeight: 500 }}>Progress View:</span>
+                <span style={{ fontSize: 12, color: 'var(--dash-text-sub)', fontWeight: 500 }}>{t('analytics.progressView')}</span>
                 <div style={{ display: 'inline-flex', borderRadius: 6, border: '1px solid var(--dash-border)', overflow: 'hidden' }}>
                   {(['overall', 'phase'] as const).map(mode => {
                     const active = dashProgressScope === mode;
@@ -902,26 +957,26 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                           transition: 'all 0.15s ease',
                         }}
                       >
-                        {mode === 'overall' ? 'Overall' : 'Phase'}
+                        {mode === 'overall' ? t('analytics.overall') : t('analytics.phase')}
                       </button>
                     );
                   })}
                 </div>
                 {dashProgressScope === 'phase' && dashPhase && (
                   <span style={{ fontSize: 11, color: dashPhase.color, fontWeight: 600 }}>
-                    Viewing: {dashPhase.phase_label}
+                    {t('analytics.viewingPhase', { phase: dashPhase.phase_label })}
                   </span>
                 )}
                 {dashProgressScope === 'phase' && !dashPhase && (
                   <span style={{ fontSize: 11, color: 'var(--dash-text-sub)', fontStyle: 'italic' }}>
-                    No active phase
+                    {t('analytics.noActivePhase')}
                   </span>
                 )}
               </div>
               <CurriculumProgressWidget
-                stats={milestoneStats}
-                upcomingMilestones={upcomingMilestones}
-                progressBreakdown={progressBreakdown}
+                stats={filteredMilestoneStats}
+                upcomingMilestones={filteredUpcomingMilestones}
+                progressBreakdown={filteredProgressBreakdown}
                 view={curriculumView}
                 onViewChange={setCurriculumView}
               />
@@ -936,7 +991,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 padding: 16,
               }}>
                 <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--dash-text)', marginBottom: 12 }}>
-                  Phase Progress Summary
+                  {t('analytics.phaseProgressSummary')}
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {dashPhaseProgress.map(p => {
@@ -967,7 +1022,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 </div>
                 {dashUnassignedCount > 0 && (
                   <div style={{ marginTop: 10, fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>
-                    Unassigned: {dashUnassignedCount} ELOs
+                    {t('analytics.unassignedELOs', { count: dashUnassignedCount })}
                   </div>
                 )}
               </div>
@@ -1050,7 +1105,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                       onClick={handleExportCalendar}
                       className="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 font-medium transition"
                     >
-                      Export Calendar (.ics)
+                      {t('analytics.exportCalendar')}
                     </button>
                   </div>
                 </>
@@ -1136,6 +1191,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   onSave,
   onClose
 }) => {
+  const { t } = useTranslation();
   const { settings, updateSettings } = useSettings();
   const [name, setName] = useState(currentName);
   const [image, setImage] = useState<string | null>(currentImage);
@@ -1194,7 +1250,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--dash-text)' }}>
-          Edit Profile
+          {t('analytics.editProfile')}
         </h2>
 
         {/* Image Upload */}
@@ -1222,7 +1278,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             }}
           >
             <Camera className="w-4 h-4 inline mr-2" />
-            Upload Photo
+            {t('analytics.uploadPhoto')}
             <input
               type="file"
               accept="image/*"
@@ -1235,7 +1291,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         {/* Name Input */}
         <div className="mb-6">
           <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--dash-text-sub)' }}>
-            Display Name
+            {t('analytics.displayName')}
           </label>
           <input
             type="text"
@@ -1256,10 +1312,10 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         <div className="mb-6">
           <label className="flex items-center gap-2 text-sm font-semibold mb-3" style={{ color: 'var(--dash-text-sub)' }}>
             <GraduationCap className="w-4 h-4" />
-            My Grades
+            {t('analytics.myGrades')}
           </label>
           <p className="text-xs mb-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
-            Select grades, then pick subjects for each
+            {t('analytics.gradesHint')}
           </p>
           <div className="flex flex-wrap gap-2">
             {PROFILE_GRADE_LEVELS.map(grade => {
@@ -1301,7 +1357,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           <div className="mb-6">
             <label className="flex items-center gap-2 text-sm font-semibold mb-3" style={{ color: 'var(--dash-text-sub)' }}>
               <BookOpen className="w-4 h-4" />
-              Subjects for {GRADE_LABEL_MAP[activeGrade]}
+              {t('analytics.subjectsFor', { grade: GRADE_LABEL_MAP[activeGrade] })}
             </label>
             <div className="flex flex-wrap gap-2">
               {PROFILE_SUBJECTS.map(subj => {
@@ -1326,7 +1382,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             </div>
             {(localGradeSubjects[activeGrade] || []).length === 0 && (
               <p className="text-xs mt-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
-                Select the subjects you teach for this grade
+                {t('analytics.subjectsHint')}
               </p>
             )}
           </div>
@@ -1336,10 +1392,10 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         <div className="mb-6 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--dash-text-sub)' }}>
-              Show Trophies by Default
+              {t('analytics.showTrophies')}
             </p>
             <p className="text-xs" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
-              Display trophy showcase instead of stats
+              {t('analytics.showTrophiesHint')}
             </p>
           </div>
           <input
@@ -1363,7 +1419,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               boxShadow: `0 2px 8px var(--dash-card-shadow)`
             }}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -1374,7 +1430,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               boxShadow: `0 4px 12px var(--dash-primary-a25)`
             }}
           >
-            Save Changes
+            {t('analytics.saveChanges')}
           </button>
         </div>
       </div>

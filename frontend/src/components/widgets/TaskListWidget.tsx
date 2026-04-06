@@ -220,7 +220,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
             className="text-sm font-semibold tracking-tight"
             style={{ color: 'var(--dash-text)' }}
           >
-            Tasks
+            {t('analytics.tasksTitle')}
             {hasAnyTasks && (
               <span
                 className="ml-2 text-xs font-normal"

@@ -75,7 +75,7 @@ const _promises: Record<string, Promise<CurriculumFile>> = {};
 
 // ---- Grade/subject helpers ----
 
-function normalizeGrade(grade: string): string {
+export function normalizeGrade(grade: string): string {
   const g = grade.trim();
   if (/^k(indergarten)?$/i.test(g)) return 'K';
   const m = g.match(/(\d+)/);

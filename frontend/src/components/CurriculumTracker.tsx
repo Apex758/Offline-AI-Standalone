@@ -50,12 +50,12 @@ import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode, ChecklistItem } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
-import { getTeacherGrades, getTeacherSubjects, GRADE_VALUE_MAP } from '../data/teacherConstants';
+import { getTeacherGrades, getTeacherSubjects, GRADE_VALUE_MAP, GRADE_LABEL_MAP } from '../data/teacherConstants';
 import SmartTextArea from './SmartTextArea';
 
 import { TutorialOverlay } from './TutorialOverlay';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
-import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
+import { preloadAllCurriculum, getAllCurriculumFiles, normalizeGrade } from '../data/curriculumLoader';
 import CurriculumSkillTree from './CurriculumSkillTree';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
@@ -79,7 +79,7 @@ function ensureLookups() {
   const files = getAllCurriculumFiles();
   if (files.length === 0) return;
   for (const file of files) {
-    const grade = file.metadata.grade;
+    const grade = normalizeGrade(file.metadata.grade);
     const subject = file.metadata.subject;
     for (const strand of file.strands) {
       const id = `${grade === 'K' ? 'kindergarten' : `grade${grade}`}-${subject.toLowerCase().replace(/\s+/g, '-')}-${strand.strand_name.toLowerCase().replace(/\s+/g, '-')}`;
@@ -257,8 +257,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         ? filters.phase
         : (progressView === 'phase' && ctPhase) ? ctPhase.id : undefined;
 
+      // Convert normalized grade (e.g. "2") back to DB format (e.g. "Grade 2") for API query
+      const apiGrade = filters.grade ? (GRADE_LABEL_MAP[filters.grade.toLowerCase()] || filters.grade) : undefined;
       const data = await milestoneApi.getMilestones(teacherId, {
-        grade: filters.grade || undefined,
+        grade: apiGrade,
         subject: filters.subject || undefined,
         status: filters.status || undefined,
         phase_id: effectivePhaseId || undefined,
@@ -283,10 +285,13 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       // Normalize milestone grade (e.g. "Grade 1" -> "1", "Kindergarten" -> "k") to match profile keys
       const gradeKey = (GRADE_VALUE_MAP[m.grade] || m.grade).toLowerCase();
       const gradeOk = tGrades.length === 0 || tGrades.includes(gradeKey);
+      if (!gradeOk) return false;
+      // Kindergarten uses integrated units with subject "Unknown" — include all if grade is selected
+      if (gradeKey === 'k') return true;
       // For per-grade filtering: check if this subject is taught for this grade
       const gradeSubjectList = gradeMapping[gradeKey] || [];
       const subjectOk = gradeSubjectList.length === 0 || gradeSubjectList.includes(m.subject);
-      return gradeOk && subjectOk;
+      return subjectOk;
     });
   }, [milestones, filterOn, gradeMapping]);
 
@@ -296,25 +301,28 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     const gradeMap = new Map<string, MilestoneTreeNode>();
 
     filteredMilestones.forEach(milestone => {
+      // Normalize grade label to short form ("Grade 2" -> "2", "Kindergarten" -> "K")
+      const gradeLabel = GRADE_VALUE_MAP[milestone.grade]?.toUpperCase() || milestone.grade;
+
       // Get or create grade node
-      if (!gradeMap.has(milestone.grade)) {
+      if (!gradeMap.has(gradeLabel)) {
         const gradeNode: MilestoneTreeNode = {
-          id: `grade-${milestone.grade}`,
-          label: milestone.grade,
+          id: `grade-${gradeLabel}`,
+          label: gradeLabel,
           type: 'grade',
           children: []
         };
-        gradeMap.set(milestone.grade, gradeNode);
+        gradeMap.set(gradeLabel, gradeNode);
         tree.push(gradeNode);
       }
 
-      const gradeNode = gradeMap.get(milestone.grade)!;
+      const gradeNode = gradeMap.get(gradeLabel)!;
 
       // Get or create subject node
       let subjectNode = gradeNode.children?.find(n => n.label === milestone.subject);
       if (!subjectNode) {
         subjectNode = {
-          id: `subject-${milestone.grade}-${milestone.subject}`,
+          id: `subject-${gradeLabel}-${milestone.subject}`,
           label: milestone.subject,
           type: 'subject',
           children: []
@@ -327,7 +335,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         let strandNode = subjectNode.children?.find(n => n.label === milestone.strand);
         if (!strandNode) {
           strandNode = {
-            id: `strand-${milestone.grade}-${milestone.subject}-${milestone.strand}`,
+            id: `strand-${gradeLabel}-${milestone.subject}-${milestone.strand}`,
             label: milestone.strand,
             type: 'strand',
             milestones: []
@@ -389,7 +397,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
   // Get unique values for filters (respecting profile content filtering)
   const uniqueGrades = useMemo(() => {
-    const all = [...new Set(milestones.map(m => m.grade))].sort((a, b) => {
+    // Normalize grades to short form ("Grade 2" -> "2", "Kindergarten" -> "K")
+    const all = [...new Set(milestones.map(m => GRADE_VALUE_MAP[m.grade]?.toUpperCase() || m.grade))].sort((a, b) => {
       if (a === 'K') return -1;
       if (b === 'K') return 1;
       return Number(a) - Number(b);

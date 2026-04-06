@@ -4,7 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquare02Icon';
 import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
 import type { MilestoneTreeNode } from '../types/milestone';
-import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
+import { preloadAllCurriculum, getAllCurriculumFiles, normalizeGrade } from '../data/curriculumLoader';
 import { useNotification } from '../contexts/NotificationContext';
 
 // Lazy-init lookups — built on first access after curriculum data loads
@@ -19,7 +19,7 @@ function ensureSkillTreeLookups() {
   const files = getAllCurriculumFiles();
   if (files.length === 0) return;
   for (const file of files) {
-    const grade = file.metadata.grade;
+    const grade = normalizeGrade(file.metadata.grade);
     const subject = file.metadata.subject;
     for (const strand of file.strands) {
       const id = `${grade === 'K' ? 'kindergarten' : `grade${grade}`}-${subject.toLowerCase().replace(/\s+/g, '-')}-${strand.strand_name.toLowerCase().replace(/\s+/g, '-')}`;
@@ -339,7 +339,8 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
   const childNodeRefs = useRef<(HTMLDivElement | null)[]>([]);
   const treeContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const skillTree = useMemo(() => buildSkillTree(treeData), [treeData]);
+  // curriculumReady dep ensures rebuild after eloGroupsMap is populated
+  const skillTree = useMemo(() => buildSkillTree(treeData), [treeData, curriculumReady]);
 
   // Strand progress lookup for prerequisite checks
   const strandProgressMap = useMemo(() => {

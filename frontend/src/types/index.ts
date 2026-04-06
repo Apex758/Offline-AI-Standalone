@@ -43,6 +43,8 @@ export interface SplitViewState {
 export interface Tab {
   id: string;
   title: string;
+  /** If set, the tab label is derived from this tool ID at render time (stays in sync with language changes) */
+  toolId?: string;
   type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder' | 'achievements' | 'storybook' | 'educator-insights' | 'photo-transfer';
   active: boolean;
   data?: any;

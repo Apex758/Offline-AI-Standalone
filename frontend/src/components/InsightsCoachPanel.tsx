@@ -6,6 +6,34 @@ import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import axios from 'axios';
 import type { TeacherMetrics, ConsultantConversation } from '../types/insights';
 import type { DimensionClickContext } from './InsightsGraphRow';
+
+// ── Bubble Rise + Fade Wrapper ──
+const COACH_RISE_CSS = `
+  @keyframes coachBubbleRise {
+    0%   { transform: translateY(48px); opacity: 0; }
+    100% { transform: translateY(0px);  opacity: 1; }
+  }
+  .coach-bubble-hidden { opacity: 0; pointer-events: none; }
+  .coach-bubble-rise   { animation: coachBubbleRise 0.48s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+`;
+let _coachRiseInjected = false;
+
+function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!_coachRiseInjected) {
+      const s = document.createElement('style');
+      s.textContent = COACH_RISE_CSS;
+      document.head.appendChild(s);
+      _coachRiseInjected = true;
+    }
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  return (
+    <div className={visible ? 'coach-bubble-rise' : 'coach-bubble-hidden'}>{children}</div>
+  );
+}
 import { useSettings } from '../contexts/SettingsContext';
 
 function buildDimensionAutoMessage(dimension: string, ctx: DimensionClickContext): string {
@@ -493,33 +521,39 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
             )}
 
             {messages.map(msg => (
-              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div
-                  className={`max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs ${
-                    msg.role === 'user'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-theme-bg text-theme-primary border border-theme-border'
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              <FadeIn key={msg.id} delay={msg.role === 'assistant' ? 700 : 0}>
+                <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs ${
+                      msg.role === 'user'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-theme-bg text-theme-primary border border-theme-border'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  </div>
                 </div>
-              </div>
+              </FadeIn>
             ))}
 
             {isStreaming && streamingContent && (
-              <div className="flex justify-start">
-                <div className="max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg text-theme-primary border border-theme-border">
-                  <p className="whitespace-pre-wrap leading-relaxed">{streamingContent}</p>
+              <FadeIn delay={700}>
+                <div className="flex justify-start">
+                  <div className="max-w-[90%] rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg text-theme-primary border border-theme-border">
+                    <p className="whitespace-pre-wrap leading-relaxed">{streamingContent}</p>
+                  </div>
                 </div>
-              </div>
+              </FadeIn>
             )}
 
             {isStreaming && !streamingContent && (
-              <div className="flex justify-start">
-                <div className="rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg border border-theme-border">
-                  <span className="text-theme-muted animate-pulse">{t('chat.thinking')}</span>
+              <FadeIn delay={700}>
+                <div className="flex justify-start">
+                  <div className="rounded-xl px-2.5 py-1.5 text-xs bg-theme-bg border border-theme-border">
+                    <span className="text-theme-muted animate-pulse">{t('chat.thinking')}</span>
+                  </div>
                 </div>
-              </div>
+              </FadeIn>
             )}
 
             <div ref={messagesEndRef} />

@@ -200,6 +200,15 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     }
   }, [teacherId]);
 
+  const loadEvents = useCallback(async (configId: string) => {
+    try {
+      const res = await axios.get(`/api/school-year/events/${configId}`);
+      setEvents(res.data.events || []);
+    } catch (e) {
+      console.error('Failed to load events:', e);
+    }
+  }, []);
+
   const confirmImport = useCallback(async () => {
     if (!importPreview || !config) return;
     setImportLoading(true);
@@ -244,15 +253,6 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       console.error('Failed to load school year config:', e);
     }
   }, [teacherId]);
-
-  const loadEvents = useCallback(async (configId: string) => {
-    try {
-      const res = await axios.get(`/api/school-year/events/${configId}`);
-      setEvents(res.data.events || []);
-    } catch (e) {
-      console.error('Failed to load events:', e);
-    }
-  }, []);
 
   useEffect(() => {
     loadConfig();

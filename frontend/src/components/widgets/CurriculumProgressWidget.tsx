@@ -18,6 +18,7 @@ import { format, parseISO } from 'date-fns';
 import type { MilestoneStats } from '../../types/milestone';
 import type { Milestone } from '../../types/milestone';
 import type { CurriculumView } from '../../types/analytics';
+import { GRADE_VALUE_MAP } from '../../data/teacherConstants';
 
 interface CurriculumProgressWidgetProps {
   stats: MilestoneStats | null;
@@ -363,7 +364,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
                     {milestone.topic_title}
                   </p>
                   <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{milestone.grade}</span>
+                    <span className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{(() => { const g = GRADE_VALUE_MAP[milestone.grade]?.toUpperCase() || milestone.grade; return g === 'K' ? 'Kindergarten' : `Grade ${g}`; })()}</span>
                     <span className="text-xs" style={{ color: 'var(--dash-text-faint)' }}>•</span>
                     <span className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>{milestone.subject}</span>
                   </div>
