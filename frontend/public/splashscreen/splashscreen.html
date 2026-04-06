@@ -555,10 +555,24 @@ function triggerLightspeed() {
 }
 
 // Listen for backend-ready message from main process
+let backendReadyReceived = false;
+
+function onBackendReady() {
+  if (backendReadyReceived) return; // guard against double-trigger
+  backendReadyReceived = true;
+  ensureMinimumSplashTime();
+}
+
+// Fallback: if backend-ready never arrives (crash, IPC race), proceed anyway
+setTimeout(() => {
+  if (!backendReadyReceived) {
+    console.warn('backend-ready not received within timeout — proceeding anyway');
+    onBackendReady();
+  }
+}, 12000);
+
 if (window.electron && window.electron.ipcRenderer) {
-  window.electron.ipcRenderer.on('backend-ready', () => {
-    ensureMinimumSplashTime();
-  });
+  window.electron.ipcRenderer.on('backend-ready', onBackendReady);
 }
 </script>
 </body>

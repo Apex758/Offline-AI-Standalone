@@ -44,7 +44,7 @@ export const EngineStatusProvider: React.FC<{ children: React.ReactNode }> = ({ 
         statusRef.current = 'offline';
         setEngineStatus('offline');
 
-        if (prev === 'online' || prev === 'checking') {
+        if (prev === 'online') {
           notify('Engine is offline', 'error');
         }
       }

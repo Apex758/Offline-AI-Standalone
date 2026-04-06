@@ -302,7 +302,7 @@ const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => 
             {snapshots.length > 0 && (
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--dash-text-sub)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                  All Reports ({snapshots.length})
+                  {t('phases.allReports', { count: snapshots.length })}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {snapshots.map((snap, i) => (

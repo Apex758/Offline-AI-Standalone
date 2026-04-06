@@ -2920,7 +2920,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   onClick={exportPPTX}
                   className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
                 >
-                  <Icon icon={Download01Icon} className="w-3.5 inline mr-1.5" /> PPTX
+                  <Icon icon={Download01Icon} className="w-3.5 inline mr-1.5" /> {t('presentation.pptx')}
                 </button>
                 {imageMode === 'ai' && hasDiffusion && (
                   <button
@@ -2955,8 +2955,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       {imageMode === 'suggested' && showSuggestionPanel && suggestedImages.length > 0 && (
         <div className="border-b border-theme bg-theme-secondary px-4 py-2.5 max-h-[180px] overflow-y-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-theme-heading">Image Suggestions</span>
-            <button onClick={() => setShowSuggestionPanel(false)} className="text-[10px] text-theme-muted hover:text-theme-heading transition">Hide</button>
+            <span className="text-xs font-bold text-theme-heading">{t('presentation.imageSuggestions')}</span>
+            <button onClick={() => setShowSuggestionPanel(false)} className="text-[10px] text-theme-muted hover:text-theme-heading transition">{t('presentation.hide')}</button>
           </div>
           <div className="grid grid-cols-1 gap-1.5">
             {suggestedImages.map((sug, i) => {
@@ -2975,10 +2975,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <span className="text-[11px] text-theme-heading flex-1 truncate">{sug.description}</span>
                   <span className="text-[9px] text-theme-muted flex-shrink-0">{sug.placement}</span>
                   {hasImage ? (
-                    <span className="text-[10px] text-green-400 font-bold flex-shrink-0">Added</span>
+                    <span className="text-[10px] text-green-400 font-bold flex-shrink-0">{t('presentation.added')}</span>
                   ) : (
                     <label className="text-[10px] font-bold flex-shrink-0 cursor-pointer" style={{ color: primaryColor }}>
-                      Upload
+                      {t('common.upload')}
                       <input
                         type="file"
                         accept="image/*"
@@ -3050,10 +3050,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           ) : slides.length === 0 ? (
             <div className="flex flex-col items-center gap-4">
               <Icon icon={Presentation01Icon} className="w-10" style={{ color: 'var(--sidebar-text-muted)', opacity: 0.4 }} />
-              <div className="text-theme-muted text-sm">No slides generated yet</div>
+              <div className="text-theme-muted text-sm">{t('presentation.noSlidesYet')}</div>
               <button onClick={handleGenerate} disabled={loading} className="flex items-center px-5 py-2 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
                 <Icon icon={Presentation01Icon} className="w-3.5 inline mr-1.5" />
-                Generate Slides
+                {t('presentation.generateSlidesBtn')}
               </button>
             </div>
           ) : (
@@ -3067,8 +3067,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                         <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />
                         <span className="text-[10px] font-bold text-white">
                           {generationPhase === 'analyzing'
-                            ? 'Analyzing your images...'
-                            : `Building slide ${slides.length + 1} of ~${slideCount}...`}
+                            ? t('presentation.analyzingImages')
+                            : t('presentation.buildingSlide', { current: slides.length + 1, total: slideCount })}
                         </span>
                       </div>
                       <div className="flex gap-1">
@@ -3087,7 +3087,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       <div className="flex items-center gap-2 mb-1.5">
                         <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />
                         <span className="text-[10px] font-bold text-white">
-                          Generating image {batchImageProgress.current} of {batchImageProgress.total}...
+                          {t('presentation.generatingImage', { current: batchImageProgress.current, total: batchImageProgress.total })}
                         </span>
                       </div>
                       <div className="flex gap-1">
@@ -3119,7 +3119,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wide transition-all border-b-2 ${rightTab === tab ? '' : 'border-transparent text-theme-muted'}`}
                 style={rightTab === tab ? { color: primaryColor, borderBottomColor: primaryColor, background: `${primaryColor}12` } : undefined}
               >
-                {tab === 'color' ? 'Colours' : tab === 'edit' ? 'Edit Slide' : 'Themes'}
+                {tab === 'color' ? t('presentation.tabColours') : tab === 'edit' ? t('presentation.tabEditSlide') : t('presentation.tabThemes')}
               </button>
             ))}
           </div>
@@ -3132,7 +3132,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               <div className="space-y-0.5">
                 <div className="px-1 py-1.5">
                   <span className="text-[10px] font-extrabold text-theme-muted uppercase tracking-wider">
-                    {presentationMode === 'professional' ? 'Professional Themes' : 'Kids Themes'}
+                    {presentationMode === 'professional' ? t('presentation.professionalThemes') : t('presentation.kidsThemes')}
                   </span>
                 </div>
                 {filteredStyles.map(s => {
@@ -3187,7 +3187,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   </>
                 )}
 
-                <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">Badge / Tag</label>
+                <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mt-3 mb-1">{t('presentation.badgeTag')}</label>
                 <input value={cur.content.badge || ''} onChange={e => updateSlide('badge', e.target.value)} placeholder={cur.layout === 'activity' ? 'e.g. 20 min' : 'e.g. Key Concept'}
                   className="w-full px-2 py-1.5 rounded bg-theme-primary border border-theme-border text-theme-heading text-xs outline-none" />
 
@@ -3205,7 +3205,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     ))}
                     {(cur.content.bullets || []).length < 4 && (
                       <button onClick={addBullet} className="w-full px-2 py-1.5 rounded text-xs font-semibold border mt-0.5" style={{ color: primaryColor, borderColor: `${primaryColor}28`, background: `${primaryColor}14` }}>
-                        <Icon icon={PlusSignIcon} className="w-3 inline mr-1" /> Add bullet
+                        <Icon icon={PlusSignIcon} className="w-3 inline mr-1" /> {t('presentation.addBullet')}
                       </button>
                     )}
                   </>
@@ -3214,14 +3214,14 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 {/* Slide image display */}
                 {cur.content.image && (
                   <div className="mt-4 pt-3.5 border-t border-theme-border">
-                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">Slide Image</label>
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">{t('presentation.slideImageLabel')}</label>
                     <div className="space-y-2">
                       <img loading="lazy" src={cur.content.image} alt="Slide" className="w-full rounded border border-theme-border" />
                       <button
                         onClick={() => updateSlide('image', undefined)}
                         className="px-2 py-1.5 rounded text-xs bg-theme-primary border border-theme-border text-red-400"
                       >
-                        Remove
+                        {t('presentation.removeImage')}
                       </button>
                     </div>
                   </div>
@@ -3230,7 +3230,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 {/* Suggested image upload for this slide */}
                 {imageMode === 'suggested' && cur.content.imageScene && !cur.content.image && (
                   <div className="mt-4 pt-3.5 border-t border-theme-border">
-                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">Suggested Image</label>
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">{t('presentation.suggestedImageLabel')}</label>
                     <div className="p-2.5 rounded-lg border-2 border-dashed mb-2" style={{ borderColor: `${primaryColor}40`, background: `${primaryColor}08` }}>
                       <p className="text-xs text-theme-heading leading-relaxed">{cur.content.imageScene}</p>
                       <p className="text-[10px] text-theme-muted mt-1">Placement: {cur.content.imagePlacement || 'right'}</p>
@@ -3240,7 +3240,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       style={{ color: primaryColor, borderColor: `${primaryColor}28`, background: `${primaryColor}14` }}
                     >
                       <Icon icon={Image01Icon} className="w-3.5" />
-                      Upload Image
+                      {t('presentation.uploadImage')}
                       <input
                         type="file"
                         accept="image/*"
@@ -3262,7 +3262,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               </div>
             )}
             {rightTab === 'edit' && !cur && (
-              <div className="text-center text-theme-muted text-sm py-8">Generate slides first to edit them</div>
+              <div className="text-center text-theme-muted text-sm py-8">{t('presentation.generateFirst')}</div>
             )}
           </div>
         </div>
@@ -3344,7 +3344,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 )}
                 {matchCount > 0 && matchedHistories.length > 0 && (
                   <>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 px-1 pt-1">Matching ({matchCount})</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 px-1 pt-1">{t('presentation.matchingCount', { count: matchCount })}</p>
                     {sortedPresentationHistory.filter(pres => matchedHistories.includes(pres)).map(pres => (
                       <div
                         key={pres.id}

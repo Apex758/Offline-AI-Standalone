@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { format, parseISO, isAfter } from 'date-fns';
 import type { PhaseHistoryEntry } from '../types/insights';
 
@@ -65,11 +66,12 @@ function phaseStatus(entry: PhaseHistoryEntry): 'completed' | 'current' | 'upcom
 }
 
 const PhaseHistoryNav: React.FC<Props> = ({ phases, selectedPhaseKey, onSelectPhase, onViewBreakdown }) => {
+  const { t } = useTranslation();
   if (!phases.length) {
     return (
       <div style={{ padding: '16px 12px' }}>
         <p style={{ fontSize: 12, color: 'var(--dash-text-sub)', textAlign: 'center' }}>
-          No academic phases set up yet.
+          {t('phases.noPhases')}
         </p>
       </div>
     );
@@ -112,7 +114,7 @@ const PhaseHistoryNav: React.FC<Props> = ({ phases, selectedPhaseKey, onSelectPh
           {!group.semester && (
             <div style={{ padding: '5px 8px', marginBottom: 3 }}>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--dash-text-sub)' }}>
-                Break
+                {t('phases.break')}
               </span>
             </div>
           )}
@@ -191,7 +193,7 @@ const PhaseHistoryNav: React.FC<Props> = ({ phases, selectedPhaseKey, onSelectPh
                     backgroundColor: color + '1a',
                     padding: '2px 6px', borderRadius: 5, flexShrink: 0,
                   }}>
-                    NOW
+                    {t('phases.now')}
                   </span>
                 )}
 
@@ -206,7 +208,7 @@ const PhaseHistoryNav: React.FC<Props> = ({ phases, selectedPhaseKey, onSelectPh
                       border: 'none', cursor: 'pointer', flexShrink: 0,
                     }}
                   >
-                    Details
+                    {t('phases.details')}
                   </button>
                 )}
               </div>

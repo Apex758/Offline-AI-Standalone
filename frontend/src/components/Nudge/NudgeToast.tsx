@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Rocket01IconData from '@hugeicons/core-free-icons/Rocket01Icon';
@@ -11,6 +12,7 @@ interface NudgeToastProps {
 }
 
 const NudgeToast: React.FC<NudgeToastProps> = ({ message, ctaLabel, onEnable, onDismiss }) => {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -81,7 +83,7 @@ const NudgeToast: React.FC<NudgeToastProps> = ({ message, ctaLabel, onEnable, on
                 className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                 style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
               >
-                Not now
+                {t('nudge.notNow')}
               </button>
             </div>
           </div>

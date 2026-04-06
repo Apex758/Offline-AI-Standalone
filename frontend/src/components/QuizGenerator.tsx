@@ -1614,7 +1614,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                     onChange={(e) => handleInputChange('timeLimitPerQuestion', e.target.value)}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                    placeholder="e.g., 60"
+                    placeholder={t('quiz.timeLimitPlaceholder')}
                   />
                 </div>
 
@@ -1937,7 +1937,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         <p className="font-medium text-theme-heading text-sm truncate">{lesson.title}</p>
                         <div className="flex items-center gap-3 mt-1 text-xs text-theme-hint flex-wrap">
                           {lesson.formData.subject && <span>{lesson.formData.subject}</span>}
-                          {lesson.formData.gradeLevel && <span>Grade {lesson.formData.gradeLevel}</span>}
+                          {lesson.formData.gradeLevel && <span>{t('quiz.gradeLabel', { level: lesson.formData.gradeLevel })}</span>}
                           {lesson.formData.topic && <span className="truncate">{lesson.formData.topic}</span>}
                         </div>
                         <p className="text-xs text-theme-hint mt-1">
@@ -1959,7 +1959,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             {/* Footer */}
             <div className="p-4 border-t border-theme">
               <p className="text-xs text-theme-hint text-center">
-                The full lesson plan will be used for context. You can still adjust question types and other settings.
+                {t('quiz.lessonPickerNote')}
               </p>
             </div>
           </div>

@@ -99,7 +99,7 @@ interface SmartSearchResponse {
   intent: 'navigation' | 'generation' | 'settings' | 'info';
   summary: string;
   steps: string[];
-  action?: { toolType: string; prefill?: Record<string, any>; settingsSection?: string };
+  action?: { toolType?: string; actionName?: string; prefill?: Record<string, any>; settingsSection?: string };
   confidence: number;
 }
 
@@ -229,6 +229,13 @@ const SYNONYM_MAP: Record<string, string[]> = {
   'ask': ['chat', 'pearl', 'ai'], 'talk': ['chat', 'pearl'],
   'help': ['chat', 'pearl', 'tutorial'], 'pearl': ['chat', 'pearl'],
   'assistant': ['chat', 'ai', 'assistant'],
+
+  // storybook
+  'story': ['storybook', 'story', 'book'], 'storybook': ['storybook', 'story'],
+  'book': ['storybook', 'book'], 'illustrated': ['storybook', 'image'],
+  'narration': ['storybook', 'tts'], 'read aloud': ['storybook', 'tts'],
+  'kids': ['storybook', 'kindergarten'], 'children': ['storybook', 'kindergarten'],
+  'fun': ['storybook', 'image', 'activity'],
 };
 
 /** Extract meaningful search terms from a natural-language sentence */
@@ -471,12 +478,13 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
     const syntheticEntry: SearchEntry = {
       id: 'ai-suggestion',
       title: aiResponse.summary,
-      description: aiResponse.steps.join(' → '),
+      description: aiResponse.steps.join(' -> '),
       keywords: [],
       category: 'action',
       icon: 'ArrowRight',
       toolType: aiResponse.action.toolType,
       settingsSection: aiResponse.action.settingsSection,
+      action: aiResponse.action.actionName,
     };
     onNavigate(syntheticEntry, aiResponse.action.prefill);
     onClose();
@@ -673,7 +681,12 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
                         className="px-3 py-1 rounded-md text-xs font-medium text-white transition-colors"
                         style={{ background: '#22c55e' }}
                       >
-                        Go to {aiResponse.action.toolType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} →
+                        {aiResponse.action.toolType
+                          ? `Go to ${aiResponse.action.toolType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} →`
+                          : aiResponse.action.actionName
+                            ? aiResponse.action.actionName.replace(/([A-Z])/g, ' $1').trim() + ' →'
+                            : 'Do it →'
+                        }
                       </button>
                     )}
                     {aiResponse.steps.length > 0 && (

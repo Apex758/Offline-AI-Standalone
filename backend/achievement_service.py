@@ -59,8 +59,19 @@ def init_db():
                 UNIQUE(teacher_id, activity_date)
             )
         ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS teacher_flags (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                teacher_id  TEXT NOT NULL,
+                flag_key    TEXT NOT NULL,
+                flag_value  INTEGER NOT NULL DEFAULT 0,
+                updated_at  TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(teacher_id, flag_key)
+            )
+        ''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_earned_achievements_teacher ON earned_achievements(teacher_id)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_activity_log_teacher ON achievement_activity_log(teacher_id)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_teacher_flags ON teacher_flags(teacher_id, flag_key)')
         conn.commit()
     finally:
         conn.close()
@@ -180,6 +191,39 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "image_gen_first",     "name": "First Pixel",              "description": "Generate your first AI image",                "category": "analytics",           "icon_name": "Image",               "rarity": "common",    "check_key": "total_image_generations","check_value": 1},
     {"id": "image_gen_25",        "name": "Visual Virtuoso",          "description": "Generate 25 AI images",                       "category": "analytics",           "icon_name": "Image",               "rarity": "rare",      "check_key": "total_image_generations","check_value": 25},
 
+    # ── School Year Calendar ──
+    {"id": "calendar_setup",      "name": "Year Planner",             "description": "Set up your school year calendar",             "category": "exploration",         "icon_name": "CalendarStar",        "rarity": "common",    "check_key": "calendar_configs",       "check_value": 1},
+    {"id": "calendar_phases",     "name": "Phase Architect",          "description": "Create all term phases in your school year",   "category": "exploration",         "icon_name": "CalendarStar",        "rarity": "uncommon",  "check_key": "calendar_phases",        "check_value": 1},
+    {"id": "calendar_events_10",  "name": "Event Master",             "description": "Mark 10 events on your school year calendar",  "category": "exploration",         "icon_name": "CalendarCheck",       "rarity": "rare",      "check_key": "calendar_events",        "check_value": 10},
+
+    # ── StoryBook Creator ──
+    {"id": "storybook_first",     "name": "Once Upon a Time",         "description": "Create your first storybook",                 "category": "content-creation",    "icon_name": "Book",                "rarity": "common",    "check_key": "storybooks",             "check_value": 1},
+    {"id": "storybook_5",         "name": "Author in Residence",      "description": "Create 5 storybooks",                         "category": "content-creation",    "icon_name": "Book",                "rarity": "uncommon",  "check_key": "storybooks",             "check_value": 5},
+    {"id": "storybook_15",        "name": "Published Author",         "description": "Create 15 storybooks",                        "category": "content-creation",    "icon_name": "Book",                "rarity": "rare",      "check_key": "storybooks",             "check_value": 15},
+
+    # ── Presentation Builder (tiers) ──
+    {"id": "presentation_5",      "name": "Slide Show",               "description": "Build 5 presentations",                       "category": "content-creation",    "icon_name": "PresentationBarChart","rarity": "uncommon",  "check_key": "presentations",          "check_value": 5},
+    {"id": "presentation_20",     "name": "Presentation Pro",         "description": "Build 20 presentations",                      "category": "content-creation",    "icon_name": "PresentationBarChart","rarity": "rare",      "check_key": "presentations",          "check_value": 20},
+    {"id": "presentation_50",     "name": "Keynote Expert",           "description": "Build 50 presentations",                      "category": "content-creation",    "icon_name": "PresentationBarChart","rarity": "epic",      "check_key": "presentations",          "check_value": 50},
+
+    # ── Worksheet Generator (tiers) ──
+    {"id": "worksheet_10",        "name": "Worksheet Wizard",         "description": "Create 10 worksheets",                        "category": "content-creation",    "icon_name": "FileEdit",            "rarity": "uncommon",  "check_key": "worksheets",             "check_value": 10},
+    {"id": "worksheet_50",        "name": "Worksheet Factory",        "description": "Create 50 worksheets",                        "category": "content-creation",    "icon_name": "FileEdit",            "rarity": "rare",      "check_key": "worksheets",             "check_value": 50},
+
+    # ── Rubric Generator (tiers) ──
+    {"id": "rubric_10",           "name": "Master Judge",             "description": "Create 10 rubrics",                           "category": "content-creation",    "icon_name": "TickDouble",          "rarity": "uncommon",  "check_key": "rubrics",                "check_value": 10},
+    {"id": "rubric_30",           "name": "Assessment Architect",     "description": "Create 30 rubrics",                           "category": "content-creation",    "icon_name": "TickDouble",          "rarity": "rare",      "check_key": "rubrics",                "check_value": 30},
+
+    # ── Onboarding ──
+    {"id": "profile_complete",    "name": "Fully Loaded",             "description": "Set up your name, school, grades, and photo", "category": "exploration",         "icon_name": "UserCheck",           "rarity": "uncommon",  "check_key": "profile_complete",       "check_value": 1},
+    {"id": "checklist_done",      "name": "Ready for Class",          "description": "Complete all items on the welcome checklist", "category": "exploration",         "icon_name": "CheckmarkCircle",     "rarity": "uncommon",  "check_key": "checklist_complete",     "check_value": 1},
+
+    # ── Educator Insights ──
+    {"id": "insights_bronze",     "name": "Insight Seeker",           "description": "Open Educator Insights for the first time",    "category": "analytics",           "icon_name": "Chart",               "rarity": "common",    "check_key": "insights_views",         "check_value": 1},
+    {"id": "insights_silver",     "name": "Semester Analyst",         "description": "Finish Semester 1 with a passing score (60%+)","category": "analytics",           "icon_name": "Chart",               "rarity": "rare",      "check_key": "insights_sem1_score",    "check_value": 60},
+    {"id": "insights_gold",       "name": "Proven Educator",          "description": "Finish Semester 2 with a strong score (75%+)", "category": "analytics",           "icon_name": "Chart",               "rarity": "epic",      "check_key": "insights_sem2_score",    "check_value": 75},
+    {"id": "insights_diamond",    "name": "Educator of the Year",     "description": "Complete the full academic year with an excellent score (85%+)", "category": "analytics", "icon_name": "Chart", "rarity": "legendary", "check_key": "insights_year_score",    "check_value": 85},
+
     # ── Hidden / Secret Achievements ──
     {"id": "night_owl",           "name": "Night Owl",                "description": "Use the app after 10 PM",                    "category": "power-user",          "icon_name": "Moon",                "rarity": "uncommon",  "check_key": "used_after_10pm",        "check_value": 1, "hidden": True},
     {"id": "early_bird",          "name": "Early Bird",               "description": "Use the app before 6 AM",                    "category": "power-user",          "icon_name": "Sun",                 "rarity": "uncommon",  "check_key": "used_before_6am",        "check_value": 1, "hidden": True},
@@ -198,7 +242,14 @@ ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
         "name": "Content Master",
         "description": "Earn all Content Creation achievements",
         "category": "content-creation",
-        "achievement_ids": ["first_lesson", "lesson_veteran", "lesson_master", "lesson_legend", "quiz_creator", "quiz_prolific", "quiz_expert", "quiz_empire", "worksheet_first", "rubric_first", "presentation_first"],
+        "achievement_ids": [
+            "first_lesson", "lesson_veteran", "lesson_master", "lesson_legend",
+            "quiz_creator", "quiz_prolific", "quiz_expert", "quiz_empire",
+            "worksheet_first", "worksheet_10", "worksheet_50",
+            "rubric_first", "rubric_10", "rubric_30",
+            "presentation_first", "presentation_5", "presentation_20", "presentation_50",
+            "storybook_first", "storybook_5", "storybook_15",
+        ],
     },
     {
         "id": "assessment_guru",
@@ -240,7 +291,25 @@ ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
         "name": "Explorer Supreme",
         "description": "Earn all Exploration achievements",
         "category": "exploration",
-        "achievement_ids": ["explorer", "trailblazer", "kindergarten_pioneer", "cross_curricular", "multigrade_first", "multigrade_5", "resource_saver_10", "resource_saver_25"],
+        "achievement_ids": [
+            "explorer", "trailblazer", "kindergarten_pioneer", "cross_curricular",
+            "multigrade_first", "multigrade_5", "resource_saver_10", "resource_saver_25",
+            "calendar_setup", "calendar_phases", "calendar_events_10",
+        ],
+    },
+    {
+        "id": "onboarding_champion",
+        "name": "Onboarding Champion",
+        "description": "Complete all profile and setup milestones",
+        "category": "exploration",
+        "achievement_ids": ["profile_complete", "checklist_done"],
+    },
+    {
+        "id": "insights_analyst",
+        "name": "Insights Analyst",
+        "description": "Earn all Educator Insights achievements",
+        "category": "analytics",
+        "achievement_ids": ["insights_bronze", "insights_silver", "insights_gold", "insights_diamond"],
     },
 ]
 
@@ -256,6 +325,12 @@ TIER_GROUPS: Dict[str, List[Dict[str, Any]]] = {
     "streak":           [{"id": "streak_3",         "tier": "bronze"}, {"id": "streak_7",         "tier": "silver"}, {"id": "streak_30",        "tier": "gold"}, {"id": "streak_90",          "tier": "diamond"}],
     "active_days":      [{"id": "active_days_50",   "tier": "bronze"}, {"id": "active_days_100",  "tier": "silver"}, {"id": "active_days_200",  "tier": "gold"}, {"id": "active_days_365",    "tier": "diamond"}],
     "generations":      [{"id": "first_analytics",  "tier": "bronze"}, {"id": "analytics_100",    "tier": "silver"}, {"id": "analytics_500",    "tier": "gold"}, {"id": "analytics_1500",     "tier": "diamond"}],
+    "presentations":    [{"id": "presentation_first","tier": "bronze"}, {"id": "presentation_5",   "tier": "silver"}, {"id": "presentation_20",  "tier": "gold"}, {"id": "presentation_50",    "tier": "diamond"}],
+    "worksheets":       [{"id": "worksheet_first",  "tier": "bronze"}, {"id": "worksheet_10",     "tier": "silver"}, {"id": "worksheet_50",     "tier": "gold"}],
+    "rubrics":          [{"id": "rubric_first",     "tier": "bronze"}, {"id": "rubric_10",        "tier": "silver"}, {"id": "rubric_30",        "tier": "gold"}],
+    "calendar":         [{"id": "calendar_setup",   "tier": "bronze"}, {"id": "calendar_phases",  "tier": "silver"}, {"id": "calendar_events_10","tier": "gold"}],
+    "storybooks":       [{"id": "storybook_first",  "tier": "bronze"}, {"id": "storybook_5",      "tier": "silver"}, {"id": "storybook_15",     "tier": "gold"}],
+    "insights":         [{"id": "insights_bronze",  "tier": "bronze"}, {"id": "insights_silver",  "tier": "silver"}, {"id": "insights_gold",    "tier": "gold"}, {"id": "insights_diamond",   "tier": "diamond"}],
 }
 
 # Build lookup maps: achievement_id -> tier_group, tier
@@ -312,6 +387,7 @@ def _get_content_counts() -> Dict[str, int]:
         "kindergarten_plans":     "kindergarten_history.json",
         "multigrade_plans":       "multigrade_history.json",
         "cross_curricular_plans": "cross_curricular_history.json",
+        "storybooks":             "storybook_history.json",
     }
     counts = {}
     for key, fname in files_map.items():
@@ -464,6 +540,146 @@ def _get_metrics_counts() -> Dict[str, int]:
         return {"total_generations": text_gens, "total_image_generations": img_gens}
     except Exception:
         return {"total_generations": 0, "total_image_generations": 0}
+    finally:
+        conn.close()
+
+
+def _get_calendar_counts(teacher_id: str) -> Dict[str, int]:
+    """Count school year configs, phases, and events from students.db."""
+    db_path = str(_get_data_directory() / 'students.db')
+    if not os.path.exists(db_path):
+        return {"calendar_configs": 0, "calendar_phases": 0, "calendar_events": 0}
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        configs = conn.execute(
+            "SELECT COUNT(*) as c FROM school_year_config WHERE teacher_id = ?", (teacher_id,)
+        ).fetchone()["c"]
+        phases = conn.execute(
+            "SELECT COUNT(*) as c FROM academic_phases WHERE teacher_id = ?", (teacher_id,)
+        ).fetchone()["c"]
+        events = conn.execute(
+            "SELECT COUNT(*) as c FROM school_year_events WHERE teacher_id = ?", (teacher_id,)
+        ).fetchone()["c"]
+        return {
+            "calendar_configs": configs,
+            "calendar_phases": 1 if phases > 0 else 0,
+            "calendar_events": events,
+        }
+    except Exception:
+        return {"calendar_configs": 0, "calendar_phases": 0, "calendar_events": 0}
+    finally:
+        conn.close()
+
+
+def _get_insights_score_counts(teacher_id: str) -> Dict[str, int]:
+    """Compute average student grade scores for each semester and full year
+    by intersecting graded quiz/worksheet dates with academic phase date ranges."""
+    db_path = str(_get_data_directory() / 'students.db')
+    if not os.path.exists(db_path):
+        return {"insights_sem1_score": 0, "insights_sem2_score": 0, "insights_year_score": 0}
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        # Get active school year date ranges by semester
+        phases = conn.execute("""
+            SELECT semester, MIN(start_date) as start, MAX(end_date) as end
+            FROM academic_phases
+            WHERE teacher_id = ? AND semester IS NOT NULL
+            GROUP BY semester
+        """, (teacher_id,)).fetchall()
+
+        if not phases:
+            return {"insights_sem1_score": 0, "insights_sem2_score": 0, "insights_year_score": 0}
+
+        sem_ranges = {r["semester"]: (r["start"], r["end"]) for r in phases}
+
+        # Pull all graded percentages with dates
+        all_cols = [r[1] for r in conn.execute("PRAGMA table_info(quiz_grades)").fetchall()]
+        date_col = "graded_at" if "graded_at" in all_cols else ("created_at" if "created_at" in all_cols else None)
+
+        if not date_col:
+            return {"insights_sem1_score": 0, "insights_sem2_score": 0, "insights_year_score": 0}
+
+        grades = conn.execute(
+            f"SELECT percentage, {date_col} as grade_date FROM quiz_grades WHERE percentage IS NOT NULL"
+        ).fetchall()
+
+        ws_cols = [r[1] for r in conn.execute("PRAGMA table_info(worksheet_grades)").fetchall()]
+        ws_date = "graded_at" if "graded_at" in ws_cols else ("created_at" if "created_at" in ws_cols else None)
+        if ws_date:
+            ws_grades = conn.execute(
+                f"SELECT percentage, {ws_date} as grade_date FROM worksheet_grades WHERE percentage IS NOT NULL"
+            ).fetchall()
+            grades = list(grades) + list(ws_grades)
+
+        def avg_in_range(start: str, end: str) -> int:
+            scores = [
+                g["percentage"] for g in grades
+                if g["grade_date"] and start <= g["grade_date"][:10] <= end
+            ]
+            return round(sum(scores) / len(scores)) if scores else 0
+
+        sem1 = avg_in_range(*sem_ranges["1"]) if "1" in sem_ranges else 0
+        sem2 = avg_in_range(*sem_ranges["2"]) if "2" in sem_ranges else 0
+
+        # Full year: union of all phase date ranges
+        all_start = min(r["start"] for r in phases)
+        all_end = max(r["end"] for r in phases)
+        year = avg_in_range(all_start, all_end)
+
+        return {
+            "insights_sem1_score": sem1,
+            "insights_sem2_score": sem2,
+            "insights_year_score": year,
+        }
+    except Exception:
+        return {"insights_sem1_score": 0, "insights_sem2_score": 0, "insights_year_score": 0}
+    finally:
+        conn.close()
+
+
+def _get_teacher_flags(teacher_id: str) -> Dict[str, int]:
+    """Read frontend-reported flags: insights_views, profile_complete, checklist_complete."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT flag_key, flag_value FROM teacher_flags WHERE teacher_id = ?",
+            (teacher_id,)
+        ).fetchall()
+        return {r["flag_key"]: r["flag_value"] for r in rows}
+    except Exception:
+        return {}
+    finally:
+        conn.close()
+
+
+def increment_teacher_flag(teacher_id: str, flag_key: str) -> None:
+    """Increment a tracked flag (e.g. insights_views) by 1."""
+    conn = _get_conn()
+    try:
+        conn.execute("""
+            INSERT INTO teacher_flags (teacher_id, flag_key, flag_value, updated_at)
+            VALUES (?, ?, 1, CURRENT_TIMESTAMP)
+            ON CONFLICT(teacher_id, flag_key)
+            DO UPDATE SET flag_value = flag_value + 1, updated_at = CURRENT_TIMESTAMP
+        """, (teacher_id, flag_key))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def set_teacher_flag(teacher_id: str, flag_key: str, value: int = 1) -> None:
+    """Set a binary flag to a specific value (e.g. profile_complete = 1)."""
+    conn = _get_conn()
+    try:
+        conn.execute("""
+            INSERT INTO teacher_flags (teacher_id, flag_key, flag_value, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(teacher_id, flag_key)
+            DO UPDATE SET flag_value = ?, updated_at = CURRENT_TIMESTAMP
+        """, (teacher_id, flag_key, value, value))
+        conn.commit()
     finally:
         conn.close()
 
@@ -665,6 +881,9 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
         counts.update(_get_scan_grade_counts())
         counts.update(_get_streak_counts(teacher_id))
         counts.update(_get_time_based_counts())
+        counts.update(_get_calendar_counts(teacher_id))
+        counts.update(_get_insights_score_counts(teacher_id))
+        counts.update(_get_teacher_flags(teacher_id))
 
         # Check each unearned achievement
         newly_earned = []

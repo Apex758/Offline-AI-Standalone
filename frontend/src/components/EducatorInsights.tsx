@@ -19,6 +19,7 @@ import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
 import CalendarCheckIn01IconData from '@hugeicons/core-free-icons/CalendarCheckIn01Icon';
 import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import axios from 'axios';
+import { achievementApi } from '../lib/achievementApi';
 import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot, PhaseHistoryEntry, AcademicPhase, SchoolYearConfig } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useNotification } from '../contexts/NotificationContext';
@@ -105,6 +106,12 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
   // Current phase awareness
   const { currentPhase: activePhase } = useCurrentPhase(teacherId);
+
+  // Track each time this tab becomes active (insights_views achievement)
+  useEffect(() => {
+    if (!isActive) return;
+    achievementApi.trackFlag(userId, 'insights_views', 'increment').catch(() => {});
+  }, [isActive]);
 
   // State
   const [insightsData, setInsightsData] = useState<InsightsData | null>(savedData?.insightsData || null);

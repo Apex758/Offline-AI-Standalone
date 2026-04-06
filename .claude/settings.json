@@ -219,12 +219,38 @@
       "Bash(ls *.tsx)",
       "Bash(grep -v \"//\")",
       "Bash(ls frontend/src/components/AIDisclaimer*)",
-      "Bash(grep -n \"return \\($\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/StoryBookCreator.tsx\")"
+      "Bash(grep -n \"return \\($\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/StoryBookCreator.tsx\")",
+      "Bash(python3 -c \"import json; f=open\\('frontend/src/locales/en.json'\\); json.load\\(f\\); print\\('Valid JSON'\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); try{JSON.parse\\(fs.readFileSync\\('frontend/src/locales/en.json','utf8'\\)\\); console.log\\('Valid'\\)}catch\\(e\\){console.log\\('Invalid:',e.message\\)}\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); try{JSON.parse\\(fs.readFileSync\\('frontend/src/locales/fr.json','utf8'\\)\\); console.log\\('fr: Valid'\\)}catch\\(e\\){console.log\\('fr: Invalid:',e.message\\)}; try{JSON.parse\\(fs.readFileSync\\('frontend/src/locales/es.json','utf8'\\)\\); console.log\\('es: Valid'\\)}catch\\(e\\){console.log\\('es: Invalid:',e.message\\)}\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const d=JSON.parse\\(fs.readFileSync\\('frontend/src/locales/en.json','utf8'\\)\\); console.log\\('Valid. sidebar keys:', Object.keys\\(d.sidebar\\).join\\(', '\\)\\); console.log\\('dashboard keys:', d.dashboard ? Object.keys\\(d.dashboard\\).join\\(', '\\) : 'MISSING'\\); console.log\\('tutorialButton:', d.tutorialButton ? 'EXISTS' : 'MISSING'\\)\")",
+      "Bash(python3 -c \"import sys,json; lines=[l.strip\\(\\) for l in sys.stdin if l.strip\\(\\)]; [print\\(json.loads\\(l\\).get\\('content',''\\)[:3000] if isinstance\\(json.loads\\(l\\).get\\('content',''\\),str\\) else ''\\) for l in lines[-2:]]\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/en.json', 'utf8'\\)\\); console.log\\('en.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/fr.json', 'utf8'\\)\\); console.log\\('fr.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/es.json', 'utf8'\\)\\); console.log\\('es.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/en.json', 'utf8'\\)\\); console.log\\('en.json: valid'\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/es.json','utf8'\\)\\); console.log\\(JSON.stringify\\(d.phases,null,2\\)\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/es.json', 'utf8'\\)\\); console.log\\('es.json: valid'\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/fr.json','utf8'\\)\\); console.log\\(JSON.stringify\\(d.phases,null,2\\)\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/fr.json', 'utf8'\\)\\); console.log\\('fr.json: valid'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('frontend/src/locales/en.json','utf8'\\)\\); console.log\\('en.json: valid'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('frontend/src/locales/es.json','utf8'\\)\\); console.log\\('es.json: valid'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('frontend/src/locales/fr.json','utf8'\\)\\); console.log\\('fr.json: valid'\\)\")",
+      "Bash(node -e \"require\\('./frontend/src/locales/en.json'\\); console.log\\('en.json OK'\\)\")",
+      "Bash(node -e \"require\\('./frontend/src/locales/fr.json'\\); console.log\\('fr.json OK'\\)\")",
+      "Bash(node -e \"require\\('./frontend/src/locales/es.json'\\); console.log\\('es.json OK'\\)\")",
+      "Bash(node -e \"const f = require\\('C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/en.json'\\); const sp = f.settingsPage; console.log\\(JSON.stringify\\({dangerZone: sp.dangerZone, featureDiscovery: sp.featureDiscovery, fileAccess: sp.fileAccess, license: sp.license, models_keys: Object.keys\\(sp.models || {}\\)}, null, 2\\)\\);\")",
+      "Read(//^ACHIEVEMENT_DEFINITIONS/,/**)",
+      "Bash(python3)",
+      "Bash(grep -iE \"\\\\.\\(png|jpg|jpeg|webp|svg\\)$\")",
+      "Bash(python -)",
+      "Bash(grep -iE \"\\\\.\\(png|jpg|jpeg|webp\\)$\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
       "C:\\Users\\LG\\.claude",
-      "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\backend"
+      "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\backend",
+      "\\tmp"
     ]
   }
 }

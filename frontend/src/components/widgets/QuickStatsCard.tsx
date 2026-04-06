@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
 import ChartDecreaseIconData from '@hugeicons/core-free-icons/ChartDecreaseIcon';
@@ -34,6 +35,7 @@ const QuickStatsCard: React.FC<QuickStatsCardProps> = ({
   color,
   subtitle
 }) => {
+  const { t } = useTranslation();
   const getTrendIcon = () => {
     if (!trend) return null;
     
@@ -78,7 +80,7 @@ const QuickStatsCard: React.FC<QuickStatsCardProps> = ({
               <span className="text-sm font-medium">
                 {trend.value > 0 ? '+' : ''}{trend.value}%
               </span>
-              <span className="text-xs text-gray-500">vs last period</span>
+              <span className="text-xs text-gray-500">{t('widgets.vsLastPeriod')}</span>
             </div>
           )}
         </div>

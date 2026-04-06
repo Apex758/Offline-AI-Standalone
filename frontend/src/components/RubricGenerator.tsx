@@ -1318,40 +1318,42 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
             </div>
 
             <div className="border-t border-theme p-4 bg-theme-secondary">
-              <div className="max-w-3xl mx-auto flex justify-between">
-                <button
-                  onClick={clearForm}
-                  className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg"
-                >
-                  <Trash2 className="w-5 h-5 mr-2" />
-                  Clear Form
-                </button>
-                <button
-                  onClick={generateRubric}
-                  disabled={loading}
-                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:opacity-50 transition"
-                  data-tutorial="rubric-generator-generate"
-                  style={loading ? {} : { backgroundColor: tabColor }}
-                  onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
-                  onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
-                >
-                  {loading ? (
-                    <>
-                      <HeartbeatLoader className="w-5 h-5 mr-2" />
-                      {t('generators.generatingRubric')}
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-5 h-5 mr-2" />
-                      {t('generators.generateRubric')}
-                    </>
-                  )}
-                </button>
+              <div className="max-w-3xl mx-auto flex items-center justify-between">
+                <AIDisclaimer inline />
+                <div className="flex gap-2">
+                  <button
+                    onClick={clearForm}
+                    className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  >
+                    <Trash2 className="w-5 h-5 mr-2" />
+                    Clear Form
+                  </button>
+                  <button
+                    onClick={generateRubric}
+                    disabled={loading}
+                    className="flex items-center px-6 py-2 text-white rounded-lg disabled:opacity-50 transition"
+                    data-tutorial="rubric-generator-generate"
+                    style={loading ? {} : { backgroundColor: tabColor }}
+                    onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
+                    onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
+                  >
+                    {loading ? (
+                      <>
+                        <HeartbeatLoader className="w-5 h-5 mr-2" />
+                        {t('generators.generatingRubric')}
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-5 h-5 mr-2" />
+                        {t('generators.generateRubric')}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </>
         )}
-        <AIDisclaimer />
       </div>
 
       {/* History Panel */}

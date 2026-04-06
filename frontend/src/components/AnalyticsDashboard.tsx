@@ -28,7 +28,7 @@ import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import { useNotification } from '../contexts/NotificationContext';
 import axios from 'axios';
 import { format } from 'date-fns';
-import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
+import TutorialOverlay, { getAnalyticsDashboardSteps } from './TutorialOverlay';
 import { milestoneApi } from '../lib/milestoneApi';
 import type { MilestoneStats, Milestone } from '../types/milestone';
 import type { Task } from '../types/task';
@@ -1111,7 +1111,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
       {/* Tutorial Overlay */}
       <TutorialOverlay
-        steps={analyticsDashboardSteps}
+        steps={getAnalyticsDashboardSteps(t)}
         showFloatingButton={false}
         onStepChange={setCurrentTutorialStep}
       />

@@ -1110,6 +1110,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   isSelected = false,
   onToggleSelection
 }) => {
+  const { t } = useTranslation();
   const Icon = getTypeIcon(resource.type);
 
   return (

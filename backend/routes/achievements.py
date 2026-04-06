@@ -58,6 +58,35 @@ async def get_showcase(teacher_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class TrackFlagBody(BaseModel):
+    flag_key: str
+    mode: str = "increment"  # "increment" | "set"
+    value: int = 1
+
+
+@router.post("/track/{teacher_id}")
+async def track_flag(teacher_id: str, body: TrackFlagBody):
+    """Report a frontend-side metric flag to the backend.
+
+    Supported flag_keys:
+    - insights_views      (increment each time Educator Insights is opened)
+    - profile_complete    (set to 1 when profile is fully filled in)
+    - checklist_complete  (set to 1 when welcome checklist is fully checked off)
+    """
+    allowed_keys = {"insights_views", "profile_complete", "checklist_complete"}
+    if body.flag_key not in allowed_keys:
+        raise HTTPException(status_code=400, detail=f"Unknown flag_key: {body.flag_key}")
+    try:
+        if body.mode == "increment":
+            achievement_service.increment_teacher_flag(teacher_id, body.flag_key)
+        else:
+            achievement_service.set_teacher_flag(teacher_id, body.flag_key, body.value)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Failed to track flag: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.put("/showcase/{teacher_id}")
 async def update_showcase(teacher_id: str, body: ShowcaseUpdate):
     """Update the teacher's showcase (max 5 pinned achievement IDs)."""

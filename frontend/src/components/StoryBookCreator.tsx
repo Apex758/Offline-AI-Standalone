@@ -2148,7 +2148,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 type="button"
                 onClick={() => updateForm('useCurriculum', !formData.useCurriculum)}
                 className="flex items-center gap-1.5 group mb-3"
-                title={formData.useCurriculum ? 'Curriculum alignment enabled' : 'Curriculum alignment disabled'}
+                title={formData.useCurriculum ? t('storybook.curriculumEnabled') : t('storybook.curriculumDisabled')}
               >
                 <span className="text-sm font-medium text-theme-label group-hover:text-theme-heading transition-colors">
                   {t('storybook.alignCurriculum')}
@@ -2249,8 +2249,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               accentColor={accentColor}
               hasDiffusion={hasDiffusion}
               hasVision={hasVision}
-              labels={{ none: 'Text Only', suggested: 'Image Guidance', myImages: 'My Images', ai: 'AI Generated' }}
-              descs={{ none: 'Story text only', suggested: 'AI suggests what to add', myImages: 'Upload your images', ai: 'Generate with AI' }}
+              labels={{ none: t('storybook.imageModeNone'), suggested: t('storybook.imageModeGuidance'), myImages: t('storybook.imageModeMyImages'), ai: t('storybook.imageModeAI') }}
+              descs={{ none: t('storybook.imageModeNoneDesc'), suggested: t('storybook.imageModeGuidanceDesc'), myImages: t('storybook.imageModeMyImagesDesc'), ai: t('storybook.imageModeAIDesc') }}
             />
           </div>
 
@@ -2273,7 +2273,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     color: formData.backgroundCount === 'auto' ? accentColor : undefined,
                   }}
                 >
-                  Auto
+                  {t('storybook.auto')}
                 </button>
                 <div className="flex items-center gap-1">
                   <button
@@ -2316,8 +2316,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               </div>
               <p className="text-xs text-theme-muted mt-1.5">
                 {formData.backgroundCount === 'auto'
-                  ? 'The AI will decide how many unique backgrounds to use.'
-                  : `The story will use exactly ${formData.backgroundCount} unique background${formData.backgroundCount === 1 ? '' : 's'}.`}
+                  ? t('storybook.bgCountAutoDesc')
+                  : t('storybook.bgCountExactDesc', { count: formData.backgroundCount })}
               </p>
             </div>
           )}
@@ -2424,14 +2424,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         ? t('storybook.formattingPages')
         : t('storybook.writingStory');
     const phaseDetail = generationPhase === 'writing_story'
-      ? 'Creating a cohesive narrative first'
+      ? t('storybook.phaseNarrativeFirst')
       : generationPhase === 'formatting_pages'
         ? livePages.length > 0
-          ? `${livePages.length} of ${formData.pageCount} pages ready`
-          : 'Breaking the story into illustrated pages'
+          ? t('storybook.phaseNofMPagesReady', { n: livePages.length, m: formData.pageCount })
+          : t('storybook.phaseBreakingStory')
         : livePages.length > 0
-          ? `${livePages.length} of ${formData.pageCount} pages ready`
-          : 'Crafting characters and scenes';
+          ? t('storybook.phaseNofMPagesReady', { n: livePages.length, m: formData.pageCount })
+          : t('storybook.phaseCraftingCharacters');
 
     return (
       <div className="h-full relative overflow-hidden">
@@ -2484,13 +2484,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             {isStreaming ? (
               <>
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse mr-1 align-middle" />
-                Writing page {livePages.length} of {formData.pageCount}…
+                {t('storybook.writingPageNofM', { n: livePages.length, m: formData.pageCount })}
               </>
             ) : (
               <>
-                {parsedBook.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${parsedBook.gradeLevel}`}
+                {parsedBook.gradeLevel === 'K' ? t('storybook.kindergarten') : t('storybook.gradeN', { n: parsedBook.gradeLevel })}
                 {formData.subject && ` • ${formData.subject}`}
-                {' • '}{parsedBook.pages.length} pages
+                {' • '}{t('storybook.nPages', { count: parsedBook.pages.length })}
               </>
             )}
           </p>
@@ -2509,7 +2509,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {!isStreaming && <button
             onClick={handleSaveDraft}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
-            title="Save storybook"
+            title={t('storybook.saveStorybook')}
           >
             <Icon icon={FloppyDiskIconData} className="w-4" />
           </button>}
@@ -2517,7 +2517,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {!isStreaming && <button
             onClick={() => setShowHistory(prev => !prev)}
             className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm border border-theme-strong hover:bg-theme-secondary text-theme-muted hover:text-theme-heading"
-            title="Storybook history"
+            title={t('storybook.storybookHistory')}
           >
             <Icon icon={Clock01IconData} className="w-4" />
             {storyMatchCount > 0 && (
@@ -2533,8 +2533,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               >
                 <Icon icon={Loading03IconData} className="w-4 animate-spin" />
                 {imageGenProgress
-                  ? `${imageGenProgress.stage === 'background' ? 'Backgrounds' : 'Characters'} ${imageGenProgress.current}/${imageGenProgress.total}`
-                  : 'Generating…'}
+                  ? `${imageGenProgress.stage === 'background' ? t('storybook.genProgressBackgrounds') : t('storybook.genProgressCharacters')} ${imageGenProgress.current}/${imageGenProgress.total}`
+                  : t('storybook.generating')}
               </button>
             ) : (
               <button
@@ -2542,7 +2542,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-theme-strong hover:bg-theme-secondary text-theme-heading"
               >
                 <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />
-                Generate Images
+                {t('storybook.generateImages')}
               </button>
             )
           )}
@@ -2562,7 +2562,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
             style={{ background: accentColor }}
           >
-            <Icon icon={PlayIconData} className="w-4" /> Play
+            <Icon icon={PlayIconData} className="w-4" /> {t('storybook.play')}
           </button>
           {/* Export dropdown */}
           <div className="relative">
@@ -2616,9 +2616,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             <Icon icon={Loading03IconData} className="w-4 animate-spin" style={{ color: accentColor }} />
             <div className="flex-1">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-theme-heading font-medium">Writing story…</span>
+                <span className="text-theme-heading font-medium">{t('storybook.writingStoryEllipsis')}</span>
                 <span className="text-theme-muted">
-                  {livePages.length} / {formData.pageCount} pages
+                  {t('storybook.nofMPages', { n: livePages.length, m: formData.pageCount })}
                 </span>
               </div>
               <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -2642,7 +2642,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             <div className="flex-1">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="text-theme-heading font-medium">
-                  {imageGenProgress.stage === 'background' ? 'Generating backgrounds…' : 'Generating characters…'}
+                  {imageGenProgress.stage === 'background' ? t('storybook.generatingBackgrounds') : t('storybook.generatingCharacters')}
                 </span>
                 <span className="text-theme-muted">
                   {imageGenProgress.current} / {imageGenProgress.total}
@@ -2692,20 +2692,20 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         <div className="flex-1 overflow-y-auto p-6">
           {parsedBook.learningObjectiveSummary && (
             <div className="mb-4 p-3 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20">
-              <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-0.5">Learning Objective</p>
+              <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-0.5">{t('storybook.learningObjective')}</p>
               <p className="text-sm text-theme-heading">{parsedBook.learningObjectiveSummary}</p>
             </div>
           )}
           {(!parsedBook.comprehensionQuestions || parsedBook.comprehensionQuestions.length === 0) ? (
             <div className="text-center py-12 text-theme-muted">
               <Icon icon={QuestionIconData} className="w-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No comprehension questions generated.</p>
-              <p className="text-xs mt-1">Enable curriculum alignment and regenerate to get questions.</p>
+              <p className="text-sm">{t('storybook.noQuestionsGenerated')}</p>
+              <p className="text-xs mt-1">{t('storybook.enableCurriculumToGetQuestions')}</p>
             </div>
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-theme-muted">
-                Use these questions after reading to check understanding and connect to classwork.
+                {t('storybook.questionsAfterReading')}
               </p>
               {parsedBook.comprehensionQuestions.map((q, i) => (
                 <div key={i} className="rounded-xl border border-theme p-4 space-y-2">
@@ -2719,7 +2719,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     <p className="font-medium text-theme-heading text-sm">{q.question}</p>
                   </div>
                   <div className="ml-8 p-2 rounded-lg bg-theme-secondary">
-                    <p className="text-xs text-theme-muted font-semibold mb-0.5">Expected Answer / Discussion Points</p>
+                    <p className="text-xs text-theme-muted font-semibold mb-0.5">{t('storybook.expectedAnswer')}</p>
                     <p className="text-sm text-theme-heading">{q.answer}</p>
                     {q.outcomeRef && (
                       <span className="inline-block mt-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
@@ -2767,7 +2767,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 </div>
                 <div className="px-1.5 py-0.5" style={{ background: isCoverSelected ? `${accentColor}10` : undefined }}>
                   <p className="text-[10px] font-semibold" style={{ color: isCoverSelected ? accentColor : undefined }}>
-                    Cover
+                    {t('storybook.coverPage')}
                   </p>
                 </div>
               </button>
@@ -2814,7 +2814,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                         ))}
                         <div className="flex items-center gap-0.5 mt-0.5">
                           <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
-                          <span className="text-[5px] text-green-600">Writing…</span>
+                          <span className="text-[5px] text-green-600">{t('storybook.writingBadge')}</span>
                         </div>
                       </div>
                     ) : isThumbSkeleton ? (
@@ -2869,7 +2869,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   <Icon icon={ArrowLeft01IconData} className="w-5" />
                 </button>
                 <span className="text-sm text-theme-muted">
-                  {isCoverSelected ? t('storybook.coverPage') : `Page ${currentPageIdx + 1} of ${parsedBook.pages.length}`}
+                  {isCoverSelected ? t('storybook.coverPage') : t('storybook.pageNofM', { n: currentPageIdx + 1, m: parsedBook.pages.length })}
                 </span>
                 <button
                   disabled={currentPageIdx === parsedBook.pages.length - 1}
@@ -2900,7 +2900,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               {/* Image guidance note (suggested mode) */}
               {!isCoverSelected && currentPage && formData.imageMode === 'suggested' && currentPage.characterScene && (
                 <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
-                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-0.5">Image Guidance</p>
+                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-0.5">{t('storybook.imageGuidance')}</p>
                   <p className="text-sm text-blue-800 dark:text-blue-200">{currentPage.characterScene}</p>
                 </div>
               )}
@@ -2913,7 +2913,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               /* ── Cover Page Edit Panel ─────────────────────────────── */
               <>
                 <div>
-                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Cover Title</label>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.editCoverTitle')}</label>
                   <input
                     value={parsedBook.coverPage.title}
                     onChange={e => setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, title: e.target.value } } : prev)}
@@ -2921,7 +2921,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Subtitle</label>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.editSubtitle')}</label>
                   <input
                     value={parsedBook.coverPage.subtitle || ''}
                     onChange={e => setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, subtitle: e.target.value } } : prev)}
@@ -2937,7 +2937,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Cover Image</label>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.editCoverImage')}</label>
                   <div className="space-y-2">
                     {parsedBook.coverPage.coverImageData && (
                       <div className="relative">
@@ -2974,7 +2974,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-theme-strong hover:bg-theme-secondary text-sm text-theme-muted"
                     >
                       <Icon icon={Upload01IconData} className="w-4" />
-                      Upload cover image
+                      {t('storybook.uploadCoverImage')}
                     </button>
                     {hasDiffusion && (
                       <button
@@ -3000,7 +3000,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                         style={{ color: accentColor }}
                       >
                         <Icon icon={Image01IconData} className="w-4" />
-                        Generate AI Cover
+                        {t('storybook.generateAICover')}
                       </button>
                     )}
                   </div>
@@ -3011,14 +3011,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               <>
             {/* Scene picker */}
             <div>
-              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Background Scene</label>
+              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.backgroundScene')}</label>
               <button
                 onClick={() => setScenePicker(currentPageIdx)}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm"
               >
                 <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />
                 <span className="flex-1 text-left truncate text-theme-heading">
-                  {BUNDLED_SCENES.find(s => s.id === currentPage.bundledSceneId)?.name || 'Choose scene'}
+                  {BUNDLED_SCENES.find(s => s.id === currentPage.bundledSceneId)?.name || t('storybook.chooseScene')}
                 </span>
               </button>
               {/* AI background generation */}
@@ -3031,7 +3031,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   {isRemovingBg === currentPageIdx
                     ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
                     : <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />}
-                  Generate AI Background
+                  {t('storybook.generateAIBackground')}
                 </button>
               )}
               {/* Import background */}
@@ -3041,7 +3041,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-theme-strong hover:bg-theme-secondary text-sm text-theme-muted"
                 >
                   <Icon icon={Upload01IconData} className="w-4" />
-                  Import Background
+                  {t('storybook.importBackground')}
                 </button>
                 {showBgImportMenu === currentPageIdx && (
                   <div className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-gray-900 rounded-xl border border-theme shadow-lg z-20">
@@ -3053,7 +3053,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-theme-heading hover:bg-theme-secondary rounded-t-xl"
                     >
                       <Icon icon={Upload01IconData} className="w-4" />
-                      Upload from computer
+                      {t('storybook.uploadFromComputer')}
                     </button>
                     <button
                       onClick={() => {
@@ -3063,7 +3063,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-theme-heading hover:bg-theme-secondary rounded-b-xl"
                     >
                       <Icon icon={Image01IconData} className="w-4" />
-                      Browse saved images
+                      {t('storybook.browseSavedImages')}
                     </button>
                   </div>
                 )}
@@ -3087,7 +3087,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
             {/* Character image */}
             <div>
-              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Character Image</label>
+              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.characterImage')}</label>
               <div className="space-y-2">
                 {currentPage.characterImageData && (
                   <div className="relative">
@@ -3115,7 +3115,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     {isRemovingBg === currentPageIdx
                       ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
                       : <Icon icon={Image01IconData} className="w-4" />}
-                    Generate AI Character
+                    {t('storybook.generateAICharacter')}
                   </button>
                 )}
                 <button
@@ -3123,7 +3123,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-theme-strong hover:bg-theme-secondary text-sm text-theme-muted"
                 >
                   <Icon icon={Upload01IconData} className="w-4" />
-                  Upload image
+                  {t('storybook.uploadImage')}
                 </button>
                 {currentPage.characterImageData && (
                   <button
@@ -3134,7 +3134,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     {isRemovingBg === currentPageIdx
                       ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
                       : <Icon icon={Image01IconData} className="w-4" />}
-                    Remove background
+                    {t('storybook.removeBackground')}
                   </button>
                 )}
                 {/* Image placement */}
@@ -3162,7 +3162,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
             {/* Text segments editor */}
             <div>
-              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Text</label>
+              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.editText')}</label>
               <div className="space-y-3">
                 {currentPage.textSegments.map((seg, si) => (
                   <div key={si} className="space-y-1">
@@ -3214,14 +3214,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   }}
                   className="w-full flex items-center gap-1 px-2 py-1.5 text-xs text-theme-muted hover:text-theme-heading border border-dashed border-theme-strong rounded-lg"
                 >
-                  <Icon icon={Add01IconData} className="w-3.5" /> Add line
+                  <Icon icon={Add01IconData} className="w-3.5" /> {t('storybook.addLine')}
                 </button>
               </div>
             </div>
 
             {/* Read aloud page */}
             <div>
-              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Listen</label>
+              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.listenLabel')}</label>
               <button
                 onClick={() => {
                   if (isSpeaking) {
@@ -3242,8 +3242,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm"
               >
                 {isSpeaking
-                  ? <><Icon icon={PauseIconData} className="w-4" /> Stop</>
-                  : <><Icon icon={PlayIconData} className="w-4" /> Read this page</>
+                  ? <><Icon icon={PauseIconData} className="w-4" /> {t('storybook.stop')}</>
+                  : <><Icon icon={PlayIconData} className="w-4" /> {t('storybook.readThisPage')}</>
                 }
               </button>
             </div>
@@ -3307,7 +3307,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm">
             <div className="flex items-center justify-between p-4 border-b border-theme">
-              <h3 className="font-semibold text-theme-heading">Save Storybook</h3>
+              <h3 className="font-semibold text-theme-heading">{t('storybook.saveStorybook')}</h3>
               <button onClick={() => !isSaving && setShowSaveDialog(false)} className="p-1 rounded hover:bg-theme-hover">
                 <Icon icon={Cancel01IconData} className="w-5 text-theme-muted" />
               </button>
@@ -3325,9 +3325,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 <div>
                   <p className="text-sm font-medium text-theme-heading flex items-center gap-1.5">
                     <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />
-                    Save images
+                    {t('storybook.saveImages')}
                   </p>
-                  <p className="text-xs text-theme-muted">Preserves character and background images</p>
+                  <p className="text-xs text-theme-muted">{t('storybook.saveImagesDesc')}</p>
                 </div>
               </label>
 
@@ -3343,9 +3343,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 <div>
                   <p className="text-sm font-medium text-theme-heading flex items-center gap-1.5">
                     <Icon icon={Mic01IconData} className="w-4" style={{ color: accentColor }} />
-                    Save narration audio
+                    {t('storybook.saveNarrationAudio')}
                   </p>
-                  <p className="text-xs text-theme-muted">Pre-generates all speech (uses more storage but enables instant playback)</p>
+                  <p className="text-xs text-theme-muted">{t('storybook.saveNarrationAudioDesc')}</p>
                 </div>
               </label>
 
@@ -3354,7 +3354,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs text-theme-muted">
                     <Icon icon={Loading03IconData} className="w-3 animate-spin" />
-                    Generating audio... {saveProgress.current}/{saveProgress.total}
+                    {t('storybook.generatingAudio', { current: saveProgress.current, total: saveProgress.total })}
                   </div>
                   <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
@@ -3382,9 +3382,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 {isSaving ? (
                   <span className="flex items-center gap-1.5">
                     <Icon icon={Loading03IconData} className="w-3 animate-spin" />
-                    Saving...
+                    {t('common.saving')}
                   </span>
-                ) : 'Save'}
+                ) : t('common.save')}
               </button>
             </div>
           </div>
@@ -3395,7 +3395,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       {isRestoringImages && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg flex items-center gap-2">
           <Icon icon={Loading03IconData} className="w-4 animate-spin" style={{ color: accentColor }} />
-          Restoring images...
+          {t('storybook.restoringImages')}
         </div>
       )}
 

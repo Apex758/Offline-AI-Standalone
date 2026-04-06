@@ -46,7 +46,7 @@ function AppContent() {
 
   // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally
   const { settings, hasCompletedSetup } = useSettings();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   useEffect(() => {
     document.documentElement.style.fontSize = `${settings.fontSize}%`;
     return () => { document.documentElement.style.fontSize = ''; };
@@ -72,7 +72,7 @@ function AppContent() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <HeartbeatLoader className="w-12 h-12 mx-auto" />
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );

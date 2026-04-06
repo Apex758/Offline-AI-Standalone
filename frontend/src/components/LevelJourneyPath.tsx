@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import LockIconData from '@hugeicons/core-free-icons/LockIcon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
@@ -96,6 +97,7 @@ interface LevelJourneyPathProps {
 }
 
 export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJourneyPathProps) {
+  const { t } = useTranslation();
   const currentLevel = rank?.level ?? 1;
   const [levelsOpen, setLevelsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -283,7 +285,7 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
       >
         <div className="flex items-center justify-center gap-1.5">
           <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: dark ? tabColor : 'var(--dash-text, #1a1a2e)', textShadow: dark ? 'none' : `0 0 12px ${tabColor}60` }}>
-            Level {currentLevel} Journey
+            {t('achievements.levelJourney', { level: currentLevel })}
           </span>
           <HugeiconsIcon
             icon={ArrowDownIconData}
@@ -296,7 +298,7 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
           />
         </div>
         <div className="text-[10px] mt-0.5 font-medium" style={{ color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)' }}>
-          {completedSteps}/{totalSteps} steps to <span className="font-semibold">{nextTitle}</span>
+          {t('achievements.stepsToLevel', { current: completedSteps, total: totalSteps, title: nextTitle })}
         </div>
       </div>
 
@@ -388,7 +390,7 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
                           letterSpacing: '0.08em',
                         }}
                       >
-                        You are here
+                        {t('achievements.youAreHere')}
                       </span>
                     )}
                   </div>
@@ -420,7 +422,7 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
                   {/* Requirement info for locked levels */}
                   {isLocked && (
                     <div className="text-[9px] mt-0.5" style={{ color: dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)' }}>
-                      {r.required} achievements needed
+                      {t('achievements.achievementsNeeded', { count: r.required })}
                     </div>
                   )}
                 </div>
@@ -744,7 +746,7 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
               fontWeight={600}
               fill={dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)'}
             >
-              Level {currentLevel}
+              {t('achievements.levelJourney', { level: currentLevel })}
             </text>
           </g>
         </svg>
@@ -761,7 +763,7 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
         <div className="flex items-center justify-center gap-1.5">
           <HugeiconsIcon icon={Trophy01IconData} size={13} style={{ color: tabColor }} />
           <span className="text-[11px] font-semibold" style={{ color: tabColor }}>
-            {totalSteps - completedSteps} achievements to go
+            {t('achievements.achievementsToGo', { count: totalSteps - completedSteps })}
           </span>
         </div>
       </div>

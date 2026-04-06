@@ -298,6 +298,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, getTeacherGrades, getTeacherSubjects } from '../data/teacherConstants';
 import { downloadJSON } from '../lib/utils';
 import axios from 'axios';
+import { achievementApi } from '../lib/achievementApi';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -491,6 +492,21 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       setUserProfileImage(storedImage);
     }
   }, []);
+
+  // Fire profile_complete achievement flag when all profile fields are filled
+  useEffect(() => {
+    const hasName = !!settings.profile.displayName?.trim();
+    const hasSchool = !!settings.profile.school?.trim();
+    const hasGrades = Object.keys(settings.profile.gradeSubjects || {}).length > 0;
+    const hasPhoto = !!localStorage.getItem('user-profile-image');
+    if (hasName && hasSchool && hasGrades && hasPhoto) {
+      try {
+        const raw = localStorage.getItem('user');
+        const userId = raw ? (JSON.parse(raw).username || 'default_teacher') : 'default_teacher';
+        achievementApi.trackFlag(userId, 'profile_complete', 'set', 1).catch(() => {});
+      } catch {}
+    }
+  }, [settings.profile.displayName, settings.profile.school, settings.profile.gradeSubjects, userProfileImage]);
 
   // Sync display name changes back to Dashboard's localStorage
   const handleDisplayNameChange = (name: string) => {
@@ -2044,7 +2060,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           <Palette className="w-4.5 h-4.5 text-theme-secondary" />
                           {t('settingsPage.appearance.tabColors')}
                         </CardTitle>
-                        <CardDescription>Personalize the accent color for each tab</CardDescription>
+                        <CardDescription>{t('settingsPage.appearance.tabColorsDesc')}</CardDescription>
                       </div>
                       <Button
                         variant="outline"
@@ -2286,7 +2302,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
               <div className="space-y-6">
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.models.title')}</h2>
-                  <p className="text-sm text-theme-muted mt-1">Manage language and image generation models</p>
+                  <p className="text-sm text-theme-muted mt-1">{t('settingsPage.models.description')}</p>
                 </div>
 
                 {/* Hardware Tier Banner */}
@@ -2345,7 +2361,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <Cpu className="w-4.5 h-4.5 text-theme-secondary" />
                       {t('settingsPage.models.languageModel')}
                     </CardTitle>
-                    <CardDescription>Select the model to use for text generation</CardDescription>
+                    <CardDescription>{t('settingsPage.models.languageModelDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -2376,7 +2392,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           onClick={fetchAvailableModels}
                           disabled={loadingModels}
                           className="px-3"
-                          title="Refresh model list"
+                          title={t('settingsPage.models.refreshModels')}
                         >
                           {loadingModels ? <HeartbeatLoader className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
                         </Button>
@@ -2387,7 +2403,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
                           <span className="text-blue-500 mt-0.5 shrink-0 text-base">★</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Recommended for your hardware</p>
+                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">{t('settingsPage.models.recommendedHardware')}</p>
                             <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 break-words">{recommendations.recommended_llm.name}</p>
                             <p className="text-xs text-blue-500 dark:text-blue-500 mt-0.5">{recommendations.recommended_llm.reason}</p>
                           </div>
@@ -2500,7 +2516,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <Image className="w-4.5 h-4.5 text-theme-secondary" />
                       {t('settingsPage.models.diffusionModel')}
                     </CardTitle>
-                    <CardDescription>Select the diffusion model used for image generation</CardDescription>
+                    <CardDescription>{t('settingsPage.models.diffusionModelDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -2534,7 +2550,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           onClick={fetchAvailableDiffusionModels}
                           disabled={loadingDiffusionModels}
                           className="px-3"
-                          title="Refresh diffusion model list"
+                          title={t('settingsPage.models.refreshDiffusion')}
                         >
                           {loadingDiffusionModels ? <HeartbeatLoader className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
                         </Button>
@@ -2545,7 +2561,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
                           <span className="text-blue-500 mt-0.5 shrink-0 text-base">★</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Recommended for your hardware</p>
+                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">{t('settingsPage.models.recommendedHardware')}</p>
                             <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 break-words">{recommendations.recommended_diffusion.name}</p>
                             <p className="text-xs text-blue-500 dark:text-blue-500 mt-0.5">{recommendations.recommended_diffusion.reason}</p>
                           </div>
@@ -2588,7 +2604,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           className="flex-1"
                         >
                           <FolderOpen className="w-4 h-4 mr-2" />
-                          Browse Diffusion Models Folder
+                          {t('settingsPage.models.browseDiffusion')}
                         </Button>
                       </div>
                       {availableDiffusionModels.length > 0 && (
@@ -2635,7 +2651,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                             ? 'bg-green-50 border border-green-200 text-green-700 dark:bg-green-950/30 dark:border-green-800 dark:text-green-400'
                             : 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-400'
                         }`}>
-                          <span className="mt-px shrink-0">{recommendations.recommended_ocr.compatible ? '✓' : '⚠'}</span>
+                          <span className="mt-px shrink-0">{recommendations.recommended_ocr.compatible ? '[OK]' : '[!]'}</span>
                           <span>{recommendations.recommended_ocr.reason}</span>
                         </div>
                       )}
@@ -2666,7 +2682,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                             onClick={fetchAvailableOcrModels}
                             disabled={loadingOcrModels}
                             className="px-3"
-                            title="Refresh OCR model list"
+                            title={t('settingsPage.models.refreshOcr')}
                           >
                             <RefreshCw className="w-4 h-4" />
                           </Button>
@@ -2768,7 +2784,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Shuffle className="w-4.5 h-4.5 text-theme-secondary" />
-                        Dual-Model Routing
+                        {t('settingsPage.models.dualModel')}
                       </CardTitle>
                       <CardDescription>
                         Use a fast Tier 1 model for simple tasks and your primary model for advanced tasks
@@ -2814,7 +2830,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
                             {fastModel && (
                               <div>
-                                <p className="text-xs font-medium text-theme-label mb-2">Task Routing</p>
+                                <p className="text-xs font-medium text-theme-label mb-2">{t('settingsPage.models.taskRouting')}</p>
                                 <div className="space-y-1.5">
                                   {[
                                     { key: 'chat', label: 'Chat' },
@@ -2873,7 +2889,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
               <div className="space-y-6">
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.general.title')}</h2>
-                  <p className="text-sm text-theme-muted mt-1">App behavior, generation mode, and tutorials</p>
+                  <p className="text-sm text-theme-muted mt-1">{t('settingsPage.general.description')}</p>
                 </div>
 
                 {/* Application Behavior */}
@@ -2883,7 +2899,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <Layers className="w-4.5 h-4.5 text-theme-secondary" />
                       {t('settingsPage.general.appBehavior')}
                     </CardTitle>
-                    <CardDescription>Configure how the application behaves</CardDescription>
+                    <CardDescription>{t('settingsPage.general.appBehaviorDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
@@ -2948,7 +2964,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <BookOpen className="w-4.5 h-4.5 text-theme-secondary" />
                       {t('settingsPage.general.tutorials')}
                     </CardTitle>
-                    <CardDescription>Control tutorial behavior and reset completed tutorials</CardDescription>
+                    <CardDescription>{t('settingsPage.general.tutorialsDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -3019,7 +3035,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
               <div className="space-y-6">
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.features.title')}</h2>
-                  <p className="text-sm text-theme-muted mt-1">Enable, disable, and reorder your sidebar tools</p>
+                  <p className="text-sm text-theme-muted mt-1">{t('settingsPage.features.description')}</p>
                 </div>
 
                 {/* Feature Modules — High-level toggle */}
@@ -3283,7 +3299,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <ComputerSettings className="w-4.5 h-4.5 text-theme-secondary" />
                       {t('settingsPage.features.systemBehavior')}
                     </CardTitle>
-                    <CardDescription>Control how the app starts and runs in the background</CardDescription>
+                    <CardDescription>{t('settingsPage.features.systemBehaviorDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-1">
@@ -3336,7 +3352,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <Icon icon={Notification01IconData} className="w-4.5 h-4.5 text-theme-secondary" />
                       {t('settingsPage.features.notifications')}
                     </CardTitle>
-                    <CardDescription>Control how and when you receive reminders for calendar events</CardDescription>
+                    <CardDescription>{t('settingsPage.features.notificationsDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-1">
@@ -3406,7 +3422,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                             </svg>
                             <div>
-                              <p className="text-sm font-medium text-theme-label">Quiet Hours</p>
+                              <p className="text-sm font-medium text-theme-label">{t('settingsPage.features.quietHours')}</p>
                               <p className="text-xs text-theme-hint">Suppress reminders during these hours</p>
                             </div>
                           </div>
@@ -3443,7 +3459,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
                       {/* Event type filters */}
                       <div className="p-3 rounded-lg">
-                        <p className="text-sm font-medium text-theme-label mb-2">Notify me for</p>
+                        <p className="text-sm font-medium text-theme-label mb-2">{t('settingsPage.features.notifyFor')}</p>
                         <div className="space-y-1 ml-1">
                           {([
                             { key: 'exam',             label: 'Exams',             color: '#E53E3E' },
@@ -3486,7 +3502,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
             {activeSection === 'files' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-theme-title">File Access</h2>
+                  <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.fileAccess.title')}</h2>
                   <p className="text-sm text-theme-muted mt-1">Allow the app to browse files on your computer</p>
                 </div>
 
@@ -3495,7 +3511,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <FolderOpen className="w-4.5 h-4.5 text-theme-secondary" />
-                      Enable File Access
+                      {t('settingsPage.fileAccess.enableFileAccess')}
                     </CardTitle>
                     <CardDescription>
                       When enabled, you can browse and reference your PC files from the Chat panel and Resource Manager
@@ -3561,7 +3577,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                                         await api?.saveAllowedFolders?.(updated);
                                       }}
                                       className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 flex-shrink-0"
-                                      title="Remove folder"
+                                      title={t('settingsPage.fileAccess.removeFolder')}
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </button>
@@ -3653,7 +3669,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-theme-title">Feature Discovery</h2>
+                      <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.featureDiscovery.title')}</h2>
                       <p className="text-sm text-theme-muted mt-1">Explore everything the Learning Hub can do</p>
                       <p className="text-sm text-theme-secondary mt-2 font-medium">{discoveredCount} of {totalCount} features explored</p>
                     </div>
@@ -3663,7 +3679,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <div className="relative">
                     <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted" />
                     <Input
-                      placeholder="Search features..."
+                      placeholder={t('settingsPage.featureDiscovery.searchPlaceholder')}
                       value={discoverySearch}
                       onChange={e => setDiscoverySearch(e.target.value)}
                       className="pl-10"
@@ -3810,7 +3826,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
             {activeSection === 'danger' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-red-700 dark:text-red-400">Danger Zone</h2>
+                  <h2 className="text-2xl font-bold text-red-700 dark:text-red-400">{t('settingsPage.dangerZone.title')}</h2>
                   <p className="text-sm text-red-600/70 dark:text-red-400/60 mt-1">Export, import, reset &amp; wipe your data</p>
                 </div>
 
@@ -3819,7 +3835,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="text-theme-title flex items-center gap-2">
                       <Download className="w-5 h-5 text-blue-500" />
-                      Export Data
+                      {t('settingsPage.dangerZone.exportData')}
                     </CardTitle>
                     <CardDescription>Download a backup of your selected data as a JSON file.</CardDescription>
                   </CardHeader>
@@ -3836,7 +3852,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           }
                         }}
                       >
-                        {exportSelected.size === DATA_CATEGORIES.length ? 'Deselect All' : 'Select All'}
+                        {exportSelected.size === DATA_CATEGORIES.length ? t('settingsPage.dangerZone.deselectAll') : t('settingsPage.dangerZone.selectAll')}
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -3903,7 +3919,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           }
                         }}
                       >
-                        {importSelected.size === DATA_CATEGORIES.length ? 'Deselect All' : 'Select All'}
+                        {importSelected.size === DATA_CATEGORIES.length ? t('settingsPage.dangerZone.deselectAll') : t('settingsPage.dangerZone.selectAll')}
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -3982,7 +3998,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="text-red-700 dark:text-red-400 flex items-center gap-2">
                       <RotateCcw className="w-5 h-5" />
-                      Reset Settings
+                      {t('settingsPage.dangerZone.resetSettings')}
                     </CardTitle>
                     <CardDescription>Restore all settings to their default values. Your data will not be affected.</CardDescription>
                   </CardHeader>
@@ -4002,7 +4018,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   <CardHeader>
                     <CardTitle className="text-red-800 dark:text-red-400 flex items-center gap-2">
                       <Trash2 className="w-5 h-5" />
-                      Wipe Entire App
+                      {t('settingsPage.dangerZone.wipeApp')}
                     </CardTitle>
                     <CardDescription className="text-red-600/80 dark:text-red-400/60">
                       Delete all data including chat history, generated resources, milestones, student records, and settings.
@@ -4031,21 +4047,21 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
           <div className="rounded-lg p-6 max-w-md w-full mx-4 widget-glass">
             <div className="flex items-center gap-3 mb-4">
               <Trash2 className="w-6 h-6 text-red-700" />
-              <h3 className="text-lg font-semibold text-theme-title">Wipe Entire App?</h3>
+              <h3 className="text-lg font-semibold text-theme-title">{t('settingsPage.dangerZone.wipeTitle')}</h3>
             </div>
             <p className="text-theme-muted mb-2">
-              This will permanently delete:
+              {t('settingsPage.dangerZone.wipePermanentlyDelete')}
             </p>
             <ul className="text-theme-muted mb-4 text-sm list-disc list-inside space-y-1">
-              <li>All chat conversations</li>
-              <li>All generated lesson plans, quizzes, rubrics, and worksheets</li>
-              <li>All curriculum milestones and progress</li>
-              <li>All student records</li>
-              <li>All generated images</li>
-              <li>All app settings and preferences</li>
+              <li>{t('settingsPage.dangerZone.wipeItemChats')}</li>
+              <li>{t('settingsPage.dangerZone.wipeItemResources')}</li>
+              <li>{t('settingsPage.dangerZone.wipeItemMilestones')}</li>
+              <li>{t('settingsPage.dangerZone.wipeItemStudents')}</li>
+              <li>{t('settingsPage.dangerZone.wipeItemImages')}</li>
+              <li>{t('settingsPage.dangerZone.wipeItemSettings')}</li>
             </ul>
             <p className="text-red-600 font-medium mb-6 text-sm">
-              This action cannot be undone. The app will reload after wiping.
+              {t('settingsPage.dangerZone.wipeCannotUndo')}
             </p>
             <div className="flex gap-3 justify-end">
               <Button
@@ -4054,14 +4070,14 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 className="px-4 py-2"
                 disabled={isWiping}
               >
-                Cancel
+                {t('settingsPage.dangerZone.cancel')}
               </Button>
               <Button
                 onClick={handleWipeApp}
                 className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white"
                 disabled={isWiping}
               >
-                {isWiping ? 'Wiping...' : 'Wipe Everything'}
+                {isWiping ? t('settingsPage.dangerZone.wiping') : t('settingsPage.dangerZone.wipeEverything')}
               </Button>
             </div>
           </div>
@@ -4074,10 +4090,10 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
           <div className="rounded-lg p-6 max-w-md w-full mx-4 widget-glass">
             <div className="flex items-center gap-3 mb-4">
               <AlertTriangle className="w-6 h-6 text-red-600" />
-              <h3 className="text-lg font-semibold text-theme-title">Reset Settings?</h3>
+              <h3 className="text-lg font-semibold text-theme-title">{t('settingsPage.dangerZone.resetTitle')}</h3>
             </div>
             <p className="text-theme-muted mb-6">
-              Are you sure you want to reset all settings to their default values? This action cannot be undone.
+              {t('settingsPage.dangerZone.resetConfirmBody')}
             </p>
             <div className="flex gap-3 justify-end">
               <Button
@@ -4085,13 +4101,13 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 variant="outline"
                 className="px-4 py-2"
               >
-                Cancel
+                {t('settingsPage.dangerZone.cancel')}
               </Button>
               <Button
                 onClick={handleConfirmReset}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white"
               >
-                Reset Settings
+                {t('settingsPage.dangerZone.resetSettings')}
               </Button>
             </div>
           </div>
@@ -4118,6 +4134,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 };
 
 function LicenseSection() {
+  const { t } = useTranslation();
   const { isLicensed, email, schoolName, loading, error, activate, deactivate } = useLicense();
   const [licenseEmail, setLicenseEmail] = useState('');
   const [licenseCode, setLicenseCode] = useState('');
@@ -4133,7 +4150,7 @@ function LicenseSection() {
   return (
     <div className="space-y-6">
       <div className="mb-2">
-        <h2 className="text-2xl font-bold text-theme-title">License & Updates</h2>
+        <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.license.title')}</h2>
         <p className="text-sm text-theme-muted mt-1">Enter a license code to receive automatic updates. The app works fully without a license.</p>
       </div>
 
@@ -4201,10 +4218,10 @@ function LicenseSection() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-theme-label mb-1">License code</label>
+                <label className="block text-sm font-medium text-theme-label mb-1">{t('settingsPage.license.licenseCode')}</label>
                 <Input
                   type="text"
-                  placeholder="OECS-XXXX-XXXX-XXXX"
+                  placeholder={t('settingsPage.license.licenseCodePlaceholder')}
                   value={licenseCode}
                   onChange={e => setLicenseCode(e.target.value)}
                   required

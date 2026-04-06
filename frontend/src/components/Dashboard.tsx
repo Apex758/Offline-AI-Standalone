@@ -103,6 +103,7 @@ const CalendarRange: React.FC<{ className?: string; style?: React.CSSProperties 
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
+import { achievementApi } from '../lib/achievementApi';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
 import TrophyDetailCard from './TrophyDetailCard';
 import { getTrophyType } from '../config/trophyMap';
@@ -135,7 +136,7 @@ const EducatorInsights = React.lazy(() => import('./EducatorInsights'));
 const CurriculumPlan = React.lazy(() => import('./CurriculumPlan'));
 const PhotoReceiver = React.lazy(() => import('./PhotoReceiver'));
 const SchoolYearCalendar = React.lazy(() => import('./SchoolYearCalendar'));
-import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
+import TutorialOverlay, { getDashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
 import { useSettings } from '../contexts/SettingsContext';
@@ -169,27 +170,27 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-const tools: Tool[] = [
+const getTools = (t: TFunction): Tool[] => [
   {
     id: 'analytics',
     name: 'My Overview',
     icon: 'LayoutDashboard',
     type: 'analytics',
-    description: 'sidebar.descriptions.myOverview'
+    description: t('sidebar.descriptions.myOverview')
   },
   {
     id: 'educator-insights',
     name: 'Educator Insights',
     icon: 'Lightbulb',
     type: 'educator-insights',
-    description: 'sidebar.descriptions.educatorInsights'
+    description: t('sidebar.descriptions.educatorInsights')
   },
   {
     id: 'brain-dump',
     name: 'Brain Dump',
     icon: 'Brain',
     type: 'brain-dump',
-    description: 'sidebar.descriptions.brainDump',
+    description: t('sidebar.descriptions.brainDump'),
     group: 'planning-prep'
   },
   {
@@ -197,7 +198,7 @@ const tools: Tool[] = [
     name: 'Progress Tracker',
     icon: 'TrendingUp',
     type: 'curriculum-tracker',
-    description: 'sidebar.descriptions.progressTracker',
+    description: t('sidebar.descriptions.progressTracker'),
     group: 'my-classroom'
   },
   {
@@ -205,7 +206,7 @@ const tools: Tool[] = [
     name: 'Curriculum Plan',
     icon: 'CalendarRange',
     type: 'curriculum-plan',
-    description: 'sidebar.descriptions.curriculumPlan',
+    description: t('sidebar.descriptions.curriculumPlan'),
     group: 'my-classroom'
   },
   {
@@ -213,7 +214,7 @@ const tools: Tool[] = [
     name: 'My Resources',
     icon: 'FolderOpen',
     type: 'resource-manager',
-    description: 'sidebar.descriptions.myResources',
+    description: t('sidebar.descriptions.myResources'),
     group: 'planning-prep'
   },
   {
@@ -221,7 +222,7 @@ const tools: Tool[] = [
     name: 'School Year',
     icon: 'CalendarRange',
     type: 'school-year-calendar',
-    description: 'sidebar.descriptions.schoolYear',
+    description: t('sidebar.descriptions.schoolYear'),
     group: 'planning-prep'
   },
   {
@@ -229,21 +230,21 @@ const tools: Tool[] = [
     name: 'Ask PEARL',
     icon: 'MessageSquare',
     type: 'chat',
-    description: 'sidebar.descriptions.askPearl'
+    description: t('sidebar.descriptions.askPearl')
   },
   {
     id: 'curriculum',
     name: 'Curriculum Browser',
     icon: 'Search',
     type: 'curriculum',
-    description: 'sidebar.descriptions.curriculumBrowser'
+    description: t('sidebar.descriptions.curriculumBrowser')
   },
   {
     id: 'quiz-generator',
     name: 'Quiz Builder',
     icon: 'PenTool',
     type: 'quiz-generator',
-    description: 'sidebar.descriptions.quizBuilder',
+    description: t('sidebar.descriptions.quizBuilder'),
     group: 'assessment-tools'
   },
   {
@@ -251,7 +252,7 @@ const tools: Tool[] = [
     name: 'Rubric Builder',
     icon: 'ClipboardList',
     type: 'rubric-generator',
-    description: 'sidebar.descriptions.rubricBuilder',
+    description: t('sidebar.descriptions.rubricBuilder'),
     group: 'assessment-tools'
   },
   {
@@ -259,7 +260,7 @@ const tools: Tool[] = [
     name: 'My Classes',
     icon: 'UsersRound',
     type: 'class-management',
-    description: 'sidebar.descriptions.myClasses',
+    description: t('sidebar.descriptions.myClasses'),
     group: 'my-classroom'
   },
   // Lesson Planner Group
@@ -268,7 +269,7 @@ const tools: Tool[] = [
     name: 'Lesson Plan',
     icon: 'BookMarked',
     type: 'lesson-planner',
-    description: 'sidebar.descriptions.lessonPlan',
+    description: t('sidebar.descriptions.lessonPlan'),
     group: 'lesson-planners'
   },
   {
@@ -276,7 +277,7 @@ const tools: Tool[] = [
     name: 'Early Childhood',
     icon: 'Baby',
     type: 'kindergarten-planner',
-    description: 'sidebar.descriptions.earlyChildhood',
+    description: t('sidebar.descriptions.earlyChildhood'),
     group: 'lesson-planners'
   },
   {
@@ -284,7 +285,7 @@ const tools: Tool[] = [
     name: 'Multi-Level',
     icon: 'Layers',
     type: 'multigrade-planner',
-    description: 'sidebar.descriptions.multiLevel',
+    description: t('sidebar.descriptions.multiLevel'),
     group: 'lesson-planners'
   },
   {
@@ -292,7 +293,7 @@ const tools: Tool[] = [
     name: 'Integrated Lesson',
     icon: 'Merge',
     type: 'cross-curricular-planner',
-    description: 'sidebar.descriptions.integratedLesson',
+    description: t('sidebar.descriptions.integratedLesson'),
     group: 'lesson-planners'
   },
   {
@@ -300,7 +301,7 @@ const tools: Tool[] = [
     name: 'Achievements',
     icon: 'Trophy',
     type: 'achievements',
-    description: 'sidebar.descriptions.achievements',
+    description: t('sidebar.descriptions.achievements'),
     group: 'my-classroom'
   },
   {
@@ -308,7 +309,7 @@ const tools: Tool[] = [
     name: 'Photo Transfer',
     icon: 'Camera',
     type: 'photo-transfer',
-    description: 'sidebar.descriptions.photoTransfer',
+    description: t('sidebar.descriptions.photoTransfer'),
     group: 'my-classroom'
   },
   {
@@ -316,21 +317,21 @@ const tools: Tool[] = [
     name: 'Performance',
     icon: 'Speedometer',
     type: 'performance-metrics',
-    description: 'sidebar.descriptions.performance'
+    description: t('sidebar.descriptions.performance')
   },
   {
     id: 'support',
     name: 'Support & Reporting',
     icon: 'HelpCircle',
     type: 'support',
-    description: 'sidebar.descriptions.support'
+    description: t('sidebar.descriptions.support')
   },
   {
     id: 'settings',
     name: 'Settings',
     icon: 'Settings',
     type: 'settings',
-    description: 'sidebar.descriptions.settings'
+    description: t('sidebar.descriptions.settings')
   },
   // Visual Studio Group
   {
@@ -338,7 +339,7 @@ const tools: Tool[] = [
     name: 'Worksheet Builder',
     icon: 'FileSpreadsheet',
     type: 'worksheet-generator',
-    description: 'sidebar.descriptions.worksheetBuilder',
+    description: t('sidebar.descriptions.worksheetBuilder'),
     group: 'visual-studio'
   },
   {
@@ -346,7 +347,7 @@ const tools: Tool[] = [
     name: 'Image Studio',
     icon: 'Palette',
     type: 'image-studio',
-    description: 'sidebar.descriptions.imageStudio',
+    description: t('sidebar.descriptions.imageStudio'),
     group: 'visual-studio'
   },
   {
@@ -354,7 +355,7 @@ const tools: Tool[] = [
     name: 'Slide Deck',
     icon: 'Presentation',
     type: 'presentation-builder',
-    description: 'sidebar.descriptions.slideDeck',
+    description: t('sidebar.descriptions.slideDeck'),
     group: 'visual-studio'
   },
   {
@@ -362,7 +363,7 @@ const tools: Tool[] = [
     name: 'Storybook Creator',
     icon: 'StoryBook',
     type: 'storybook',
-    description: 'sidebar.descriptions.storybookCreator',
+    description: t('sidebar.descriptions.storybookCreator'),
     group: 'visual-studio'
   }
 ];
@@ -587,6 +588,8 @@ const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string;
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled, isToolChildEnabled, trackToolVisit } = useSettings();
   const { t } = useTranslation();
+  // Build the translated tools list — re-evaluated whenever the language changes
+  const tools = useMemo(() => getTools(t), [t]);
   // Translate a tool name using the i18n key map, falling back to the original name
   const tn = (tool: Tool) => SIDEBAR_I18N[tool.id] ? t(SIDEBAR_I18N[tool.id]) : tool.name;
   const { hasDiffusion } = useCapabilities();
@@ -597,7 +600,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { unreadCount, registerNavigator } = useNotification();
   const { queue } = useQueue();
   const { isTabHttpBusy } = useTabBusy();
-  const { openNoteIds, fabPanelOpen, setFabPanelOpen } = useStickyNotes();
+  const { openNoteIds, fabPanelOpen, setFabPanelOpen, createNote, openNote, notes } = useStickyNotes();
   const activeStreams = getActiveStreams();
   const queuedTabEndpoints = new Set(
     queue.filter(item => item.status === 'generating').map(item => `${item.tabId}::${item.endpoint}`)
@@ -670,10 +673,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return () => observer.disconnect();
   }, []);
 
-  // Ctrl+K / Cmd+K to open command palette
+  // Ctrl+F / Cmd+F to open command palette
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
         e.preventDefault();
         setCommandPaletteOpen(prev => !prev);
       }
@@ -887,10 +890,39 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, [settings.tutorials.hasSeenWelcome]);
 
+  const createTeacherWelcomeNote = useCallback(() => {
+    if (localStorage.getItem('teacherWelcomeNoteCreated')) return;
+    localStorage.setItem('teacherWelcomeNoteCreated', 'true');
+
+    const hasName = !!(settings.profile.displayName && settings.profile.displayName.trim());
+    const hasSchool = !!(settings.profile.school && settings.profile.school.trim());
+    const hasGrades = Object.keys(settings.profile.gradeSubjects || {}).length > 0;
+    const hasPhoto = !!localStorage.getItem('user-profile-image');
+
+    const note = createNote({
+      title: 'Press Ctrl+F to search anything',
+      content: 'Use AI search or regular search — great when you\'re lost or looking for a tool.',
+      checklist: [
+        { id: 'setup_profile', text: 'Set up your profile (name & school)', completed: hasName && hasSchool },
+        { id: 'setup_grades', text: 'Add your grades & subjects', completed: hasGrades },
+        { id: 'setup_photo', text: 'Upload a profile photo', completed: hasPhoto },
+        { id: 'setup_calendar', text: 'Set up your school year calendar', completed: false },
+        { id: 'explore_lesson', text: 'Open the Lesson Planner', completed: false },
+        { id: 'try_search', text: 'Try AI Search (Ctrl+F)', completed: false },
+      ],
+      color: '#fef08a',
+      pinned: true,
+      position: { x: Math.max(0, window.innerWidth / 2 - 170), y: 80 },
+      size: { width: 340, height: 320 },
+    });
+    openNote(note.id, null);
+  }, [settings.profile, createNote, openNote]);
+
   const handleTutorialComplete = useCallback(() => {
     markTutorialComplete(TUTORIAL_IDS.DASHBOARD_MAIN);
     setShowFirstTimeTutorial(false);
-  }, [markTutorialComplete]);
+    createTeacherWelcomeNote();
+  }, [markTutorialComplete, createTeacherWelcomeNote]);
 
   const handleWelcomeStartTour = useCallback(() => {
     setWelcomeSeen(true);
@@ -901,7 +933,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const handleWelcomeSkip = useCallback(() => {
     setWelcomeSeen(true);
     setShowWelcomeModal(false);
-  }, [setWelcomeSeen]);
+    createTeacherWelcomeNote();
+  }, [setWelcomeSeen, createTeacherWelcomeNote]);
+
+  // Fire checklist_complete flag when all items on the teacher welcome note are ticked
+  useEffect(() => {
+    if (localStorage.getItem('teacherChecklistComplete')) return;
+    const welcomeNote = notes.find(n =>
+      n.checklist && n.title === 'Press Ctrl+F to search anything'
+    );
+    if (!welcomeNote?.checklist) return;
+    const allDone = welcomeNote.checklist.every(item => item.completed);
+    if (!allDone) return;
+    localStorage.setItem('teacherChecklistComplete', 'true');
+    try {
+      const raw = localStorage.getItem('user');
+      const userId = raw ? (JSON.parse(raw).username || 'default_teacher') : 'default_teacher';
+      achievementApi.trackFlag(userId, 'checklist_complete', 'set', 1).catch(() => {});
+    } catch {}
+  }, [notes]);
 
   const handleResourceManagerTutorialComplete = useCallback(() => {
     markTutorialComplete(TUTORIAL_IDS.RESOURCE_MANAGER);
@@ -2182,11 +2232,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, {} as { [key: string]: Tab[] }), [tabs]);
 
   // Group tools by category — reactive to per-child visibility settings
-  const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners' && isToolChildEnabled('lesson-planners', t.type)), [settings.sidebarOrder]);
-  const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio' && isToolChildEnabled('visual-studio', t.type)), [settings.sidebarOrder]);
-  const planningPrepTools = useMemo(() => tools.filter(t => t.group === 'planning-prep' && isToolChildEnabled('planning-prep', t.type)), [settings.sidebarOrder]);
-  const assessmentToolsList = useMemo(() => tools.filter(t => t.group === 'assessment-tools' && isToolChildEnabled('assessment-tools', t.type)), [settings.sidebarOrder]);
-  const myClassroomTools = useMemo(() => tools.filter(t => t.group === 'my-classroom' && isToolChildEnabled('my-classroom', t.type)), [settings.sidebarOrder]);
+  const lessonPlannerTools = useMemo(() => tools.filter(tl => tl.group === 'lesson-planners' && isToolChildEnabled('lesson-planners', tl.type)), [tools, settings.sidebarOrder]);
+  const visualStudioTools = useMemo(() => tools.filter(tl => tl.group === 'visual-studio' && isToolChildEnabled('visual-studio', tl.type)), [tools, settings.sidebarOrder]);
+  const planningPrepTools = useMemo(() => tools.filter(tl => tl.group === 'planning-prep' && isToolChildEnabled('planning-prep', tl.type)), [tools, settings.sidebarOrder]);
+  const assessmentToolsList = useMemo(() => tools.filter(tl => tl.group === 'assessment-tools' && isToolChildEnabled('assessment-tools', tl.type)), [tools, settings.sidebarOrder]);
+  const myClassroomTools = useMemo(() => tools.filter(tl => tl.group === 'my-classroom' && isToolChildEnabled('my-classroom', tl.type)), [tools, settings.sidebarOrder]);
 
   // Small component to evaluate nudges when active tab changes
   const NudgeEvaluator: React.FC = () => {
@@ -2985,7 +3035,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       {/* First-time Dashboard Tutorial */}
       <TutorialOverlay
-        steps={dashboardWalkthroughSteps}
+        steps={getDashboardWalkthroughSteps(t)}
         onComplete={handleTutorialComplete}
         autoStart={showFirstTimeTutorial}
         showFloatingButton={false}

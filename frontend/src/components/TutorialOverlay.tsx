@@ -696,10 +696,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 export default TutorialOverlay;
 
 // Analytics Dashboard Tutorial Steps
+// Static array kept for backward compatibility (e.g. tutorialSteps.ts module-level usage)
 export const analyticsDashboardSteps: TutorialStep[] = [
   {
     target: '[data-tutorial="welcome-header"]',
-    title: 'Welcome to Your Dashboard! 👋',
+    title: 'Welcome to Your Dashboard!',
     description: 'This is your teaching resource hub where you can see all your created content and quick stats at a glance.',
     position: 'bottom',
   },
@@ -735,11 +736,52 @@ export const analyticsDashboardSteps: TutorialStep[] = [
   },
 ];
 
+// Translated analytics dashboard steps — call inside a component that has useTranslation
+export const getAnalyticsDashboardSteps = (t: (key: string) => string): TutorialStep[] => [
+  {
+    target: '[data-tutorial="welcome-header"]',
+    title: t('tutorial.analytics.step1.title'),
+    description: t('tutorial.analytics.step1.description'),
+    position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="stat-cards"]',
+    title: t('tutorial.analytics.step2.title'),
+    description: t('tutorial.analytics.step2.description'),
+    position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="lesson-breakdown"]',
+    title: t('tutorial.analytics.step3.title'),
+    description: t('tutorial.analytics.step3.description'),
+    position: 'right',
+  },
+  {
+    target: '[data-tutorial="quick-stats"]',
+    title: t('tutorial.analytics.step4.title'),
+    description: t('tutorial.analytics.step4.description'),
+    position: 'left',
+  },
+  {
+    target: '[data-tutorial="curriculum-access"]',
+    title: t('tutorial.analytics.step5.title'),
+    description: t('tutorial.analytics.step5.description'),
+    position: 'top',
+  },
+  {
+    target: '[data-tutorial="action-cards"]',
+    title: t('tutorial.analytics.step6.title'),
+    description: t('tutorial.analytics.step6.description'),
+    position: 'top',
+  },
+];
+
 // Main Dashboard Tutorial Steps (First-time user experience)
+// Static array kept for backward compatibility
 export const dashboardWalkthroughSteps: TutorialStep[] = [
   {
     target: '[data-tutorial="main-sidebar"]',
-    title: 'Welcome to OECS Learning Hub! 🎓',
+    title: 'Welcome to OECS Learning Hub!',
     description: 'This is your teaching toolkit sidebar. Here you\'ll find all the tools to create lesson plans, quizzes, rubrics, and more. The sidebar auto-collapses when you hover away to give you more workspace.',
     position: 'right',
   },
@@ -750,11 +792,11 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'right',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click here!',
+    actionHint: 'Click here!',
   },
   {
     target: '[data-tutorial="tab-bar"]',
-    title: 'Tab Management 📑',
+    title: 'Tab Management',
     description: 'Great! You opened your first tab. Your open tools appear here. You can have up to 3 tabs of each type open simultaneously.',
     position: 'bottom',
   },
@@ -771,11 +813,11 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'right',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click to open!',
+    actionHint: 'Click to open!',
   },
   {
     target: '[data-tutorial="tab-bar"]',
-    title: 'Multiple Different Tabs 📑',
+    title: 'Multiple Different Tabs',
     description: 'Excellent! Now you have two different tools open. Notice how each tab type has its own color. Let\'s explore what happens when you open multiple tabs of the SAME type...',
     position: 'bottom',
   },
@@ -786,11 +828,11 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'right',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click again!',
+    actionHint: 'Click again!',
   },
   {
     target: '[data-tutorial="tab-groups"]',
-    title: 'Tab Groups 📚',
+    title: 'Tab Groups',
     description: 'See how the two Chat tabs automatically grouped together? The dropdown arrow lets you collapse/expand the group. The group header shows which tool type it is.',
     position: 'bottom',
   },
@@ -801,7 +843,7 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'bottom',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click to collapse!',
+    actionHint: 'Click to collapse!',
   },
   {
     target: '[data-tutorial="tab-groups"][data-group-type="chat"] button',
@@ -810,7 +852,7 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'bottom',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click to expand!',
+    actionHint: 'Click to expand!',
   },
   {
     target: '[data-tab-type="analytics"]',
@@ -819,33 +861,31 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'bottom',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click Dashboard!',
+    actionHint: 'Click Dashboard!',
   },
   {
     target: '[data-tutorial="split-toggle"]',
-    title: 'Split View 🔀',
-    description:
-      'Click this Split View button to work with two tools side-by-side. This is perfect for referencing content while creating lessons.',
+    title: 'Split View',
+    description: 'Click this Split View button to work with two tools side-by-side. This is perfect for referencing content while creating lessons.',
     position: 'bottom',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click Split View',
+    actionHint: 'Click Split View',
   },
   {
-  target: '[data-tutorial="split-view-demo"]',
-  title: 'Split View in Action 🎉',
-  description:
-    'Great! You are now in Split View. Each panel shows a different tool so you can work side-by-side.',
-  position: 'center',
+    target: '[data-tutorial="split-view-demo"]',
+    title: 'Split View in Action',
+    description: 'Great! You are now in Split View. Each panel shows a different tool so you can work side-by-side.',
+    position: 'center',
   },
   {
     target: '[data-tutorial="lesson-planners-group"]',
-    title: 'Lesson Planner Tools 📚',
+    title: 'Lesson Planner Tools',
     description: 'Click this dropdown to expand and see different types of lesson planners: Standard, Kindergarten, Multigrade, and Cross-Curricular.',
     position: 'right',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click to expand!',
+    actionHint: 'Click to expand!',
   },
   {
     target: '[data-tutorial="tool-quiz"]',
@@ -874,5 +914,143 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     description: 'This is your main workspace where your active tool or split view will appear. You\'re all set to create amazing teaching resources!',
     position: 'center',
   },
+];
 
+// Translated dashboard walkthrough steps — call inside a component that has useTranslation
+export const getDashboardWalkthroughSteps = (t: (key: string) => string): TutorialStep[] => [
+  {
+    target: '[data-tutorial="main-sidebar"]',
+    title: t('tutorial.dashboard.step1.title'),
+    description: t('tutorial.dashboard.step1.description'),
+    position: 'right',
+  },
+  {
+    target: '[data-tutorial="tool-analytics"]',
+    title: t('tutorial.dashboard.step2.title'),
+    description: t('tutorial.dashboard.step2.description'),
+    position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step2.actionHint'),
+  },
+  {
+    target: '[data-tutorial="tab-bar"]',
+    title: t('tutorial.dashboard.step3.title'),
+    description: t('tutorial.dashboard.step3.description'),
+    position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="single-tab-demo"]',
+    title: t('tutorial.dashboard.step4.title'),
+    description: t('tutorial.dashboard.step4.description'),
+    position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="tool-chat"]',
+    title: t('tutorial.dashboard.step5.title'),
+    description: t('tutorial.dashboard.step5.description'),
+    position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step5.actionHint'),
+  },
+  {
+    target: '[data-tutorial="tab-bar"]',
+    title: t('tutorial.dashboard.step6.title'),
+    description: t('tutorial.dashboard.step6.description'),
+    position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="tool-chat"]',
+    title: t('tutorial.dashboard.step7.title'),
+    description: t('tutorial.dashboard.step7.description'),
+    position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step7.actionHint'),
+  },
+  {
+    target: '[data-tutorial="tab-groups"]',
+    title: t('tutorial.dashboard.step8.title'),
+    description: t('tutorial.dashboard.step8.description'),
+    position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="tab-groups"][data-group-type="chat"] button',
+    title: t('tutorial.dashboard.step9.title'),
+    description: t('tutorial.dashboard.step9.description'),
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step9.actionHint'),
+  },
+  {
+    target: '[data-tutorial="tab-groups"][data-group-type="chat"] button',
+    title: t('tutorial.dashboard.step10.title'),
+    description: t('tutorial.dashboard.step10.description'),
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step10.actionHint'),
+  },
+  {
+    target: '[data-tab-type="analytics"]',
+    title: t('tutorial.dashboard.step11.title'),
+    description: t('tutorial.dashboard.step11.description'),
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step11.actionHint'),
+  },
+  {
+    target: '[data-tutorial="split-toggle"]',
+    title: t('tutorial.dashboard.step12.title'),
+    description: t('tutorial.dashboard.step12.description'),
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step12.actionHint'),
+  },
+  {
+    target: '[data-tutorial="split-view-demo"]',
+    title: t('tutorial.dashboard.step13.title'),
+    description: t('tutorial.dashboard.step13.description'),
+    position: 'center',
+  },
+  {
+    target: '[data-tutorial="lesson-planners-group"]',
+    title: t('tutorial.dashboard.step14.title'),
+    description: t('tutorial.dashboard.step14.description'),
+    position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: t('tutorial.dashboard.step14.actionHint'),
+  },
+  {
+    target: '[data-tutorial="tool-quiz"]',
+    title: t('tutorial.dashboard.step15.title'),
+    description: t('tutorial.dashboard.step15.description'),
+    position: 'right',
+  },
+  {
+    target: '[data-tutorial="tool-rubric"]',
+    title: t('tutorial.dashboard.step16.title'),
+    description: t('tutorial.dashboard.step16.description'),
+    position: 'right',
+  },
+  {
+    target: '[data-tutorial="close-all-tabs"]',
+    title: t('tutorial.dashboard.step17.title'),
+    description: t('tutorial.dashboard.step17.description'),
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    className: 'p-4',
+  },
+  {
+    target: '[data-tutorial="main-content"]',
+    title: t('tutorial.dashboard.step18.title'),
+    description: t('tutorial.dashboard.step18.description'),
+    position: 'center',
+  },
 ];

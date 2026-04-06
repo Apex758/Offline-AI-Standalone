@@ -90,6 +90,39 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   image_creator: 'bar-chart',
   image_gen_25: 'bar-chart',
 
+  // Calendar — School Year Calendar
+  calendar_setup: 'calendar',
+  calendar_phases: 'calendar',
+  calendar_events_10: 'calendar',
+
+  // Book — StoryBook Creator
+  storybook_first: 'book',
+  storybook_5: 'book',
+  storybook_15: 'book',
+
+  // Scroll — Presentation Builder (tiers)
+  presentation_5: 'scroll',
+  presentation_20: 'scroll',
+  presentation_50: 'scroll',
+
+  // Scroll — Worksheet Generator (tiers)
+  worksheet_10: 'scroll',
+  worksheet_50: 'scroll',
+
+  // Scale — Rubric Generator (tiers)
+  rubric_10: 'scale',
+  rubric_30: 'scale',
+
+  // Badge — Onboarding
+  profile_complete: 'badge',
+  checklist_done: 'badge',
+
+  // Bar Chart — Educator Insights
+  insights_bronze: 'bar-chart',
+  insights_silver: 'bar-chart',
+  insights_gold: 'bar-chart',
+  insights_diamond: 'bar-chart',
+
   // Owl — Secret
   night_owl: 'owl',
   early_bird: 'owl',

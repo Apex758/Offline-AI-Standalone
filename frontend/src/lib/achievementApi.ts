@@ -32,4 +32,13 @@ export const achievementApi = {
   updateShowcase: async (teacherId: string, achievementIds: string[]): Promise<void> => {
     await axios.put(`${API_URL}/showcase/${teacherId}`, { achievement_ids: achievementIds });
   },
+
+  trackFlag: async (
+    teacherId: string,
+    flagKey: 'insights_views' | 'profile_complete' | 'checklist_complete',
+    mode: 'increment' | 'set' = 'set',
+    value: number = 1,
+  ): Promise<void> => {
+    await axios.post(`${API_URL}/track/${teacherId}`, { flag_key: flagKey, mode, value });
+  },
 };

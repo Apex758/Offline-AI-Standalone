@@ -154,6 +154,34 @@ interface InAppResource {
   generatedRubric?: string;
 }
 
+// ── Bubble Rise + Fade Wrapper ──
+const BUBBLE_RISE_CSS = `
+  @keyframes bubbleRise {
+    0%   { transform: translateY(48px); opacity: 0; }
+    100% { transform: translateY(0px);  opacity: 1; }
+  }
+  .bubble-hidden { opacity: 0; pointer-events: none; }
+  .bubble-rise   { animation: bubbleRise 0.48s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+`;
+let _bubbleRiseInjected = false;
+
+function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!_bubbleRiseInjected) {
+      const s = document.createElement('style');
+      s.textContent = BUBBLE_RISE_CSS;
+      document.head.appendChild(s);
+      _bubbleRiseInjected = true;
+    }
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  return (
+    <div className={visible ? 'bubble-rise' : 'bubble-hidden'}>{children}</div>
+  );
+}
+
 // ── Thinking Block Component (collapsible reasoning display) ──
 const ThinkingBlock: React.FC<{ content: string; isStreaming?: boolean }> = ({ content, isStreaming }) => {
   const [expanded, setExpanded] = useState(false);
@@ -197,7 +225,7 @@ const shouldSuggestThinking = (message: string): boolean => {
   return THINKING_PATTERNS.some(pattern => pattern.test(message));
 };
 
-const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick, onOpenCurriculumTab }) => {
+const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick, onOpenCurriculumTab, isActive }) => {
   const { t } = useTranslation();
   // DEBUG logging removed to prevent render storm spam
   // LocalStorage key for this chat tab
@@ -297,6 +325,20 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       textarea.style.height = Math.min(textarea.scrollHeight, 220) + 'px';
     }
   }, [input]);
+
+  // Auto-focus textarea when chat tab becomes active
+  useEffect(() => {
+    if (isActive) {
+      const focus = () => {
+        const el = chatTextareaRef.current
+          || (document.querySelector('[data-tutorial="chat-input"]') as HTMLTextAreaElement | null);
+        if (el) el.focus();
+      };
+      // Small delay to ensure the tab is fully visible before focusing
+      const id = setTimeout(focus, 50);
+      return () => clearTimeout(id);
+    }
+  }, [isActive]);
 
   // File operation two-pass state
   const [pendingPlan, setPendingPlan] = useState<FileOperationPlan | null>(null);
@@ -1705,8 +1747,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           ) : (
             <>
               {messages.map((msg) => (
+                <FadeIn key={msg.id} delay={msg.role === 'assistant' ? 700 : 0}>
                 <div
-                  key={msg.id}
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
@@ -1800,9 +1842,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     </div>
                   </div>
                 </div>
+                </FadeIn>
               ))}
 
               {streamingMessage && (
+                <FadeIn delay={700}>
                 <div className="flex justify-start">
                   <div className="max-w-3xl px-4 py-3 rounded-2xl bg-theme-tertiary text-theme-heading">
                     <div className="text-sm prose prose-sm max-w-none">
@@ -1811,9 +1855,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     </div>
                   </div>
                 </div>
+                </FadeIn>
               )}
 
               {(waitingForResponse || (loading && !streamingMessage)) && (
+                <FadeIn delay={700}>
                 <div className="flex justify-start">
                   <div className="bg-theme-tertiary px-4 py-3 rounded-2xl flex items-center gap-2">
                     <div className="flex gap-1">
@@ -1824,6 +1870,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     <span className="text-sm text-theme-muted">{t('chat.thinking')}</span>
                   </div>
                 </div>
+                </FadeIn>
               )}
 
               {generatingPlan && (

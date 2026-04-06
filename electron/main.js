@@ -1155,10 +1155,21 @@ app.whenReady().then(async () => {
     await startBackend();
     log.info('Backend started successfully');
     
-    // Send IPC message to splashscreen that backend is ready
+    // Send IPC message to splashscreen that backend is ready.
+    // If the splash page is still loading (common in dev where backend starts fast),
+    // wait for did-finish-load so the IPC listener in the splash HTML is registered.
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('backend-ready');
-      log.info('Sent backend-ready message to window');
+      const sendBackendReady = () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('backend-ready');
+          log.info('Sent backend-ready message to window');
+        }
+      };
+      if (mainWindow.webContents.isLoading()) {
+        mainWindow.webContents.once('did-finish-load', sendBackendReady);
+      } else {
+        sendBackendReady();
+      }
     }
 
     app.on('activate', () => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
@@ -16,6 +17,7 @@ interface ProgressionToastProps {
 }
 
 const ProgressionToast: React.FC<ProgressionToastProps> = ({ suggestion, onAccept, onDismiss }) => {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -71,7 +73,7 @@ const ProgressionToast: React.FC<ProgressionToastProps> = ({ suggestion, onAccep
           </div>
           <div>
             <p className="text-xs font-semibold mb-1" style={{ color: '#F2A631' }}>
-              Try {suggestion.name} next
+              {t('nudge.tryNext', { name: suggestion.name })}
             </p>
             <p className="text-sm leading-relaxed mb-3" style={{ color: 'rgba(255,255,255,0.8)' }}>
               {suggestion.reason}
@@ -82,14 +84,14 @@ const ProgressionToast: React.FC<ProgressionToastProps> = ({ suggestion, onAccep
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105 active:scale-95"
                 style={{ backgroundColor: '#F2A631', color: '#1D362D' }}
               >
-                Go there
+                {t('nudge.goThere')}
               </button>
               <button
                 onClick={handleDismiss}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                 style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
               >
-                Dismiss
+                {t('nudge.dismiss')}
               </button>
             </div>
           </div>

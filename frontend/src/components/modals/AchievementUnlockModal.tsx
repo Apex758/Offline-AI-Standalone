@@ -9,92 +9,92 @@ import type { NewlyEarnedAchievement, AchievementRarity, AchievementCategory } f
 import { getTrophyType } from '../../config/trophyMap';
 import { getTrophyImageForTier, type TrophyTier } from '../../assets/trophyImagesLazy';
 
-/* ─── Inspirational teaching quotes ─── */
-const TEACHING_QUOTES: string[] = [
-  '"Education is the most powerful weapon which you can use to change the world." — Nelson Mandela',
-  '"The art of teaching is the art of assisting discovery." — Mark Van Doren',
-  '"A teacher affects eternity; they can never tell where their influence stops." — Henry Adams',
-  '"Teaching is the greatest act of optimism." — Colleen Wilcox',
-  '"The best teachers are those who show you where to look but don\'t tell you what to see." — Alexandra K. Trenfor',
-  '"Education is not the filling of a pail, but the lighting of a fire." — W.B. Yeats',
-  '"Every child deserves a champion." — Rita Pierson',
-  '"What a teacher writes on the blackboard of life can never be erased." — Unknown',
-  '"Teachers plant the seeds of knowledge that grow forever." — Unknown',
-  '"The influence of a good teacher can never be erased." — Unknown',
-  '"To teach is to learn twice." — Joseph Joubert',
-  '"It takes a big heart to help shape little minds." — Unknown',
-  '"Teachers can change lives with just the right mix of chalk and challenges." — Joyce Meyer',
-  '"The dream begins with a teacher who believes in you." — Dan Rather',
-  '"Good teaching is one-quarter preparation and three-quarters theatre." — Gail Godwin',
-  '"Children are not things to be moulded, but people to be unfolded." — Jess Lair',
-  '"The task of the modern educator is not to cut down jungles, but to irrigate deserts." — C.S. Lewis',
-  '"In learning you will teach, and in teaching you will learn." — Phil Collins',
-  '"Teachers who love teaching teach children to love learning." — Unknown',
-  '"The beautiful thing about learning is that nobody can take it away from you." — B.B. King',
+/* ─── Inspirational teaching quote keys ─── */
+const TEACHING_QUOTE_KEYS: string[] = [
+  'achievements.quote1',
+  'achievements.quote2',
+  'achievements.quote3',
+  'achievements.quote4',
+  'achievements.quote5',
+  'achievements.quote6',
+  'achievements.quote7',
+  'achievements.quote8',
+  'achievements.quote9',
+  'achievements.quote10',
+  'achievements.quote11',
+  'achievements.quote12',
+  'achievements.quote13',
+  'achievements.quote14',
+  'achievements.quote15',
+  'achievements.quote16',
+  'achievements.quote17',
+  'achievements.quote18',
+  'achievements.quote19',
+  'achievements.quote20',
 ];
 
-const CATEGORY_MESSAGES: Record<string, string[]> = {
+const CATEGORY_MESSAGE_KEYS: Record<string, string[]> = {
   'content-creation': [
-    'Every lesson plan is a blueprint for a brighter future.',
-    'Your creativity shapes how students see the world.',
-    'Great content creates great learning moments.',
+    'achievements.catContentCreation1',
+    'achievements.catContentCreation2',
+    'achievements.catContentCreation3',
   ],
   'student-management': [
-    'Behind every name on your roster is a story waiting to unfold.',
-    'Knowing your students is the first step to reaching them.',
-    'You\'re building a community, one student at a time.',
+    'achievements.catStudentManagement1',
+    'achievements.catStudentManagement2',
+    'achievements.catStudentManagement3',
   ],
   'assessment': [
-    'Assessment isn\'t just grading — it\'s understanding.',
-    'Every mark you give is a step on a student\'s journey.',
-    'Fair assessment opens doors to growth.',
+    'achievements.catAssessment1',
+    'achievements.catAssessment2',
+    'achievements.catAssessment3',
   ],
   'attendance': [
-    'Showing up matters — and so does tracking it.',
-    'Consistency in tracking leads to consistency in learning.',
-    'Every present student is a chance to make an impact.',
+    'achievements.catAttendance1',
+    'achievements.catAttendance2',
+    'achievements.catAttendance3',
   ],
   'curriculum': [
-    'Milestones aren\'t just markers — they\'re proof of progress.',
-    'You\'re not just following a curriculum, you\'re bringing it to life.',
-    'Each completed standard is a promise kept.',
+    'achievements.catCurriculum1',
+    'achievements.catCurriculum2',
+    'achievements.catCurriculum3',
   ],
   'exploration': [
-    'Curiosity in a teacher inspires curiosity in students.',
-    'Exploring new tools makes you a more versatile educator.',
-    'The best teachers never stop discovering.',
+    'achievements.catExploration1',
+    'achievements.catExploration2',
+    'achievements.catExploration3',
   ],
   'power-user': [
-    'Dedication like yours moves mountains.',
-    'Consistency is the secret ingredient of great teaching.',
-    'Your commitment to your craft is inspiring.',
+    'achievements.catPowerUser1',
+    'achievements.catPowerUser2',
+    'achievements.catPowerUser3',
   ],
   'chat': [
-    'Asking questions is how great ideas are born.',
-    'Every conversation with PEARL sparks new possibilities.',
-    'Collaboration — even with AI — makes teaching stronger.',
+    'achievements.catChat1',
+    'achievements.catChat2',
+    'achievements.catChat3',
   ],
   'brain-dump': [
-    'Turning thoughts into action is a superpower.',
-    'Your ideas deserve to become reality.',
-    'From brainstorm to classroom — that\'s the magic.',
+    'achievements.catBrainDump1',
+    'achievements.catBrainDump2',
+    'achievements.catBrainDump3',
   ],
   'analytics': [
-    'Data-driven teaching leads to data-driven results.',
-    'Understanding your tools helps you understand your impact.',
-    'Every generation is a step toward better education.',
+    'achievements.catAnalytics1',
+    'achievements.catAnalytics2',
+    'achievements.catAnalytics3',
   ],
 };
 
-function getQuoteForAchievement(category: AchievementCategory): string {
-  const catMessages = CATEGORY_MESSAGES[category];
-  if (catMessages && catMessages.length > 0) {
+function getQuoteKeyForAchievement(category: AchievementCategory): string {
+  const catKeys = CATEGORY_MESSAGE_KEYS[category];
+  if (catKeys && catKeys.length > 0) {
     // 50% chance of category-specific, 50% general quote
     if (Math.random() < 0.5) {
-      return catMessages[Math.floor(Math.random() * catMessages.length)];
+      return catKeys[Math.floor(Math.random() * catKeys.length)];
     }
   }
-  return TEACHING_QUOTES[Math.floor(Math.random() * TEACHING_QUOTES.length)];
+  return TEACHING_QUOTE_KEYS[Math.floor(Math.random() * TEACHING_QUOTE_KEYS.length)];
 }
 
 /* ─── rarity themes ─── */
@@ -165,10 +165,10 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
     getTrophyImageForTier(tType, (achievement.tier ?? 'gold') as TrophyTier).then(src => setTrophySrc(src));
   }, [achievement?.achievement_id, achievement?.tier]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Stable quote per achievement (doesn't change on re-renders)
-  const quote = useMemo(() => {
+  // Stable quote key per achievement (doesn't change on re-renders)
+  const quoteKey = useMemo(() => {
     if (!achievement) return '';
-    return getQuoteForAchievement(achievement.category);
+    return getQuoteKeyForAchievement(achievement.category);
   }, [achievement?.achievement_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = useCallback(() => {
@@ -526,7 +526,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
           </p>
 
           {/* Inspirational quote */}
-          {quote && (
+          {quoteKey && (
             <p style={{
               fontSize: 11,
               color: `${theme.primary}99`,
@@ -538,7 +538,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               fontStyle: 'italic',
               animation: show ? 'ach-text-up 0.5s ease 0.45s both' : 'none',
             }}>
-              {quote}
+              {t(quoteKey)}
             </p>
           )}
 

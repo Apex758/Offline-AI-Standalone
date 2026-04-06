@@ -201,7 +201,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
         </div>
         {remaining > 0 && (
           <p className="text-[11px] px-3 py-1.5 font-medium" style={{ color: 'var(--dash-primary)' }}>
-            {t('tasks.moreItems', { count: remaining })}
+            {t('tasks.nMore', { count: remaining })}
           </p>
         )}
       </div>
@@ -226,7 +226,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
                 className="ml-2 text-xs font-normal"
                 style={{ color: 'var(--dash-text-faint)' }}
               >
-                {t('tasks.remaining', { count: tasks.filter(task => !task.completed).length })}
+                {t('tasks.nRemaining', { count: tasks.filter(task => !task.completed).length })}
               </span>
             )}
           </h3>

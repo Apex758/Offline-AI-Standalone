@@ -85,7 +85,7 @@ const MetricsNudgeBanner: React.FC<MetricsNudgeBannerProps> = ({
           onClick={() => onTalkToCoach(targetDimension)}
           className="mt-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
         >
-          {t('metrics.talkToCoach')}
+          {t('educator.askCoach')}
         </button>
       </div>
       <button
