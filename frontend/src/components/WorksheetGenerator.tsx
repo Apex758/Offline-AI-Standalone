@@ -71,6 +71,7 @@ import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
+import ClassPackExportButton from './ClassPackExportButton';
 import WorksheetStructuredEditor from './WorksheetStructuredEditor';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
@@ -2355,15 +2356,33 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   dataType="worksheet"
                   data={{
                     content: generatedWorksheet,
-                    parsedWorksheet: parsedWorksheet,
+                    parsedWorksheet: selectedStudentIndex >= 0 && worksheetPackage.studentVersions[selectedStudentIndex]
+                      ? { ...parsedWorksheet!, questions: worksheetPackage.studentVersions[selectedStudentIndex].questions }
+                      : parsedWorksheet,
                     formData: { ...formData, viewMode },
                     accentColor: accentColor || '#3b82f6',
                     generatedImages: generatedImages,
-                    worksheetId: viewMode === 'teacher' ? (currentWorksheetId || `worksheet_${Date.now()}`) : undefined
+                    worksheetId: currentWorksheetId || `worksheet_${Date.now()}`,
+                    studentInfo: selectedStudentIndex >= 0 && worksheetPackage.studentVersions[selectedStudentIndex]
+                      ? { name: worksheetPackage.studentVersions[selectedStudentIndex].student.full_name, id: worksheetPackage.studentVersions[selectedStudentIndex].student.id }
+                      : undefined
                   }}
                   filename={`worksheet-${selectedStudentIndex === -1 ? 'answer-key' : worksheetPackage.studentVersions[selectedStudentIndex]?.student.id}`}
                   className="!px-3 !py-1.5 !text-xs"
                 />
+                {worksheetPackage && parsedWorksheet && currentWorksheetId && (
+                  <ClassPackExportButton
+                    dataType="worksheet"
+                    docId={currentWorksheetId}
+                    formData={formData}
+                    accentColor={accentColor || '#3b82f6'}
+                    parsedWorksheet={parsedWorksheet}
+                    generatedWorksheet={generatedWorksheet}
+                    studentVersions={worksheetPackage.studentVersions}
+                    generatedImages={generatedImages}
+                    className="!px-3 !py-1.5 !text-xs"
+                  />
+                )}
                 <button
                   onClick={() => setWorksheetPackage(null)}
                   className="p-1.5 rounded hover:bg-theme-hover transition"

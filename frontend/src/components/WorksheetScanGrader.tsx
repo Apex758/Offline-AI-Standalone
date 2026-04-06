@@ -96,6 +96,7 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
   const [gradingProgress, setGradingProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<ScanGradeResult[]>([]);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
+  const [gradingSummary, setGradingSummary] = useState<{ qr_graded: number; ocr_graded: number; failed: number; total: number } | null>(null);
 
   // If initialWorksheetId provided, look it up immediately
   useEffect(() => {
@@ -164,11 +165,12 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
     setGradingProgress({ current: 0, total: scanFiles.length });
 
     const formData = new FormData();
-    formData.append('worksheet_id', worksheetId);
+    formData.append('doc_id', worksheetId);
+    formData.append('doc_type', 'worksheet');
     scanFiles.forEach(f => formData.append('student_files', f));
 
     try {
-      const response = await fetch(`${API_BASE}/api/worksheet/grade-scans-stream`, {
+      const response = await fetch(`${API_BASE}/api/smart-grade-stream`, {
         method: 'POST',
         body: formData,
       });
@@ -190,8 +192,12 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
             if (line.startsWith('data: ')) {
               try {
                 const event = JSON.parse(line.slice(6));
-                setResults(prev => [...prev, event.result]);
-                setGradingProgress({ current: event.index + 1, total: event.total });
+                if (event.event === 'complete') {
+                  setGradingSummary(event.summary);
+                } else if (event.result) {
+                  setResults(prev => [...prev, event.result]);
+                  setGradingProgress({ current: event.index + 1, total: event.total });
+                }
               } catch { /* skip malformed events */ }
             }
           }
@@ -413,6 +419,26 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
                 <p className="text-xs text-purple-600">Auto-saved</p>
               </div>
             </div>
+
+            {gradingSummary && (
+              <div className="flex gap-3 text-xs">
+                {gradingSummary.qr_graded > 0 && (
+                  <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
+                    {gradingSummary.qr_graded} via QR (instant)
+                  </span>
+                )}
+                {gradingSummary.ocr_graded > 0 && (
+                  <span className="px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    {gradingSummary.ocr_graded} via OCR
+                  </span>
+                )}
+                {gradingSummary.failed > 0 && (
+                  <span className="px-2 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
+                    {gradingSummary.failed} failed
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Individual results */}
             {results.map((r, idx) => (

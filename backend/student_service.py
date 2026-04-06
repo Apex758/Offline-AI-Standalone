@@ -543,26 +543,49 @@ def delete_test_reminder(reminder_id: str) -> bool:
 def save_quiz_grade(data: dict) -> dict:
     conn = _get_conn()
     try:
-        grade_id = str(uuid.uuid4())
-        conn.execute(
-            '''INSERT INTO quiz_grades
-               (id, student_id, quiz_title, subject, score, total_points,
-                percentage, letter_grade, answers, quiz_id, instance_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (
-                grade_id,
-                data.get('student_id'),
-                data.get('quiz_title'),
-                data.get('subject'),
-                data.get('score'),
-                data.get('total_points'),
-                data.get('percentage'),
-                data.get('letter_grade'),
-                json.dumps(data.get('answers', {})),
-                data.get('quiz_id'),
-                data.get('instance_id'),
+        student_id = data.get('student_id')
+        quiz_id = data.get('quiz_id')
+
+        # Check for existing grade for same student + quiz (duplicate protection)
+        existing = None
+        if student_id and quiz_id:
+            existing = conn.execute(
+                'SELECT id FROM quiz_grades WHERE student_id = ? AND quiz_id = ?',
+                (student_id, quiz_id)
+            ).fetchone()
+
+        if existing:
+            # Update existing grade
+            grade_id = existing['id']
+            conn.execute(
+                '''UPDATE quiz_grades SET quiz_title=?, subject=?, score=?, total_points=?,
+                   percentage=?, letter_grade=?, answers=?, instance_id=?, graded_at=CURRENT_TIMESTAMP
+                   WHERE id=?''',
+                (
+                    data.get('quiz_title'), data.get('subject'),
+                    data.get('score'), data.get('total_points'),
+                    data.get('percentage'), data.get('letter_grade'),
+                    json.dumps(data.get('answers', {})), data.get('instance_id'),
+                    grade_id,
+                )
             )
-        )
+        else:
+            # Insert new grade
+            grade_id = str(uuid.uuid4())
+            conn.execute(
+                '''INSERT INTO quiz_grades
+                   (id, student_id, quiz_title, subject, score, total_points,
+                    percentage, letter_grade, answers, quiz_id, instance_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                (
+                    grade_id, student_id,
+                    data.get('quiz_title'), data.get('subject'),
+                    data.get('score'), data.get('total_points'),
+                    data.get('percentage'), data.get('letter_grade'),
+                    json.dumps(data.get('answers', {})),
+                    quiz_id, data.get('instance_id'),
+                )
+            )
         conn.commit()
         row = conn.execute('SELECT * FROM quiz_grades WHERE id = ?', (grade_id,)).fetchone()
         return dict(row)
@@ -675,26 +698,47 @@ def get_attendance(class_name: str, date: str) -> list[dict]:
 def save_worksheet_grade(data: dict) -> dict:
     conn = _get_conn()
     try:
-        grade_id = str(uuid.uuid4())
-        conn.execute(
-            '''INSERT INTO worksheet_grades
-               (id, student_id, worksheet_title, subject, score, total_points,
-                percentage, letter_grade, answers, worksheet_id, instance_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (
-                grade_id,
-                data.get('student_id'),
-                data.get('worksheet_title'),
-                data.get('subject'),
-                data.get('score'),
-                data.get('total_points'),
-                data.get('percentage'),
-                data.get('letter_grade'),
-                json.dumps(data.get('answers', {})),
-                data.get('worksheet_id'),
-                data.get('instance_id'),
+        student_id = data.get('student_id')
+        worksheet_id = data.get('worksheet_id')
+
+        # Check for existing grade for same student + worksheet (duplicate protection)
+        existing = None
+        if student_id and worksheet_id:
+            existing = conn.execute(
+                'SELECT id FROM worksheet_grades WHERE student_id = ? AND worksheet_id = ?',
+                (student_id, worksheet_id)
+            ).fetchone()
+
+        if existing:
+            grade_id = existing['id']
+            conn.execute(
+                '''UPDATE worksheet_grades SET worksheet_title=?, subject=?, score=?, total_points=?,
+                   percentage=?, letter_grade=?, answers=?, instance_id=?, graded_at=CURRENT_TIMESTAMP
+                   WHERE id=?''',
+                (
+                    data.get('worksheet_title'), data.get('subject'),
+                    data.get('score'), data.get('total_points'),
+                    data.get('percentage'), data.get('letter_grade'),
+                    json.dumps(data.get('answers', {})), data.get('instance_id'),
+                    grade_id,
+                )
             )
-        )
+        else:
+            grade_id = str(uuid.uuid4())
+            conn.execute(
+                '''INSERT INTO worksheet_grades
+                   (id, student_id, worksheet_title, subject, score, total_points,
+                    percentage, letter_grade, answers, worksheet_id, instance_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                (
+                    grade_id, student_id,
+                    data.get('worksheet_title'), data.get('subject'),
+                    data.get('score'), data.get('total_points'),
+                    data.get('percentage'), data.get('letter_grade'),
+                    json.dumps(data.get('answers', {})),
+                    worksheet_id, data.get('instance_id'),
+                )
+            )
         conn.commit()
         row = conn.execute('SELECT * FROM worksheet_grades WHERE id = ?', (grade_id,)).fetchone()
         return dict(row)
@@ -793,8 +837,13 @@ def save_quiz_instance(quiz_id: str, student_id: str, question_order: list[int],
                        version_hash: str, class_name: str = '') -> dict:
     """Persist a student's specific quiz version for QR-based auto-matching."""
     conn = _get_conn()
-    instance_id = str(uuid.uuid4())
     try:
+        # Preserve existing instance_id to avoid orphaning grade references
+        existing = conn.execute(
+            'SELECT id FROM quiz_instances WHERE quiz_id = ? AND student_id = ?',
+            (quiz_id, student_id)
+        ).fetchone()
+        instance_id = existing['id'] if existing else str(uuid.uuid4())
         conn.execute('''
             INSERT OR REPLACE INTO quiz_instances
             (id, quiz_id, student_id, question_order, version_hash, class_name)
@@ -816,8 +865,13 @@ def save_worksheet_instance(worksheet_id: str, student_id: str,
                             class_name: str = '') -> dict:
     """Persist a student's specific worksheet version for QR-based auto-matching."""
     conn = _get_conn()
-    instance_id = str(uuid.uuid4())
     try:
+        # Preserve existing instance_id to avoid orphaning grade references
+        existing = conn.execute(
+            'SELECT id FROM worksheet_instances WHERE worksheet_id = ? AND student_id = ?',
+            (worksheet_id, student_id)
+        ).fetchone()
+        instance_id = existing['id'] if existing else str(uuid.uuid4())
         conn.execute('''
             INSERT OR REPLACE INTO worksheet_instances
             (id, worksheet_id, package_id, student_id, question_order,
@@ -847,6 +901,12 @@ def get_instance_by_qr(doc_type: str, doc_id: str, student_id: str,
             f'SELECT * FROM {table} WHERE {id_col} = ? AND student_id = ? AND version_hash = ?',
             (doc_id, student_id, version_hash)
         ).fetchone()
+        # Fallback: if version_hash didn't match, try without it (handles "0000" from legacy exports)
+        if not row and version_hash:
+            row = conn.execute(
+                f'SELECT * FROM {table} WHERE {id_col} = ? AND student_id = ?',
+                (doc_id, student_id)
+            ).fetchone()
         if row:
             result = dict(row)
             result['question_order'] = json.loads(result['question_order'])

@@ -50,6 +50,7 @@ const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const PanelRightClose: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PanelRightCloseIconData} {...p} />;
 const PanelRightOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PanelRightOpenIconData} {...p} />;
 import ExportButton from './ExportButton';
+import ClassPackExportButton from './ClassPackExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
 import QuizGrader from './QuizGrader';
@@ -1018,6 +1019,17 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${viewingStudent ? viewingStudent.name.replace(/\s+/g, '-') : effectiveVersion}`}
                         className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
+                      {classQuizMode && classQuizData && parsedQuiz && currentQuizId && (
+                        <ClassPackExportButton
+                          dataType="quiz"
+                          docId={currentQuizId}
+                          formData={formData}
+                          accentColor={tabColor}
+                          parsedQuiz={parsedQuiz}
+                          classQuizData={classQuizData}
+                          className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
+                        />
+                      )}
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="relative p-2 rounded-lg hover:bg-theme-hover transition"

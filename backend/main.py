@@ -4138,6 +4138,299 @@ def _grade_objective_question(question: dict, student_answer: str) -> dict:
     return None
 
 
+async def _ocr_per_question_regions(file_bytes: bytes, questions: list, ocr_service_mod) -> dict:
+    """OCR answer regions per-question instead of full-page.
+
+    Aligns the page, estimates where each question's answer area is,
+    crops that region, and runs OCR on just the small crop.
+    Falls back to full-page OCR if alignment fails.
+    """
+    from image_alignment import align_scanned_page, crop_region
+    import cv2
+
+    detected_answers = {}
+
+    # Try to align the page first
+    aligned_img, _ = align_scanned_page(file_bytes)
+
+    if aligned_img is not None:
+        # Page is aligned -- crop per-question answer regions
+        ih, iw = aligned_img.shape[:2]
+
+        # Layout estimates (matching answerRegionGenerator.ts constants)
+        content_top = 120  # below header + QR area
+        content_left = 50
+        question_height = 80
+        answer_region_y_offset = 25  # answer area starts below question text
+        answer_region_height = 45   # height of answer area per question
+        answer_width = iw - 2 * content_left
+
+        for i, q in enumerate(questions):
+            q_type = (q.get('type') or '').lower()
+
+            # Skip MC/TF -- those should use bubble detection, not OCR
+            if q_type in ('multiple-choice', 'mc', 'true-false', 'tf', 'true_false'):
+                continue
+
+            # Estimate this question's answer region
+            y = content_top + i * question_height + answer_region_y_offset
+
+            # Adjust region height for open-ended questions (need more space)
+            h = answer_region_height
+            if q_type in ('open-ended', 'essay', 'open-answer'):
+                h = min(answer_region_height * 2, ih - y - 10)
+
+            # Crop and OCR the region
+            roi = crop_region(aligned_img, content_left, y, answer_width, h, padding=4)
+            if roi is not None and roi.size > 0:
+                _, img_enc = cv2.imencode('.png', roi)
+                try:
+                    ocr_text = await ocr_service_mod.extract_text(img_enc.tobytes())
+                    answer = ocr_text.strip()
+                    if answer:
+                        detected_answers[i] = answer
+                except Exception:
+                    pass
+    else:
+        # Alignment failed -- fall back to full-page OCR as last resort
+        if ocr_service_mod.is_ocr_available():
+            ocr_text = await ocr_service_mod.extract_text_for_grading(file_bytes)
+            for i, line in enumerate(ocr_text.strip().split('\n')):
+                if line.strip():
+                    detected_answers[i] = line.strip()
+
+    return detected_answers
+
+
+@app.post("/api/smart-grade-stream")
+async def smart_grade_stream(
+    student_files: List[UploadFile] = File(...),
+    doc_id: str = Form(...),
+    doc_type: str = Form("quiz"),
+):
+    """Smart scan grading: try QR-based auto-grade first, fall back to OCR.
+
+    For each uploaded scan:
+    1. Attempt QR code extraction
+    2. If QR found -> use fast auto-grade pipeline (bubble detection or OCR with answer key)
+    3. If no QR -> fall back to full OCR grading pipeline
+
+    Returns SSE stream with per-file results.
+    """
+    from starlette.responses import StreamingResponse
+    from qr_service import extract_qr_from_scan, remap_answers, remap_mc_option
+    from image_alignment import align_scanned_page
+    from bubble_detector import detect_answers_from_template
+    import ocr_service
+
+    # Fetch answer key up front
+    if doc_type == "quiz":
+        answer_key = student_service.get_quiz_answer_key(doc_id)
+    else:
+        answer_key = student_service.get_worksheet_answer_key(doc_id)
+
+    if not answer_key:
+        raise HTTPException(status_code=404, detail=f"No answer key found for {doc_id}")
+
+    # Read all files into memory
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    total = len(file_data)
+
+    async def event_stream():
+        qr_graded = 0
+        ocr_graded = 0
+        failed = 0
+
+        for idx, (file_bytes, filename) in enumerate(file_data):
+            result = {
+                'file_name': filename,
+                'student_name': None,
+                'student_id': None,
+                'error': None,
+                'score': 0,
+                'total_points': 0,
+                'percentage': 0,
+                'letter_grade': '',
+                'details': {},
+                'unclear': [],
+                'saved': False,
+                'grade_method': 'unknown',
+            }
+
+            try:
+                # Step 1: Try QR extraction
+                qr_data = None
+                try:
+                    qr_data = extract_qr_from_scan(file_bytes)
+                except Exception:
+                    pass
+
+                questions = answer_key["questions"]
+
+                if qr_data:
+                    # === QR PATH: fast auto-grade ===
+                    result['grade_method'] = 'qr'
+                    result['student_id'] = qr_data['student_id']
+
+                    student = student_service.get_student(qr_data['student_id'])
+                    if student:
+                        result['student_name'] = student['full_name']
+
+                    # Get instance for de-shuffling
+                    instance = student_service.get_instance_by_qr(
+                        qr_data['type'], qr_data['doc_id'],
+                        qr_data['student_id'], qr_data['version_hash']
+                    )
+
+                    # Check for answer region template (bubble detection)
+                    template = student_service.get_answer_region_template(qr_data['doc_id'])
+                    detected_answers = {}
+
+                    if template:
+                        # Fast pixel-based bubble detection
+                        aligned_img, _ = align_scanned_page(file_bytes)
+                        if aligned_img is not None:
+                            detections = detect_answers_from_template(aligned_img, template['regions'])
+                            for det in detections:
+                                if det['status'] == 'detected':
+                                    detected_answers[det['question_index']] = det['selected']
+                                elif det['status'] == 'needs_ocr' and det.get('cropped_image') is not None:
+                                    if ocr_service.is_ocr_available():
+                                        import cv2
+                                        _, img_enc = cv2.imencode('.png', det['cropped_image'])
+                                        ocr_text = await ocr_service.extract_text(img_enc.tobytes())
+                                        detected_answers[det['question_index']] = ocr_text.strip()
+                    else:
+                        # Targeted OCR: crop per-question answer regions instead of full-page
+                        if ocr_service.is_ocr_available():
+                            detected_answers = await _ocr_per_question_regions(file_bytes, questions, ocr_service)
+
+                    # Re-map if randomized
+                    if instance and instance.get('question_order'):
+                        q_order = instance['question_order']
+                        answer_list = [detected_answers.get(i, '') for i in range(len(q_order))]
+                        remapped = remap_answers(answer_list, q_order)
+                        option_maps = instance.get('option_maps')
+                        if option_maps:
+                            for q_idx, answer in remapped.items():
+                                q_map = option_maps.get(str(q_idx))
+                                if q_map and answer and len(answer) == 1 and answer.upper() in 'ABCDE':
+                                    remapped[q_idx] = remap_mc_option(answer, q_map)
+                        detected_answers = remapped
+
+                    # Grade against answer key
+                    score = 0
+                    total_pts = len(questions)
+                    details = {}
+                    for i, q in enumerate(questions):
+                        student_answer = detected_answers.get(i, '')
+                        correct = q.get('correctAnswer', '')
+                        pts = q.get('points', 1) or 1
+                        earned = 0
+                        if isinstance(correct, int):
+                            if student_answer.upper() == chr(65 + correct):
+                                earned = pts
+                        elif isinstance(correct, str):
+                            if student_answer.strip().lower() == correct.strip().lower():
+                                earned = pts
+                        score += earned
+                        details[str(i)] = {
+                            'answer': student_answer,
+                            'earned': earned,
+                            'max': pts,
+                        }
+                    total_pts = sum(q.get('points', 1) or 1 for q in questions)
+                    percentage = round((score / total_pts * 100) if total_pts > 0 else 0, 1)
+
+                    result.update({
+                        'score': score,
+                        'total_points': total_pts,
+                        'percentage': percentage,
+                        'letter_grade': student_service.get_letter_grade(percentage),
+                        'details': details,
+                    })
+
+                    # Save grade
+                    if result['student_id']:
+                        try:
+                            grade_data = {
+                                'student_id': result['student_id'],
+                                'score': score,
+                                'total_points': total_pts,
+                                'percentage': percentage,
+                                'letter_grade': result['letter_grade'],
+                                'answers': details,
+                            }
+                            if doc_type == 'quiz':
+                                grade_data['quiz_title'] = answer_key.get('quiz_title', '')
+                                grade_data['subject'] = answer_key.get('subject', '')
+                                grade_data['quiz_id'] = doc_id
+                                if instance:
+                                    grade_data['instance_id'] = instance.get('id')
+                                student_service.save_quiz_grade(grade_data)
+                            else:
+                                grade_data['worksheet_title'] = answer_key.get('worksheet_title', '')
+                                grade_data['subject'] = answer_key.get('subject', '')
+                                grade_data['worksheet_id'] = doc_id
+                                if instance:
+                                    grade_data['instance_id'] = instance.get('id')
+                                student_service.save_worksheet_grade(grade_data)
+                            result['saved'] = True
+                        except Exception as e:
+                            logger.error(f"Failed to save grade: {e}")
+
+                    qr_graded += 1
+
+                else:
+                    # === OCR PATH: full OCR grading fallback ===
+                    result['grade_method'] = 'ocr'
+
+                    if not ocr_service.is_ocr_available():
+                        result['error'] = 'OCR not available and no QR code found'
+                        failed += 1
+                        yield f"data: {json.dumps({'event': 'result', 'index': idx, 'total': total, 'result': result})}\n\n"
+                        continue
+
+                    # Use the existing single-scan grading function
+                    if doc_type == 'quiz':
+                        ocr_result = await _grade_single_quiz_scan(file_bytes, filename, answer_key)
+                    else:
+                        ocr_result = await _grade_single_worksheet_scan(file_bytes, filename, answer_key)
+
+                    result.update({
+                        'student_name': ocr_result.get('student_name'),
+                        'student_id': ocr_result.get('student_id'),
+                        'score': ocr_result.get('score', 0),
+                        'total_points': ocr_result.get('total_points', 0),
+                        'percentage': ocr_result.get('percentage', 0),
+                        'letter_grade': ocr_result.get('letter_grade', ''),
+                        'details': ocr_result.get('details', {}),
+                        'unclear': ocr_result.get('unclear', []),
+                        'saved': ocr_result.get('saved', False),
+                        'error': ocr_result.get('error'),
+                    })
+                    if result['error']:
+                        failed += 1
+                    else:
+                        ocr_graded += 1
+
+            except Exception as e:
+                result['error'] = str(e)
+                failed += 1
+                logger.error(f"Smart grade failed for {filename}: {e}")
+
+            yield f"data: {json.dumps({'event': 'result', 'index': idx, 'total': total, 'result': result})}\n\n"
+
+        # Final summary
+        yield f"data: {json.dumps({'event': 'complete', 'summary': {'qr_graded': qr_graded, 'ocr_graded': ocr_graded, 'failed': failed, 'total': total}})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
 @app.post("/api/quiz/grade-scans")
 async def grade_quiz_scans(
     student_files: List[UploadFile] = File(...),
@@ -4344,6 +4637,7 @@ Return ONLY valid JSON:
                             'percentage': percentage,
                             'letter_grade': student_service.get_letter_grade(percentage),
                             'answers': details,
+                            'quiz_id': quiz_id,
                         })
                         result['saved'] = True
                     except Exception as e:
@@ -4592,6 +4886,7 @@ Return ONLY valid JSON:
                     'percentage': percentage,
                     'letter_grade': student_service.get_letter_grade(percentage),
                     'answers': details,
+                    'quiz_id': answer_key.get('quiz_id'),
                 })
                 result['saved'] = True
             except Exception as e:
@@ -4895,6 +5190,7 @@ Return ONLY valid JSON:
                     'total_points': total_max, 'percentage': percentage,
                     'letter_grade': student_service.get_letter_grade(percentage),
                     'answers': details,
+                    'worksheet_id': answer_key.get('worksheet_id'),
                 })
                 result['saved'] = True
             except Exception as e:
@@ -9093,6 +9389,42 @@ async def export_calendar_ics(request: Request):
 
 # ── Scan-Grading Endpoints ──────────────────────────────────────────────────
 
+@app.post("/api/save-answer-regions")
+async def save_answer_regions(request: Request):
+    """Save answer region template for a document.
+
+    Expects JSON body:
+    {
+      "doc_id": "quiz_xxx",
+      "doc_type": "quiz" | "worksheet",
+      "regions": [...],  // Array of region definitions
+      "alignment_markers": [...],
+      "qr_position": {...},
+      "page_size": "letter"
+    }
+    """
+    body = await request.json()
+    doc_id = body.get("doc_id")
+    doc_type = body.get("doc_type", "quiz")
+    regions = body.get("regions", [])
+    alignment_markers = body.get("alignment_markers")
+    qr_position = body.get("qr_position")
+    page_size = body.get("page_size", "letter")
+
+    if not doc_id:
+        return JSONResponse({"error": "doc_id is required"}, status_code=400)
+
+    result = student_service.save_answer_region_template(
+        doc_id=doc_id,
+        doc_type=doc_type,
+        regions=regions,
+        alignment_markers=alignment_markers,
+        qr_position=qr_position,
+        page_size=page_size
+    )
+    return JSONResponse({"saved": True, "doc_id": doc_id})
+
+
 @app.post("/api/generate-qr")
 async def generate_qr(request: Request):
     """Generate a QR code encoding both the document ID and student ID.
@@ -9117,8 +9449,21 @@ async def generate_qr(request: Request):
         return JSONResponse({"error": "doc_id and student_id are required"}, status_code=400)
 
     qr_type = "q" if doc_type_raw == "quiz" else "w"
-    # version_hash "0000" for non-randomized individual exports
-    qr_bytes = generate_page_qr(qr_type, doc_id, student_id, "0000")
+    # Try to find a saved instance with the real version_hash
+    doc_type_full = "quiz" if doc_type_raw == "quiz" else "worksheet"
+    id_col = "quiz_id" if doc_type_full == "quiz" else "worksheet_id"
+    table = "quiz_instances" if doc_type_full == "quiz" else "worksheet_instances"
+    try:
+        conn = student_service._get_conn()
+        row = conn.execute(
+            f"SELECT version_hash FROM {table} WHERE {id_col} = ? AND student_id = ?",
+            (doc_id, student_id)
+        ).fetchone()
+        conn.close()
+        version_hash = row["version_hash"] if row else "0000"
+    except Exception:
+        version_hash = "0000"
+    qr_bytes = generate_page_qr(qr_type, doc_id, student_id, version_hash)
     qr_b64 = base64.b64encode(qr_bytes).decode()
 
     return JSONResponse({"qr_base64": qr_b64})
@@ -9310,20 +9655,16 @@ async def scan_grade_auto(
                                 if ocr_service.is_ocr_available() and det.get("cropped_image") is not None:
                                     import cv2
                                     _, img_encoded = cv2.imencode('.png', det["cropped_image"])
-                                    ocr_text = ocr_service.extract_text(img_encoded.tobytes())
+                                    ocr_text = await ocr_service.extract_text(img_encoded.tobytes())
                                     detected_answers[q_idx] = ocr_text.strip()
                             except Exception:
                                 detected_answers[q_idx] = ""
             else:
-                # Fallback: full-page OCR (existing pipeline)
+                # Targeted OCR: crop per-question answer regions instead of full-page
                 try:
                     import ocr_service
                     if ocr_service.is_ocr_available():
-                        ocr_text = ocr_service.extract_text_for_grading(file_bytes)
-                        # Parse OCR output into detected answers (simple line-based)
-                        lines = ocr_text.strip().split('\n')
-                        for i, line in enumerate(lines):
-                            detected_answers[i] = line.strip()
+                        detected_answers = await _ocr_per_question_regions(file_bytes, questions, ocr_service)
                 except Exception as e:
                     result["error"] = f"OCR fallback failed: {str(e)}"
                     results.append(result)
@@ -9496,9 +9837,7 @@ async def scan_grade_auto_stream(
                     try:
                         import ocr_service
                         if ocr_service.is_ocr_available():
-                            ocr_text = ocr_service.extract_text_for_grading(file_bytes)
-                            for i, line in enumerate(ocr_text.strip().split('\n')):
-                                detected_answers[i] = line.strip()
+                            detected_answers = await _ocr_per_question_regions(file_bytes, questions, ocr_service)
                     except Exception:
                         pass
 
