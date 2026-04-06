@@ -154,7 +154,6 @@ Subject-Specific Guidance for Mathematics (Grades K-6):
   * 2-3: Multi-digit operations, place value, introductory fractions, measurement
   * 4-5: Multiplicative reasoning, fraction/decimal operations, geometry, data analysis
   * 6: Ratio/proportional reasoning, algebraic expressions, statistical thinking
-- Common Pitfalls to Avoid: Questions that test only memorization, lack of visual support for younger grades, overly abstract problems without context
 `,
     'Language Arts': `
 Subject-Specific Guidance for Language Arts (Grades K-6):
@@ -166,7 +165,6 @@ Subject-Specific Guidance for Language Arts (Grades K-6):
   * 2-3: Reading fluency, vocabulary, narrative elements, paragraph writing
   * 4-5: Critical reading, main idea/supporting details, genre analysis, expository writing
   * 6: Literary analysis, argumentation, research skills, synthesis of texts
-- Common Pitfalls to Avoid: Isolated grammar drills without context, comprehension questions that can be answered without reading
 `,
     'Science': `
 Subject-Specific Guidance for Science (Grades K-6):
@@ -178,7 +176,6 @@ Subject-Specific Guidance for Science (Grades K-6):
   * 2-3: Life cycles, matter states, weather, simple investigations, data collection
   * 4-5: Ecosystems, earth systems, forces/motion, controlled experiments, variables
   * 6: Scientific method, energy transfer, human body systems, independent inquiry
-- Common Pitfalls to Avoid: Questions testing memorization only, "gotcha" questions, lack of connection to phenomena
 `,
     'Social Studies': `
 Subject-Specific Guidance for Social Studies (Grades K-6):
@@ -190,7 +187,6 @@ Subject-Specific Guidance for Social Studies (Grades K-6):
   * 2-3: Neighborhoods, local history, cultures, goods/services, government basics
   * 4-5: Regions, indigenous peoples, historical events, government functions, economics
   * 6: Ancient civilizations, world geography, U.S. history, comparative government
-- Common Pitfalls to Avoid: Questions focused only on dates/facts, single perspectives, lack of primary source engagement
 `
   };
 
@@ -278,16 +274,15 @@ export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string,
 TARGET STUDENTS: Grade ${formData.gradeLevel} (${gradeSpec.name}), typically aged ${gradeSpec.ageRange}
 
 GRADE LEVEL REQUIREMENTS:
-- Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
-- Learning Objective Depth: ${gradeSpec.learningObjectiveDepth}
 - Reading Level: ${gradeSpec.readingLevel}
+- Sentence Structure: ${gradeSpec.sentenceStructure}
 - Vocabulary: ${gradeSpec.vocabulary}
 
 ${formatInstructions}
 RULES:
 - Generate EXACTLY ${formData.numberOfQuestions} questions numbered 1 to ${formData.numberOfQuestions}.
 - Stop after Question ${formData.numberOfQuestions}. Do not add extra questions.
-${buildDistributionInstruction(formData.numberOfQuestions, formData.questionTypes)}
+${formData.timeLimitPerQuestion ? `- Time per question: ${formData.timeLimitPerQuestion} seconds\n` : ''}${buildDistributionInstruction(formData.numberOfQuestions, formData.questionTypes)}
 - Include correct answer and explanation for each question.
 - Align questions to these cognitive levels: ${formData.cognitiveLevels.join(', ')}.
 - For True/False questions, write the statement directly. Do NOT prefix with "True or False:".
@@ -320,14 +315,9 @@ TARGET STUDENTS: Typically aged ${gradeSpec.ageRange}
 STRAND: ${formData.strand}
 ${curriculumSection}
 GRADE LEVEL REQUIREMENTS:
-- Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
-- Assessment Methods: ${gradeSpec.assessmentMethods}
-- Learning Objective Depth: ${gradeSpec.learningObjectiveDepth}
-- Instructional Language: ${gradeSpec.instructionalLanguage}
 - Reading Level: ${gradeSpec.readingLevel}
 - Sentence Structure: ${gradeSpec.sentenceStructure}
 - Vocabulary: ${gradeSpec.vocabulary}
-- Focus Areas: ${gradeSpec.examples}
 
 SUBJECT-SPECIFIC ASSESSMENT GUIDANCE:
 ${getSubjectGuidance(formData.subject)}
@@ -336,7 +326,7 @@ ${formatInstructions}
 RULES:
 - Generate EXACTLY ${formData.numberOfQuestions} questions numbered 1 to ${formData.numberOfQuestions}.
 - Stop after Question ${formData.numberOfQuestions}. Do not add extra questions.
-${buildDistributionInstruction(formData.numberOfQuestions, formData.questionTypes)}
+${formData.timeLimitPerQuestion ? `- Time per question: ${formData.timeLimitPerQuestion} seconds\n` : ''}${buildDistributionInstruction(formData.numberOfQuestions, formData.questionTypes)}
 - Include correct answer and explanation for each question.
 - Align questions to these cognitive levels: ${formData.cognitiveLevels.join(', ')}.
 - For True/False questions, write the statement directly. Do NOT prefix with "True or False:".

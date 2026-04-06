@@ -206,7 +206,6 @@ Subject-Specific Guidance for Mathematics Worksheets (Grades K-6):
   * 4-5: Multi-digit multiplication/division, fraction/decimal operations, area/perimeter, data analysis
   * 6: Ratio/proportion, algebraic expressions, geometry, statistics, pre-algebra concepts
 - Format Tips: Include workspace for showing work, number lines, graph paper for geometry, visual models
-- Common Pitfalls to Avoid: Too many problems causing fatigue, lack of visual support, rote drill without understanding
 `,
     'Language Arts': `
 Subject-Specific Guidance for Language Arts Worksheets (Grades K-6):
@@ -219,7 +218,6 @@ Subject-Specific Guidance for Language Arts Worksheets (Grades K-6):
   * 4-5: Complex texts, figurative language, essay planning, research skills, editing/revising
   * 6: Literary analysis, argument writing, research documentation, advanced grammar, synthesis
 - Format Tips: Include graphic organizers, space for writing, word banks for support, clear rubrics
-- Common Pitfalls to Avoid: Isolated grammar drills, comprehension questions answerable without reading, insufficient writing space
 `,
     'Science': `
 Subject-Specific Guidance for Science Worksheets (Grades K-6):
@@ -232,7 +230,6 @@ Subject-Specific Guidance for Science Worksheets (Grades K-6):
   * 4-5: Ecosystems, earth systems, forces/motion, controlled experiments, graphing data
   * 6: Scientific method, variables, energy transfer, human body systems, independent inquiry
 - Format Tips: Include diagrams to label, data tables, observation charts, prediction spaces, conclusion sections
-- Common Pitfalls to Avoid: Memorization-focused questions, lack of connection to phenomena, no space for observations
 `,
     'Social Studies': `
 Subject-Specific Guidance for Social Studies Worksheets (Grades K-6):
@@ -245,7 +242,6 @@ Subject-Specific Guidance for Social Studies Worksheets (Grades K-6):
   * 4-5: State/regional studies, historical event analysis, constitution basics, economic systems, document analysis
   * 6: Ancient civilizations, world geography, U.S. history research, comparative government, current events
 - Format Tips: Include maps, timelines, graphic organizers, primary source excerpts, comparison charts
-- Common Pitfalls to Avoid: Focus on memorizing dates/facts, single perspectives, lack of primary sources
 `
   };
 
@@ -975,20 +971,13 @@ CURRICULUM CONTEXT:
 - Subject: ${formData.subject}
 - Strand: ${formData.strand}
 - Topic: ${formData.topic}
+- CLASS SIZE: ${formData.studentCount} students
 ${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'worksheet')}
 GRADE LEVEL REQUIREMENTS:
-- Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
-- Activity Types: ${gradeSpec.activityTypes}
-- Assessment Methods: ${gradeSpec.assessmentMethods}
-- Material Complexity: ${gradeSpec.materialComplexity}
-- Learning Objective Depth: ${gradeSpec.learningObjectiveDepth}
-- Instructional Language: ${gradeSpec.instructionalLanguage}
 - Reading Level: ${gradeSpec.readingLevel}
 - Sentence Structure: ${gradeSpec.sentenceStructure}
 - Vocabulary: ${gradeSpec.vocabulary}
-- Focus Areas: ${gradeSpec.examples}
 - Question Complexity: ${gradeSpec.questionComplexity}
-- Cognitive Depth: ${gradeSpec.cognitiveDepth}
 
 SUBJECT-SPECIFIC GUIDANCE:
 ${getSubjectGuidance(formData.subject)}

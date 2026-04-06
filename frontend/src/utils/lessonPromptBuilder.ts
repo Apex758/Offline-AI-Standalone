@@ -18,7 +18,14 @@ const GRADE_SPECS = BASE_GRADE_SPECS;
 
 export function buildLessonPrompt(formData: any, curriculumRefs?: CurriculumReference[], language?: string): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
-  
+
+  const DURATION_MAP: Record<string, { intro: string; direct: string; guided: string; independent: string; closure: string }> = {
+    '30 minutes': { intro: '5 minutes', direct: '10 minutes', guided: '10 minutes', independent: '5 minutes', closure: '3-5 minutes' },
+    '45 minutes': { intro: '5-7 minutes', direct: '15 minutes', guided: '15 minutes', independent: '10 minutes', closure: '5 minutes' },
+    '60 minutes': { intro: '10 minutes', direct: '20 minutes', guided: '20 minutes', independent: '15 minutes', closure: '5-7 minutes' },
+  };
+  const timings = DURATION_MAP[formData.duration] ?? DURATION_MAP['60 minutes'];
+
   let prompt = `Create a complete, detailed lesson plan for Grade ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}) following this criteria:
 
 
@@ -27,7 +34,7 @@ TOPIC: ${formData.topic}
 STRAND: ${formData.strand}
 DURATION: ${formData.duration}
 CLASS SIZE: ${formData.studentCount} students
-${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'lesson')}
+${formData.materials ? `AVAILABLE MATERIALS: ${formData.materials}\n` : 'AVAILABLE MATERIALS: Whiteboard only\n'}${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'lesson')}
 ${formData.learningStyles ? `LEARNING STYLES: ${formData.learningStyles}\n` : ''}${formData.specialNeeds ? `SPECIAL NEEDS/ACCOMMODATIONS: ${formData.specialNeeds}\n` : ''}`;
 
 
@@ -54,9 +61,6 @@ GRADE LEVEL REQUIREMENTS:
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
 - Activity Types: ${gradeSpec.activityTypes}
 - Assessment Methods: ${gradeSpec.assessmentMethods}
-- Materials: ${gradeSpec.materialComplexity}
-- Learning Objectives: ${gradeSpec.learningObjectiveDepth}
-- Instructions: ${gradeSpec.instructionalLanguage}
 
 SUBJECT-SPECIFIC GUIDANCE:
 ${getSubjectGuidance(formData.subject)}
@@ -69,31 +73,31 @@ REQUIRED LESSON PLAN STRUCTURE:
    ${formData.essentialOutcomes ? `- Objectives MUST align with the Essential Learning Outcome and selected Specific Curriculum Outcomes provided above` : ''}
 
 2. MATERIALS AND RESOURCES
-   - List all materials needed (${gradeSpec.materialComplexity})
+   - List materials from AVAILABLE MATERIALS above only. Do not add materials not listed.
    - Include technology, handouts, manipulatives, visual aids
 
 3. LESSON PROCEDURES
    
-   A. Introduction/Hook (${formData.duration === '30 minutes' ? '5 minutes' : formData.duration === '45 minutes' ? '5-7 minutes' : '10 minutes'})
+   A. Introduction/Hook (${timings.intro})
       - Engaging opening activity
       - Connect to prior knowledge
       - State learning objectives
    
-   B. Direct Instruction (${formData.duration === '30 minutes' ? '10 minutes' : formData.duration === '45 minutes' ? '15 minutes' : '20 minutes'})
+   B. Direct Instruction (${timings.direct})
       - Clear explanation of new content
       - Use ${gradeSpec.instructionalLanguage}
       - Include modeling/demonstrations
    
-   C. Guided Practice (${formData.duration === '30 minutes' ? '10 minutes' : formData.duration === '45 minutes' ? '15 minutes' : '20 minutes'})
+   C. Guided Practice (${timings.guided})
       - ${gradeSpec.activityTypes}
       - Teacher circulates and provides support
       - Check for understanding
    
-   D. Independent Practice/Application (${formData.duration === '30 minutes' ? '5 minutes' : formData.duration === '45 minutes' ? '10 minutes' : '15 minutes'})
+   D. Independent Practice/Application (${timings.independent})
       - Students work individually or in small groups
       - Differentiation options provided
    
-   E. Closure (${formData.duration === '30 minutes' ? '3-5 minutes' : formData.duration === '45 minutes' ? '5 minutes' : '5-7 minutes'})
+   E. Closure (${timings.closure})
       - Review key concepts
       - Exit ticket or formative assessment
 
@@ -111,14 +115,7 @@ REQUIRED LESSON PLAN STRUCTURE:
    - Teacher reflection prompts
    - Modifications for next time
 
-7. CURRICULUM REFERENCES
-   - DO NOT write a "Curriculum References" section in the lesson plan text
-   - The curriculum references will be displayed automatically from the data you were provided
-   ${curriculumRefs && curriculumRefs.length > 0 ? `- The ${curriculumRefs.length} curriculum reference(s) provided will be shown as clickable links` : ''}
-
-IMPORTANT: Do not include any introductory text, headers, or explanations before the lesson plan. Start directly with the lesson plan content.
-
-Generate the complete lesson plan now. Remember: Do NOT include a "Curriculum References" section in your output - it will be added automatically.`;
+Generate the complete lesson plan now.`;
 
   prompt += getLanguageInstruction(language);
   return prompt;

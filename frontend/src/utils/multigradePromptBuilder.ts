@@ -1,5 +1,6 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
+import { BASE_GRADE_SPECS } from './gradeSpecs';
 
 interface MultigradeFormData {
   topic: string;
@@ -7,84 +8,11 @@ interface MultigradeFormData {
   gradeLevels: string[];
   duration: string;
   totalStudents: string;
+  materials?: string;
   strand?: string;
   essentialOutcomes?: string;
   specificOutcomes?: string;
 }
-
-// Grade-specific pedagogical guidance (unified format)
-const GRADE_SPECS = {
-  'K': {
-    name: 'Kindergarten',
-    ageRange: '5-6 years',
-    pedagogicalApproach: 'Play-based, hands-on learning with frequent transitions',
-    activityTypes: 'Sensory play, movement, songs, stories, dramatic play, art',
-    assessmentMethods: 'Observation checklists, anecdotal notes, thumbs up/down',
-    materialComplexity: 'Large manipulatives, bright visuals, real objects',
-    learningObjectiveDepth: 'Recognition, identification, basic motor skills (Bloom: Remember)',
-    instructionalLanguage: 'Simple 3-5 word instructions, visual cues required'
-  },
-  '1': {
-    name: 'Grade 1',
-    ageRange: '6-7 years',
-    pedagogicalApproach: 'Concrete experiences with guided practice and modeling',
-    activityTypes: 'Center activities, partner work, simple experiments, craft projects',
-    assessmentMethods: 'Exit tickets, work samples, simple rubrics, oral responses',
-    materialComplexity: 'Manipulatives, pictures with words, simple worksheets',
-    learningObjectiveDepth: 'Recall, basic application, simple comparisons (Bloom: Remember, Understand)',
-    instructionalLanguage: 'Clear step-by-step directions with demonstrations'
-  },
-  '2': {
-    name: 'Grade 2',
-    ageRange: '7-8 years',
-    pedagogicalApproach: 'Guided discovery with structured collaboration',
-    activityTypes: 'Small group projects, hands-on investigations, role-play, journals',
-    assessmentMethods: 'Rubrics, peer assessment, self-reflection, portfolios',
-    materialComplexity: 'Graphic organizers, simple texts, basic tools and instruments',
-    learningObjectiveDepth: 'Comprehension, application, basic analysis (Bloom: Understand, Apply)',
-    instructionalLanguage: 'Multi-step instructions with visual supports'
-  },
-  '3': {
-    name: 'Grade 3',
-    ageRange: '8-9 years',
-    pedagogicalApproach: 'Inquiry-based with scaffolded independence',
-    activityTypes: 'Research projects, experiments, presentations, collaborative tasks',
-    assessmentMethods: 'Performance tasks, written responses, project rubrics, quizzes',
-    materialComplexity: 'Reference materials, detailed diagrams, age-appropriate tech tools',
-    learningObjectiveDepth: 'Application, analysis, beginning synthesis (Bloom: Apply, Analyze)',
-    instructionalLanguage: 'Detailed written and verbal instructions'
-  },
-  '4': {
-    name: 'Grade 4',
-    ageRange: '9-10 years',
-    pedagogicalApproach: 'Student-centered inquiry with differentiation',
-    activityTypes: 'Independent research, debates, design challenges, multimedia projects',
-    assessmentMethods: 'Essays, presentations, self-assessment, peer review, tests',
-    materialComplexity: 'Multiple sources, technical tools, complex models and diagrams',
-    learningObjectiveDepth: 'Analysis, synthesis, evaluation (Bloom: Analyze, Evaluate)',
-    instructionalLanguage: 'Complex instructions with options for student choice'
-  },
-  '5': {
-    name: 'Grade 5',
-    ageRange: '10-11 years',
-    pedagogicalApproach: 'Collaborative inquiry with critical thinking emphasis',
-    activityTypes: 'Extended projects, scientific investigations, literary analysis, debates',
-    assessmentMethods: 'Research papers, oral presentations, portfolios, authentic assessments',
-    materialComplexity: 'Primary sources, advanced technology, specialized equipment',
-    learningObjectiveDepth: 'Synthesis, evaluation, creation (Bloom: Evaluate, Create)',
-    instructionalLanguage: 'Sophisticated directions with metacognitive prompts'
-  },
-  '6': {
-    name: 'Grade 6',
-    ageRange: '11-12 years',
-    pedagogicalApproach: 'Independent inquiry with real-world connections',
-    activityTypes: 'Capstone projects, expert presentations, community partnerships, research',
-    assessmentMethods: 'Authentic assessments, portfolios, peer and expert feedback, exhibitions',
-    materialComplexity: 'Academic texts, professional tools, complex digital resources',
-    learningObjectiveDepth: 'Advanced evaluation and creation (Bloom: Evaluate, Create)',
-    instructionalLanguage: 'Academic language with student-driven modifications'
-  }
-};
 
 // Grade range differentiation specifications (retained for multigrade-specific logic)
 const GRADE_RANGE_SPECS = {
@@ -296,6 +224,7 @@ TOPIC: ${formData.topic}
 SUBJECT: ${formData.subject}
 GRADE LEVELS: ${formData.gradeLevels.join(', ')} (${rangeSpec.name})
 DURATION: ${formData.duration}
+AVAILABLE MATERIALS: ${formData.materials || 'Whiteboard only'}
 TOTAL STUDENTS: ${formData.totalStudents}
 STRAND: ${formData.strand || 'Not specified'}
 ${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'multigrade')}
@@ -312,15 +241,11 @@ MULTIGRADE TEACHING REQUIREMENTS:
 
 GRADE-SPECIFIC REQUIREMENTS BY LEVEL:
 ${formData.gradeLevels.map(grade => {
-  const gradeSpec = GRADE_SPECS[grade as keyof typeof GRADE_SPECS];
+  const gradeSpec = BASE_GRADE_SPECS[grade as keyof typeof BASE_GRADE_SPECS];
   return gradeSpec ? `
-Grade ${grade} (${gradeSpec.name}, aged ${gradeSpec.ageRange}):
-- Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
+#### Grade ${grade}
 - Activity Types: ${gradeSpec.activityTypes}
-- Assessment Methods: ${gradeSpec.assessmentMethods}
-- Material Complexity: ${gradeSpec.materialComplexity}
-- Learning Objective Depth: ${gradeSpec.learningObjectiveDepth}
-- Instructional Language: ${gradeSpec.instructionalLanguage}` : '';
+- Learning Objective Depth: ${gradeSpec.learningObjectiveDepth}` : '';
 }).join('\n')}
 
 SUBJECT-SPECIFIC GUIDANCE:
@@ -336,6 +261,7 @@ ${formData.gradeLevels.map(grade => `     * Grade ${grade}: [specific measurable
 2. MATERIALS AND RESOURCES
    - Shared materials for whole-class activities
    - Differentiated materials for each grade level (${rangeSpec.materialAdaptations})
+   - List materials from AVAILABLE MATERIALS only.
 
 3. LESSON PROCEDURES
 

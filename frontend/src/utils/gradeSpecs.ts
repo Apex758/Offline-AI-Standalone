@@ -115,7 +115,6 @@ Subject-Specific Guidance for Mathematics (Grades K-6):
   * 2-3: Place value, multi-digit operations, introductory fractions, measurement
   * 4-5: Multiplicative reasoning, fraction/decimal operations, geometry, data analysis
   * 6: Ratio/proportional reasoning, algebraic expressions, statistical thinking
-- Common Pitfalls to Avoid: Rote memorization without understanding, over-reliance on algorithms, lack of concrete representation
 `,
     'Language Arts': `
 Subject-Specific Guidance for Language Arts (Grades K-6):
@@ -128,7 +127,6 @@ Subject-Specific Guidance for Language Arts (Grades K-6):
   * 2-3: Reading fluency, narrative writing, paragraph structure, basic research
   * 4-5: Critical reading, expository writing, genre analysis, summarizing
   * 6: Literary analysis, argument writing, research skills, synthesis of multiple sources
-- Common Pitfalls to Avoid: Isolated grammar drills without context, single text perspectives, over-reliance on worksheets
 `,
     'Science': `
 Subject-Specific Guidance for Science (Grades K-6):
@@ -141,20 +139,18 @@ Subject-Specific Guidance for Science (Grades K-6):
   * 2-3: Simple investigations, plants/animals, matter states, weather patterns
   * 4-5: Controlled experiments, ecosystems, earth systems, forces/motion
   * 6: Independent investigations, scientific method, energy transfer, human body systems
-- Common Pitfalls to Avoid: Memorization of facts without inquiry, "cookbook" labs without thinking, lack of connection to real phenomena
 `,
     'Social Studies': `
-Subject-Specific Guidance for Social Studies (Grades K-6):
-- Focus Areas: Historical thinking, geographic reasoning, civic engagement, economic understanding, cultural awareness
-- Resource Types: Maps, timelines, primary sources, artifacts, globes, atlases, historical documents, biographies
-- Pedagogical Approaches: Project-based learning, document-based questions, inquiry into historical events, current events connections
+Subject-Specific Guidance for Social Studies (Grades K-6, OECS Caribbean):
+- Focus Areas: Historical thinking, geographic reasoning, civic engagement, economic understanding, Caribbean cultural awareness
+- Resource Types: Regional maps, Caribbean biographies, timelines, primary sources, independence movement materials, globes
+- Pedagogical Approaches: Project-based learning, document-based questions, inquiry into Caribbean history, current regional events
 - Assessment Best Practices: Research projects, document analysis, debates, presentations, reflective essays, civic action projects
 - Cognitive Levels by Grade:
-  * K-1: Families, communities, basic map skills, holidays and traditions
-  * 2-3: Neighborhoods, local history, map reading, cultures, goods/services
-  * 4-5: Regions, indigenous peoples, government basics, historical events and causes
-  * 6: Ancient civilizations, world geography, U.S. history, government systems, economic principles
-- Common Pitfalls to Avoid: Presenting single narratives, memorization of dates/facts without context, lack of diverse perspectives
+  * K-1: Families, communities in the Caribbean, basic map skills, cultural celebrations (Carnival, Emancipation Day, Independence)
+  * 2-3: Neighborhoods, local history, Caribbean map reading, goods/services, cultural diversity in the region
+  * 4-5: Caribbean regions, indigenous Amerindian peoples, colonial history, CARICOM, government basics
+  * 6: Caribbean history and independence, CARICOM and regional integration, world geography, government systems, economic principles
 `
   };
 
