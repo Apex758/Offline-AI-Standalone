@@ -68,6 +68,7 @@ import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType, BrainDumpSuggestion } from '../types/brainDump';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { Skeleton } from './ui/skeleton';
+import { ShimmerBar } from './ui/ShimmerBar';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; strokeWidth?: number }> = ({ icon, className = '', style, strokeWidth }) => {
@@ -1553,8 +1554,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
           <div className="flex items-center gap-3">
             <Skeleton className="w-9 h-9 rounded-lg" />
             <div className="space-y-1">
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-3 w-20" />
+              <ShimmerBar accentColor={accentColor} className="h-6 w-32" />
+              <ShimmerBar accentColor={accentColor} className="h-3 w-20" />
             </div>
           </div>
           <div className="flex gap-2">
@@ -1572,12 +1573,12 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
           </div>
           {/* Editor body */}
           <div className="p-6 space-y-3 min-h-[400px]">
-            <Skeleton className="h-4 w-4/5" />
-            <Skeleton className="h-4 w-3/5" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/5" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
+            <ShimmerBar accentColor={accentColor} className="h-4 w-4/5" />
+            <ShimmerBar accentColor={accentColor} className="h-4 w-3/5" />
+            <ShimmerBar accentColor={accentColor} className="h-4 w-full" />
+            <ShimmerBar accentColor={accentColor} className="h-4 w-2/5" />
+            <ShimmerBar accentColor={accentColor} className="h-4 w-3/4" />
+            <ShimmerBar accentColor={accentColor} className="h-4 w-1/2" />
           </div>
         </div>
         {/* Footer */}
@@ -1737,18 +1738,18 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-purple-500/15 animate-pulse" />
                           <div className="space-y-2 flex-1">
-                            <div className="h-4 w-2/5 rounded-lg bg-theme-tertiary animate-pulse" />
-                            <div className="h-3 w-1/4 rounded-lg bg-theme-tertiary animate-pulse" style={{ animationDelay: '150ms' }} />
+                            <ShimmerBar accentColor={accentColor} className="h-4 w-2/5" />
+                            <ShimmerBar accentColor={accentColor} className="h-3 w-1/4" animationDelay="150ms" />
                           </div>
                         </div>
                         {/* Skeleton text lines */}
                         <div className="space-y-3">
-                          <div className="h-3 w-full rounded-lg bg-theme-tertiary animate-pulse" style={{ animationDelay: '100ms' }} />
-                          <div className="h-3 w-11/12 rounded-lg bg-theme-tertiary animate-pulse" style={{ animationDelay: '200ms' }} />
-                          <div className="h-3 w-4/5 rounded-lg bg-theme-tertiary animate-pulse" style={{ animationDelay: '300ms' }} />
-                          <div className="h-3 w-9/12 rounded-lg bg-theme-tertiary animate-pulse" style={{ animationDelay: '400ms' }} />
-                          <div className="h-3 w-full rounded-lg bg-theme-tertiary animate-pulse" style={{ animationDelay: '500ms' }} />
-                          <div className="h-3 w-3/5 rounded-lg bg-theme-tertiary animate-pulse" style={{ animationDelay: '600ms' }} />
+                          <ShimmerBar accentColor={accentColor} className="h-3 w-full" animationDelay="100ms" />
+                          <ShimmerBar accentColor={accentColor} className="h-3 w-11/12" animationDelay="200ms" />
+                          <ShimmerBar accentColor={accentColor} className="h-3 w-4/5" animationDelay="300ms" />
+                          <ShimmerBar accentColor={accentColor} className="h-3 w-9/12" animationDelay="400ms" />
+                          <ShimmerBar accentColor={accentColor} className="h-3 w-full" animationDelay="500ms" />
+                          <ShimmerBar accentColor={accentColor} className="h-3 w-3/5" animationDelay="600ms" />
                         </div>
                         {/* Skeleton action cards */}
                         <div className="space-y-3 pt-2">
@@ -1756,8 +1757,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                             <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl bg-theme-tertiary/50 animate-pulse" style={{ animationDelay: `${700 + i * 150}ms` }}>
                               <div className="w-9 h-9 rounded-xl bg-theme-tertiary" />
                               <div className="flex-1 space-y-2">
-                                <div className="h-3 w-1/3 rounded-lg bg-theme-tertiary" />
-                                <div className="h-2.5 w-2/3 rounded-lg bg-theme-tertiary" />
+                                <ShimmerBar accentColor={accentColor} className="h-3 w-1/3" />
+                                <ShimmerBar accentColor={accentColor} className="h-2.5 w-2/3" />
                               </div>
                               <div className="flex gap-1.5">
                                 <div className="w-8 h-8 rounded-xl bg-theme-tertiary" />
@@ -1775,8 +1776,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                             <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl bg-theme-tertiary/50 animate-pulse" style={{ animationDelay: `${700 + i * 150}ms` }}>
                               <div className="w-9 h-9 rounded-xl bg-theme-tertiary" />
                               <div className="flex-1 space-y-2">
-                                <div className="h-3 w-2/5 rounded-lg bg-theme-tertiary" />
-                                <div className="h-2.5 w-1/2 rounded-lg bg-theme-tertiary" />
+                                <ShimmerBar accentColor={accentColor} className="h-3 w-2/5" />
+                                <ShimmerBar accentColor={accentColor} className="h-2.5 w-1/2" />
                               </div>
                               <div className="flex gap-1.5">
                                 <div className="w-8 h-8 rounded-xl bg-theme-tertiary" />

@@ -44,6 +44,7 @@ import StoryBookIconData from '@hugeicons/core-free-icons/BookOpen02Icon';
 import Bulb01IconData from '@hugeicons/core-free-icons/BulbIcon';
 import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
 import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
+import ComputerPhoneSyncIconData from '@hugeicons/core-free-icons/ComputerPhoneSyncIcon';
 import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
@@ -100,6 +101,7 @@ const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> =
 const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
 const Paintbrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
 const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
+const DeviceSync: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ComputerPhoneSyncIconData} {...p} />;
 const CalendarRange: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar03IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
@@ -307,11 +309,11 @@ const getTools = (t: TFunction): Tool[] => [
   },
   {
     id: 'photo-transfer',
-    name: 'Photo Transfer',
-    icon: 'Camera',
+    name: 'Document Transfer',
+    icon: 'DeviceSync',
     type: 'photo-transfer',
     description: t('sidebar.descriptions.photoTransfer'),
-    group: 'my-classroom'
+    group: 'planning-prep'
   },
   {
     id: 'performance-metrics',
@@ -433,6 +435,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   StoryBook,
   Lightbulb,
   Camera,
+  DeviceSync,
   CalendarRange,
 };
 
@@ -627,7 +630,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return tab.title;
   };
   const { hasDiffusion } = useCapabilities();
-  const { status: engineStatus } = useEngineStatus();
+  const { engineStatus } = useEngineStatus();
 
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
@@ -2624,7 +2627,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             gap: '8px',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
-          title={!sidebarOpen ? (engineStatus === 'online' ? 'Engine Online' : engineStatus === 'checking' ? 'Engine Checking...' : 'Engine Offline') : ''}
+          title={!sidebarOpen ? (engineStatus === 'online' ? 'Engine Online' : engineStatus === 'starting' ? 'Engine Starting' : engineStatus === 'checking' ? 'Checking...' : 'Engine Offline') : ''}
         >
           {/* Status dot */}
           <span
@@ -2636,13 +2639,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               flexShrink: 0,
               backgroundColor:
                 engineStatus === 'online' ? '#22c55e' :
-                engineStatus === 'checking' ? '#f59e0b' :
+                engineStatus === 'starting' ? '#f59e0b' :
+                engineStatus === 'checking' ? 'var(--text-hint, #9ca3af)' :
                 '#ef4444',
               boxShadow:
                 engineStatus === 'online' ? '0 0 6px #22c55e88' :
-                engineStatus === 'checking' ? '0 0 6px #f59e0b88' :
+                engineStatus === 'starting' ? '0 0 6px #f59e0b88' :
+                engineStatus === 'checking' ? 'none' :
                 '0 0 6px #ef444488',
-              animation: engineStatus === 'checking' ? 'pulse 1.5s ease-in-out infinite' : 'none',
+              animation: (engineStatus === 'starting' || engineStatus === 'checking') ? 'pulse 1.5s ease-in-out infinite' : 'none',
             }}
           />
           {/* Label — only when sidebar is expanded */}
@@ -2654,14 +2659,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               overflow: 'hidden',
               color:
                 engineStatus === 'online' ? '#22c55e' :
-                engineStatus === 'checking' ? '#f59e0b' :
+                engineStatus === 'starting' ? '#f59e0b' :
+                engineStatus === 'checking' ? 'var(--text-hint, #9ca3af)' :
                 '#ef4444',
               opacity: sidebarOpen ? 1 : 0,
               maxWidth: sidebarOpen ? '200px' : '0px',
               transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            {engineStatus === 'online' ? 'Engine Online' : engineStatus === 'checking' ? 'Checking...' : 'Engine Offline'}
+            {engineStatus === 'online' ? 'Engine Online' : engineStatus === 'starting' ? 'Engine Starting' : engineStatus === 'checking' ? 'Checking...' : 'Engine Offline'}
           </span>
         </div>
       </div>

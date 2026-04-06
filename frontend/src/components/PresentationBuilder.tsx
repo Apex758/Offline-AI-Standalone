@@ -33,6 +33,7 @@ import axios from 'axios';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { Skeleton } from './ui/skeleton';
+import { ShimmerBar } from './ui/ShimmerBar';
 import { NeuroSegment } from './ui/NeuroSegment';
 import { filterGrades, filterSubjects } from '../data/teacherConstants';
 // pptxgenjs is dynamically imported in exportPPTX() to avoid bundling upfront
@@ -1696,9 +1697,54 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   useEffect(() => {
     if (prevIsStreamingRef.current && !isStreaming && streamingContent) {
       try {
-        const m = streamingContent.match(/\{[\s\S]*\}/);
-        const parsed = JSON.parse(m ? m[0] : streamingContent.trim());
-        const newSlides = parsed.slides || [];
+        // Strip markdown code fences if present
+        let cleaned = streamingContent;
+        const fenceMatch = cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+        if (fenceMatch) cleaned = fenceMatch[1];
+
+        // Try parsing the full content first (structured output gives clean JSON)
+        let parsed: any;
+        try {
+          parsed = JSON.parse(cleaned.trim());
+        } catch {
+          // Fallback: extract outermost JSON object via regex
+          const m = cleaned.match(/\{[\s\S]*\}/);
+          if (m) {
+            parsed = JSON.parse(m[0]);
+          } else {
+            // Last resort: try as bare array (legacy Tier 1 format)
+            const arrM = cleaned.match(/\[[\s\S]*\]/);
+            if (arrM) {
+              const arr = JSON.parse(arrM[0]);
+              parsed = { slides: arr };
+            } else {
+              throw new Error('No valid JSON found in response');
+            }
+          }
+        }
+
+        // Normalize: handle bare array at top level
+        let newSlides: Slide[];
+        if (Array.isArray(parsed)) {
+          newSlides = parsed;
+        } else {
+          newSlides = parsed.slides || [];
+        }
+
+        // Normalize slides that use old Tier 1 format ({title, bullets} instead of {id, layout, content})
+        newSlides = newSlides.map((s: any, i: number) => {
+          if (s.content) return s; // Already in correct format
+          return {
+            id: s.id || `s${i + 1}`,
+            layout: s.layout || 'instruction',
+            content: {
+              headline: s.title || s.headline || '',
+              bullets: s.bullets || [],
+              imageScene: s.imageScene || undefined,
+            },
+          };
+        });
+
         setSlides(newSlides);
         // Assign uploaded images to slides
         if (imageMode === 'my-images' && uploadedImages.length > 0) {
@@ -2241,8 +2287,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             <div className="flex items-center gap-3">
               <Skeleton className="w-8 h-8 rounded-lg" />
               <div className="space-y-1">
-                <Skeleton className="h-5 w-36" />
-                <Skeleton className="h-3 w-24" />
+                <ShimmerBar accentColor={tabColor} className="h-5 w-36" />
+                <ShimmerBar accentColor={tabColor} className="h-3 w-24" />
               </div>
             </div>
             <Skeleton className="w-8 h-8 rounded-lg" />
@@ -2262,14 +2308,14 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               <div className="grid grid-cols-2 gap-4">
                 {Array(6).fill(0).map((_, i) => (
                   <div key={i} className="space-y-2">
-                    <Skeleton className="h-4 w-20" />
+                    <ShimmerBar accentColor={tabColor} className="h-4 w-20" />
                     <Skeleton className="h-10 w-full rounded-lg" />
                   </div>
                 ))}
               </div>
               {/* Style section */}
               <div className="space-y-3">
-                <Skeleton className="h-5 w-28" />
+                <ShimmerBar accentColor={tabColor} className="h-5 w-28" />
                 <div className="grid grid-cols-3 gap-3">
                   {Array(6).fill(0).map((_, i) => (
                     <Skeleton key={i} className="h-20 rounded-xl" />

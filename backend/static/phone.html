@@ -540,8 +540,8 @@
   <div class="content">
     <div class="setup-welcome">
       <img class="logo-large" src="/api/photo-transfer/logo" alt="OECS">
-      <h2>Photo Transfer</h2>
-      <p>Capture student worksheets and send them directly to your PC</p>
+      <h2>Document Transfer</h2>
+      <p>Transfer files and photos between your phone and PC</p>
     </div>
     <div class="card">
       <div class="card-title">
@@ -576,6 +576,7 @@
     </div>
 
     <input type="file" id="camera-input" accept="image/*" capture="environment">
+    <input type="file" id="file-input" accept=".pdf,.docx,.xlsx,.pptx,.jpg,.jpeg,.png,.gif,.webp,.heic" multiple style="display:none">
 
     <!-- Preview area -->
     <div class="preview-area" id="preview-area">
@@ -595,11 +596,22 @@
       Sending photo&hellip;
     </div>
 
+    <!-- Files from PC (Phase 3 prep) -->
+    <div id="files-from-pc" style="display:none;">
+      <div style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
+          <h3 style="margin:0; font-size:15px; font-weight:600; color:var(--text);">Files from PC</h3>
+          <span id="pc-file-count" style="background:var(--primary); color:#fff; border-radius:12px; padding:2px 10px; font-size:12px; font-weight:600;">0</span>
+        </div>
+        <div id="pc-files-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </div>
+
     <!-- Sent photos gallery -->
     <div class="card gallery-section" id="gallery-card" style="display:none">
       <div class="card-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Sent Photos
+        Sent Files
         <span class="counter-badge" id="photo-count-badge">0</span>
       </div>
       <div class="gallery-grid" id="gallery-grid"></div>
@@ -608,13 +620,21 @@
 
   <!-- Fixed bottom capture button -->
   <div class="capture-bar" id="capture-bar">
-    <button class="btn capture-btn" id="btn-capture">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-        <circle cx="12" cy="13" r="4"/>
-      </svg>
-      Take Photo
-    </button>
+    <div style="display:flex; gap:10px;">
+      <button class="btn capture-btn" id="btn-capture" style="flex:1;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        Take Photo
+      </button>
+      <button class="btn capture-btn" id="btn-choose-file" style="flex:1;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+        Choose File
+      </button>
+    </div>
   </div>
 </div>
 
@@ -681,6 +701,8 @@
   const $btnCapture = $('btn-capture');
   const $captureBar = $('capture-bar');
   const $cameraInput = $('camera-input');
+  const $fileInput = $('file-input');
+  const $btnChooseFile = $('btn-choose-file');
   const $previewArea = $('preview-area');
   const $previewImg  = $('preview-img');
   const $btnRetake  = $('btn-retake');
@@ -704,6 +726,19 @@
     t.textContent = msg;
     t.className = 'toast show ' + (type || '');
     setTimeout(() => { t.className = 'toast'; }, 2500);
+  }
+
+  // ── File type helpers ──
+  const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'bmp', 'svg'];
+  function getFileExtension(filename) {
+    return (filename.split('.').pop() || '').toLowerCase();
+  }
+  function isImageFile(filename) {
+    return IMAGE_EXTS.indexOf(getFileExtension(filename)) !== -1;
+  }
+  function getDocColor(ext) {
+    const colors = { pdf: '#e74c3c', docx: '#2b5797', doc: '#2b5797', xlsx: '#217346', xls: '#217346', pptx: '#d24726', ppt: '#d24726' };
+    return colors[ext] || '#64748b';
   }
 
   // ── Gallery ──
@@ -731,15 +766,27 @@
       const div = document.createElement('div');
       div.className = 'gallery-thumb';
 
-      const img = document.createElement('img');
-      img.src = p.url;
-      img.alt = p.name;
-      img.loading = 'lazy';
-      div.appendChild(img);
+      const ext = getFileExtension(p.name);
+      if (isImageFile(p.name)) {
+        const img = document.createElement('img');
+        img.src = p.url;
+        img.alt = p.name;
+        img.loading = 'lazy';
+        div.appendChild(img);
+      } else {
+        // Non-image file: render a colored placeholder with extension text
+        const placeholder = document.createElement('div');
+        placeholder.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:' + getDocColor(ext) + ';';
+        const extLabel = document.createElement('span');
+        extLabel.style.cssText = 'color:#fff;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1px;';
+        extLabel.textContent = ext || '?';
+        placeholder.appendChild(extLabel);
+        div.appendChild(placeholder);
+      }
 
       const label = document.createElement('div');
       label.className = 'thumb-label';
-      label.textContent = 'Photo ' + (sentPhotos.length - i);
+      label.textContent = isImageFile(p.name) ? ('Photo ' + (sentPhotos.length - i)) : p.name;
       div.appendChild(label);
 
       const delBtn = document.createElement('button');
@@ -751,7 +798,9 @@
       });
       div.appendChild(delBtn);
 
-      div.addEventListener('click', function() { openLightbox(p); });
+      div.addEventListener('click', function() {
+        if (isImageFile(p.name)) { openLightbox(p); }
+      });
       $galleryGrid.appendChild(div);
     });
   }
@@ -816,6 +865,7 @@
       $sessionLabel.textContent = className;
       $statusPill.style.display = 'flex';
       showScreen($capture);
+      startOutboxPolling();
       toast('Session started!', 'success');
     } catch (e) {
       toast('Could not connect to PC', 'error');
@@ -828,6 +878,11 @@
   $btnCapture.addEventListener('click', () => {
     $cameraInput.value = '';
     $cameraInput.click();
+  });
+
+  $btnChooseFile.addEventListener('click', () => {
+    $fileInput.value = '';
+    $fileInput.click();
   });
 
   $cameraInput.addEventListener('change', (e) => {
@@ -847,6 +902,16 @@
       $captureBar.style.display = 'none';
     };
     reader.readAsDataURL(file);
+  });
+
+  // ── File picker (non-camera files) ──
+  $fileInput.addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    // Send all selected files; no rapid-capture behavior for file picker
+    Array.from(files).forEach(function(file) {
+      sendFile(file);
+    });
   });
 
   // ── Retake ──
@@ -920,6 +985,106 @@
   }
 
   $btnSend.addEventListener('click', () => sendPhoto(currentFile));
+
+  // ── Send file (from file picker, no preview/rapid-capture) ──
+  async function sendFile(file) {
+    if (!file || !sessionId) return;
+
+    $uploadInd.style.display = 'block';
+    $captureBar.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('session_id', sessionId);
+
+    try {
+      const res = await fetch(BASE_URL + '/api/photo-transfer/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      photoCount = data.total_count;
+      addToGallery(data.photo);
+      const isImg = isImageFile(file.name);
+      toast(isImg ? ('Photo ' + photoCount + ' sent!') : 'File sent!', 'success');
+    } catch (e) {
+      toast('Upload failed -- check connection', 'error');
+    }
+
+    $uploadInd.style.display = 'none';
+    $captureBar.style.display = 'flex';
+  }
+
+  // ── Outbox polling (Phase 3 prep) ──
+  let outboxPollInterval = null;
+
+  function startOutboxPolling() {
+    if (outboxPollInterval) return;
+    outboxPollInterval = setInterval(pollOutbox, 5000);
+    pollOutbox();
+  }
+
+  function stopOutboxPolling() {
+    if (outboxPollInterval) { clearInterval(outboxPollInterval); outboxPollInterval = null; }
+  }
+
+  async function pollOutbox() {
+    if (!sessionId) return;
+    try {
+      const resp = await fetch(BASE_URL + '/api/photo-transfer/outbox/' + sessionId);
+      if (!resp.ok) return;
+      const files = await resp.json();
+      renderPCFiles(files);
+    } catch(e) { /* ignore polling errors */ }
+  }
+
+  function renderPCFiles(files) {
+    const container = $('pc-files-list');
+    const wrapper = $('files-from-pc');
+    const countBadge = $('pc-file-count');
+    const pending = files.filter(function(f) { return !f.downloaded; });
+
+    if (pending.length === 0) { wrapper.style.display = 'none'; return; }
+    wrapper.style.display = 'block';
+    countBadge.textContent = pending.length;
+
+    container.innerHTML = pending.map(function(f) {
+      return '<div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg-elevated); border-radius:8px; border:1px solid var(--border);">' +
+        '<div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">' +
+          '<div style="width:36px; height:36px; border-radius:8px; background:' + getDocColor(getFileExtension(f.filename)) + '; display:flex; align-items:center; justify-content:center; flex-shrink:0;">' +
+            '<span style="color:#fff; font-size:10px; font-weight:700; text-transform:uppercase;">' + getFileExtension(f.filename) + '</span>' +
+          '</div>' +
+          '<div style="flex:1; min-width:0;">' +
+            '<div style="font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text);">' + f.filename + '</div>' +
+            '<div style="font-size:11px; color:var(--text-muted);">' + formatFileSize(f.size_bytes) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button onclick="downloadPCFile(\'' + f.id + '\', \'' + f.filename + '\')" style="background:var(--primary); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:12px; font-weight:600; cursor:pointer;">Download</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(1) + ' MB';
+  }
+
+  window.downloadPCFile = async function downloadPCFile(fileId, filename) {
+    try {
+      const resp = await fetch(BASE_URL + '/api/photo-transfer/outbox/' + sessionId + '/' + fileId + '/download');
+      if (!resp.ok) { toast('Download failed', 'error'); return; }
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+      // Acknowledge receipt
+      await fetch(BASE_URL + '/api/photo-transfer/outbox/' + sessionId + '/' + fileId + '/ack', { method: 'POST' });
+      toast('Downloaded: ' + filename, 'success');
+      pollOutbox();
+    } catch(e) { toast('Download error', 'error'); }
+  }
 
   // ── Connection health monitor ──
   let connectionOk = true;

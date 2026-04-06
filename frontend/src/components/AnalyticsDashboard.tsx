@@ -81,6 +81,7 @@ import type { NewlyEarnedAchievement } from '../types/achievement';
 import { useRefetchOnActivation } from '../hooks/useRefetchOnActivation';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
 import { NeuroSegment } from './ui/NeuroSegment';
+import { ShimmerBar } from './ui/ShimmerBar';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -579,8 +580,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <div className="flex items-center space-x-4">
               <div className="w-14 h-14 rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
               <div className="space-y-2">
-                <div className="h-6 w-32 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
-                <div className="h-4 w-24 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                <ShimmerBar accentColor="#3b82f6" style={{ height: 24, width: 128 }} />
+                <ShimmerBar accentColor="#3b82f6" style={{ height: 16, width: 96 }} />
               </div>
             </div>
             <div className="flex items-center space-x-6">
@@ -588,8 +589,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <React.Fragment key={i}>
                   {i > 1 && <div className="w-px h-10" style={{ backgroundColor: 'var(--dash-border)' }} />}
                   <div className="text-center space-y-1">
-                    <div className="h-7 w-10 mx-auto rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
-                    <div className="h-3 w-14 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    <div className="mx-auto w-fit"><ShimmerBar accentColor="#3b82f6" style={{ height: 28, width: 40 }} /></div>
+                    <ShimmerBar accentColor="#3b82f6" style={{ height: 12, width: 56 }} />
                   </div>
                 </React.Fragment>
               ))}
@@ -605,7 +606,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Chart Carousel Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="h-5 w-36 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 144 }} />
                   <div className="flex gap-2">
                     {[1, 2, 3].map(i => (
                       <div key={i} className="h-8 w-16 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
@@ -618,7 +619,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Curriculum Progress Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="h-5 w-44 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 176 }} />
                   <div className="flex gap-2">
                     {[1, 2].map(i => (
                       <div key={i} className="h-7 w-20 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
@@ -635,13 +636,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
               {/* Recent Activity Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
-                <div className="h-5 w-36 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 144 }} />
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-full animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-4 w-3/4 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
-                      <div className="h-3 w-1/3 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                      <ShimmerBar accentColor="#3b82f6" className="w-3/4" style={{ height: 16 }} />
+                      <ShimmerBar accentColor="#3b82f6" className="w-1/3" style={{ height: 12 }} />
                     </div>
                   </div>
                 ))}
@@ -653,7 +654,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Calendar Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="h-5 w-28 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 112 }} />
                   <div className="h-8 w-8 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
                 </div>
                 <div className="grid grid-cols-7 gap-1">
@@ -666,15 +667,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Task List Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="h-5 w-20 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 80 }} />
                   <div className="h-8 w-8 rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
                 </div>
                 {[1, 2, 3].map(i => (
                   <div key={i} className="flex items-center space-x-3">
                     <div className="w-5 h-5 rounded-md animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
                     <div className="flex-1 space-y-1">
-                      <div className="h-4 w-4/5 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
-                      <div className="h-3 w-1/4 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                      <ShimmerBar accentColor="#3b82f6" className="w-4/5" style={{ height: 16 }} />
+                      <ShimmerBar accentColor="#3b82f6" className="w-1/4" style={{ height: 12 }} />
                     </div>
                   </div>
                 ))}
@@ -682,12 +683,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
               {/* Most Used Tools Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
-                <div className="h-5 w-32 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 128 }} />
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-lg animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-4 w-2/3 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                      <ShimmerBar accentColor="#3b82f6" className="w-2/3" style={{ height: 16 }} />
                       <div className="h-2 w-full rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
                     </div>
                   </div>

@@ -830,6 +830,8 @@ async def smart_search(request: SmartSearchRequest):
         from inference_factory import resolve_inference_for_task
         from smart_search_prompt import build_smart_search_prompt, SMART_SEARCH_TIER1_PROMPT
         from tier1_prompts import get_tier1_gen_params
+        from generation_gate import acquire_http_slot, release_generation_slot
+        from schemas.smart_search_schema import SMART_SEARCH_JSON_SCHEMA
 
         _tier_info = compute_effective_tier()
         _is_tier1 = _tier_info["tier"] == 1
@@ -840,17 +842,32 @@ async def smart_search(request: SmartSearchRequest):
         prompt = build_prompt(system_prompt, user_prompt)
 
         inference = resolve_inference_for_task("smart-search")
-        _t1_params = get_tier1_gen_params("autocomplete") if _is_tier1 else {}
+        _t1_params = get_tier1_gen_params("smart-search") if _is_tier1 else {}
 
-        result = await inference.generate(
-            tool_name="smart-search",
-            input_data=query,
-            prompt_template=prompt,
-            max_tokens=300,
-            temperature=_t1_params.get("temperature", 0.3)
-        )
+        # Acquire generation slot to avoid model contention
+        try:
+            slot_mode = await acquire_http_slot("queued", timeout=30.0)
+        except TimeoutError:
+            return {"intent": "info", "summary": "AI is busy with another task. Try again in a moment.", "steps": [], "confidence": 0.2}
+
+        try:
+            # Use JSON schema enforcement for llama-based models
+            _schema = SMART_SEARCH_JSON_SCHEMA if hasattr(inference, 'model') else None
+
+            result = await inference.generate(
+                tool_name="smart-search",
+                input_data=query,
+                prompt_template=prompt,
+                max_tokens=_t1_params.get("max_tokens", 300),
+                temperature=_t1_params.get("temperature", 0.3),
+                **( {"json_schema": _schema} if _schema else {} )
+            )
+        finally:
+            release_generation_slot(slot_mode)
 
         if result["metadata"]["status"] == "error":
+            err_msg = result["metadata"].get("error_message", "unknown")
+            logger.error(f"[SmartSearch] Generation error: {err_msg}")
             return {"intent": "info", "summary": "Sorry, I couldn't process that.", "steps": [], "confidence": 0}
 
         raw = result["result"].strip()
@@ -2538,6 +2555,10 @@ async def presentation_websocket(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("presentation") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
+                # Structured output: enforce JSON schema for slide generation
+                from schemas.presentation_schema import PRESENTATION_JSON_SCHEMA
+                _pres_schema = PRESENTATION_JSON_SCHEMA
+
                 async for chunk in inference.generate_stream(
                     tool_name="presentation",
                     input_data=prompt,
@@ -2546,6 +2567,7 @@ async def presentation_websocket(websocket: WebSocket):
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                     cancel_event=cancel_event,
+                    json_schema=_pres_schema,
                 ):
                     if job_id in cancelled_job_ids or cancel_event.is_set():
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -6874,9 +6896,19 @@ async def open_diffusion_models_folder():
 
 @app.get("/api/health")
 async def health():
+    # Check if the LLM model is loaded and ready for inference
+    _model_loaded = False
+    try:
+        import inference_factory as _inf_mod
+        if _inf_mod._local_instance is not None and _inf_mod._local_instance.is_loaded:
+            _model_loaded = True
+    except Exception:
+        pass
+
     return {
         "status": "healthy",
         "model_found": os.path.exists(get_model_path()),
+        "model_loaded": _model_loaded,
         "llama_cli_found": os.path.exists(LLAMA_CLI_PATH),
         "chat_memory_db": os.path.exists(get_chat_memory().db_path)
     }

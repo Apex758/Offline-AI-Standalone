@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../ui/skeleton';
+import { ShimmerBar } from '../ui/ShimmerBar';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 export interface MathProblem {
@@ -123,7 +124,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
               {subject} · {gradeLevel} · {topic}
             </div>
             {loading
-              ? <Skeleton style={{ height: 28, width: 280, background: '#e2e8f0', borderRadius: 3 }} />
+              ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 280 }} />
               : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1 }}>{worksheetTitle || 'Math Practice'}</h1>
             }
           </div>
@@ -170,7 +171,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
                   <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                     <Skeleton style={{ width: 28, height: 28, borderRadius: 4, background: palette.accentLight, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <Skeleton style={{ height: 14, width: '72%', background: '#e2e8f0', borderRadius: 3, marginBottom: 10 }} />
+                      <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 14, width: '72%', marginBottom: 10 }} />
                       <div style={{ borderBottom: '1.5px solid #e2e8f0', marginBottom: 24 }} />
                     </div>
                   </div>

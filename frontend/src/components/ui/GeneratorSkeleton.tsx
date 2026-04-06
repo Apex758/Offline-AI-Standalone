@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from './skeleton';
+import { ShimmerBar } from './ShimmerBar';
 
 interface GeneratorSkeletonProps {
   accentColor?: string;
@@ -15,8 +16,8 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
       {/* Header skeleton */}
       <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
         <div className="space-y-2">
-          <Skeleton className="h-6 w-56" />
-          <Skeleton className="h-4 w-36" />
+          <ShimmerBar accentColor={accentColor} className="h-6 w-56" />
+          <ShimmerBar accentColor={accentColor} className="h-4 w-36" />
         </div>
       </div>
 
@@ -28,12 +29,12 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
             className="rounded-2xl p-8 space-y-4"
             style={{ background: `linear-gradient(to bottom right, ${accentColor}15, ${accentColor}08)`, border: `1px solid ${accentColor}20` }}
           >
-            <Skeleton className="h-5 w-24 rounded-full" style={{ backgroundColor: `${accentColor}20` }} />
-            <Skeleton className="h-8 w-72" style={{ backgroundColor: `${accentColor}15` }} />
+            <ShimmerBar accentColor={accentColor} className="h-5 w-24 rounded-full" />
+            <ShimmerBar accentColor={accentColor} className="h-8 w-72" />
             <div className="flex gap-4">
-              <Skeleton className="h-4 w-20" style={{ backgroundColor: `${accentColor}12` }} />
-              <Skeleton className="h-4 w-24" style={{ backgroundColor: `${accentColor}12` }} />
-              <Skeleton className="h-4 w-28" style={{ backgroundColor: `${accentColor}12` }} />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-20" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-24" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-28" />
             </div>
           </div>
         </div>
@@ -42,28 +43,28 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
         <div className="space-y-6">
           {/* Section 1 */}
           <div className="rounded-xl p-6 widget-glass space-y-4">
-            <Skeleton className="h-5 w-40" />
+            <ShimmerBar accentColor={accentColor} className="h-5 w-40" />
             <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-11/12" />
-              <Skeleton className="h-4 w-3/4" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-full" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-11/12" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-3/4" />
             </div>
           </div>
 
           {/* Section 2 */}
           <div className="rounded-xl p-6 widget-glass space-y-4">
-            <Skeleton className="h-5 w-48" />
+            <ShimmerBar accentColor={accentColor} className="h-5 w-48" />
             <div className="space-y-3">
               {type === 'quiz' ? (
                 <>
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="space-y-2 pb-3 border-b border-theme last:border-0">
-                      <Skeleton className="h-4 w-5/6" />
+                      <ShimmerBar accentColor={accentColor} className="h-4 w-5/6" />
                       <div className="ml-4 space-y-1.5">
-                        <Skeleton className="h-3.5 w-2/3" />
-                        <Skeleton className="h-3.5 w-1/2" />
-                        <Skeleton className="h-3.5 w-3/5" />
-                        <Skeleton className="h-3.5 w-1/2" />
+                        <ShimmerBar accentColor={accentColor} className="h-3.5 w-2/3" />
+                        <ShimmerBar accentColor={accentColor} className="h-3.5 w-1/2" />
+                        <ShimmerBar accentColor={accentColor} className="h-3.5 w-3/5" />
+                        <ShimmerBar accentColor={accentColor} className="h-3.5 w-1/2" />
                       </div>
                     </div>
                   ))}
@@ -85,10 +86,10 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
                 </>
               ) : (
                 <>
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
+                  <ShimmerBar accentColor={accentColor} className="h-4 w-full" />
+                  <ShimmerBar accentColor={accentColor} className="h-4 w-5/6" />
+                  <ShimmerBar accentColor={accentColor} className="h-4 w-full" />
+                  <ShimmerBar accentColor={accentColor} className="h-4 w-2/3" />
                 </>
               )}
             </div>
@@ -96,11 +97,11 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
 
           {/* Section 3 */}
           <div className="rounded-xl p-6 widget-glass space-y-4">
-            <Skeleton className="h-5 w-36" />
+            <ShimmerBar accentColor={accentColor} className="h-5 w-36" />
             <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-4/5" />
-              <Skeleton className="h-4 w-11/12" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-full" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-4/5" />
+              <ShimmerBar accentColor={accentColor} className="h-4 w-11/12" />
             </div>
           </div>
         </div>

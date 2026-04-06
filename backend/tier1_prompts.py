@@ -51,6 +51,7 @@ TIER1_MAX_TOKENS = {
     "brain-dump": 4000,
     "title-generation": 30,
     "autocomplete": 30,
+    "smart-search": 300,
     # Educator Insights — multi-pass analysis
     "insights-curriculum": 500,
     "insights-performance": 500,
@@ -246,24 +247,28 @@ TIER1_PROMPTS = {
     "presentation": (
         "You are a slide deck writer. Return ONLY valid JSON, no other text.\n"
         "Format:\n"
-        "[{\"title\":\"short title\",\"bullets\":[\"point 1\",\"point 2\"]}]\n\n"
+        "{\"slides\":[{\"id\":\"s1\",\"layout\":\"title\",\"content\":{\"headline\":\"short title\",\"bullets\":[\"point 1\"]}}]}\n\n"
         "Rules:\n"
-        "- Titles: max 6 words, specific (not \"Introduction\")\n"
-        "- Bullets: max 6 words, one idea each, max 6 per slide\n"
+        "- id: s1, s2, s3, etc.\n"
+        "- layout: one of title, objectives, hook, instruction, activity, assessment, closing\n"
+        "- headline: max 6 words, specific (not \"Introduction\")\n"
+        "- bullets: max 6 words, one idea each, max 6 per slide\n"
         "- Generate exactly the number of slides requested\n"
-        "- No full sentences. No markdown. Start with ["
+        "- No full sentences. No markdown. Start with {"
     ),
 
     "presentation_with_suggestions": (
         "You are a slide deck writer. Return ONLY valid JSON, no other text.\n"
         "Format:\n"
-        "[{\"title\":\"short title\",\"bullets\":[\"point 1\",\"point 2\"],\"imageScene\":\"description or null\"}]\n\n"
+        "{\"slides\":[{\"id\":\"s1\",\"layout\":\"title\",\"content\":{\"headline\":\"short title\",\"bullets\":[\"point 1\"],\"imageScene\":\"description or null\"}}]}\n\n"
         "Rules:\n"
-        "- Titles: max 6 words, specific (not \"Introduction\")\n"
-        "- Bullets: max 6 words, one idea each, max 6 per slide\n"
+        "- id: s1, s2, s3, etc.\n"
+        "- layout: one of title, objectives, hook, instruction, activity, assessment, closing\n"
+        "- headline: max 6 words, specific (not \"Introduction\")\n"
+        "- bullets: max 6 words, one idea each, max 6 per slide\n"
         "- Generate exactly the number of slides requested\n"
         "- Add imageScene on 2-3 slides where a visual would help (10-20 word suggestion)\n"
-        "- No full sentences. No markdown. Start with ["
+        "- No full sentences. No markdown. Start with {"
     ),
 
     "storybook": (

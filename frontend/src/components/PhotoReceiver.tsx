@@ -103,6 +103,11 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
   const [showScanPanel, setShowScanPanel] = useState(false);
   const [expectedStudents, setExpectedStudents] = useState<Map<string, ExpectedStudent[]>>(new Map());
   const [scanToasts, setScanToasts] = useState<ScanToast[]>([]);
+
+  // Outbox (Send to Phone) state
+  const [outboxFiles, setOutboxFiles] = useState<{id: string; filename: string; size_bytes: number; queued_at: string; downloaded: boolean}[]>([]);
+  const [sendingToPhone, setSendingToPhone] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const expectedStudentsRef = useRef<Map<string, ExpectedStudent[]>>(new Map());
 
   // Keep ref in sync with state for use inside SSE callback
@@ -241,6 +246,17 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       }
     });
 
+    es.addEventListener('outbox_updated', (e: any) => {
+      const data = JSON.parse(e.data);
+      // Always refresh outbox — the session_id in the event tells us which session changed
+      fetchOutbox(data.session_id);
+    });
+
+    es.addEventListener('outbox_ack', (e: any) => {
+      const data = JSON.parse(e.data);
+      setOutboxFiles(prev => prev.map(f => f.id === data.file_id ? {...f, downloaded: true} : f));
+    });
+
     es.onerror = () => setConnected(false);
     es.onopen = () => setConnected(true);
 
@@ -297,6 +313,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
       setNewClassName('');
       setShowNewSession(false);
       resetScanTracker();
+      fetchOutbox(session.id);
     } catch {}
   };
 
@@ -397,6 +414,53 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
   const photoUrl = (photo: Photo) =>
     `${BASE}/api/photo-transfer/photos/${activeSession?.id}/${photo.filename}`;
 
+  // ── Fetch outbox ──
+  const fetchOutbox = useCallback(async (sessionId: string) => {
+    try {
+      const resp = await fetch(`${BASE}/api/photo-transfer/outbox/${sessionId}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        setOutboxFiles(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch outbox:', e);
+    }
+  }, []);
+
+  // ── Send files to phone ──
+  const handleSendToPhone = useCallback(async (fileList: FileList | File[]) => {
+    if (!activeSession) return;
+    setSendingToPhone(true);
+    try {
+      const formData = new FormData();
+      for (const file of Array.from(fileList)) {
+        formData.append('files', file);
+      }
+      const resp = await fetch(`${BASE}/api/photo-transfer/outbox/${activeSession.id}`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (resp.ok) {
+        // Outbox will be refreshed via SSE event
+      }
+    } catch (e) {
+      console.error('Failed to send files to phone:', e);
+    } finally {
+      setSendingToPhone(false);
+    }
+  }, [activeSession]);
+
+  // ── Delete outbox file ──
+  const handleDeleteOutboxFile = useCallback(async (fileId: string) => {
+    if (!activeSession) return;
+    try {
+      await fetch(`${BASE}/api/photo-transfer/outbox/${activeSession.id}/${fileId}`, { method: 'DELETE' });
+      // Will be refreshed via SSE
+    } catch (e) {
+      console.error('Failed to delete outbox file:', e);
+    }
+  }, [activeSession]);
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
       {/* ── Header ── */}
@@ -422,9 +486,9 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             </svg>
           </div>
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', margin: 0 }}>Photo Transfer</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', margin: 0 }}>{t('sidebar.photoTransfer')}</h2>
             <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
-              Scan QR code with phone to send photos
+              Send photos from phone or queue files for phone download
             </p>
           </div>
         </div>
@@ -738,6 +802,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   setShowNewSession(false);
                   setSelectedPhoto(null);
                   resetScanTracker();
+                  fetchOutbox(s.id);
                 }}
                 onDelete={(e) => deleteSession(s, e)}
               />
@@ -816,6 +881,140 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   ))}
                 </div>
               )}
+
+              {/* ── Send to Phone Section ── */}
+              <div style={{ marginTop: 32 }}>
+                <div style={{ marginBottom: 12 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                    {t('photoTransfer.sendToPhone')}
+                  </h3>
+                  <p style={{ fontSize: 13, color: '#64748b', margin: '4px 0 0' }}>
+                    {t('photoTransfer.dragDropHint')}
+                  </p>
+                </div>
+
+                {/* Drop zone */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    if (e.dataTransfer.files.length > 0) {
+                      handleSendToPhone(e.dataTransfer.files);
+                    }
+                  }}
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.multiple = true;
+                    input.accept = '.pdf,.docx,.xlsx,.pptx,.jpg,.jpeg,.png,.gif,.webp,.heic';
+                    input.onchange = (ev) => {
+                      const files = (ev.target as HTMLInputElement).files;
+                      if (files && files.length > 0) handleSendToPhone(files);
+                    };
+                    input.click();
+                  }}
+                  style={{
+                    border: `2px dashed ${dragOver ? '#2563eb' : '#cbd5e1'}`,
+                    borderRadius: 12,
+                    padding: '32px 20px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    background: dragOver ? '#eff6ff' : '#f8fafc',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={dragOver ? '#2563eb' : '#94a3b8'} strokeWidth="1.5" style={{ margin: '0 auto 10px', display: 'block' }}>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: dragOver ? '#2563eb' : '#475569', margin: 0 }}>
+                    {sendingToPhone ? 'Uploading...' : t('photoTransfer.dragDropHint')}
+                  </p>
+                  <p style={{ fontSize: 12, color: '#94a3b8', margin: '6px 0 0' }}>
+                    {t('photoTransfer.supportedFormats')}
+                  </p>
+                </div>
+
+                {/* Outbox file list */}
+                {outboxFiles.length > 0 ? (
+                  <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {outboxFiles.map(f => {
+                      const ext = f.filename.split('.').pop()?.toLowerCase() || '';
+                      const iconColor = ext === 'pdf' ? '#dc2626'
+                        : ext === 'docx' ? '#2563eb'
+                        : ext === 'xlsx' ? '#16a34a'
+                        : ext === 'pptx' ? '#ea580c'
+                        : '#7c3aed';
+
+                      return (
+                        <div key={f.id} style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '10px 12px', borderRadius: 8,
+                          background: 'white', border: '1px solid #e2e8f0',
+                        }}>
+                          {/* File type icon */}
+                          <div style={{
+                            width: 36, height: 36, borderRadius: 8, flexShrink: 0,
+                            background: `${iconColor}18`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                              <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                          </div>
+
+                          {/* Filename + size */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {f.filename}
+                            </div>
+                            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                              {(f.size_bytes / 1024).toFixed(1)} KB
+                            </div>
+                          </div>
+
+                          {/* Status badge */}
+                          <span style={{
+                            padding: '3px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600, flexShrink: 0,
+                            background: f.downloaded ? '#f0fdf4' : '#fefce8',
+                            color: f.downloaded ? '#16a34a' : '#ca8a04',
+                            border: `1px solid ${f.downloaded ? '#bbf7d0' : '#fef08a'}`,
+                          }}>
+                            {f.downloaded ? t('photoTransfer.downloaded') : t('photoTransfer.queued')}
+                          </span>
+
+                          {/* Delete button (only for non-downloaded) */}
+                          {!f.downloaded && (
+                            <button
+                              onClick={() => handleDeleteOutboxFile(f.id)}
+                              title="Remove from queue"
+                              style={{
+                                width: 26, height: 26, borderRadius: 6, flexShrink: 0,
+                                border: 'none', background: 'rgba(220,38,38,0.08)',
+                                color: '#dc2626', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginTop: 16 }}>
+                    {t('photoTransfer.noFilesQueued')}
+                  </p>
+                )}
+              </div>
             </>
           ) : (
             <div style={{

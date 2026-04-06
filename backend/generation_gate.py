@@ -77,3 +77,26 @@ def release_generation_slot(mode: str):
         return
     if _queue_lock.locked():
         _queue_lock.release()
+
+# -- HTTP-friendly slot management (no websocket heartbeats) --
+async def acquire_http_slot(mode: str, timeout: float = 30.0) -> str:
+    """
+    Acquire a generation slot for HTTP (non-WebSocket) endpoints.
+    Returns 'queued' or 'simultaneous'.  Raises TimeoutError if
+    the slot cannot be acquired within *timeout* seconds.
+    """
+    mode = (mode or "queued").lower()
+
+    if mode == "simultaneous":
+        try:
+            await asyncio.wait_for(_parallel_sem.acquire(), timeout=timeout)
+        except asyncio.TimeoutError:
+            raise TimeoutError("Generation queue full - try again shortly")
+        return "simultaneous"
+
+    # Default: queued
+    try:
+        await asyncio.wait_for(_queue_lock.acquire(), timeout=timeout)
+    except asyncio.TimeoutError:
+        raise TimeoutError("Generation queue full - try again shortly")
+    return "queued"

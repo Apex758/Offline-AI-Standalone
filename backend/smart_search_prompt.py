@@ -211,11 +211,11 @@ CHUNK_KEYWORDS = {
         "worksheet", "image", "lesson", "slide", "presentation", "brain dump",
         "storybook", "story", "book", "illustrated", "narration", "tts",
         "achievement", "badge", "trophy", "milestone", "performance", "benchmark",
-        "speed", "support", "help", "bug", "report", "faq",
+        "speed", "support", "bug", "report", "faq",
     ],
     "workflows": [
-        "how", "steps", "guide", "help", "where", "find", "change", "use",
-        "what", "show", "do", "can", "split", "screen", "notification",
+        "steps", "guide", "where", "find", "change",
+        "split", "screen", "notification",
         "queue", "close", "tabs", "side by side",
     ],
     "tutorials": [

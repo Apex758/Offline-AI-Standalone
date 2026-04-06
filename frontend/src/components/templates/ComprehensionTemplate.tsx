@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { WorksheetQuestion } from '../../types/worksheet';
 import { Skeleton } from '../ui/skeleton';
+import { ShimmerBar } from '../ui/ShimmerBar';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 interface ComprehensionTemplateProps {
@@ -75,7 +76,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
               {subject} · {gradeLevel} · Reading Comprehension
             </div>
             {loading
-              ? <Skeleton style={{ height: 28, width: 300, background: '#e2e8f0', borderRadius: 3 }} />
+              ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 300 }} />
               : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1 }}>{worksheetTitle}</h1>
             }
             {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#64748b' }}>{topic}</p>}
@@ -144,7 +145,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
               {loading
                 ? <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {[100, 97, 93, 100, 88, 95, 82].map((w, i) => (
-                      <Skeleton key={i} style={{ height: 14, width: `${w}%`, background: palette.accentBorder, borderRadius: 3 }} />
+                      <ShimmerBar key={i} variant="paper" accentColor={ACCENT} style={{ height: 14, width: `${w}%` }} />
                     ))}
                   </div>
                 : <p style={{ margin: 0, fontSize: 14, color: '#1e293b', lineHeight: 1.85, whiteSpace: 'pre-wrap' }}>{displayPassage}</p>
@@ -175,7 +176,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
 
                 <div style={{ flex: 1 }}>
                   {loading
-                    ? <Skeleton style={{ height: 14, width: '72%', background: '#e2e8f0', borderRadius: 3, marginBottom: 10, display: 'block' }} />
+                    ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 14, width: '72%', marginBottom: 10, display: 'block' }} />
                     : <p style={{ margin: '2px 0 10px', fontSize: 14, color: '#1e293b', fontWeight: 600, lineHeight: 1.5 }}>{q.question}</p>
                   }
                   {effectiveShowAnswers && q.correctAnswer

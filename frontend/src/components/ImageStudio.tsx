@@ -68,6 +68,7 @@ import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { Skeleton } from './ui/skeleton';
+import { ShimmerBar } from './ui/ShimmerBar';
 import AIDisclaimer from './AIDisclaimer';
 import { NeuroSegment } from './ui/NeuroSegment';
 
@@ -2020,7 +2021,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           <div className="max-w-3xl mx-auto space-y-6">
             {/* Style grid */}
             <div className="space-y-3">
-              <Skeleton className="h-5 w-24" />
+              <ShimmerBar accentColor={tabColor} className="h-5 w-24" />
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {Array(8).fill(0).map((_, i) => (
                   <Skeleton key={i} className="h-24 rounded-xl" />
@@ -2029,17 +2030,17 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             </div>
             {/* Prompt */}
             <div className="space-y-2">
-              <Skeleton className="h-5 w-20" />
+              <ShimmerBar accentColor={tabColor} className="h-5 w-20" />
               <Skeleton className="h-32 w-full rounded-xl" />
             </div>
             {/* Options row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Skeleton className="h-4 w-16" />
+                <ShimmerBar accentColor={tabColor} className="h-4 w-16" />
                 <Skeleton className="h-10 w-full rounded-lg" />
               </div>
               <div className="space-y-2">
-                <Skeleton className="h-4 w-20" />
+                <ShimmerBar accentColor={tabColor} className="h-4 w-20" />
                 <Skeleton className="h-10 w-full rounded-lg" />
               </div>
             </div>

@@ -125,6 +125,7 @@ class GemmaInference:
         temperature: float = 0.7,
         top_p: float = 0.9,
         stop: Optional[list] = None,
+        **kwargs,
     ):
         """
         TRUE REAL-TIME STREAMING!

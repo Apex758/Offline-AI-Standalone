@@ -134,6 +134,53 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
   const [setupSaving, setSetupSaving] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
 
+  // Smart date helpers for academic year setup
+  const computeDefaultDates = useCallback((yearStart: string) => {
+    if (!yearStart) return null;
+    const d = new Date(yearStart);
+    const y = d.getFullYear();
+    const m = d.getMonth(); // 0-indexed
+    // Determine if the year rolls over (start in Jul-Dec means next calendar year for Term 2+)
+    const nextYear = m >= 6 ? y + 1 : y;
+    const startYear = m >= 6 ? y : y - 1; // for label
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const toISO = (yr: number, mo: number, day: number) => `${yr}-${pad(mo)}-${pad(day)}`;
+
+    return {
+      sem1_end: toISO(m >= 6 ? y : y, 12, 13),
+      break_end: toISO(nextYear, 1, 6),
+      year_end: toISO(nextYear, 6, 27),
+      midterm1_start: toISO(m >= 6 ? y : y, 10, 20),
+      midterm1_end: toISO(m >= 6 ? y : y, 10, 24),
+      midterm2_start: toISO(nextYear, 2, 17),
+      midterm2_end: toISO(nextYear, 2, 21),
+      final_exam_start: toISO(nextYear, 5, 26),
+      final_exam_end: toISO(nextYear, 6, 20),
+      label: `${m >= 6 ? y : y - 1}-${nextYear}`,
+    };
+  }, []);
+
+  const handleYearStartChange = useCallback((value: string) => {
+    const defaults = computeDefaultDates(value);
+    if (defaults) {
+      setSetupDates({
+        year_start: value,
+        sem1_end: defaults.sem1_end,
+        break_end: defaults.break_end,
+        year_end: defaults.year_end,
+        midterm1_start: defaults.midterm1_start,
+        midterm1_end: defaults.midterm1_end,
+        midterm2_start: defaults.midterm2_start,
+        midterm2_end: defaults.midterm2_end,
+        final_exam_start: defaults.final_exam_start,
+        final_exam_end: defaults.final_exam_end,
+      });
+      setSetupLabel(defaults.label);
+    } else {
+      setSetupDates(prev => ({ ...prev, year_start: value }));
+    }
+  }, [computeDefaultDates]);
+
   // Event state
   const [events, setEvents] = useState<SchoolYearEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -770,19 +817,19 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                     </label>
                     <label className="syc-form-label">
                       School Year Start
-                      <input type="date" className="syc-form-input" value={setupDates.year_start} onChange={e => setSetupDates(d => ({ ...d, year_start: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.year_start} onChange={e => handleYearStartChange(e.target.value)} />
                     </label>
                     <label className="syc-form-label">
                       Semester 1 End
-                      <input type="date" className="syc-form-input" value={setupDates.sem1_end} onChange={e => setSetupDates(d => ({ ...d, sem1_end: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.sem1_end} min={setupDates.year_start || undefined} onChange={e => setSetupDates(d => ({ ...d, sem1_end: e.target.value }))} />
                     </label>
                     <label className="syc-form-label">
                       Break Ends (Sem 2 starts next day)
-                      <input type="date" className="syc-form-input" value={setupDates.break_end} onChange={e => setSetupDates(d => ({ ...d, break_end: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.break_end} min={setupDates.sem1_end || undefined} onChange={e => setSetupDates(d => ({ ...d, break_end: e.target.value }))} />
                     </label>
                     <label className="syc-form-label">
                       School Year End
-                      <input type="date" className="syc-form-input" value={setupDates.year_end} onChange={e => setSetupDates(d => ({ ...d, year_end: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.year_end} min={setupDates.break_end || undefined} onChange={e => setSetupDates(d => ({ ...d, year_end: e.target.value }))} />
                     </label>
                   </div>
                 )}
@@ -793,20 +840,20 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                     <p style={{ fontSize: 12, fontWeight: 700, color: '#3b82f6', margin: 0 }}>Semester 1 -- Mid-Term</p>
                     <label className="syc-form-label">
                       Mid-Term 1 Start
-                      <input type="date" className="syc-form-input" value={setupDates.midterm1_start} onChange={e => setSetupDates(d => ({ ...d, midterm1_start: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.midterm1_start} min={setupDates.year_start || undefined} max={setupDates.sem1_end || undefined} onChange={e => setSetupDates(d => ({ ...d, midterm1_start: e.target.value }))} />
                     </label>
                     <label className="syc-form-label">
                       Mid-Term 1 End
-                      <input type="date" className="syc-form-input" value={setupDates.midterm1_end} onChange={e => setSetupDates(d => ({ ...d, midterm1_end: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.midterm1_end} min={setupDates.midterm1_start || undefined} max={setupDates.sem1_end || undefined} onChange={e => setSetupDates(d => ({ ...d, midterm1_end: e.target.value }))} />
                     </label>
                     <p style={{ fontSize: 12, fontWeight: 700, color: '#22c55e', margin: 0 }}>Semester 2 -- Mid-Term</p>
                     <label className="syc-form-label">
                       Mid-Term 2 Start
-                      <input type="date" className="syc-form-input" value={setupDates.midterm2_start} onChange={e => setSetupDates(d => ({ ...d, midterm2_start: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.midterm2_start} min={setupDates.break_end || undefined} max={setupDates.year_end || undefined} onChange={e => setSetupDates(d => ({ ...d, midterm2_start: e.target.value }))} />
                     </label>
                     <label className="syc-form-label">
                       Mid-Term 2 End
-                      <input type="date" className="syc-form-input" value={setupDates.midterm2_end} onChange={e => setSetupDates(d => ({ ...d, midterm2_end: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.midterm2_end} min={setupDates.midterm2_start || undefined} max={setupDates.year_end || undefined} onChange={e => setSetupDates(d => ({ ...d, midterm2_end: e.target.value }))} />
                     </label>
                   </div>
                 )}
@@ -819,11 +866,11 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                     </p>
                     <label className="syc-form-label">
                       Final Exam Start
-                      <input type="date" className="syc-form-input" value={setupDates.final_exam_start} onChange={e => setSetupDates(d => ({ ...d, final_exam_start: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.final_exam_start} min={setupDates.midterm2_end || setupDates.break_end || undefined} max={setupDates.year_end || undefined} onChange={e => setSetupDates(d => ({ ...d, final_exam_start: e.target.value }))} />
                     </label>
                     <label className="syc-form-label">
                       Final Exam End
-                      <input type="date" className="syc-form-input" value={setupDates.final_exam_end} onChange={e => setSetupDates(d => ({ ...d, final_exam_end: e.target.value }))} />
+                      <input type="date" className="syc-form-input" value={setupDates.final_exam_end} min={setupDates.final_exam_start || undefined} max={setupDates.year_end || undefined} onChange={e => setSetupDates(d => ({ ...d, final_exam_end: e.target.value }))} />
                     </label>
                   </div>
                 )}

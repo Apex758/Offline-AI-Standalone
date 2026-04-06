@@ -248,7 +248,12 @@
       "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
       "Bash(grep -n \"upcomingMilestones\\\\|progressBreakdown\\\\|milestones\\\\\\\\.map\\\\|milestone\\\\\\\\.grade\\\\|milestone\\\\\\\\.subject\" \"/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components/AnalyticsDashboard.tsx\")",
       "Read(//c/Users/LG/Pictures/Screenshots/**)",
-      "Bash(curl -s \"http://localhost:8000/api/teacher-metrics/history?teacher_id=default_teacher\")"
+      "Bash(curl -s \"http://localhost:8000/api/teacher-metrics/history?teacher_id=default_teacher\")",
+      "Bash(grep -r \"license\\\\|auth\" *.py)",
+      "Bash(npm run:*)",
+      "Bash(tail -100 logs/*.log)",
+      "Bash(ls -la *.log)",
+      "Bash(curl -s http://localhost:8000/api/health)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

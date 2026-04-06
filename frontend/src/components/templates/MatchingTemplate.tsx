@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../ui/skeleton';
+import { ShimmerBar } from '../ui/ShimmerBar';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 interface MatchingTemplateProps {
@@ -95,7 +96,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
               {subject} · {gradeLevel} · Matching
             </div>
             {loading
-              ? <Skeleton style={{ height: 28, width: 280, background: palette.accentBorder, borderRadius: 3 }} />
+              ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 280 }} />
               : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1 }}>{worksheetTitle}</h1>
             }
             {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#78716c' }}>{topic}</p>}
@@ -172,7 +173,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
                 fontSize: 11, fontWeight: 900,
               }}>{i + 1}</div>
               {loading
-                ? <Skeleton style={{ height: 13, flex: 1, background: palette.accentBorder, borderRadius: 3 }} />
+                ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 13, flex: 1 }} />
                 : <span style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.4, fontWeight: 500 }}>{displayColumnA[i] || ''}</span>
               }
               {/* Dot on right side — for drawing lines */}
@@ -200,7 +201,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
                 fontSize: 11, fontWeight: 900,
               }}>{String.fromCharCode(65 + i)}</div>
               {loading
-                ? <Skeleton style={{ height: 13, flex: 1, background: palette.accentBorder, borderRadius: 3 }} />
+                ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 13, flex: 1 }} />
                 : <span style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.4, fontWeight: 500 }}>{shuffledB[i] || ''}</span>
               }
             </div>

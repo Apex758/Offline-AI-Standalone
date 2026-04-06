@@ -12,6 +12,7 @@ import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import type { TeacherMetrics, MetricSnapshot, DimensionMetric } from '../types/insights';
 import TeacherMetricsChart from './charts/TeacherMetricsChart';
 import { NeuroChevron } from './ui/NeuroChevron';
+import { ShimmerBar } from './ui/ShimmerBar';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -77,8 +78,8 @@ const TeacherMetricsPanel: React.FC<TeacherMetricsPanelProps> = ({
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-theme-bg-tertiary" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-24 rounded bg-theme-bg-tertiary" />
-            <div className="h-3 w-48 rounded bg-theme-bg-tertiary" />
+            <ShimmerBar accentColor="#6b7280" className="h-4 w-24" />
+            <ShimmerBar accentColor="#6b7280" className="h-3 w-48" />
           </div>
         </div>
       </div>

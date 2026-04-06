@@ -25,6 +25,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/photo-transfer", tags=["photo-transfer"])
 
+# ── File type constants ─────────────────────────────────────────────────────
+
+ALLOWED_EXTENSIONS = {
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.heic',
+    '.pdf', '.docx', '.xlsx', '.pptx',
+}
+IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.heic'}
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
+
 # ── Storage ──────────────────────────────────────────────────────────────────
 
 def _get_photos_dir() -> Path:
@@ -132,9 +141,11 @@ def _load_sessions():
         try:
             data = json.loads(sf.read_text(encoding="utf-8"))
             for s in data:
-                # Backwards compat: migrate class_name → session_name
+                # Backwards compat: migrate class_name -> session_name
                 if "class_name" in s and "session_name" not in s:
                     s["session_name"] = s.pop("class_name")
+                # Backwards compat: ensure outbox field exists
+                s.setdefault("outbox", [])
                 _sessions[s["id"]] = s
             logger.info(f"Loaded {len(_sessions)} photo transfer session(s) from disk")
         except Exception as e:
@@ -169,6 +180,7 @@ async def create_session(request: Request):
         "created_at": datetime.now().isoformat(),
         "photo_count": 0,
         "photos": [],
+        "outbox": [],
     }
     _sessions[session_id] = session
     _save_sessions()
@@ -203,37 +215,50 @@ async def upload_photo(
     student_name: str = Form(""),
     grade_mode: str = Form(""),
 ):
-    """Receive a photo from the phone PWA and save it to the session folder."""
+    """Receive a file (photo or document) from the phone PWA and save it to the session folder."""
     _track_phone(request.client.host if request.client else "unknown")
 
     session = _sessions.get(session_id)
     if not session:
-        raise HTTPException(404, "Session not found — start a session first")
+        raise HTTPException(404, "Session not found -- start a session first")
 
     session_dir = Path(session["folder_path"])
 
     # Build filename
     idx = session["photo_count"] + 1
     ext = Path(file.filename or "photo.jpg").suffix or ".jpg"
+
+    # Validate file type
+    if ext.lower() not in ALLOWED_EXTENSIONS:
+        raise HTTPException(400, f"File type {ext} not supported. Allowed: {', '.join(sorted(ALLOWED_EXTENSIONS))}")
+
     filename = f"{idx:03d}{ext}"
     file_path = session_dir / filename
 
-    # Save file (with optional document auto-crop)
+    # Read and validate file size
     contents = await file.read()
+    if len(contents) > MAX_UPLOAD_SIZE:
+        raise HTTPException(413, f"File too large ({len(contents)} bytes). Maximum is {MAX_UPLOAD_SIZE // (1024*1024)} MB")
+
+    # Auto-crop only for image files
     auto_cropped = False
-    try:
-        from document_processor import process_document_image
-        loop = asyncio.get_running_loop()
-        contents, auto_cropped = await loop.run_in_executor(None, process_document_image, contents)
-    except Exception as e:
-        logger.debug(f"Document processing skipped: {e}")
+    is_image = ext.lower() in IMAGE_EXTENSIONS
+    if is_image:
+        try:
+            from document_processor import process_document_image
+            loop = asyncio.get_running_loop()
+            contents, auto_cropped = await loop.run_in_executor(None, process_document_image, contents)
+        except Exception as e:
+            logger.debug(f"Document processing skipped: {e}")
     file_path.write_bytes(contents)
 
+    file_type = "image" if is_image else ext.lower().lstrip('.')
     photo_entry = {
         "id": str(uuid.uuid4())[:8],
         "filename": filename,
         "index": idx,
         "auto_cropped": auto_cropped,
+        "file_type": file_type,
         "size_bytes": len(contents),
         "uploaded_at": datetime.now().isoformat(),
         "path": str(file_path),
@@ -255,7 +280,7 @@ async def upload_photo(
     session["photos"].append(photo_entry)
     _save_sessions()
 
-    logger.info(f"Photo uploaded: {filename} ({len(contents)} bytes) → session {session_id}")
+    logger.info(f"File uploaded: {filename} ({len(contents)} bytes, type={file_type}) -> session {session_id}")
 
     # Broadcast to React frontend
     event_data = {
@@ -788,3 +813,160 @@ async def hotspot_status():
         return {"active": active, "supported": True, "detail": result.stdout}
     except Exception:
         return {"active": False, "supported": True}
+
+
+# -- Outbox: Laptop -> Phone file transfer ----------------------------------------
+
+@router.post("/outbox/{session_id}")
+async def queue_for_phone(
+    session_id: str,
+    files: list[UploadFile] = File(...),
+):
+    """Queue one or more files for phone download."""
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    session_dir = Path(session["folder_path"])
+    outbox_dir = session_dir / "outbox"
+    outbox_dir.mkdir(exist_ok=True)
+
+    outbox = session.setdefault("outbox", [])
+    queued = []
+
+    for f in files:
+        ext = Path(f.filename or "file").suffix or ""
+        if ext.lower() not in ALLOWED_EXTENSIONS:
+            continue  # skip unsupported types silently
+
+        contents = await f.read()
+        if len(contents) > MAX_UPLOAD_SIZE:
+            continue  # skip oversized files
+
+        file_id = str(uuid.uuid4())[:8]
+        safe_name = re.sub(r'[^\w.\-]', '_', f.filename or f"file_{file_id}{ext}")
+        dest = outbox_dir / f"{file_id}_{safe_name}"
+        dest.write_bytes(contents)
+
+        entry = {
+            "id": file_id,
+            "filename": f.filename or safe_name,
+            "safe_name": dest.name,
+            "size_bytes": len(contents),
+            "queued_at": datetime.now().isoformat(),
+            "downloaded": False,
+            "path": str(dest),
+        }
+        outbox.append(entry)
+        queued.append(entry)
+
+    _save_sessions()
+
+    if queued:
+        await _broadcast("outbox_updated", {
+            "session_id": session_id,
+            "files": queued,
+            "total_pending": sum(1 for o in outbox if not o["downloaded"]),
+        })
+
+    return {"queued": len(queued), "files": queued}
+
+
+@router.get("/outbox/{session_id}")
+async def list_outbox(session_id: str):
+    """List files queued for phone download (phone polls this)."""
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    outbox = session.get("outbox", [])
+    return [
+        {
+            "id": o["id"],
+            "filename": o["filename"],
+            "size_bytes": o["size_bytes"],
+            "queued_at": o["queued_at"],
+            "downloaded": o["downloaded"],
+        }
+        for o in outbox
+    ]
+
+
+@router.get("/outbox/{session_id}/{file_id}/download")
+async def download_outbox_file(session_id: str, file_id: str, request: Request):
+    """Phone downloads a specific file from the outbox."""
+    _track_phone(request.client.host if request.client else "unknown")
+
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    outbox = session.get("outbox", [])
+    entry = next((o for o in outbox if o["id"] == file_id), None)
+    if not entry:
+        raise HTTPException(404, "File not found in outbox")
+
+    file_path = Path(entry["path"])
+    if not file_path.exists():
+        raise HTTPException(404, "File no longer exists on disk")
+
+    return FileResponse(
+        path=str(file_path),
+        filename=entry["filename"],
+        media_type="application/octet-stream",
+    )
+
+
+@router.post("/outbox/{session_id}/{file_id}/ack")
+async def ack_outbox_file(session_id: str, file_id: str, request: Request):
+    """Phone acknowledges it downloaded a file."""
+    _track_phone(request.client.host if request.client else "unknown")
+
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    outbox = session.get("outbox", [])
+    entry = next((o for o in outbox if o["id"] == file_id), None)
+    if not entry:
+        raise HTTPException(404, "File not found in outbox")
+
+    entry["downloaded"] = True
+    _save_sessions()
+
+    await _broadcast("outbox_ack", {
+        "session_id": session_id,
+        "file_id": file_id,
+        "total_pending": sum(1 for o in outbox if not o["downloaded"]),
+    })
+
+    return {"status": "acknowledged"}
+
+
+@router.delete("/outbox/{session_id}/{file_id}")
+async def delete_outbox_file(session_id: str, file_id: str):
+    """Remove a file from the outbox before phone downloads it."""
+    session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    outbox = session.get("outbox", [])
+    entry = next((o for o in outbox if o["id"] == file_id), None)
+    if not entry:
+        raise HTTPException(404, "File not found in outbox")
+
+    # Delete from disk
+    file_path = Path(entry["path"])
+    if file_path.exists():
+        file_path.unlink()
+
+    outbox.remove(entry)
+    _save_sessions()
+
+    await _broadcast("outbox_updated", {
+        "session_id": session_id,
+        "files": [],
+        "total_pending": sum(1 for o in outbox if not o["downloaded"]),
+    })
+
+    return {"status": "deleted"}

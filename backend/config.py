@@ -612,6 +612,7 @@ DEFAULT_TIER_CONFIG = {
             "title-generation": "fast",
             "autocomplete": "fast",
             "organize-note": "fast",
+            "smart-search": "fast",
             "insights-curriculum": "primary",
             "insights-performance": "primary",
             "insights-content": "primary",

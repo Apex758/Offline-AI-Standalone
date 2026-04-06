@@ -11,7 +11,7 @@ import subprocess
 import shutil
 import base64
 from typing import Optional, Dict, Any, List
-from llama_cpp import Llama
+from llama_cpp import Llama, LlamaGrammar
 
 # Monkey-patch llama-cpp-python ≤0.3.19 __del__ bug
 # (AttributeError: 'LlamaModel' object has no attribute 'sampler')
@@ -351,6 +351,7 @@ class LlamaInference:
         top_p: float = 0.9,
         stop: Optional[list] = None,
         repeat_penalty: float = 1.1,
+        json_schema: Optional[dict] = None,
     ) -> Dict[str, Any]:
         """Generate complete response (non-streaming)."""
         if not self.is_loaded or not self.model:
@@ -383,10 +384,25 @@ class LlamaInference:
                 except Exception:
                     prompt_token_ids = None
 
+            # Build grammar from JSON schema if provided (for structured output)
+            _grammar = None
+            _response_format = None
+            if json_schema:
+                try:
+                    import json as _json
+                    if use_chat:
+                        _response_format = {"type": "json_object", "schema": json_schema}
+                    else:
+                        _grammar = LlamaGrammar.from_json_schema(
+                            _json.dumps(json_schema), verbose=False
+                        )
+                except Exception as _ge:
+                    logger.warning(f"Failed to compile JSON schema grammar: {_ge}")
+
             def blocking_generate():
                 with SilenceOutput():
                     if use_chat and chat_messages:
-                        result = self.model.create_chat_completion(
+                        chat_kwargs = dict(
                             messages=chat_messages,
                             max_tokens=max_tokens,
                             temperature=temperature,
@@ -394,10 +410,12 @@ class LlamaInference:
                             repeat_penalty=repeat_penalty,
                             stop=stop,
                         )
+                        if _response_format:
+                            chat_kwargs["response_format"] = _response_format
+                        result = self.model.create_chat_completion(**chat_kwargs)
                     else:
                         raw_prompt = prompt_token_ids if prompt_token_ids else prompt
-                        result = self.model(
-                            raw_prompt,
+                        raw_kwargs = dict(
                             max_tokens=max_tokens,
                             temperature=temperature,
                             top_p=top_p,
@@ -405,6 +423,9 @@ class LlamaInference:
                             stop=stop,
                             echo=False,
                         )
+                        if _grammar:
+                            raw_kwargs["grammar"] = _grammar
+                        result = self.model(raw_prompt, **raw_kwargs)
                 # Capture resources while model is still hot in memory
                 try:
                     import psutil
@@ -479,6 +500,7 @@ class LlamaInference:
         stop: Optional[list] = None,
         repeat_penalty: float = 1.1,
         cancel_event: Optional[threading.Event] = None,
+        json_schema: Optional[dict] = None,
     ):
         """
         TRUE REAL-TIME STREAMING!
@@ -525,7 +547,23 @@ class LlamaInference:
                 except Exception as te:
                     logger.warning(f"Token count check failed: {te}")
 
-            # ✅ Queue for real-time communication (thread -> async)
+            # Build grammar from JSON schema if provided (for structured output)
+            _grammar = None
+            _response_format = None
+            if json_schema:
+                try:
+                    import json as _json
+                    if use_chat:
+                        _response_format = {"type": "json_object", "schema": json_schema}
+                    else:
+                        _grammar = LlamaGrammar.from_json_schema(
+                            _json.dumps(json_schema), verbose=False
+                        )
+                    logger.info(f"[stream] JSON schema enforcement enabled for {tool_name}")
+                except Exception as _ge:
+                    logger.warning(f"[stream] Failed to compile JSON schema grammar: {_ge}")
+
+            # Queue for real-time communication (thread -> async)
             token_queue = queue.Queue(maxsize=100)
             DONE = object()  # Sentinel value
 
@@ -542,7 +580,7 @@ class LlamaInference:
                     print(f"[stream] prompt_preview: {prompt[:300]!r}")
                     with SilenceOutput():
                         if use_chat and chat_messages:
-                            stream = self.model.create_chat_completion(
+                            chat_kwargs = dict(
                                 messages=chat_messages,
                                 max_tokens=max_tokens,
                                 temperature=temperature,
@@ -551,6 +589,9 @@ class LlamaInference:
                                 stop=stop,
                                 stream=True,
                             )
+                            if _response_format:
+                                chat_kwargs["response_format"] = _response_format
+                            stream = self.model.create_chat_completion(**chat_kwargs)
                             for chunk in stream:
                                 if cancel_event and cancel_event.is_set():
                                     break
@@ -564,8 +605,7 @@ class LlamaInference:
                         else:
                             print("[stream] Creating raw completion stream...")
                             raw_prompt = prompt_token_ids if prompt_token_ids else prompt
-                            stream = self.model(
-                                raw_prompt,
+                            raw_kwargs = dict(
                                 max_tokens=max_tokens,
                                 temperature=temperature,
                                 top_p=top_p,
@@ -574,6 +614,9 @@ class LlamaInference:
                                 echo=False,
                                 stream=True,
                             )
+                            if _grammar:
+                                raw_kwargs["grammar"] = _grammar
+                            stream = self.model(raw_prompt, **raw_kwargs)
                             print("[stream] Stream created, iterating tokens...")
                             for output in stream:
                                 if cancel_event and cancel_event.is_set():

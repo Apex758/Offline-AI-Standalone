@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from './skeleton';
+import { ShimmerBar } from './ShimmerBar';
 
 interface DashboardSkeletonProps {
   accentColor?: string;
@@ -22,11 +23,11 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
               <div className="flex items-center gap-6">
                 <Skeleton className="w-16 h-16 rounded-xl flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.20)' }} />
                 <div className="flex-1 space-y-3">
-                  <Skeleton className="h-7 w-48" style={{ backgroundColor: 'rgba(255,255,255,0.20)' }} />
-                  <Skeleton className="h-4 w-32" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }} />
+                  <ShimmerBar variant="light" className="h-7 w-48" />
+                  <ShimmerBar variant="light" className="h-4 w-32" />
                   <div className="flex gap-8 mt-3">
                     {[1, 2, 3].map((i) => (
-                      <Skeleton key={i} className="h-5 w-20" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }} />
+                      <ShimmerBar key={i} variant="light" className="h-5 w-20" />
                     ))}
                   </div>
                 </div>
@@ -42,8 +43,8 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
               <div className="flex items-center gap-3">
                 <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
                 <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-6 w-16" />
+                  <ShimmerBar accentColor={accentColor} className="h-4 w-24" />
+                  <ShimmerBar accentColor={accentColor} className="h-6 w-16" />
                 </div>
               </div>
             </div>
@@ -53,7 +54,7 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
         {/* Chart card */}
         <div className="rounded-xl p-6 widget-glass space-y-4">
           <div className="flex items-center justify-between">
-            <Skeleton className="h-5 w-40" />
+            <ShimmerBar accentColor={accentColor} className="h-5 w-40" />
             <div className="flex gap-2">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-8 w-20 rounded-full" />
@@ -71,13 +72,13 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
 
             {/* Timeline card */}
             <div className="rounded-xl p-6 widget-glass space-y-4">
-              <Skeleton className="h-5 w-32" />
+              <ShimmerBar accentColor={accentColor} className="h-5 w-32" />
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex items-center gap-3">
                   <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
+                    <ShimmerBar accentColor={accentColor} className="h-4 w-3/4" />
+                    <ShimmerBar accentColor={accentColor} className="h-3 w-1/2" />
                   </div>
                 </div>
               ))}
@@ -85,7 +86,7 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
 
             {/* Progress card */}
             <div className="rounded-xl p-6 widget-glass space-y-4">
-              <Skeleton className="h-5 w-36" />
+              <ShimmerBar accentColor={accentColor} className="h-5 w-36" />
               <Skeleton className="h-3 w-full rounded-full" />
               <div className="grid grid-cols-3 gap-3">
                 {[1, 2, 3].map((i) => (
@@ -101,12 +102,12 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
 
             {/* Small cards */}
             <div className="rounded-xl p-5 widget-glass space-y-3">
-              <Skeleton className="h-5 w-28" />
+              <ShimmerBar accentColor={accentColor} className="h-5 w-28" />
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex items-center gap-3">
                   <Skeleton className="w-10 h-10 rounded-lg flex-shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <Skeleton className="h-4 w-2/3" />
+                    <ShimmerBar accentColor={accentColor} className="h-4 w-2/3" />
                     <Skeleton className="h-2 w-full rounded-full" />
                   </div>
                 </div>

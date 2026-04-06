@@ -386,7 +386,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
       });
       if (!res.ok) throw new Error(`Smart search failed (${res.status})`);
       const data: SmartSearchResponse = await res.json();
-      if (data.summary || (data.steps && data.steps.length > 0)) {
+      if ((data.summary && data.summary.trim().length > 0) || (data.steps && data.steps.length > 0)) {
         setAiResponse(data);
       } else {
         setAiError('No guidance found for that query. Try rephrasing.');

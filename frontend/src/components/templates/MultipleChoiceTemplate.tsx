@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../ui/skeleton';
+import { ShimmerBar } from '../ui/ShimmerBar';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 interface MultipleChoiceTemplateProps {
@@ -75,7 +76,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
             {subject} · {gradeLevel} · {topic}
           </div>
           {loading
-            ? <Skeleton style={{ height: 28, width: 300, background: '#e2e8f0', borderRadius: 3 }} />
+            ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 300 }} />
             : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.01em' }}>{worksheetTitle}</h1>
           }
         </div>
@@ -124,7 +125,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
 
             <div style={{ flex: 1 }}>
               {loading
-                ? <Skeleton style={{ height: 15, width: '78%', background: '#e2e8f0', borderRadius: 3, marginBottom: 12, display: 'block' }} />
+                ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 15, width: '78%' }} />
                 : <p style={{ margin: '4px 0 14px', fontSize: 14, color: '#1e293b', lineHeight: 1.55, fontWeight: 600 }}>{q.question}</p>
               }
 
@@ -149,7 +150,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
                         color: isCorrect && effectiveShowAnswers ? '#fff' : '#475569',
                       }}>{LETTERS[oi]}</div>
                       {loading
-                        ? <Skeleton style={{ height: 12, flex: 1, background: '#e2e8f0', borderRadius: 3 }} />
+                        ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 12, flex: 1 }} />
                         : <span style={{ fontSize: 13, color: '#334155' }}>{opt}</span>
                       }
                     </div>

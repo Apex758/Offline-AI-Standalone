@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { WorksheetQuestion } from '../../types/worksheet';
 import { Skeleton } from '../ui/skeleton';
+import { ShimmerBar } from '../ui/ShimmerBar';
 import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 interface ListBasedTemplateProps {
@@ -60,7 +61,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
 
   const renderQuestion = (question: WorksheetQuestion, index: number) => {
     const base = (
-      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 20, pageBreakInside: 'avoid' }}>
+      <div key={question.id || `q_${index}`} style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 20, pageBreakInside: 'avoid' }}>
         <div style={{
           flexShrink: 0, minWidth: 28, height: 28,
           background: ACCENT, borderRadius: 4,
@@ -129,7 +130,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
               {subject} · {gradeLevel} · {questionType}
             </div>
             {loading
-              ? <Skeleton style={{ height: 28, width: 280, background: 'rgba(255,255,255,0.25)', borderRadius: 3 }} />
+              ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 280 }} />
               : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>{worksheetTitle}</h1>
             }
             {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{topic}</p>}
@@ -160,7 +161,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                 <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('editor.wordBank')}</span>
               </div>
               <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} style={{ height: 28, width: 72, background: palette.accentLight, borderRadius: 4 }} />)}
+                {Array.from({ length: 6 }, (_, i) => <ShimmerBar key={i} variant="paper" accentColor={ACCENT} style={{ height: 28, width: 72 }} />)}
               </div>
             </div>
           )
@@ -208,7 +209,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
               <div key={`sk_${i}`} style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
                 <Skeleton style={{ width: 28, height: 28, background: palette.accentLight, borderRadius: 4, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
-                  <Skeleton style={{ height: 14, width: '75%', background: '#e2e8f0', borderRadius: 3, marginBottom: 10 }} />
+                  <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 14, width: '75%', marginBottom: 10 }} />
                   <div style={{ borderBottom: '1.5px solid #e2e8f0', height: 24 }} />
                 </div>
               </div>

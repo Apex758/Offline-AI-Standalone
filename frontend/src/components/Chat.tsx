@@ -79,6 +79,7 @@ import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP, GRADE_LEVELS } from '../data/teacherConstants';
 import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
 import { Skeleton } from './ui/skeleton';
+import { ShimmerBar } from './ui/ShimmerBar';
 
 // ── File API abstraction (works in Electron & dev/browser) ──
 const fileAPI = {
@@ -1636,8 +1637,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             <div className="flex items-center gap-3">
               <Skeleton className="w-8 h-8 rounded-lg" />
               <div className="space-y-1">
-                <Skeleton className="h-5 w-36" />
-                <Skeleton className="h-3 w-24" />
+                <ShimmerBar accentColor="#3b82f6" className="h-5 w-36" />
+                <ShimmerBar accentColor="#3b82f6" className="h-3 w-24" />
               </div>
             </div>
             <div className="flex gap-2">
