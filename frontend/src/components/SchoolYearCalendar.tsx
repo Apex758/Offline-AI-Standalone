@@ -67,10 +67,11 @@ interface SchoolYearCalendarProps {
 // ── Constants ──
 
 const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  exam: { label: 'Exam', color: '#E53E3E' },
-  midterm: { label: 'Midterm', color: '#3B82F6' },
+  project: { label: 'Project', color: '#3B82F6' },
+  quiz: { label: 'Quiz', color: '#F59E0B' },
+  assignment: { label: 'Assignment', color: '#8B5CF6' },
   grading_deadline: { label: 'Grading Deadline', color: '#F2A631' },
-  report_card: { label: 'Report Card', color: '#8B5CF6' },
+  report_card: { label: 'Report Card', color: '#E53E3E' },
   custom: { label: 'Custom', color: '#0D9488' },
 };
 
@@ -120,8 +121,18 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
   // Single config state
   const [config, setConfig] = useState<SchoolYearConfig | null>(null);
-  const [configForm, setConfigForm] = useState({ label: '', start_date: '', end_date: '' });
   const [showConfigForm, setShowConfigForm] = useState(false);
+  const [setupStep, setSetupStep] = useState(0);
+  const [structureType, setStructureType] = useState<'caribbean_three_term' | 'generic'>('caribbean_three_term');
+  const [setupLabel, setSetupLabel] = useState('');
+  const [setupDates, setSetupDates] = useState({
+    year_start: '', sem1_end: '', break_end: '', year_end: '',
+    midterm1_start: '', midterm1_end: '',
+    midterm2_start: '', midterm2_end: '',
+    final_exam_start: '', final_exam_end: '',
+  });
+  const [setupSaving, setSetupSaving] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   // Event state
   const [events, setEvents] = useState<SchoolYearEvent[]>([]);
@@ -327,25 +338,75 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
   // ── Config Actions ──
 
+  const setupCanProceed = (): boolean => {
+    if (setupStep === 0) return true;
+    if (setupStep === 1) return !!(setupLabel && setupDates.year_start && setupDates.sem1_end && setupDates.break_end && setupDates.year_end);
+    if (setupStep === 2) return !!(setupDates.midterm1_start && setupDates.midterm1_end && setupDates.midterm2_start && setupDates.midterm2_end);
+    if (setupStep === 3) return !!(setupDates.final_exam_start && setupDates.final_exam_end);
+    return true;
+  };
+
   const handleSaveConfig = async () => {
-    if (!configForm.label || !configForm.start_date || !configForm.end_date) return;
+    setSetupSaving(true);
+    setSetupError(null);
     try {
-      const payload: any = {
+      const res = await axios.post('/api/teacher-metrics/setup-caribbean-year', {
         teacher_id: teacherId,
-        label: configForm.label,
-        start_date: configForm.start_date,
-        end_date: configForm.end_date,
-        is_active: 1,
-      };
-      if (config) {
-        payload.id = config.id;
-      }
-      const res = await axios.post('/api/school-year/config', payload);
+        label: setupLabel,
+        structure_type: structureType,
+        dates: setupDates,
+      });
       setConfig(res.data.config);
       setShowConfigForm(false);
-      setConfigForm({ label: '', start_date: '', end_date: '' });
-    } catch (e) {
-      console.error('Failed to save config:', e);
+      setSetupStep(0);
+      setSetupLabel('');
+      setSetupDates({
+        year_start: '', sem1_end: '', break_end: '', year_end: '',
+        midterm1_start: '', midterm1_end: '',
+        midterm2_start: '', midterm2_end: '',
+        final_exam_start: '', final_exam_end: '',
+      });
+    } catch (e: any) {
+      setSetupError(e?.response?.data?.detail || 'Failed to save school year. Please check the dates and try again.');
+    } finally {
+      setSetupSaving(false);
+    }
+  };
+
+  const previewPhases = (): { label: string; start: string; end: string; semester: string | null }[] => {
+    if (!setupDates.year_start || !setupDates.sem1_end || !setupDates.break_end || !setupDates.year_end) return [];
+    try {
+      const addDays = (s: string, n: number) => {
+        const dt = new Date(s);
+        dt.setDate(dt.getDate() + n);
+        return dt.toISOString().split('T')[0];
+      };
+      const fmt = (s: string) => {
+        try { return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch { return s; }
+      };
+      const mt1PrepStart = setupDates.midterm1_start ? addDays(setupDates.midterm1_start, -7) : '';
+      const mt2PrepStart = setupDates.midterm2_start ? addDays(setupDates.midterm2_start, -7) : '';
+      const sem2Start = setupDates.break_end ? addDays(setupDates.break_end, 1) : '';
+
+      const phases = [
+        { label: 'Semester 1 -- Early',   start: setupDates.year_start,        end: mt1PrepStart ? addDays(mt1PrepStart, -1) : setupDates.sem1_end, semester: 'Semester 1' },
+        { label: 'Mid-Term 1 Prep',       start: mt1PrepStart,            end: setupDates.midterm1_start ? addDays(setupDates.midterm1_start, -1) : '',  semester: 'Semester 1' },
+        { label: 'Mid-Term 1',            start: setupDates.midterm1_start,    end: setupDates.midterm1_end,    semester: 'Semester 1' },
+        { label: 'Semester 1 -- Late',     start: setupDates.midterm1_end ? addDays(setupDates.midterm1_end, 1) : '', end: setupDates.sem1_end, semester: 'Semester 1' },
+        { label: 'Inter-Semester Break',  start: addDays(setupDates.sem1_end, 1), end: setupDates.break_end,  semester: null },
+        { label: 'Semester 2 -- Early',    start: sem2Start,               end: mt2PrepStart ? addDays(mt2PrepStart, -1) : setupDates.year_end, semester: 'Semester 2' },
+        { label: 'Mid-Term 2 Prep',       start: mt2PrepStart,            end: setupDates.midterm2_start ? addDays(setupDates.midterm2_start, -1) : '', semester: 'Semester 2' },
+        { label: 'Mid-Term 2',            start: setupDates.midterm2_start,    end: setupDates.midterm2_end,    semester: 'Semester 2' },
+        { label: 'Semester 2 -- Late',     start: setupDates.midterm2_end ? addDays(setupDates.midterm2_end, 1) : '', end: setupDates.final_exam_start ? addDays(setupDates.final_exam_start, -1) : setupDates.year_end, semester: 'Semester 2' },
+        { label: 'End-of-Year Exams',     start: setupDates.final_exam_start,  end: setupDates.final_exam_end || setupDates.year_end, semester: 'Semester 2' },
+      ];
+      return phases.filter(p => p.start && p.end).map(p => ({
+        ...p,
+        start: fmt(p.start),
+        end: fmt(p.end),
+      }));
+    } catch {
+      return [];
     }
   };
 
@@ -639,12 +700,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                 </div>
                 <div className="syc-config-actions">
                   <button className="syc-config-btn" onClick={() => {
-                    setConfigForm({
-                      label: config.label,
-                      start_date: config.start_date,
-                      end_date: config.end_date,
-                    });
                     setShowConfigForm(true);
+                    setSetupStep(0);
                   }}>
                     <HugeiconsIcon icon={PencilEdit01IconData} size={14} /> Edit
                   </button>
@@ -652,8 +709,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
               </div>
             ) : !showConfigForm ? (
               <button className="syc-add-config-btn" onClick={() => {
-                setConfigForm({ label: '', start_date: '', end_date: '' });
                 setShowConfigForm(true);
+                setSetupStep(0);
               }}>
                 <HugeiconsIcon icon={Add01IconData} size={16} />
                 Set Up School Year
@@ -662,41 +719,170 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
             {showConfigForm && (
               <div className="syc-config-form">
-                <label className="syc-form-label">
-                  Label
-                  <input
-                    type="text"
-                    className="syc-form-input"
-                    placeholder="e.g. 2026-2027"
-                    value={configForm.label}
-                    onChange={(e) => setConfigForm({ ...configForm, label: e.target.value })}
-                  />
-                </label>
-                <label className="syc-form-label">
-                  Start Date
-                  <input
-                    type="date"
-                    className="syc-form-input"
-                    value={configForm.start_date}
-                    onChange={(e) => setConfigForm({ ...configForm, start_date: e.target.value })}
-                  />
-                </label>
-                <label className="syc-form-label">
-                  End Date
-                  <input
-                    type="date"
-                    className="syc-form-input"
-                    value={configForm.end_date}
-                    onChange={(e) => setConfigForm({ ...configForm, end_date: e.target.value })}
-                  />
-                </label>
-                <div className="syc-form-actions">
-                  <button className="syc-btn-primary" onClick={handleSaveConfig}>
-                    <HugeiconsIcon icon={Tick01IconData} size={14} /> {t('common.save')}
+                {/* Step indicator */}
+                <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+                  {['Structure', 'Key Dates', 'Midterms', 'Finals', 'Preview'].map((s, i) => (
+                    <div key={s} style={{ flex: 1 }}>
+                      <div style={{
+                        height: 3, borderRadius: 2,
+                        backgroundColor: i <= setupStep ? '#3b82f6' : 'var(--theme-border, #e5e7eb)',
+                        transition: 'background 0.2s',
+                      }} />
+                      <span style={{ fontSize: 9, color: i === setupStep ? '#3b82f6' : 'var(--theme-text-secondary, #6b7280)', fontWeight: i === setupStep ? 700 : 400, display: 'block', textAlign: 'center', marginTop: 3 }}>
+                        {s}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Step 0: Structure */}
+                {setupStep === 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {[
+                      { type: 'caribbean_three_term', title: 'Caribbean (3 Terms)', desc: 'Term 1 -> Christmas Break -> Term 2 -> Easter Break -> Term 3 -> End-of-Year Exams' },
+                      { type: 'generic', title: 'Generic (Custom)', desc: 'Standard school year without predefined semester structure.' },
+                    ].map(opt => (
+                      <div
+                        key={opt.type}
+                        onClick={() => setStructureType(opt.type as any)}
+                        style={{
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          border: `2px solid ${structureType === opt.type ? '#3b82f6' : 'var(--theme-border, #e5e7eb)'}`,
+                          cursor: 'pointer',
+                          backgroundColor: structureType === opt.type ? 'rgba(59,130,246,0.06)' : 'transparent',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        <p style={{ fontSize: 13, fontWeight: 600, color: structureType === opt.type ? '#3b82f6' : 'var(--theme-text, #111)', margin: '0 0 2px' }}>{opt.title}</p>
+                        <p style={{ fontSize: 11, color: 'var(--theme-text-secondary, #6b7280)', margin: 0 }}>{opt.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Step 1: Key Dates */}
+                {setupStep === 1 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <label className="syc-form-label">
+                      School Year Label
+                      <input className="syc-form-input" value={setupLabel} onChange={e => setSetupLabel(e.target.value)} placeholder="e.g. 2025-2026" />
+                    </label>
+                    <label className="syc-form-label">
+                      School Year Start
+                      <input type="date" className="syc-form-input" value={setupDates.year_start} onChange={e => setSetupDates(d => ({ ...d, year_start: e.target.value }))} />
+                    </label>
+                    <label className="syc-form-label">
+                      Semester 1 End
+                      <input type="date" className="syc-form-input" value={setupDates.sem1_end} onChange={e => setSetupDates(d => ({ ...d, sem1_end: e.target.value }))} />
+                    </label>
+                    <label className="syc-form-label">
+                      Break Ends (Sem 2 starts next day)
+                      <input type="date" className="syc-form-input" value={setupDates.break_end} onChange={e => setSetupDates(d => ({ ...d, break_end: e.target.value }))} />
+                    </label>
+                    <label className="syc-form-label">
+                      School Year End
+                      <input type="date" className="syc-form-input" value={setupDates.year_end} onChange={e => setSetupDates(d => ({ ...d, year_end: e.target.value }))} />
+                    </label>
+                  </div>
+                )}
+
+                {/* Step 2: Midterms */}
+                {setupStep === 2 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#3b82f6', margin: 0 }}>Semester 1 -- Mid-Term</p>
+                    <label className="syc-form-label">
+                      Mid-Term 1 Start
+                      <input type="date" className="syc-form-input" value={setupDates.midterm1_start} onChange={e => setSetupDates(d => ({ ...d, midterm1_start: e.target.value }))} />
+                    </label>
+                    <label className="syc-form-label">
+                      Mid-Term 1 End
+                      <input type="date" className="syc-form-input" value={setupDates.midterm1_end} onChange={e => setSetupDates(d => ({ ...d, midterm1_end: e.target.value }))} />
+                    </label>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#22c55e', margin: 0 }}>Semester 2 -- Mid-Term</p>
+                    <label className="syc-form-label">
+                      Mid-Term 2 Start
+                      <input type="date" className="syc-form-input" value={setupDates.midterm2_start} onChange={e => setSetupDates(d => ({ ...d, midterm2_start: e.target.value }))} />
+                    </label>
+                    <label className="syc-form-label">
+                      Mid-Term 2 End
+                      <input type="date" className="syc-form-input" value={setupDates.midterm2_end} onChange={e => setSetupDates(d => ({ ...d, midterm2_end: e.target.value }))} />
+                    </label>
+                  </div>
+                )}
+
+                {/* Step 3: Final Exams */}
+                {setupStep === 3 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <p style={{ fontSize: 11, color: 'var(--theme-text-secondary, #6b7280)', margin: 0 }}>
+                      Enter the end-of-year examination window.
+                    </p>
+                    <label className="syc-form-label">
+                      Final Exam Start
+                      <input type="date" className="syc-form-input" value={setupDates.final_exam_start} onChange={e => setSetupDates(d => ({ ...d, final_exam_start: e.target.value }))} />
+                    </label>
+                    <label className="syc-form-label">
+                      Final Exam End
+                      <input type="date" className="syc-form-input" value={setupDates.final_exam_end} onChange={e => setSetupDates(d => ({ ...d, final_exam_end: e.target.value }))} />
+                    </label>
+                  </div>
+                )}
+
+                {/* Step 4: Preview */}
+                {setupStep === 4 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <p style={{ fontSize: 11, color: 'var(--theme-text-secondary, #6b7280)', margin: '0 0 8px' }}>
+                      Your academic calendar phases:
+                    </p>
+                    {previewPhases().map((p, i) => (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '6px 10px', borderRadius: 6,
+                        backgroundColor: 'var(--theme-bg-secondary, #f9fafb)',
+                        border: '1px solid var(--theme-border, #e5e7eb)',
+                      }}>
+                        <span style={{
+                          width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                          backgroundColor: p.semester === 'Semester 1' ? '#3b82f6' : p.semester === 'Semester 2' ? '#22c55e' : '#eab308',
+                        }} />
+                        <span style={{ flex: 1, fontSize: 12, fontWeight: 600 }}>{p.label}</span>
+                        <span style={{ fontSize: 10, color: 'var(--theme-text-secondary, #6b7280)' }}>{p.start} - {p.end}</span>
+                      </div>
+                    ))}
+                    {setupError && (
+                      <p style={{ fontSize: 11, color: '#ef4444', marginTop: 8 }}>{setupError}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Navigation buttons */}
+                <div className="syc-form-actions" style={{ marginTop: 16 }}>
+                  <button className="syc-btn-secondary" onClick={() => {
+                    if (setupStep === 0) {
+                      setShowConfigForm(false);
+                    } else {
+                      setSetupStep(s => s - 1);
+                    }
+                  }}>
+                    {setupStep === 0 ? t('common.cancel') : 'Back'}
                   </button>
-                  <button className="syc-btn-secondary" onClick={() => setShowConfigForm(false)}>
-                    {t('common.cancel')}
-                  </button>
+                  {setupStep < 4 ? (
+                    <button
+                      className="syc-btn-primary"
+                      disabled={!setupCanProceed()}
+                      onClick={() => setSetupStep(s => s + 1)}
+                    >
+                      Next
+                    </button>
+                  ) : (
+                    <button
+                      className="syc-btn-primary"
+                      disabled={setupSaving}
+                      onClick={handleSaveConfig}
+                    >
+                      {setupSaving ? 'Saving...' : 'Save School Year'}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -736,8 +922,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                 Set up your school year to start planning your academic calendar with exams, midterms, grading deadlines, and more.
               </p>
               <button className="syc-btn-primary" onClick={() => {
-                setConfigForm({ label: '', start_date: '', end_date: '' });
                 setShowConfigForm(true);
+                setSetupStep(0);
               }}>
                 <HugeiconsIcon icon={Add01IconData} size={16} /> Set Up School Year
               </button>

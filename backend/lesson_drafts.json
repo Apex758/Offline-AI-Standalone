@@ -24,26 +24,6 @@
     "curriculumMatches": []
   },
   {
-    "id": "draft_quiz-generator-1775366382692_1775367637992",
-    "title": "Language Arts - 4",
-    "timestamp": "2026-04-05T05:40:37.992Z",
-    "plannerType": "quiz",
-    "formData": {
-      "subject": "Language Arts",
-      "gradeLevel": "4",
-      "learningOutcomes": "",
-      "questionTypes": [],
-      "cognitiveLevels": [],
-      "timeLimitPerQuestion": "",
-      "numberOfQuestions": "10",
-      "strand": "Listening and Speaking",
-      "essentialOutcomes": "The learner will explore, use, and critically apply oral language for pleasure, and personal growth, to foster relationships and to develop an appreciation and celebration of culture and of oral languages.",
-      "specificOutcomes": ""
-    },
-    "step": 1,
-    "curriculumMatches": []
-  },
-  {
     "id": "draft_lesson-planner-1775415441031_1775427200456",
     "title": "Language Arts - h - 4",
     "timestamp": "2026-04-05T22:13:20.456Z",

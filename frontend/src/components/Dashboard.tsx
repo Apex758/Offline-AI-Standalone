@@ -2077,7 +2077,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       case 'performance-metrics':
         return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'educator-insights':
-        return <EducatorInsights tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
+        return <EducatorInsights tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} onNavigateToTool={(toolType) => { const tool = tools.find(t => t.type === toolType); if (tool) openTool(tool); }} />;
       case 'photo-transfer':
         return <PhotoReceiver tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'school-year-calendar':

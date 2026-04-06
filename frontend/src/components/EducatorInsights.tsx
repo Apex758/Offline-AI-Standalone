@@ -29,7 +29,6 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import MetricsNudgeBanner from './MetricsNudgeBanner';
 import InsightsGraphRow, { type DimensionClickContext } from './InsightsGraphRow';
 import InsightsCoachPanel from './InsightsCoachPanel';
-import SchoolYearSetupModal from './SchoolYearSetupModal';
 import PhaseHistoryNav from './PhaseHistoryNav';
 import PhaseBreakdownModal from './PhaseBreakdownModal';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
@@ -47,6 +46,7 @@ interface EducatorInsightsProps {
   savedData?: any;
   onDataChange: (data: any) => void;
   isActive?: boolean;
+  onNavigateToTool?: (toolType: string) => void;
 }
 
 const PASS_NAMES = [
@@ -66,7 +66,7 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, onDataChange, isActive, onNavigateToTool }) => {
   const { t } = useTranslation();
   const { guardOffline } = useOfflineGuard();
   const { notify } = useNotification();
@@ -139,7 +139,6 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const [phaseHistory, setPhaseHistory] = useState<PhaseHistoryEntry[]>(savedData?.phaseHistory || []);
   const [selectedPhaseKey, setSelectedPhaseKey] = useState<string | null>(null);
   const [phaseBreakdownEntry, setPhaseBreakdownEntry] = useState<PhaseHistoryEntry | null>(null);
-  const [showSchoolYearSetup, setShowSchoolYearSetup] = useState(false);
   const [showPhaseNav, setShowPhaseNav] = useState(false);
 
   // Educator Coach state
@@ -928,7 +927,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               </div>
               {/* Setup School Year button */}
               <button
-                onClick={() => setShowSchoolYearSetup(true)}
+                onClick={() => { if (onNavigateToTool) onNavigateToTool('school-year-calendar'); }}
                 className="p-2 rounded-lg hover:bg-theme-bg-tertiary text-theme-muted hover:text-theme-primary transition-colors"
                 title="Setup School Year"
               >
@@ -1126,7 +1125,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 Academic Phases
               </span>
               <button
-                onClick={() => setShowSchoolYearSetup(true)}
+                onClick={() => { if (onNavigateToTool) onNavigateToTool('school-year-calendar'); }}
                 style={{ fontSize: 10, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
               >
                 + Setup
@@ -1387,22 +1386,6 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         </>
 
       {/* ── Modals ── */}
-      {showSchoolYearSetup && (
-        <SchoolYearSetupModal
-          teacherId={teacherId}
-          onClose={() => setShowSchoolYearSetup(false)}
-          onSaved={(_config, _phases) => {
-            setShowSchoolYearSetup(false);
-            // Reload phase history after saving
-            axios.get(`/api/teacher-metrics/history-by-phase?teacher_id=${encodeURIComponent(teacherId)}`)
-              .then(res => {
-                const ph = res.data?.phases;
-                if (Array.isArray(ph)) setPhaseHistory(ph);
-              })
-              .catch(() => {});
-          }}
-        />
-      )}
       {phaseBreakdownEntry && (
         <PhaseBreakdownModal
           entry={phaseBreakdownEntry}
