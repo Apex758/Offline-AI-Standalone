@@ -279,7 +279,20 @@
       "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/pip.exe\" show stable-diffusion-cpp-python)",
       "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/venv/Scripts/pip.exe\" install \"Pillow==10.4.0\")",
       "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/\"*.txt)",
-      "Bash(du -sh \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/flux-schnell-gguf/\"*)"
+      "Bash(du -sh \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/flux-schnell-gguf/\"*)",
+      "Bash(./venv/Scripts/python -c \"from stable_diffusion_cpp import StableDiffusion; print\\([m for m in dir\\(StableDiffusion\\) if not m.startswith\\('_'\\)]\\)\")",
+      "Bash(./venv/Scripts/python -c \"from stable_diffusion_cpp import StableDiffusion; import inspect; print\\(inspect.signature\\(StableDiffusion.generate_image\\)\\)\")",
+      "Bash(grep -l \"optimum\\\\|openvino\\\\|nncf\" \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\"/*.py)",
+      "WebFetch(domain:www.bentoml.com)",
+      "WebFetch(domain:www.stablediffusiontutorials.com)",
+      "Bash(du -sh \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/\"*/)",
+      "Bash(curl -s \"https://huggingface.co/Tongyi-MAI/Z-Image-Turbo/raw/main/README.md\")",
+      "Bash(curl -s \"https://huggingface.co/api/models/Tongyi-MAI/Z-Image-Turbo\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d.get\\(k\\) for k in ['modelId','pipeline_tag','tags','cardData','siblings']}, indent=2\\)\\)\")",
+      "Bash(curl -s \"https://huggingface.co/Tongyi-MAI/Z-Image-Turbo/raw/main/transformer/config.json\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(curl -s \"https://huggingface.co/api/models/unsloth/Z-Image-Turbo-GGUF\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d.get\\(k\\) for k in ['modelId','tags','cardData','siblings']}, indent=2\\)\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

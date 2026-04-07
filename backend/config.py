@@ -160,7 +160,7 @@ def scan_diffusion_models():
         return models
 
     selected = get_selected_diffusion_model()
-    exclude_dirs = {'lama', '__pycache__'}
+    exclude_dirs = {'lama', 'realesrgan', '__pycache__'}
     seen_names = set()
     covered_folders = set()
 
@@ -180,7 +180,7 @@ def scan_diffusion_models():
                         for f in folder_path.iterdir():
                             if f.is_file() and f.name != gguf_file and not f.name.startswith('.'):
                                 # Skip other GGUF model variants in same folder
-                                if f.suffix == '.gguf' and 'schnell' in f.name.lower():
+                                if f.suffix == '.gguf':
                                     continue
                                 variant_files.append(f)
                         total_size = sum(f.stat().st_size for f in variant_files if f.exists())
@@ -202,6 +202,8 @@ def scan_diffusion_models():
             if item.is_dir() and item.name not in exclude_dirs and not item.name.startswith('.'):
                 if item.name not in seen_names and item.name not in covered_folders:
                     total_size = sum(f.stat().st_size for f in item.rglob('*') if f.is_file())
+                    if total_size == 0:
+                        continue  # skip empty folders
                     size_mb = total_size / (1024 * 1024)
                     models.append({
                         "name": item.name,
@@ -223,70 +225,78 @@ def scan_diffusion_models():
 # ============================================================================
 
 IMAGE_MODEL_REGISTRY = {
-    "sdxl-turbo-openvino": {
-        "folder":      "sdxl-turbo-openvino",
-        "backend":     "openvino",
-        "description": "SDXL-Turbo (OpenVINO) — 4 steps, ~4 GB",
-        "steps":       2,
-        "guidance":    0.0,
-        "supports_negative_prompt": True,
-        "supports_img2img":        True,
-        "ram_required_gb":  6,
-        "vram_required_mb": 0,   # CPU-only via OpenVINO
-    },
-    "sdxl-turbo-int8": {
-        "folder":      "sdxl-turbo-int8",
-        "backend":     "openvino",
-        "description": "SDXL-Turbo INT8 (OpenVINO) — faster, ~2 GB",
-        "steps":       2,
-        "guidance":    1.0,
-        "max_width":   512,
-        "max_height":  512,
-        "supports_negative_prompt": True,
-        "supports_img2img":        True,
-        "ram_required_gb":  4,
-        "vram_required_mb": 0,   # CPU-only via OpenVINO INT8
-    },
     "flux-schnell": {
         "folder":      "flux-schnell",
         "backend":     "openvino_flux",
         "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
-        "steps":       2,
+        "steps":       1,
         "guidance":    0.0,
         "default_width":  512,
         "default_height": 512,
+        "max_width":      512,
+        "max_height":     512,
         "supports_negative_prompt": False,
         "supports_img2img":        False,
         "ram_required_gb":  8,
-        "vram_required_mb": 0,   # OpenVINO INT4, CPU-optimized
+        "vram_required_mb": 0,
     },
-    "flux-schnell-gguf-q5": {
-        "folder":      "flux-schnell-gguf",
-        "backend":     "sd_cpp_flux",
-        "gguf_file":   "flux1-schnell-Q5_K_M.gguf",
-        "description": "FLUX.1 Schnell Q5_K_M (GGUF) — high quality, ~8.4 GB",
+    "sdxl-turbo-gguf-q5": {
+        "folder":      "sdxl-turbo-gguf",
+        "backend":     "sd_cpp_sdxl",
+        "gguf_file":   "sdxl-turbo-q5_k_m.gguf",
+        "description": "SDXL-Turbo Q5_K_M (GGUF) — fast 2-step, ~3.1 GB",
         "steps":       2,
+        "guidance":    0.0,
+        "supports_negative_prompt": True,
+        "supports_img2img":        True,
+        "ram_required_gb":  5,
+        "vram_required_mb": 0,
+        "downloadable":     True,
+        "download_size_gb": 3.1,
+        "download_label":   "SDXL-Turbo (2-step, Q5)",
+        "download_files": [
+            {"hf_repo": "stduhpf/SDXL-Turbo-GGUF", "filename": "sdxl-turbo-q5_k_m.gguf"},
+        ],
+    },
+    # ── Downloadable models ───────────────────────────────────────────────────
+    "sdxl-lightning-q5": {
+        "folder":      "sdxl-lightning-gguf",
+        "backend":     "sd_cpp_sdxl",
+        "gguf_file":   "sdxl_lightning_4step.q5_0.gguf",
+        "description": "SDXL Lightning 4-step Q5 — sharp 1024px in ~2 min",
+        "steps":       4,
         "guidance":    1.0,
-        "default_width":  512,
-        "default_height": 512,
-        "supports_negative_prompt": False,
-        "supports_img2img":        False,
+        "supports_negative_prompt": True,
+        "supports_img2img":         True,
+        "ram_required_gb":  6,
+        "vram_required_mb": 0,
+        "downloadable":     True,
+        "download_size_gb": 3.0,
+        "download_label":   "SDXL Lightning (4-step, Q5)",
+        "download_files": [
+            {"hf_repo": "mzwing/SDXL-Lightning-GGUF", "filename": "sdxl_lightning_4step.q5_0.gguf"},
+        ],
+    },
+    "sd35-medium-q5": {
+        "folder":      "sd35-medium-gguf",
+        "backend":     "sd_cpp_sd3",
+        "gguf_file":   "sd3.5_medium-Q5_K_M.gguf",
+        "description": "SD 3.5 Medium Q5_K_M — top-tier prompt accuracy",
+        "steps":       28,
+        "guidance":    4.5,
+        "supports_negative_prompt": True,
+        "supports_img2img":         False,
         "ram_required_gb":  12,
-        "vram_required_mb": 8192,  # benefits from GPU VRAM
-    },
-    "flux-schnell-gguf-q4": {
-        "folder":      "flux-schnell-gguf",
-        "backend":     "sd_cpp_flux",
-        "gguf_file":   "flux1-schnell-Q4_K_M.gguf",
-        "description": "FLUX.1 Schnell Q4_K_M (GGUF) — good quality, ~6.9 GB",
-        "steps":       2,
-        "guidance":    1.0,
-        "default_width":  512,
-        "default_height": 512,
-        "supports_negative_prompt": False,
-        "supports_img2img":        False,
-        "ram_required_gb":  10,
-        "vram_required_mb": 6144,
+        "vram_required_mb": 0,
+        "downloadable":             True,
+        "download_size_gb":         5.0,
+        "download_label":           "SD 3.5 Medium (Q5_K_M)",
+        "download_files": [
+            {"hf_repo": "city96/stable-diffusion-3.5-medium-gguf",        "filename": "sd3.5_medium-Q5_K_M.gguf"},
+            {"hf_repo": "second-state/stable-diffusion-3.5-medium-GGUF",  "filename": "clip_l.safetensors"},
+            {"hf_repo": "second-state/stable-diffusion-3.5-medium-GGUF",  "filename": "clip_g.safetensors"},
+            {"hf_repo": "second-state/stable-diffusion-3.5-medium-GGUF",  "filename": "t5xxl_fp16.safetensors"},
+        ],
     },
 }
 
@@ -294,7 +304,7 @@ def get_image_model_info(model_key: str = None) -> dict:
     """Get registry info for a model key, falling back to selected model."""
     if model_key is None:
         model_key = get_selected_diffusion_model()
-    fallback = IMAGE_MODEL_REGISTRY.get("sdxl-turbo-openvino", {})
+    fallback = IMAGE_MODEL_REGISTRY.get("flux-schnell", {})
     return IMAGE_MODEL_REGISTRY.get(model_key, fallback)
 
 def get_image_model_path(model_key: str = None) -> Path:
@@ -612,9 +622,9 @@ DEFAULT_TIER_CONFIG = {
     "tier1_models": ["PEARL_AI.gguf"],
     "tier2_models": [],
     "ocr_models": ["PaddleOCR-VL-1.5-Q4_K_M"],
-    "tier2_diffusion_models": ["sdxl-turbo-int8"],
-    "tier3_diffusion_models": ["sdxl-turbo-openvino"],
-    "tier4_diffusion_models": ["flux-schnell", "flux-schnell-gguf-q5", "flux-schnell-gguf-q4"],
+    "tier2_diffusion_models": ["sdxl-turbo-gguf-q5"],
+    "tier3_diffusion_models": ["sdxl-lightning-q5"],
+    "tier4_diffusion_models": ["flux-schnell", "sd35-medium-q5"],
     "dual_model": {
         "enabled": False,
         "fast_model": None,

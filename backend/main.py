@@ -287,7 +287,7 @@ async def lifespan(app):
             from image_service import get_image_service
             image_service = get_image_service()
             logger.info("Image service initialized")
-            asyncio.get_running_loop().run_in_executor(None, image_service.start_iopaint)
+            logger.info("Image service ready (LaMa loads on first inpaint request)")
         except Exception as e:
             logger.error(f"Failed to initialize image service: {e}")
 
@@ -348,8 +348,11 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Catch-all exception handler so error responses go through CORSMiddleware
 @app.exception_handler(Exception)
 async def _global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    tb = traceback.format_exc()
+    print(f"[GLOBAL-ERROR] {request.method} {request.url.path}: {exc}\n{tb}", flush=True)
     logger.error(f"Unhandled error on {request.method} {request.url.path}: {exc}", exc_info=True)
-    return JSONResponse(status_code=500, content={"detail": "An internal error occurred"})
+    return JSONResponse(status_code=500, content={"detail": str(exc), "traceback": tb})
 
 # Include milestone routes
 app.include_router(milestones.router)
@@ -6626,6 +6629,8 @@ async def ocr_toggle(data: dict):
 @app.post("/api/ocr/load")
 async def ocr_load():
     """Pre-load the OCR model into VRAM."""
+    if not _is_brain_loaded():
+        return JSONResponse(status_code=503, content={"error": "brain_not_loaded", "message": "Brain model must be loaded first"})
     import ocr_service
     if not ocr_service.is_ocr_available():
         raise HTTPException(status_code=400, detail="OCR dependencies not installed (bitsandbytes, torch, transformers)")
@@ -7173,6 +7178,15 @@ async def update_dual_model_config(request: Request):
         return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
+def _is_brain_loaded() -> bool:
+    """Check if the Brain (LLM) model is loaded and ready."""
+    try:
+        import inference_factory as _inf_mod
+        return _inf_mod._local_instance is not None and _inf_mod._local_instance.is_loaded
+    except Exception:
+        return False
+
+
 _preload_lock: asyncio.Lock = None
 
 @app.post("/api/model/preload")
@@ -7460,6 +7474,188 @@ async def open_diffusion_models_folder():
     except Exception as e:
         logger.error(f"Error opening diffusion models folder: {e}")
         raise HTTPException(status_code=500, detail="Error opening diffusion models folder")
+
+
+# ============================================================================
+# DIFFUSION MODEL DOWNLOAD ENDPOINTS
+# ============================================================================
+
+# { model_key: { status, progress, current_file, bytes_done, bytes_total, error } }
+_download_state: dict = {}
+_download_threads: dict = {}
+
+
+def _do_download(model_key: str, download_files: list, dest_dir: Path):
+    """Background thread: download each file via huggingface_hub, update _download_state."""
+    import threading
+
+    state = _download_state[model_key]
+    total_files = len(download_files)
+
+    try:
+        from huggingface_hub import hf_hub_download
+    except ImportError:
+        state["status"] = "error"
+        state["error"] = "huggingface_hub is not installed"
+        return
+
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    for idx, file_entry in enumerate(download_files):
+        if state.get("cancelled"):
+            state["status"] = "cancelled"
+            return
+
+        hf_repo   = file_entry["hf_repo"]
+        filename  = file_entry["filename"]
+        local_name = file_entry.get("local_name") or Path(filename).name
+
+        state["current_file"]  = local_name
+        state["file_index"]    = idx + 1
+        state["file_count"]    = total_files
+        state["progress"]      = int((idx / total_files) * 100)
+
+        logger.info(f"[DOWNLOAD] {model_key}: downloading {filename} from {hf_repo}")
+
+        try:
+            local_path = hf_hub_download(
+                repo_id=hf_repo,
+                filename=filename,
+                local_dir=str(dest_dir),
+                local_dir_use_symlinks=False,
+            )
+            # Rename to local_name if different
+            downloaded = Path(local_path)
+            target = dest_dir / local_name
+            if downloaded != target and downloaded.exists():
+                downloaded.rename(target)
+                logger.info(f"[DOWNLOAD] Moved {downloaded.name} -> {local_name}")
+        except Exception as e:
+            err_msg = str(e)
+            if "401" in err_msg or "gated" in err_msg.lower() or "access" in err_msg.lower():
+                err_msg = (
+                    f"Access denied for {hf_repo}/{filename}. "
+                    "You may need to accept the model license at huggingface.co and set HF_TOKEN."
+                )
+            logger.error(f"[DOWNLOAD] Failed {model_key} / {filename}: {e}")
+            state["status"] = "error"
+            state["error"]  = err_msg
+            return
+
+    state["progress"]     = 100
+    state["current_file"] = ""
+    state["status"]       = "done"
+    logger.info(f"[DOWNLOAD] {model_key}: all files downloaded successfully")
+
+
+@app.get("/api/diffusion-models/downloadable")
+async def get_downloadable_models():
+    """Return all registry entries that have download_files metadata, with download status."""
+    try:
+        from config import IMAGE_MODEL_REGISTRY, IMAGE_MODELS_DIR
+
+        result = []
+        for key, info in IMAGE_MODEL_REGISTRY.items():
+            if not info.get("downloadable"):
+                continue
+
+            folder      = IMAGE_MODELS_DIR / info["folder"]
+            gguf_file   = info.get("gguf_file")
+            is_present  = bool(gguf_file and (folder / gguf_file).exists())
+
+            dl_state = _download_state.get(key, {})
+
+            result.append({
+                "key":           key,
+                "label":         info.get("download_label", key),
+                "description":   info.get("description", ""),
+                "size_gb":       info.get("download_size_gb", 0),
+                "ram_gb":        info.get("ram_required_gb", 0),
+                "steps":         info.get("steps", 4),
+                "is_present":    is_present,
+                "requires_auth": info.get("download_requires_hf_auth", False),
+                "notes":         info.get("download_notes", ""),
+                "dl_status":     dl_state.get("status", "idle"),
+                "dl_progress":   dl_state.get("progress", 0),
+                "dl_file":       dl_state.get("current_file", ""),
+                "dl_error":      dl_state.get("error", ""),
+            })
+
+        return JSONResponse(content={"success": True, "models": result})
+    except Exception as e:
+        logger.error(f"Error listing downloadable models: {e}")
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
+
+
+@app.post("/api/diffusion-models/download")
+async def start_model_download(request: Request):
+    """Start downloading a model in the background."""
+    try:
+        from config import IMAGE_MODEL_REGISTRY, IMAGE_MODELS_DIR
+
+        data      = await request.json()
+        model_key = data.get("model_key", "")
+
+        if not model_key or model_key not in IMAGE_MODEL_REGISTRY:
+            return JSONResponse(status_code=400, content={"error": f"Unknown model key: {model_key}"})
+
+        info = IMAGE_MODEL_REGISTRY[model_key]
+        if not info.get("downloadable") or not info.get("download_files"):
+            return JSONResponse(status_code=400, content={"error": "Model is not downloadable"})
+
+        if model_key in _download_state and _download_state[model_key].get("status") == "downloading":
+            return JSONResponse(content={"status": "already_downloading"})
+
+        dest_dir = IMAGE_MODELS_DIR / info["folder"]
+        _download_state[model_key] = {
+            "status":       "downloading",
+            "progress":     0,
+            "current_file": "",
+            "file_index":   0,
+            "file_count":   len(info["download_files"]),
+            "error":        "",
+            "cancelled":    False,
+        }
+
+        import threading
+        t = threading.Thread(
+            target=_do_download,
+            args=(model_key, info["download_files"], dest_dir),
+            daemon=True,
+        )
+        _download_threads[model_key] = t
+        t.start()
+
+        return JSONResponse(content={"status": "started", "model_key": model_key})
+    except Exception as e:
+        logger.error(f"Error starting download for {data.get('model_key')}: {e}")
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
+
+
+@app.get("/api/diffusion-models/download-progress/{model_key}")
+async def get_model_download_progress(model_key: str):
+    """Poll the download progress for a model."""
+    state = _download_state.get(model_key)
+    if state is None:
+        return JSONResponse(content={"status": "idle", "progress": 0})
+    return JSONResponse(content={
+        "status":     state.get("status", "idle"),
+        "progress":   state.get("progress", 0),
+        "file":       state.get("current_file", ""),
+        "file_index": state.get("file_index", 0),
+        "file_count": state.get("file_count", 0),
+        "error":      state.get("error", ""),
+    })
+
+
+@app.delete("/api/diffusion-models/download/{model_key}")
+async def cancel_model_download(model_key: str):
+    """Cancel an in-progress download."""
+    state = _download_state.get(model_key)
+    if state and state.get("status") == "downloading":
+        state["cancelled"] = True
+        return JSONResponse(content={"status": "cancelling"})
+    return JSONResponse(content={"status": "not_downloading"})
 
 
 @app.get("/api/health")
@@ -8400,8 +8596,10 @@ async def generate_image_base64(request: Request):
         "imageData": "data:image/png;base64,..."
     }
     """
+    print("[IMAGE-DEBUG] generate_image_base64 endpoint HIT", flush=True)
     try:
         data = await request.json()
+        print(f"[IMAGE-DEBUG] Got request data, prompt={data.get('prompt', '')[:50]}", flush=True)
 
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
@@ -8465,10 +8663,13 @@ async def generate_image_base64(request: Request):
         })
 
     except Exception as e:
-        logger.error(f"Error generating image: {e}")
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[IMAGE-ERROR] {e}\n{tb}", flush=True)
+        logger.error(f"Error generating image: {e}\n{tb}")
         return JSONResponse(
             status_code=500,
-            content={"error": "An internal error occurred"}
+            content={"error": str(e), "traceback": tb}
         )
 
 
@@ -8678,13 +8879,13 @@ async def inpaint_image(
     seed: Optional[int] = None
 ):
     """
-    Remove objects from image using IOPaint (LaMa model)
-    
+    Remove objects from image using LaMa model (direct inference)
+
     Form data:
     - image: Original image file
     - mask: Mask image file (white = remove, black = keep)
     - seed: Optional random seed
-    
+
     Returns:
         Inpainted image as PNG
     """
@@ -8908,24 +9109,23 @@ async def remove_background_base64(request: Request):
 async def get_image_service_status():
     """
     Check status of image generation services
-    
+
     Returns:
     {
         "sdxl": {"initialized": true/false},
-        "iopaint": {"running": true/false, "port": 8080}
+        "lama": {"loaded": true/false}
     }
     """
     try:
         image_service = get_image_service()
-        
+
         return JSONResponse(content={
             "sdxl": {
                 "initialized": image_service.pipeline is not None,
                 "model_key": getattr(image_service, 'model_key', None),
             },
-            "iopaint": {
-                "running": image_service.is_iopaint_running(),
-                "port": image_service.iopaint_port
+            "lama": {
+                "loaded": image_service.is_lama_loaded()
             }
         })
         
@@ -8942,6 +9142,8 @@ _image_preload_lock: asyncio.Lock = None
 @app.post("/api/image-service/preload")
 async def preload_image_pipeline():
     """Preload the image generation pipeline in the background so first request is fast."""
+    if not _is_brain_loaded():
+        return JSONResponse(status_code=503, content={"error": "brain_not_loaded", "message": "Brain model must be loaded first"})
     global _image_preload_lock
     if _image_preload_lock is None:
         _image_preload_lock = asyncio.Lock()
@@ -9009,48 +9211,145 @@ async def prepare_image_prompt(request: Request):
         return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
-@app.post("/api/image-service/start-iopaint")
-async def start_iopaint_service():
+@app.post("/api/image-service/preload-lama")
+async def preload_lama_service():
     """
-    Manually start IOPaint service
-    
-    Returns:
-    {
-        "success": true/false,
-        "message": "status message"
-    }
+    Preload LaMa inpainting model so first request is fast.
     """
     try:
         image_service = get_image_service()
-        
-        if image_service.is_iopaint_running():
+
+        if image_service.is_lama_loaded():
             return JSONResponse(content={
                 "success": True,
-                "message": "IOPaint already running"
+                "message": "LaMa already loaded"
             })
-        
-        success = image_service.start_iopaint()
-        
+
+        loop = asyncio.get_running_loop()
+        success = await loop.run_in_executor(None, image_service._load_lama_model)
+
         if success:
             return JSONResponse(content={
                 "success": True,
-                "message": "IOPaint started successfully"
+                "message": "LaMa loaded successfully"
             })
         else:
             return JSONResponse(
                 status_code=500,
                 content={
                     "success": False,
-                    "message": "Failed to start IOPaint"
+                    "message": "Failed to load LaMa model"
                 }
             )
-        
+
     except Exception as e:
-        logger.error(f"Error starting IOPaint: {e}")
+        logger.error(f"Error preloading LaMa: {e}")
         return JSONResponse(
             status_code=500,
             content={"error": "An internal error occurred"}
         )
+
+
+@app.post("/api/enhance-image")
+async def enhance_image(request: Request):
+    """
+    Upscale an image using Real-ESRGAN (CPU-optimised tiled inference).
+
+    Request body:
+        image  - base64 data URI or raw base64 string (PNG/JPEG)
+        scale  - 2 or 4 (default 4)
+
+    Response:
+        {
+            "success": true,
+            "imageData": "data:image/png;base64,...",
+            "originalSize":  {"width": W, "height": H},
+            "enhancedSize":  {"width": W*scale, "height": H*scale}
+        }
+    """
+    try:
+        data = await request.json()
+        scale = int(data.get("scale", 4))
+        if scale not in (2, 4):
+            return JSONResponse(status_code=400, content={"error": "scale must be 2 or 4"})
+
+        image_b64 = data.get("image", "")
+        if not image_b64:
+            return JSONResponse(status_code=400, content={"error": "image is required"})
+
+        # Strip data URI prefix if present
+        if "," in image_b64:
+            image_b64 = image_b64.split(",", 1)[1]
+
+        import base64 as _b64
+        image_bytes = _b64.b64decode(image_b64)
+
+        image_service = get_image_service()
+
+        if not image_service.is_esrgan_available():
+            return JSONResponse(
+                status_code=503,
+                content={"error": "esrgan_unavailable", "message": "torch not available"}
+            )
+
+        if not image_service.esrgan_model_exists(scale):
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "error": "model_not_found",
+                    "message": (
+                        f"RealESRGAN_x{scale}plus.pth not found. "
+                        "Run download_models.py realesrgan to download it."
+                    )
+                }
+            )
+
+        loop = asyncio.get_running_loop()
+        png_bytes, orig_size, enhanced_size = await loop.run_in_executor(
+            None, image_service.enhance_image, image_bytes, scale
+        )
+
+        img_b64 = _b64.b64encode(png_bytes).decode("utf-8")
+        return JSONResponse(content={
+            "success": True,
+            "imageData": f"data:image/png;base64,{img_b64}",
+            "originalSize":  {"width": orig_size[0],    "height": orig_size[1]},
+            "enhancedSize":  {"width": enhanced_size[0], "height": enhanced_size[1]},
+        })
+
+    except Exception as e:
+        logger.error(f"Error enhancing image: {e}")
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
+
+
+@app.get("/api/image-service/esrgan-status")
+async def get_esrgan_status():
+    """
+    Check Real-ESRGAN model availability.
+
+    Returns:
+        {
+            "available": true/false,     -- torch importable
+            "x2": {"loaded": bool, "modelPresent": bool},
+            "x4": {"loaded": bool, "modelPresent": bool}
+        }
+    """
+    try:
+        image_service = get_image_service()
+        return JSONResponse(content={
+            "available": image_service.is_esrgan_available(),
+            "x2": {
+                "loaded":       image_service.is_esrgan_loaded(2),
+                "modelPresent": image_service.esrgan_model_exists(2),
+            },
+            "x4": {
+                "loaded":       image_service.is_esrgan_loaded(4),
+                "modelPresent": image_service.esrgan_model_exists(4),
+            },
+        })
+    except Exception as e:
+        logger.error(f"Error checking ESRGAN status: {e}")
+        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
 
 
 # ── Bulk Export / Import ──────────────────────────────────────────────────────

@@ -79,10 +79,27 @@ export interface ImageServiceStatus {
   sdxl: {
     initialized: boolean;
   };
-  iopaint: {
-    running: boolean;
-    port: number;
+  lama: {
+    loaded: boolean;
   };
+}
+
+export interface EnhanceImageRequest {
+  image: string; // base64 data URI
+  scale: 2 | 4;
+}
+
+export interface EnhanceImageResponse {
+  success: boolean;
+  imageData: string; // data:image/png;base64,...
+  originalSize: { width: number; height: number };
+  enhancedSize: { width: number; height: number };
+}
+
+export interface EsrganStatus {
+  available: boolean;
+  x2: { loaded: boolean; modelPresent: boolean };
+  x4: { loaded: boolean; modelPresent: boolean };
 }
 
 export interface SavedImageRecord {
@@ -186,8 +203,11 @@ export const imageApi = {
         }
       );
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating image (base64):', error);
+      if (error?.response?.data) {
+        console.error('Server error details:', JSON.stringify(error.response.data));
+      }
       throw error;
     }
   },
@@ -266,7 +286,7 @@ export const imageApi = {
 
   /**
    * Check status of image generation services
-   * @returns Status of SDXL and IOPaint services
+   * @returns Status of SDXL and LaMa services
    */
   getStatus: async (): Promise<ImageServiceStatus> => {
     try {
@@ -281,17 +301,17 @@ export const imageApi = {
   },
 
   /**
-   * Manually start IOPaint service
+   * Preload LaMa inpainting model
    * @returns Success status
    */
-  startIOPaint: async (): Promise<{ success: boolean; message: string }> => {
+  preloadLama: async (): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await axios.post<{ success: boolean; message: string }>(
-        `${API_URL}/image-service/start-iopaint`
+        `${API_URL}/image-service/preload-lama`
       );
       return response.data;
     } catch (error) {
-      console.error('Error starting IOPaint:', error);
+      console.error('Error preloading LaMa:', error);
       throw error;
     }
   },
@@ -335,6 +355,37 @@ export const imageApi = {
       await axios.delete(`${API_URL}/images-history/${imageId}`);
     } catch (error) {
       console.error('Error deleting image:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Upscale an image using Real-ESRGAN (CPU-optimised, 2x or 4x)
+   */
+  enhanceImage: async (request: EnhanceImageRequest): Promise<EnhanceImageResponse> => {
+    try {
+      const response = await axios.post<EnhanceImageResponse>(
+        `${API_URL}/enhance-image`,
+        { image: request.image, scale: request.scale }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error enhancing image:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Check Real-ESRGAN model availability
+   */
+  getEsrganStatus: async (): Promise<EsrganStatus> => {
+    try {
+      const response = await axios.get<EsrganStatus>(
+        `${API_URL}/image-service/esrgan-status`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error getting ESRGAN status:', error);
       throw error;
     }
   },

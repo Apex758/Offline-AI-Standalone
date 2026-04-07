@@ -349,6 +349,22 @@ interface ModelInfo {
   supports_thinking?: boolean;
 }
 
+interface DownloadableModel {
+  key: string;
+  label: string;
+  description: string;
+  size_gb: number;
+  ram_gb: number;
+  steps: number;
+  is_present: boolean;
+  requires_auth: boolean;
+  notes: string;
+  dl_status: 'idle' | 'downloading' | 'done' | 'error' | 'cancelled';
+  dl_progress: number;
+  dl_file: string;
+  dl_error: string;
+}
+
 const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { t } = useTranslation();
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
@@ -389,6 +405,12 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const [selectedDiffusionModel, setSelectedDiffusionModel] = useState('');
   const [isSelectingDiffusionModel, setIsSelectingDiffusionModel] = useState(false);
   const [diffusionModelChangeMessage, setDiffusionModelChangeMessage] = useState('');
+  const [diffusionModelChangeSuccess, setDiffusionModelChangeSuccess] = useState(false);
+
+  // Downloadable image models state
+  const [downloadableModels, setDownloadableModels] = useState<DownloadableModel[]>([]);
+  const [loadingDownloadable, setLoadingDownloadable] = useState(false);
+  const [downloadPollerRef, setDownloadPollerRef] = useState<any>(null);
 
   // Tier config state
   const [tierConfig, setTierConfig] = useState<any>(null);
@@ -554,6 +576,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   useEffect(() => {
     fetchAvailableModels();
     fetchAvailableDiffusionModels();
+    fetchDownloadableModels();
     fetchOcrStatus();
     fetchAvailableOcrModels();
   }, []);
@@ -751,6 +774,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
     setIsSelectingDiffusionModel(true);
     setDiffusionModelChangeMessage('');
+    setDiffusionModelChangeSuccess(false);
 
     try {
       const response = await fetch('http://localhost:8000/api/diffusion-models/select', {
@@ -764,18 +788,69 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       if (response.ok) {
         setSelectedDiffusionModel(modelName);
         resetStepsCache();
+        setDiffusionModelChangeSuccess(true);
         setDiffusionModelChangeMessage(modelName ? t('settingsPage.models.diffusionChangedTo', { name: modelName }) : t('settingsPage.models.diffusionDisabled'));
         await refreshCapabilities();
       } else {
         const error = await response.json();
+        setDiffusionModelChangeSuccess(false);
         setDiffusionModelChangeMessage(`${t('settingsPage.models.error')}: ${error.error || t('settingsPage.models.failedChangeDiffusion')}`);
       }
     } catch (error) {
       console.error('Error selecting diffusion model:', error);
+      setDiffusionModelChangeSuccess(false);
       setDiffusionModelChangeMessage(`${t('settingsPage.models.error')}: ${t('settingsPage.models.failedCommunicate')}`);
     } finally {
       setIsSelectingDiffusionModel(false);
     }
+  };
+
+  // Downloadable image model functions
+  const fetchDownloadableModels = async () => {
+    setLoadingDownloadable(true);
+    try {
+      const res = await axios.get('http://localhost:8000/api/diffusion-models/downloadable');
+      if (res.data.success) setDownloadableModels(res.data.models);
+    } catch (e) {
+      console.error('Failed to fetch downloadable models:', e);
+    } finally {
+      setLoadingDownloadable(false);
+    }
+  };
+
+  const startModelDownload = async (modelKey: string) => {
+    try {
+      await axios.post('http://localhost:8000/api/diffusion-models/download', { model_key: modelKey });
+      // Start polling progress
+      if (downloadPollerRef) clearInterval(downloadPollerRef);
+      const id = setInterval(async () => {
+        try {
+          const res = await axios.get(`http://localhost:8000/api/diffusion-models/download-progress/${modelKey}`);
+          const { status } = res.data;
+          setDownloadableModels(prev => prev.map(m =>
+            m.key === modelKey ? { ...m, dl_status: status, dl_progress: res.data.progress, dl_file: res.data.file, dl_error: res.data.error } : m
+          ));
+          if (status === 'done' || status === 'error' || status === 'cancelled') {
+            clearInterval(id);
+            setDownloadPollerRef(null);
+            if (status === 'done') {
+              fetchDownloadableModels();
+              fetchAvailableDiffusionModels();
+            }
+          }
+        } catch { /* ignore */ }
+      }, 1500);
+      setDownloadPollerRef(id);
+      setDownloadableModels(prev => prev.map(m => m.key === modelKey ? { ...m, dl_status: 'downloading', dl_progress: 0 } : m));
+    } catch (e) {
+      console.error('Failed to start download:', e);
+    }
+  };
+
+  const cancelModelDownload = async (modelKey: string) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/diffusion-models/download/${modelKey}`);
+    } catch { /* ignore */ }
   };
 
   // OCR functions
@@ -2554,13 +2629,13 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
                       {diffusionModelChangeMessage && (
                         <div className={`mt-2 p-3 rounded-lg text-sm ${
-                          diffusionModelChangeMessage.startsWith('Model changed')
+                          diffusionModelChangeSuccess
                             ? 'bg-green-100 text-green-800 border border-green-300'
                             : 'bg-red-100 text-red-800 border border-red-300'
                         }`}>
                           <div className="flex items-center justify-between gap-2">
                             <span>{diffusionModelChangeMessage}</span>
-                            {diffusionModelChangeMessage.startsWith('Model changed') && (
+                            {diffusionModelChangeSuccess && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2592,6 +2667,94 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Download Image Models — hidden for now, manual terminal downloads */}
+                {false && <Card data-search-section="download-image-models">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Download className="w-4.5 h-4.5 text-theme-secondary" />
+                      Download Image Models
+                    </CardTitle>
+                    <CardDescription>
+                      Download additional image generation models directly from Hugging Face. Each model is placed in the image generation folder and becomes available for selection.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-end">
+                        <Button variant="outline" size="sm" onClick={fetchDownloadableModels} disabled={loadingDownloadable} className="px-3" title="Refresh list">
+                          {loadingDownloadable ? <HeartbeatLoader className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                      {downloadableModels.length === 0 && !loadingDownloadable && (
+                        <p className="text-sm text-theme-hint text-center py-4">No downloadable models available.</p>
+                      )}
+                      {downloadableModels.map((m) => (
+                        <div key={m.key} className="rounded-lg border border-theme-strong p-3 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-semibold text-theme-label">{m.label}</span>
+                                {m.is_present && (
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 font-medium">Downloaded</span>
+                                )}
+                                {m.requires_auth && (
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-medium">HF Login Required</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-theme-hint mt-0.5">{m.description}</p>
+                              <p className="text-xs text-theme-hint mt-0.5">
+                                ~{m.size_gb} GB download &nbsp;|&nbsp; {m.ram_gb} GB RAM &nbsp;|&nbsp; {m.steps} steps
+                              </p>
+                              {m.notes && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{m.notes}</p>
+                              )}
+                            </div>
+                            <div className="shrink-0 flex gap-1.5">
+                              {m.dl_status === 'downloading' ? (
+                                <Button size="sm" variant="outline" onClick={() => cancelModelDownload(m.key)} className="text-xs px-2 py-1 h-auto text-red-600 border-red-300 hover:bg-red-50">
+                                  Cancel
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant={m.is_present ? 'outline' : 'default'}
+                                  onClick={() => startModelDownload(m.key)}
+                                  disabled={m.dl_status === 'downloading'}
+                                  className="text-xs px-2 py-1 h-auto"
+                                >
+                                  <Download className="w-3 h-3 mr-1" />
+                                  {m.is_present ? 'Re-download' : 'Download'}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                          {/* Progress bar */}
+                          {m.dl_status === 'downloading' && (
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-xs text-theme-hint">
+                                <span className="truncate max-w-[70%]">{m.dl_file || 'Preparing...'}</span>
+                                <span>{m.dl_progress}%</span>
+                              </div>
+                              <div className="w-full h-1.5 rounded-full bg-theme-subtle overflow-hidden">
+                                <div className="h-full bg-blue-500 transition-all duration-300 rounded-full" style={{ width: `${m.dl_progress}%` }} />
+                              </div>
+                            </div>
+                          )}
+                          {m.dl_status === 'done' && !m.is_present && (
+                            <p className="text-xs text-green-600 dark:text-green-400">Download complete. Refresh the model list above to use it.</p>
+                          )}
+                          {m.dl_status === 'error' && (
+                            <p className="text-xs text-red-600 dark:text-red-400 break-words">{m.dl_error || 'Download failed.'}</p>
+                          )}
+                        </div>
+                      ))}
+                      <p className="text-xs text-theme-hint">
+                        Models download directly from Hugging Face. Set the <code className="font-mono">HF_TOKEN</code> environment variable if a model requires login.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>}
 
                 {/* OCR Model (PaddleOCR-VL) */}
                 <Card data-search-section="ocr-model">

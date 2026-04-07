@@ -938,6 +938,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Preload diffusion pipeline when switching to image-capable tabs,
   // and auto-unload after 5 min when all image tabs are closed
   const diffusionUnloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const diffusionPreloading = useRef(false);
   const IMAGE_TAB_TYPES = useMemo(() => new Set(['image-studio', 'storybook']), []);
   const DIFFUSION_IDLE_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -946,13 +947,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const activeTab = activeTabId ? tabs.find(t => t.id === activeTabId) : null;
     const activeIsImage = activeTab ? IMAGE_TAB_TYPES.has(activeTab.type) : false;
 
-    // Preload when switching to an image tab
-    if (activeIsImage) {
+    // Preload when switching to an image tab (only if Brain is online)
+    if (activeIsImage && engineStatus === 'online') {
       if (diffusionUnloadTimer.current) {
         clearTimeout(diffusionUnloadTimer.current);
         diffusionUnloadTimer.current = null;
       }
-      fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
+      // Dedup: skip if already preloading or already online
+      if (!diffusionPreloading.current && studioStatus !== 'online') {
+        diffusionPreloading.current = true;
+        fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' })
+          .catch(() => {})
+          .finally(() => { diffusionPreloading.current = false; });
+      }
       return;
     }
 
@@ -963,7 +970,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         diffusionUnloadTimer.current = null;
       }, DIFFUSION_IDLE_MS);
     }
-  }, [activeTabId, tabs, IMAGE_TAB_TYPES]);
+  }, [activeTabId, tabs, IMAGE_TAB_TYPES, engineStatus, studioStatus]);
 
   // Auto-scroll sidebar to the active tool when sidebar opens
   useEffect(() => {

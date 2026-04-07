@@ -86,7 +86,7 @@ interface ImageHistory {
   redoStack: string[];
 }
 
-type EditorTool = 'remove-object' | 'remove-background' | 'annotate' | 'coloring-page' | 'worksheet' | 'comic-maker';
+type EditorTool = 'remove-object' | 'remove-background' | 'annotate' | 'coloring-page' | 'worksheet' | 'comic-maker' | 'enhance';
 
 interface Annotation {
   id: string;
@@ -520,6 +520,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     { id: 'coloring-page' as EditorTool, label: 'Coloring Page', needsDiffusion: false, needsLama: false },
     { id: 'worksheet' as EditorTool, label: 'Worksheet Maker', needsDiffusion: false, needsLama: false },
     { id: 'comic-maker' as EditorTool, label: 'Comic Maker', needsDiffusion: true, needsLama: false },
+    { id: 'enhance' as EditorTool, label: 'Enhance', needsDiffusion: false, needsLama: false },
   ];
   const updateEditorToolPill = useCallback(() => {
     const activeIdx = editorTools.findIndex(t => t.id === editorTool);
@@ -544,6 +545,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
   // Background removal
   const [isRemovingBg, setIsRemovingBg] = useState(false);
+
+  // Image enhancement (Real-ESRGAN)
+  const [enhanceScale, setEnhanceScale] = useState<2 | 4>(4);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   // Worksheet
   const [showWorksheet, setShowWorksheet] = useState(false);
@@ -1743,6 +1748,31 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   };
 
   // ========================================
+  // EDITOR: Image Enhancement (Real-ESRGAN)
+  // ========================================
+  const handleEnhance = async () => {
+    if (!history.current) return;
+    setIsEnhancing(true);
+    setError(null);
+    try {
+      const result = await imageApi.enhanceImage({ image: history.current, scale: enhanceScale });
+      if (!result.success) throw new Error('Enhancement failed');
+      setHistory(prev => ({
+        ...prev,
+        undoStack: [...prev.undoStack, prev.current],
+        current: result.imageData,
+        redoStack: [],
+      }));
+      drawImageOnCanvas(result.imageData);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.response?.data?.error || err.message || 'Enhancement failed';
+      setError(msg);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  // ========================================
   // EDITOR: Coloring Page Generator (v2)
   // ========================================
   const handleColoringPage = () => {
@@ -2898,6 +2928,34 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center justify-center text-sm">
                           New
                         </button>
+                      </div>
+                    )}
+                    {editorTool === 'enhance' && (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-2 items-center">
+                          <span className="text-xs text-theme-muted flex-shrink-0">Scale</span>
+                          <div className="flex gap-1">
+                            {([2, 4] as const).map(s => (
+                              <button key={s} onClick={() => setEnhanceScale(s)}
+                                className={`px-3 py-1 rounded text-sm font-medium border transition-colors ${enhanceScale === s ? 'bg-teal-600 text-white border-teal-600' : 'bg-transparent text-theme-label border-theme hover:border-teal-500'}`}>
+                                {s}x
+                              </button>
+                            ))}
+                          </div>
+                          <span className="text-xs text-theme-muted ml-auto">{enhanceScale === 4 ? 'Best quality' : 'Faster'}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={handleEnhance} disabled={isEnhancing || !history.current}
+                            className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                            {isEnhancing
+                              ? <><HeartbeatLoader className="w-4 h-4 mr-2" />Enhancing... (this may take a while)</>
+                              : <><RefreshCw className="w-4 h-4 mr-2" />Enhance {enhanceScale}x</>}
+                          </button>
+                          <button onClick={handleDownloadEdited}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center">
+                            <Download className="w-4 h-4 mr-2" />Download
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

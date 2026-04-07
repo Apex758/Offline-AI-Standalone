@@ -119,6 +119,13 @@ def load_ocr_model():
     """Thread-safe lazy load of the OCR model."""
     if _ocr_loaded:
         return
+    # Gate: Brain (LLM) must be loaded before OCR can start
+    try:
+        import inference_factory as _inf_mod
+        if _inf_mod._local_instance is None or not _inf_mod._local_instance.is_loaded:
+            raise RuntimeError("Brain model must be loaded before OCR can start")
+    except ImportError:
+        raise RuntimeError("Brain model must be loaded before OCR can start")
     with _ocr_lock:
         if _ocr_loaded:
             return

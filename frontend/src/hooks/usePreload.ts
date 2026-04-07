@@ -19,10 +19,11 @@ export function usePreload() {
 
     (async () => {
       try {
-        // Step 1: LLM first (highest priority)
+        // Step 1: LLM first (highest priority) -- MUST succeed before anything else loads
         await axios.post(`${API_CONFIG.BASE_URL}/api/model/preload`);
       } catch {
-        // LLM preload failed -- continue with other models
+        // Brain failed to load -- do not attempt OCR or TTS
+        return;
       }
 
       // Step 2: TTS (fast, fire and forget)

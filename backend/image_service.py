@@ -296,74 +296,137 @@ def _load_flux_schnell_ov(model_path: Path):
     return pipe
 
 
-def _load_flux_schnell_gguf(model_path: Path, gguf_file: str = None):
-    """Load FLUX.1 Schnell GGUF via stable-diffusion-cpp-python (CPU)."""
+def _load_sdxl_turbo_gguf(model_path: Path, gguf_file: str = None):
+    """Load SDXL-Turbo GGUF via stable-diffusion-cpp-python (CPU)."""
     from stable_diffusion_cpp import StableDiffusion
 
     if gguf_file is None:
-        gguf_file = "flux1-schnell-Q4_K_M.gguf"
+        gguf_file = "sdxl-turbo-q4_k_m.gguf"
 
-    diffusion_path = str(model_path / gguf_file)
-    clip_l_path    = str(model_path / "clip_l.safetensors")
-    t5xxl_path     = str(model_path / "t5-v1_1-xxl-encoder-Q8_0.gguf")
-    vae_path       = str(model_path / "ae.safetensors")
+    model_file = str(model_path / gguf_file)
 
-    for fpath, label in [(diffusion_path, "diffusion model"),
-                         (clip_l_path, "CLIP-L"),
-                         (t5xxl_path, "T5-XXL"),
-                         (vae_path, "VAE")]:
-        if not Path(fpath).exists():
-            raise FileNotFoundError(f"FLUX GGUF {label} not found: {fpath}")
-
-    logger.info(f"Loading FLUX GGUF: {gguf_file}")
-    logger.info(f"  CLIP-L: clip_l.safetensors")
-    logger.info(f"  T5-XXL: t5-v1_1-xxl-encoder-Q8_0.gguf")
-    logger.info(f"  VAE:    ae.safetensors")
+    if not Path(model_file).exists():
+        raise FileNotFoundError(f"SDXL-Turbo GGUF not found: {model_file}")
 
     n_threads = _get_physical_core_count()
-    logger.info(f"FLUX GGUF using {n_threads} threads (physical cores)")
+    logger.info(f"Loading SDXL-Turbo GGUF: {gguf_file}, threads={n_threads}")
 
-    # Build kwargs; flash_attn may not be supported in all sd.cpp versions
+    # vae_decode_only=False to retain VAE encoder for img2img support
     kwargs = dict(
-        diffusion_model_path=diffusion_path,
-        clip_l_path=clip_l_path,
-        t5xxl_path=t5xxl_path,
-        vae_path=vae_path,
-        vae_decode_only=True,
+        model_path=model_file,
         n_threads=n_threads,
+        vae_decode_only=False,
     )
     import inspect
     sd_params = inspect.signature(StableDiffusion.__init__).parameters
     if "flash_attn" in sd_params:
         kwargs["flash_attn"] = True
-        logger.info("Enabled flash_attn for FLUX GGUF")
+        logger.info("Enabled flash_attn for SDXL GGUF")
 
     sd = StableDiffusion(**kwargs)
     return sd
+
+
+def _load_sd3_gguf(model_path: Path, gguf_file: str = None):
+    """Load SD 3.5 GGUF via stable-diffusion-cpp-python (CPU)."""
+    from stable_diffusion_cpp import StableDiffusion
+
+    if gguf_file is None:
+        gguf_file = "sd3.5_medium-Q5_K_M.gguf"
+
+    model_file  = str(model_path / gguf_file)
+    clip_l_path = str(model_path / "clip_l.safetensors")
+    clip_g_path = str(model_path / "clip_g.safetensors")
+    t5xxl_path  = str(model_path / "t5xxl_fp16.safetensors")
+
+    for fpath, label in [
+        (model_file,  "SD 3.5 diffusion model"),
+        (clip_l_path, "CLIP-L"),
+        (clip_g_path, "CLIP-G"),
+        (t5xxl_path,  "T5-XXL"),
+    ]:
+        if not Path(fpath).exists():
+            raise FileNotFoundError(f"SD3.5 {label} not found: {fpath}")
+
+    n_threads = _get_physical_core_count()
+    logger.info(f"Loading SD3.5 GGUF: {gguf_file}, threads={n_threads}")
+
+    import inspect
+    sd_params = inspect.signature(StableDiffusion.__init__).parameters
+
+    kwargs = dict(
+        model_path=model_file,
+        clip_l_path=clip_l_path,
+        t5xxl_path=t5xxl_path,
+        vae_decode_only=True,
+        n_threads=n_threads,
+    )
+    # clip_g is required for SD3.5 — only pass if the binding supports it
+    if "clip_g_path" in sd_params:
+        kwargs["clip_g_path"] = clip_g_path
+    # VAE is optional — sd.cpp can extract it from the main model GGUF
+    vae_path = model_path / "sd3_vae.safetensors"
+    if vae_path.exists() and "vae_path" in sd_params:
+        kwargs["vae_path"] = str(vae_path)
+    if "flash_attn" in sd_params:
+        kwargs["flash_attn"] = True
+
+    return StableDiffusion(**kwargs)
+
+
+def _load_wan_gguf(model_path: Path, gguf_file: str = None):
+    """Load Wan 2.1 GGUF via stable-diffusion-cpp-python (CPU)."""
+    from stable_diffusion_cpp import StableDiffusion
+
+    if gguf_file is None:
+        gguf_file = "wan2.1-t2v-1.3B-Q5_K_M.gguf"
+
+    model_file = str(model_path / gguf_file)
+    if not Path(model_file).exists():
+        raise FileNotFoundError(f"Wan GGUF not found: {model_file}")
+
+    n_threads = _get_physical_core_count()
+    logger.info(f"Loading Wan GGUF: {gguf_file}, threads={n_threads}")
+
+    import inspect
+    sd_params = inspect.signature(StableDiffusion.__init__).parameters
+
+    kwargs = dict(
+        model_path=model_file,
+        vae_decode_only=True,
+        n_threads=n_threads,
+    )
+    if "flash_attn" in sd_params:
+        kwargs["flash_attn"] = True
+
+    return StableDiffusion(**kwargs)
 
 
 # Map backend key → loader function
 _LOADERS = {
     "openvino":            _load_openvino,
     "openvino_flux":       _load_flux_schnell_ov,
-    "sd_cpp_flux":         _load_flux_schnell_gguf,
+    "sd_cpp_sdxl":         _load_sdxl_turbo_gguf,
+    "sd_cpp_sd3":          _load_sd3_gguf,
+    "sd_cpp_wan":          _load_wan_gguf,
 }
 
 
 class ImageService:
-    """Manages image generation (multi-model) and inpainting (IOPaint)"""
+    """Manages image generation (multi-model) and inpainting (LaMa direct)"""
 
     def __init__(self,
                  sdxl_model_path: Optional[str] = None,
-                 iopaint_port: int = 8080,
                  model_key: Optional[str] = None):
         """
         Initialize ImageService with automatic path resolution.
         Supports multi-model backends via model_key or legacy sdxl_model_path.
         """
-        self.iopaint_port = iopaint_port
-        self.iopaint_process: Optional[subprocess.Popen] = None
+        self.lama_model = None  # Lazy-loaded LaMa JIT model
+        self.lama_device = None
         self.pipeline = None
+        # Real-ESRGAN service (lazy-init on first use)
+        self._esrgan = None
         self.img2img_pipeline = None  # Separate img2img pipeline for OpenVINO
         self.model_info = {}
         self.model_key = None
@@ -388,20 +451,19 @@ class ImageService:
             else:
                 # Legacy path: sdxl_model_path provided directly
                 self.model_path = Path(sdxl_model_path)
-                self.model_key = "sdxl-turbo-openvino"
+                self.model_key = "flux-schnell"
                 self.model_info = IMAGE_MODEL_REGISTRY.get(self.model_key, {})
         except ImportError:
             # Fallback if config not available
             if sdxl_model_path:
                 self.model_path = Path(sdxl_model_path)
             else:
-                self.model_path = get_resource_path("../models/image_generation/sdxl-turbo-openvino")
-            self.model_key = "sdxl-turbo-openvino"
-            self.model_info = {"backend": "openvino", "steps": 2, "guidance": 0.0}
+                self.model_path = get_resource_path("../models/image_generation/flux-schnell")
+            self.model_key = "flux-schnell"
+            self.model_info = {"backend": "openvino_flux", "steps": 1, "guidance": 0.0}
 
-        # Setup IOPaint cache directory
-        self.iopaint_cache_dir = get_app_data_path("iopaint")
-        self._setup_iopaint_cache()
+        # Resolve LaMa model path
+        self.lama_model_path = self._resolve_lama_path()
 
         # Register cleanup on exit
         atexit.register(self.cleanup)
@@ -409,7 +471,7 @@ class ImageService:
         logger.info(f"ImageService initialized")
         logger.info(f"  Model: {self.model_key}, path: {self.model_path}")
         logger.info(f"  Backend: {self.model_info.get('backend', 'unknown')}")
-        logger.info(f"  IOPaint cache: {self.iopaint_cache_dir}")
+        logger.info(f"  LaMa model: {self.lama_model_path}")
 
     # Backward compatibility alias
     @property
@@ -420,28 +482,41 @@ class ImageService:
     def sdxl_model_path(self):
         return self.model_path
 
-    def _setup_iopaint_cache(self):
-        """Setup IOPaint model cache in app data folder"""
-        torch_hub_dir = self.iopaint_cache_dir.parent / "hub" / "checkpoints"
-        torch_hub_dir.mkdir(parents=True, exist_ok=True)
-        lama_cache_file = torch_hub_dir / "big-lama.pt"
+    def _resolve_lama_path(self) -> Optional[Path]:
+        """Find the big-lama.pt model file"""
+        try:
+            from config import LAMA_MODEL_PATH
+            if LAMA_MODEL_PATH.exists():
+                return LAMA_MODEL_PATH
+        except ImportError:
+            pass
+        bundled = get_resource_path("../models/image_generation/lama/big-lama.pt")
+        if bundled.exists():
+            return bundled
+        logger.warning("LaMa model (big-lama.pt) not found")
+        return None
 
-        if not lama_cache_file.exists():
-            logger.info("Setting up IOPaint cache...")
-            bundled_lama = get_resource_path("../models/image_generation/lama/big-lama.pt")
-            if bundled_lama.exists():
-                logger.info(f"Copying LaMa model to torch hub cache: {bundled_lama} -> {lama_cache_file}")
-                try:
-                    import shutil
-                    shutil.copy2(bundled_lama, lama_cache_file)
-                    logger.info("LaMa model cached successfully")
-                except Exception as e:
-                    logger.error(f"Failed to cache LaMa model: {e}")
-            else:
-                logger.warning(f"Bundled LaMa model not found at: {bundled_lama}")
-                logger.info("IOPaint will download on first use")
-        else:
-            logger.info(f"IOPaint cache already exists: {lama_cache_file}")
+    def _load_lama_model(self):
+        """Lazy-load the LaMa JIT model"""
+        if self.lama_model is not None:
+            return True
+        if self.lama_model_path is None or not self.lama_model_path.exists():
+            logger.error("LaMa model file not found")
+            return False
+        try:
+            import torch
+            self.lama_device = torch.device("cpu")
+            logger.info(f"Loading LaMa model from {self.lama_model_path}...")
+            self.lama_model = torch.jit.load(
+                str(self.lama_model_path), map_location=self.lama_device
+            )
+            self.lama_model.eval()
+            logger.info("LaMa model loaded successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to load LaMa model: {e}")
+            self.lama_model = None
+            return False
 
     _pipeline_lock = threading.Lock()
 
@@ -449,6 +524,16 @@ class ImageService:
         """Initialize the image generation pipeline (lazy loading, thread-safe)."""
         if self.pipeline is not None:
             return True
+
+        # Gate: Brain (LLM) must be loaded before diffusion can start
+        try:
+            import inference_factory as _inf_mod
+            if _inf_mod._local_instance is None or not _inf_mod._local_instance.is_loaded:
+                logger.warning("Brain model not loaded yet -- deferring pipeline init")
+                return False
+        except Exception:
+            logger.warning("Cannot verify brain status -- deferring pipeline init")
+            return False
 
         with self._pipeline_lock:
             # Double-check after acquiring lock
@@ -466,8 +551,9 @@ class ImageService:
                 return False
 
             try:
+                print(f"[IMAGE-DEBUG] Loading pipeline: model={self.model_key}, backend={backend}, path={self.model_path}", flush=True)
                 logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
-                if backend == "sd_cpp_flux":
+                if backend in ("sd_cpp_sdxl", "sd_cpp_sd3", "sd_cpp_wan"):
                     self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
                 else:
                     self.pipeline = loader(self.model_path)
@@ -491,114 +577,58 @@ class ImageService:
 
                 return True
             except Exception as e:
-                logger.error(f"Failed to initialize pipeline ({self.model_key}): {e}")
                 import traceback
-                logger.error(traceback.format_exc())
+                tb = traceback.format_exc()
+                print(f"[IMAGE-DEBUG] Pipeline init EXCEPTION: {e}\n{tb}", flush=True)
+                logger.error(f"Failed to initialize pipeline ({self.model_key}): {e}")
+                logger.error(tb)
                 return False
 
     def initialize_sdxl(self) -> bool:
         """Backward-compatible alias for initialize_pipeline."""
         return self.initialize_pipeline()
 
-    def start_iopaint(self) -> bool:
-        """Start IOPaint server as subprocess"""
-        if self.is_iopaint_running():
-            logger.info(f"IOPaint already running on port {self.iopaint_port}")
-            return True
+    def is_lama_loaded(self) -> bool:
+        """Check if LaMa model is loaded and ready"""
+        return self.lama_model is not None
 
+    # ------------------------------------------------------------------
+    # Real-ESRGAN
+    # ------------------------------------------------------------------
+
+    def _get_esrgan(self):
+        """Return the ESRGANService singleton, creating it on first call."""
+        if self._esrgan is None:
+            from esrgan_service import ESRGANService
+            self._esrgan = ESRGANService()
+        return self._esrgan
+
+    def is_esrgan_available(self) -> bool:
+        """True if torch is importable (no model download check)."""
         try:
-            iopaint_cmd = self._find_iopaint_executable()
-            if not iopaint_cmd:
-                logger.error("IOPaint executable not found")
-                return False
-
-            env = os.environ.copy()
-            env['TORCH_HOME'] = str(self.iopaint_cache_dir.parent)
-
-            cmd = [
-                iopaint_cmd, "-m", "iopaint", "start",
-                "--model=lama",
-                "--device=cpu",
-                f"--port={self.iopaint_port}",
-                "--host=127.0.0.1"
-            ]
-
-            logger.info(f"Starting IOPaint: {' '.join(cmd)}")
-
-            startupinfo = None
-            creation_flags = 0
-            if os.name == 'nt':
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                startupinfo.wShowWindow = subprocess.SW_HIDE
-                creation_flags = subprocess.CREATE_NO_WINDOW
-
-            self.iopaint_process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                startupinfo=startupinfo,
-                creationflags=creation_flags,
-                env=env
-            )
-
-            for i in range(30):
-                time.sleep(1)
-                if self.is_iopaint_running():
-                    logger.info(f"IOPaint started successfully on port {self.iopaint_port}")
-                    return True
-
-            logger.error("IOPaint failed to start within 30 seconds")
-            if self.iopaint_process:
-                try:
-                    stdout, stderr = self.iopaint_process.communicate(timeout=5)
-                    logger.error(f"IOPaint stdout: {stdout.decode('utf-8', errors='ignore') if stdout else 'None'}")
-                    logger.error(f"IOPaint stderr: {stderr.decode('utf-8', errors='ignore') if stderr else 'None'}")
-                except Exception as e:
-                    logger.error(f"Error reading IOPaint output: {e}")
+            return self._get_esrgan().is_available()
+        except Exception:
             return False
 
-        except Exception as e:
-            logger.error(f"Error starting IOPaint: {e}")
-            return False
-
-    def _find_iopaint_executable(self) -> Optional[str]:
-        """Find Python executable to run iopaint as module"""
-        logger.info(f"sys.prefix: {sys.prefix}")
-        logger.info(f"sys.executable: {sys.executable}")
-        python_exe = sys.executable
-        if os.path.exists(python_exe):
-            logger.info(f"Will use Python module: {python_exe} -m iopaint")
-            return python_exe
-        logger.error("Python executable not found")
-        return None
-
-    def _command_exists(self, command: str) -> bool:
-        """Check if command exists in PATH"""
+    def is_esrgan_loaded(self, scale: int) -> bool:
         try:
-            subprocess.run([command, '--version'],
-                         capture_output=True,
-                         timeout=5,
-                         creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
-            return True
-        except (subprocess.SubprocessError, FileNotFoundError):
+            return self._get_esrgan().is_loaded(scale)
+        except Exception:
             return False
 
-    def is_iopaint_running(self) -> bool:
-        """Check if IOPaint server is responding"""
+    def esrgan_model_exists(self, scale: int) -> bool:
         try:
-            response = requests.get(
-                f"http://127.0.0.1:{self.iopaint_port}/api/v1/server-config",
-                timeout=2
-            )
-            return response.status_code == 200
-        except requests.RequestException:
+            return self._get_esrgan().model_file_exists(scale)
+        except Exception:
             return False
 
-    async def async_is_iopaint_running(self) -> bool:
-        """Async wrapper for is_iopaint_running - won't block event loop"""
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.is_iopaint_running)
+    def enhance_image(self, image_bytes: bytes, scale: int):
+        """Upscale image_bytes by scale (2 or 4) using Real-ESRGAN.
+
+        Returns (png_bytes, orig_size, enhanced_size).
+        Raises RuntimeError if model is unavailable.
+        """
+        return self._get_esrgan().enhance(image_bytes, scale)
 
     def prepare_prompt(self, prompt: str) -> bool:
         """Pre-encode a prompt and cache the embeddings (Flux OpenVINO only).
@@ -654,6 +684,7 @@ class ImageService:
         """Generate image using the configured model backend."""
         try:
             if not self.initialize_pipeline():
+                print("[IMAGE-DEBUG] Pipeline initialization FAILED", flush=True)
                 logger.error("Pipeline not initialized")
                 return None
 
@@ -706,7 +737,7 @@ class ImageService:
             backend = self.model_info.get("backend", "openvino")
             gen_start = time.time()
 
-            if backend in ("openvino",):
+            if backend == "openvino":
                 # OpenVINO SDXL-Turbo pipeline
                 if init_image is not None:
                     try:
@@ -818,25 +849,73 @@ class ImageService:
                             output_type="np",
                         )
 
-            elif backend == "sd_cpp_flux":
-                # FLUX GGUF via stable-diffusion.cpp — no negative_prompt or img2img
+            elif backend == "sd_cpp_sdxl":
+                # SDXL-Turbo GGUF via stable-diffusion.cpp — supports negative_prompt + img2img
                 if init_image is not None:
-                    logger.warning("FLUX GGUF does not support img2img — init_image ignored")
-                output = self.pipeline.txt_to_img(
+                    try:
+                        import io as _io
+                        init_pil = Image.open(_io.BytesIO(init_image)).convert("RGB")
+                        if init_pil.width != width or init_pil.height != height:
+                            logger.info(f"Resizing init image {init_pil.width}x{init_pil.height} -> {width}x{height}")
+                            init_pil = init_pil.resize((width, height), Image.LANCZOS)
+                        output = self.pipeline.img_to_img(
+                            image=init_pil,
+                            prompt=prompt,
+                            negative_prompt=negative_prompt,
+                            width=width,
+                            height=height,
+                            cfg_scale=guidance_scale,
+                            sample_steps=num_inference_steps,
+                            strength=strength,
+                            seed=seed if seed is not None else -1,
+                        )
+                    except Exception as img2img_err:
+                        logger.warning(f"SDXL GGUF img2img failed, falling back to txt2img: {img2img_err}")
+                        output = self.pipeline.generate_image(
+                            prompt=prompt,
+                            negative_prompt=negative_prompt,
+                            width=width,
+                            height=height,
+                            cfg_scale=guidance_scale,
+                            sample_steps=num_inference_steps,
+                            seed=seed if seed is not None else -1,
+                        )
+                else:
+                    output = self.pipeline.generate_image(
+                        prompt=prompt,
+                        negative_prompt=negative_prompt,
+                        width=width,
+                        height=height,
+                        cfg_scale=guidance_scale,
+                        sample_steps=num_inference_steps,
+                        seed=seed if seed is not None else -1,
+                    )
+                class _SDCppResultSDXL:
+                    def __init__(self, images):
+                        self.images = images
+                result = _SDCppResultSDXL(output)
+
+            elif backend in ("sd_cpp_sd3", "sd_cpp_wan"):
+                # SD 3.5 / Wan GGUF — text-to-image only, uses same sd.cpp interface
+                if init_image is not None:
+                    logger.warning(f"{backend} does not support img2img — init_image ignored")
+                neg = negative_prompt if (negative_prompt and self.model_info.get("supports_negative_prompt")) else ""
+                output = self.pipeline.generate_image(
                     prompt=prompt,
+                    negative_prompt=neg,
                     width=width,
                     height=height,
                     cfg_scale=guidance_scale,
                     sample_steps=num_inference_steps,
                     seed=seed if seed is not None else -1,
                 )
-                # sd.cpp returns a list of PIL Images; wrap for compatibility
-                class _SDCppResult:
+                class _SDCppResultSD3:
                     def __init__(self, images):
                         self.images = images
-                result = _SDCppResult(output)
+                result = _SDCppResultSD3(output)
 
             else:
+                print(f"[IMAGE-DEBUG] Unknown backend: {backend}", flush=True)
                 logger.error(f"Unknown backend: {backend}")
                 return None
 
@@ -886,9 +965,11 @@ class ImageService:
             return image_bytes
 
         except Exception as e:
-            logger.error(f"Error generating image: {e}")
             import traceback
-            logger.error(traceback.format_exc())
+            tb = traceback.format_exc()
+            print(f"[IMAGE-DEBUG] Exception in generate_image: {e}\n{tb}", flush=True)
+            logger.error(f"Error generating image: {e}")
+            logger.error(tb)
             return None
 
     def generate_batch_images(self,
@@ -933,50 +1014,75 @@ class ImageService:
             logger.error(f"Error generating batch images: {e}")
             return []
 
-    def _do_inpaint_request(self, url: str, payload: dict) -> Optional[bytes]:
-        """Blocking HTTP POST to IOPaint inpaint endpoint (run via executor)"""
-        response = requests.post(url, json=payload, timeout=60)
-        logger.info(f"IOPaint response status: {response.status_code}")
-        if response.status_code == 200:
-            logger.info("Inpainting completed successfully")
-            return response.content
-        else:
-            logger.error(f"IOPaint error: {response.status_code}")
-            logger.error(f"Response text: {response.text}")
+    def _run_lama_inference(self, image_data: bytes, mask_data: bytes) -> Optional[bytes]:
+        """Run LaMa inpainting directly via TorchScript JIT model (blocking)"""
+        import torch
+
+        if not self._load_lama_model():
             return None
 
-    async def inpaint_image(self,
-                     image_data: bytes,
-                     mask_data: bytes,
-                     seed: Optional[int] = None) -> Optional[bytes]:
-        """Remove objects from image using IOPaint (LaMa model)"""
+        try:
+            # Decode inputs
+            image = Image.open(BytesIO(image_data)).convert("RGB")
+            mask = Image.open(BytesIO(mask_data)).convert("L")
+
+            # Resize mask to match image if needed
+            if mask.size != image.size:
+                mask = mask.resize(image.size, Image.NEAREST)
+
+            orig_w, orig_h = image.size
+
+            # Convert to numpy float32 [0,1]
+            img_np = np.array(image).astype(np.float32) / 255.0
+            mask_np = np.array(mask).astype(np.float32) / 255.0
+
+            # Pad to multiple of 8 (required by LaMa architecture)
+            h, w = img_np.shape[:2]
+            pad_h = (8 - h % 8) % 8
+            pad_w = (8 - w % 8) % 8
+            if pad_h or pad_w:
+                img_np = np.pad(img_np, ((0, pad_h), (0, pad_w), (0, 0)), mode="reflect")
+                mask_np = np.pad(mask_np, ((0, pad_h), (0, pad_w)), mode="reflect")
+
+            # To tensors: [1, C, H, W]
+            img_t = torch.from_numpy(img_np).permute(2, 0, 1).unsqueeze(0).to(self.lama_device)
+            mask_t = torch.from_numpy(mask_np).unsqueeze(0).unsqueeze(0).to(self.lama_device)
+
+            # Inference
+            with torch.inference_mode():
+                output = self.lama_model(img_t, mask_t)
+
+            # Convert back to image bytes
+            result = output[0].permute(1, 2, 0).cpu().numpy()
+            result = np.clip(result[:orig_h, :orig_w] * 255, 0, 255).astype(np.uint8)
+            result_img = Image.fromarray(result)
+
+            buf = BytesIO()
+            result_img.save(buf, format="PNG")
+            logger.info("Inpainting completed successfully")
+            return buf.getvalue()
+
+        except Exception as e:
+            logger.error(f"LaMa inference error: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            return None
+
+    def inpaint_image(self,
+                      image_data: bytes,
+                      mask_data: bytes,
+                      seed: Optional[int] = None) -> Optional[bytes]:
+        """Remove objects from image using LaMa model (direct inference)"""
         try:
             logger.info("=== STARTING INPAINT_IMAGE ===")
             logger.info(f"Image data size: {len(image_data)} bytes")
             logger.info(f"Mask data size: {len(mask_data)} bytes")
 
-            if not self.is_iopaint_running():
-                logger.info("IOPaint not running, starting it...")
-                if not self.start_iopaint():
-                    logger.error("Failed to start IOPaint")
-                    return None
+            if seed is not None and seed >= 0:
+                import torch
+                torch.manual_seed(seed)
 
-            image_b64 = base64.b64encode(image_data).decode('utf-8')
-            mask_b64 = base64.b64encode(mask_data).decode('utf-8')
-
-            payload = {
-                "image": f"data:image/png;base64,{image_b64}",
-                "mask": f"data:image/png;base64,{mask_b64}",
-                "ldmSteps": 25,
-                "ldmSampler": "plms",
-                "hdStrategy": "Original",
-                "seed": seed if seed else -1
-            }
-
-            url = f"http://127.0.0.1:{self.iopaint_port}/api/v1/inpaint"
-            logger.info(f"Sending POST request to {url}")
-            loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(None, self._do_inpaint_request, url, payload)
+            return self._run_lama_inference(image_data, mask_data)
 
         except Exception as e:
             logger.error(f"Error in inpainting: {e}")
@@ -1009,7 +1115,7 @@ class ImageService:
         return freed
 
     def cleanup(self):
-        """Cleanup resources and stop IOPaint"""
+        """Cleanup resources"""
         logger.info("Cleaning up ImageService...")
 
         if self.pipeline:
@@ -1028,36 +1134,29 @@ class ImageService:
             except Exception as e:
                 logger.error(f"Error cleaning img2img pipeline: {e}")
 
-        if self.iopaint_process:
+        if self.lama_model:
             try:
-                self.iopaint_process.terminate()
-                self.iopaint_process.wait(timeout=5)
-                logger.info("IOPaint process terminated")
+                del self.lama_model
+                self.lama_model = None
+                logger.info("LaMa model cleaned up")
             except Exception as e:
-                logger.error(f"Error stopping IOPaint: {e}")
-                try:
-                    self.iopaint_process.kill()
-                except:
-                    pass
-            finally:
-                self.iopaint_process = None
+                logger.error(f"Error cleaning LaMa model: {e}")
 
 
 # Singleton instance
 _image_service_instance: Optional[ImageService] = None
 
-def get_image_service(sdxl_model_path: Optional[str] = None,
-                     iopaint_port: int = 8080) -> ImageService:
+def get_image_service(sdxl_model_path: Optional[str] = None) -> ImageService:
     """Get or create ImageService singleton"""
     global _image_service_instance
     if _image_service_instance is None:
-        _image_service_instance = ImageService(sdxl_model_path, iopaint_port)
+        _image_service_instance = ImageService(sdxl_model_path)
     return _image_service_instance
 
-def reset_image_service(new_model_key: str, iopaint_port: int = 8080) -> ImageService:
+def reset_image_service(new_model_key: str) -> ImageService:
     """Destroy the current singleton and create a new one with a different model."""
     global _image_service_instance
     if _image_service_instance:
         _image_service_instance.cleanup()
-    _image_service_instance = ImageService(model_key=new_model_key, iopaint_port=iopaint_port)
+    _image_service_instance = ImageService(model_key=new_model_key)
     return _image_service_instance
