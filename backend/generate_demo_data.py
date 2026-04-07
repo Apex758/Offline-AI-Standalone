@@ -388,11 +388,16 @@ def generate_academic_phases():
 
 
 def generate_metric_snapshots(academic_phases):
-    """Generate 2-3 metric snapshots per phase with realistic score progression."""
+    """Generate 2-3 metric snapshots per phase with realistic score progression.
+    Only generates snapshots for phases that have started (start <= today)."""
     snapshots = []
     phase_id_map = {p["phase_key"]: p["id"] for p in academic_phases}
+    today = date.today()
 
     for key, label, semester, order, start, end in PHASES:
+        # Skip phases that haven't started yet -- keeps data realistic
+        if start > today:
+            continue
         lo, hi = SCORE_PROGRESSION[key]
         weights = PHASE_WEIGHTS[key]
         phase_days = (end - start).days
@@ -407,6 +412,10 @@ def generate_metric_snapshots(academic_phases):
             else:
                 offset = int(phase_days * (i + 1) / (n_snaps + 1))
                 snap_date = start + timedelta(days=offset)
+
+            # Skip snapshots in the future
+            if snap_date > today:
+                continue
 
             # Composite score interpolates from lo to hi across snapshots
             progress = i / max(n_snaps - 1, 1)
@@ -450,12 +459,14 @@ def generate_metric_snapshots(academic_phases):
 
 
 def generate_phase_summaries(academic_phases, snapshots):
-    """Generate summaries for completed phases (all except summer_vacation)."""
+    """Generate summaries for completed phases (only past phases)."""
     summaries = []
     phase_id_map = {p["phase_key"]: p for p in academic_phases}
+    today = date.today()
 
     for key, label, semester, order, start, end in PHASES:
-        if key == "summer_vacation":
+        # Only summarize phases that have already ended
+        if end >= today or key == "summer_vacation":
             continue
         phase_snaps = [s for s in snapshots if s["phase"] == key]
         if not phase_snaps:
@@ -948,43 +959,104 @@ def generate_worksheet_grades(students, ws_refs):
     return grades
 
 
+def _extract_key_and_text(outcome, index):
+    """Replicate MilestoneDB._extract_key_and_text() so checklist keys match
+    what the backend produces during sync. This is critical for _merge_checklists()
+    to preserve checked state."""
+    import re
+    if isinstance(outcome, dict):
+        return outcome.get('id', str(index)), outcome.get('text', '').strip()
+    text = outcome.strip()
+    if not text:
+        return str(index), text
+    m = re.match(r'^(\d+\.\d+)\s+(.+)', text)
+    if m:
+        return m.group(1), m.group(2).strip()
+    m = re.match(r'^([KSV]\d*):\s+(.+)', text)
+    if m:
+        return m.group(1), m.group(2).strip()
+    m = re.match(r'^([\d]+-\w+-[KSV]-?\d+):?\s+(.+)', text)
+    if m:
+        return m.group(1), m.group(2).strip()
+    return str(index), text
+
+
 def generate_milestones(academic_phases):
-    """Generate curriculum milestones using REAL topic_ids, progressively completed."""
+    """Generate curriculum milestones using REAL curriculum data including specific outcomes.
+    Uses the actual CurriculumMatcher to get real SCOs so checklist keys match
+    what the backend produces during sync."""
     milestones = []
     teaching_phases = [(k, l, s, o, st, en) for k, l, s, o, st, en in PHASES if is_teaching_phase(k)]
-    # Build a lookup from phase_key to the academic_phase UUID for phase_id assignment
     phase_key_to_id = {p["phase_key"]: p["id"] for p in academic_phases}
+    today = date.today()
 
-    # Collect all topics for grades we teach
-    all_topics = []
-    for grade in GRADES:
-        topics = REAL_CURRICULUM_TOPICS.get(grade, [])
-        for topic_id, display_name, subject, strand in topics:
-            all_topics.append((topic_id, display_name, subject, strand, grade))
+    # Load real curriculum data for the teacher's grades
+    try:
+        from curriculum_matcher import CurriculumMatcher
+        cm = CurriculumMatcher()
+        all_pages = cm.all_pages()
+    except Exception as e:
+        print(f"  Warning: Could not load curriculum: {e}")
+        all_pages = []
 
-    # Shuffle then progressively complete through the year
-    # ~65% completed, ~15% in-progress, ~20% not started (realistic for mid-year)
-    random.shuffle(all_topics)
-    n_total = len(all_topics)
+    # Build topic list from ALL curriculum pages
+    # Teacher's grades get progressive completion; other grades get hidden
+    teacher_grades_db = {f"Grade {g}" for g in GRADES}
+    taught_topics = []
+    other_topics = []
+    for page in all_pages:
+        grade_num = page['grade'].replace('Grade ', '').replace('Kindergarten', 'K')
+        entry = {
+            "topic_id": page['id'],
+            "display_name": page.get('displayName', ''),
+            "subject": page.get('subject', ''),
+            "strand": page.get('strand', ''),
+            "grade": grade_num,
+            "route": page.get('route', ''),
+            "specific_outcomes": page.get('specificOutcomes', []),
+        }
+        if page.get('grade', '') in teacher_grades_db:
+            taught_topics.append(entry)
+        else:
+            other_topics.append(entry)
+
+    # Shuffle taught topics then progressively complete through the year
+    # ~65% completed, ~15% in-progress, ~20% not started
+    random.shuffle(taught_topics)
+    n_total = len(taught_topics)
     n_completed = int(n_total * 0.65)
     n_in_progress = int(n_total * 0.15)
 
-    for i, (topic_id, display_name, subject, strand, grade) in enumerate(all_topics):
-        # Spread completed milestones across teaching phases
+    # Only use teaching phases that have started (no future phases)
+    active_teaching_phases = [(k, l, s, o, st, en) for k, l, s, o, st, en in teaching_phases if st <= today]
+    if not active_teaching_phases:
+        active_teaching_phases = teaching_phases[:1]
+
+    # Process taught topics with progressive completion
+    all_topics = taught_topics  # these get status progression
+    for i, topic in enumerate(all_topics):
+        topic_id = topic["topic_id"]
+        display_name = topic["display_name"]
+        subject = topic["subject"]
+        strand = topic["strand"]
+        grade = topic["grade"]
+        outcomes = topic["specific_outcomes"]
+
         if i < n_completed:
             status = "completed"
-            phase_idx = min(int(i / n_completed * len(teaching_phases)), len(teaching_phases) - 1)
-            phase_key, _, _, _, phase_start, phase_end = teaching_phases[phase_idx]
-            completed_at = random_date_in_range(phase_start, phase_end)
+            phase_idx = min(int(i / n_completed * len(active_teaching_phases)), len(active_teaching_phases) - 1)
+            phase_key, _, _, _, phase_start, phase_end = active_teaching_phases[phase_idx]
+            # Clamp phase_end to today for current phase
+            effective_end = min(phase_end, today)
+            completed_at = random_date_in_range(phase_start, effective_end)
             completed_str = f"{completed_at.isoformat()} {random.randint(10,16)}:{random.randint(0,59):02d}:00"
             due_date = phase_end.isoformat()
             milestone_phase_id = phase_key_to_id.get(phase_key)
         elif i < n_completed + n_in_progress:
             status = "in-progress"
             completed_str = None
-            # In-progress items are in recent phases
-            phase_idx = min(len(teaching_phases) - 1, len(teaching_phases) - 3 + (i - n_completed))
-            phase_key, _, _, _, phase_start, phase_end = teaching_phases[phase_idx]
+            phase_idx = min(len(active_teaching_phases) - 1, max(0, len(active_teaching_phases) - 2 + (i - n_completed) % 2))
+            phase_key, _, _, _, phase_start, phase_end = active_teaching_phases[phase_idx]
             due_date = phase_end.isoformat()
             milestone_phase_id = phase_key_to_id.get(phase_key)
         else:
@@ -995,20 +1067,30 @@ def generate_milestones(academic_phases):
             due_date = None
             milestone_phase_id = None
 
-        # Build checklist with 3 sub-items
+        # Build checklist from REAL specific outcomes using the same key extraction
+        # as MilestoneDB._extract_key_and_text() so keys match during sync merge
         checklist = []
-        for ci in range(3):
+        for ci, outcome in enumerate(outcomes):
+            if isinstance(outcome, dict):
+                if not outcome.get('text', '').strip():
+                    continue
+            elif isinstance(outcome, str) and not outcome.strip():
+                continue
+            key, text = _extract_key_and_text(outcome, ci)
             if status == "completed":
                 checked = True
             elif status == "in-progress":
-                checked = ci < 2  # 2 of 3 checked
+                # Check roughly 60% of items for in-progress milestones
+                checked = ci < int(len(outcomes) * 0.6)
             else:
                 checked = False
+            effective_start = phase_start if status != "not_started" else YEAR_START
+            effective_end_for_date = min(phase_end, today) if status != "not_started" else YEAR_END
             checklist.append({
-                "key": str(ci),
-                "text": f"Outcome {ci + 1}: {display_name} part {ci + 1}",
+                "key": key,
+                "text": text,
                 "checked": checked,
-                "checked_at": iso(random_date_in_range(phase_start, phase_end)) if checked else None,
+                "checked_at": iso(random_date_in_range(effective_start, effective_end_for_date)) if checked else None,
             })
 
         milestones.append({
@@ -1019,17 +1101,50 @@ def generate_milestones(academic_phases):
             "grade": grade,
             "subject": subject,
             "strand": strand,
-            "route": "",
+            "route": topic.get("route", ""),
             "status": status,
             "notes": None,
             "due_date": due_date,
             "is_hidden": 0,
             "completed_at": completed_str,
             "created_at": f"{YEAR_START.isoformat()} 09:00:00",
-            "updated_at": f"{random_date_in_range(phase_start, phase_end).isoformat()} 09:00:00",
+            "updated_at": f"{random_date_in_range(phase_start if status != 'not_started' else YEAR_START, min(phase_end if status != 'not_started' else YEAR_END, today)).isoformat()} 09:00:00",
             "checklist_json": json.dumps(checklist),
             "phase_id": milestone_phase_id,
         })
+
+    # Add milestones for non-taught grades as hidden (excluded from stats)
+    for topic in other_topics:
+        outcomes = topic["specific_outcomes"]
+        checklist = []
+        for ci, outcome in enumerate(outcomes):
+            if isinstance(outcome, dict):
+                if not outcome.get('text', '').strip():
+                    continue
+            elif isinstance(outcome, str) and not outcome.strip():
+                continue
+            key, text = _extract_key_and_text(outcome, ci)
+            checklist.append({"key": key, "text": text, "checked": False, "checked_at": None})
+        milestones.append({
+            "id": f"{TEACHER_ID}_{topic['topic_id']}",
+            "teacher_id": TEACHER_ID,
+            "topic_id": topic["topic_id"],
+            "topic_title": topic["display_name"],
+            "grade": topic["grade"],
+            "subject": topic["subject"],
+            "strand": topic["strand"],
+            "route": topic.get("route", ""),
+            "status": "not_started",
+            "notes": None,
+            "due_date": None,
+            "is_hidden": 1,
+            "completed_at": None,
+            "created_at": f"{YEAR_START.isoformat()} 09:00:00",
+            "updated_at": f"{YEAR_START.isoformat()} 09:00:00",
+            "checklist_json": json.dumps(checklist),
+            "phase_id": None,
+        })
+
     return milestones
 
 

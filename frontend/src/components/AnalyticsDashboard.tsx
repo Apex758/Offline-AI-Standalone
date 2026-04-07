@@ -985,17 +985,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   </span>
                 )}
               </div>
-              <CurriculumProgressWidget
-                stats={filteredMilestoneStats}
-                upcomingMilestones={filteredUpcomingMilestones}
-                progressBreakdown={filteredProgressBreakdown}
-                view={curriculumView}
-                onViewChange={setCurriculumView}
-              />
+              {dashProgressScope === 'overall' && (
+                <CurriculumProgressWidget
+                  stats={filteredMilestoneStats}
+                  upcomingMilestones={filteredUpcomingMilestones}
+                  progressBreakdown={filteredProgressBreakdown}
+                  view={curriculumView}
+                  onViewChange={setCurriculumView}
+                />
+              )}
             </div>
 
             {/* Phase Progress Summary */}
-            {dashPhaseProgress.length > 0 && (
+            {dashProgressScope === 'phase' && dashPhaseProgress.length > 0 && (
               <div style={{
                 background: 'var(--dash-card)',
                 borderRadius: 12,
