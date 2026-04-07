@@ -959,7 +959,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               onTimeframeChange={setTimeframe}
               forcePaused={currentTutorialStep >= 5 && currentTutorialStep <= 7}
               tabColors={tabColors}
-              onViewInsights={() => onCreateTab?.('educator-insights')}
             />
 
             {/* Curriculum Progress */}

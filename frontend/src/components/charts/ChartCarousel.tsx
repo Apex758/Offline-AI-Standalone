@@ -121,7 +121,6 @@ interface ChartCarouselProps {
   onTimeframeChange: (timeframe: Timeframe) => void;
   forcePaused?: boolean;
   tabColors?: { [key: string]: string };
-  onViewInsights?: () => void;
 }
 
 const ChartCarousel: React.FC<ChartCarouselProps> = ({
@@ -131,7 +130,6 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   onTimeframeChange,
   forcePaused = false,
   tabColors = {},
-  onViewInsights,
 }) => {
   const views: Array<'trend' | 'educator-insights'> = ['trend', 'educator-insights'];
   const [currentView, setCurrentView] = useState<'trend' | 'educator-insights'>('trend');
@@ -228,23 +226,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
           }`}
         >
-          <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--dash-card-bg)' }}>
-            <div className="flex items-center justify-between px-4 pt-3 pb-1 flex-shrink-0">
-              <span className="text-sm font-bold" style={{ color: 'var(--dash-text)' }}>Educator Insights</span>
-              {onViewInsights && (
-                <button
-                  onClick={onViewInsights}
-                  className="text-xs font-medium px-3 py-1 rounded-lg transition-opacity hover:opacity-80"
-                  style={{ backgroundColor: 'var(--dash-primary)', color: 'var(--dash-primary-fg)' }}
-                >
-                  View Full Report
-                </button>
-              )}
-            </div>
-            <div className="flex-1 min-h-0">
-              <TeacherMetricsChart data={metricsHistory} height={460} compact />
-            </div>
-          </div>
+          <TeacherMetricsChart data={metricsHistory} height={460} />
         </div>
       </div>
 
