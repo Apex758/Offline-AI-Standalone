@@ -292,7 +292,8 @@
       "Bash(curl -s \"https://huggingface.co/Tongyi-MAI/Z-Image-Turbo/raw/main/transformer/config.json\")",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
       "Bash(curl -s \"https://huggingface.co/api/models/unsloth/Z-Image-Turbo-GGUF\")",
-      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d.get\\(k\\) for k in ['modelId','tags','cardData','siblings']}, indent=2\\)\\)\")"
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d.get\\(k\\) for k in ['modelId','tags','cardData','siblings']}, indent=2\\)\\)\")",
+      "Bash(curl -s \"https://huggingface.co/unsloth/Z-Image-Turbo-GGUF/raw/main/README.md\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
