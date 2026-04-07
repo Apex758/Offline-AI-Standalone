@@ -27,22 +27,7 @@ try:
 except Exception:
     pass
 
-def _optimal_thread_count() -> int:
-    """Return a sensible thread count for llama-cpp inference.
-
-    Uses physical core count (not logical/hyperthreaded) when possible,
-    capped to leave 1 core free for the OS/event-loop.
-    """
-    try:
-        physical = os.cpu_count()  # logical cores
-        # On most consumer CPUs, physical ~ logical/2 (hyperthreading).
-        # llama-cpp benefits more from physical cores than HT threads.
-        import psutil
-        physical = psutil.cpu_count(logical=False) or physical
-    except Exception:
-        physical = os.cpu_count() or 4
-    # Use all physical cores minus 1, minimum 2
-    return max(2, (physical or 4) - 1)
+from cpu_info import optimal_thread_count as _optimal_thread_count
 
 logger = logging.getLogger(__name__)
 
@@ -1015,11 +1000,11 @@ def run_llama_inference(prompt: str, settings: dict) -> dict:
                 model_path=model_path,
                 n_ctx=settings.get("n_ctx", 4096),
                 verbose=False,
-                n_threads=4,
+                n_threads=_optimal_thread_count(),
                 n_batch=gpu["n_batch"],
                 n_gpu_layers=gpu["n_gpu_layers"],
             )
-        
+
         prompt_text = settings.get("prompt_template") or prompt
         stop = settings.get("stop", ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"])
         

@@ -95,11 +95,12 @@ def _load_model():
 
         chat_handler = Llava16ChatHandler(clip_model_path=mmproj_path, verbose=False)
 
+        from cpu_info import optimal_thread_count
         _ocr_model = Llama(
             model_path=model_path,
             chat_handler=chat_handler,
             n_ctx=4096,
-            n_threads=4,
+            n_threads=optimal_thread_count(),
             verbose=False,
         )
 

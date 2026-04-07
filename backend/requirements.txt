@@ -72,3 +72,16 @@ soupsieve==2.8
 # GPU is auto-detected at runtime via nvidia-smi. The build scripts
 # (manual-package.ps1, package-backend.py) also auto-detect and install
 # the correct wheel when packaging.
+
+# ========================================
+# OPTIONAL: Intel Extension for PyTorch (IPEX)
+# ========================================
+# IPEX is sunset after v2.8 (supports up to torch 2.8). Intel optimizations
+# are being merged upstream into PyTorch itself from 2.9+.
+#
+# For torch >= 2.9: No IPEX needed. cpu_info.py uses torch.compile() instead.
+# For torch <= 2.8 on Intel CPUs:
+#   pip install intel_extension_for_pytorch==<matching_version> --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/
+#
+# The app auto-detects IPEX at startup (see cpu_info.py) and applies it
+# if available. Otherwise falls back to torch.compile(). No action needed.

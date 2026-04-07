@@ -293,7 +293,21 @@
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
       "Bash(curl -s \"https://huggingface.co/api/models/unsloth/Z-Image-Turbo-GGUF\")",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d.get\\(k\\) for k in ['modelId','tags','cardData','siblings']}, indent=2\\)\\)\")",
-      "Bash(curl -s \"https://huggingface.co/unsloth/Z-Image-Turbo-GGUF/raw/main/README.md\")"
+      "Bash(curl -s \"https://huggingface.co/unsloth/Z-Image-Turbo-GGUF/raw/main/README.md\")",
+      "Bash(curl -s \"https://huggingface.co/api/models/jayn7/Z-Image-Turbo-GGUF\")",
+      "Bash(curl -s \"https://huggingface.co/jayn7/Z-Image-Turbo-GGUF/raw/main/README.md\")",
+      "Bash(curl -s \"https://huggingface.co/Tongyi-MAI/Z-Image-Turbo/raw/main/model_index.json\")",
+      "Bash(curl -s \"https://huggingface.co/Tongyi-MAI/Z-Image-Turbo/raw/main/vae/config.json\")",
+      "Bash(python -c \"import sys,json; files=[f['name'] for f in json.load\\(sys.stdin\\)]; print\\('\\\\n'.join\\(files\\)\\)\" curl -s \"https://raw.githubusercontent.com/leejet/stable-diffusion.cpp/master/README.md\")",
+      "Bash(python -c \" import sys,json d=json.load\\(sys.stdin\\) siblings = d.get\\('siblings', []\\) for s in siblings: name = s.get\\('rfilename',''\\) size = s.get\\('size', 0\\) if '.gguf' in name and size: print\\(f'{name}: {size/1e9:.2f} GB'\\) \")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/leejet/stable-diffusion.cpp/master/docs/z_image.md\")",
+      "WebFetch(domain:sandner.art)",
+      "WebFetch(domain:civitai.com)",
+      "Bash(./venv/Scripts/python -m pip index versions intel-extension-for-pytorch)",
+      "Bash(./venv/Scripts/python -c \"import sys; print\\(sys.version\\)\")",
+      "Bash(./venv/Scripts/python -m pip install intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ --dry-run)",
+      "Bash(./venv/Scripts/python -m pip install intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ --dry-run -v)",
+      "Bash(curl -L -o \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\models\\\\image_generation\\\\sd35-medium-gguf\\\\taesd3_decoder.safetensors\" \"https://huggingface.co/madebyollin/taesd3/resolve/main/diffusion_pytorch_model.safetensors\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

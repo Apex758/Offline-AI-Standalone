@@ -954,14 +954,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         diffusionUnloadTimer.current = null;
       }
       // Dedup: skip if already preloading or already online
+      // Don't reset the flag on fetch completion — only reset when studioStatus
+      // goes back to null (diffusion deactivated) to prevent re-triggering on
+      // every health-poll cycle while the model is still loading.
       if (!diffusionPreloading.current && studioStatus !== 'online') {
         diffusionPreloading.current = true;
         fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' })
-          .catch(() => {})
-          .finally(() => { diffusionPreloading.current = false; });
+          .catch(() => {});
+      }
+      // Reset flag once loading completes so future tab switches can re-trigger
+      if (studioStatus === 'online') {
+        diffusionPreloading.current = false;
       }
       return;
     }
+
+    // Not on an image tab — reset preload flag so it can fire again next time
+    diffusionPreloading.current = false;
 
     // No image tabs open at all -- start 5-min unload timer
     if (!hasImageTab && !diffusionUnloadTimer.current) {
@@ -3331,18 +3340,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 function AchievementUnlockModalBridge() {
   const { pendingUnlocks, dismissUnlock } = useAchievementContext();
   const [trophySrc, setTrophySrc] = React.useState<string | undefined>(undefined);
+  const [trophyResolved, setTrophyResolved] = React.useState(false);
 
   const current = pendingUnlocks.length > 0 ? pendingUnlocks[0] : null;
 
   React.useEffect(() => {
-    if (!current) { setTrophySrc(undefined); return; }
+    if (!current) { setTrophySrc(undefined); setTrophyResolved(false); return; }
+    setTrophySrc(undefined);
+    setTrophyResolved(false);
     const tType = getTrophyType(current.achievement_id);
-    if (!tType) { setTrophySrc(undefined); return; }
+    if (!tType) { setTrophyResolved(true); return; }
     getTrophyImageForTier(tType, (current.tier ?? 'gold') as TrophyTier)
-      .then(src => setTrophySrc(src));
+      .then(src => { setTrophySrc(src); setTrophyResolved(true); })
+      .catch(() => setTrophyResolved(true));
   }, [current?.achievement_id, current?.tier]);
 
-  if (!current) return null;
+  if (!current || !trophyResolved) return null;
 
   if (trophySrc) {
     return (

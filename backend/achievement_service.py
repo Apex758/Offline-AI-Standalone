@@ -902,7 +902,7 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
                 newly_earned.append({
                     "achievement_id": defn["id"],
                     "earned_at": now,
-                    **{k: defn[k] for k in ("name", "description", "category", "icon_name", "rarity", "points")},
+                    **{k: defn[k] for k in ("name", "description", "category", "icon_name", "rarity", "points", "tier")},
                 })
                 already_earned[defn["id"]] = now
 
@@ -948,7 +948,7 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
                     newly_earned.append({
                         "achievement_id": defn["id"],
                         "earned_at": now,
-                        **{k: defn[k] for k in ("name", "description", "category", "icon_name", "rarity", "points")},
+                        **{k: defn[k] for k in ("name", "description", "category", "icon_name", "rarity", "points", "tier")},
                     })
                     already_earned[defn["id"]] = now
         conn.commit()

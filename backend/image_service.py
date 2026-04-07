@@ -275,8 +275,16 @@ def _load_flux_schnell_ov(model_path: Path):
         "INFERENCE_PRECISION_HINT": precision,
         "INFERENCE_NUM_THREADS": str(physical_cores),
         "ENABLE_HYPER_THREADING": "NO",
-        "AFFINITY": "CORE",
     }
+    # AFFINITY was removed in OpenVINO 2024.x — only set if supported
+    try:
+        import openvino as ov
+        core = ov.Core()
+        supported = core.get_property("CPU", "SUPPORTED_PROPERTIES")
+        if "AFFINITY" in supported:
+            ov_config["AFFINITY"] = "CORE"
+    except Exception:
+        pass
     logger.info(
         f"OpenVINO Flux config: threads={physical_cores}, precision={precision}, "
         f"bf16={cpu_features.get('bf16')}, cache={cache_dir}"
@@ -312,16 +320,20 @@ def _load_sdxl_turbo_gguf(model_path: Path, gguf_file: str = None):
     logger.info(f"Loading SDXL-Turbo GGUF: {gguf_file}, threads={n_threads}")
 
     # vae_decode_only=False to retain VAE encoder for img2img support
+    import inspect
+    sd_params = inspect.signature(StableDiffusion.__init__).parameters
+
     kwargs = dict(
         model_path=model_file,
         n_threads=n_threads,
         vae_decode_only=False,
     )
-    import inspect
-    sd_params = inspect.signature(StableDiffusion.__init__).parameters
     if "flash_attn" in sd_params:
         kwargs["flash_attn"] = True
         logger.info("Enabled flash_attn for SDXL GGUF")
+    if "vae_conv_direct" in sd_params:
+        kwargs["vae_conv_direct"] = True
+        logger.info("Enabled vae_conv_direct for SDXL GGUF")
 
     sd = StableDiffusion(**kwargs)
     return sd
@@ -355,21 +367,47 @@ def _load_sd3_gguf(model_path: Path, gguf_file: str = None):
     sd_params = inspect.signature(StableDiffusion.__init__).parameters
 
     kwargs = dict(
-        model_path=model_file,
         clip_l_path=clip_l_path,
         t5xxl_path=t5xxl_path,
         vae_decode_only=True,
         n_threads=n_threads,
     )
+    # SD3.5 uses flow matching — must be set explicitly since sd.cpp cannot
+    # auto-detect the prediction type from a quantised GGUF file.
+    if "diffusion_model_path" in sd_params:
+        # Prefer diffusion_model_path for standalone diffusion GGUFs
+        kwargs["diffusion_model_path"] = model_file
+    else:
+        kwargs["model_path"] = model_file
+    if "prediction" in sd_params:
+        kwargs["prediction"] = "flow"
+        logger.info("Set prediction=flow for SD3.5 (flow matching)")
     # clip_g is required for SD3.5 — only pass if the binding supports it
     if "clip_g_path" in sd_params:
         kwargs["clip_g_path"] = clip_g_path
-    # VAE is optional — sd.cpp can extract it from the main model GGUF
+    # VAE is required for GGUF diffusion-only models (VAE tensors are not in the GGUF).
+    # Support full VAE (sd3_vae.safetensors) or Tiny AutoEncoder (taesd3_decoder.safetensors).
     vae_path = model_path / "sd3_vae.safetensors"
+    taesd_path = model_path / "taesd3_decoder.safetensors"
     if vae_path.exists() and "vae_path" in sd_params:
         kwargs["vae_path"] = str(vae_path)
+        logger.info(f"Using separate VAE: {vae_path}")
+    elif taesd_path.exists() and "taesd_path" in sd_params:
+        kwargs["taesd_path"] = str(taesd_path)
+        logger.info(f"Using TAESD3 (Tiny AutoEncoder): {taesd_path}")
+    elif "diffusion_model_path" in kwargs:
+        # GGUF diffusion-only file won't have VAE tensors embedded
+        raise FileNotFoundError(
+            "SD3.5 requires a VAE decoder but none was found. "
+            "Place one of the following in " + str(model_path) + ": "
+            "sd3_vae.safetensors (full VAE, ~300MB) or "
+            "taesd3_decoder.safetensors (Tiny AutoEncoder, ~5MB)"
+        )
     if "flash_attn" in sd_params:
         kwargs["flash_attn"] = True
+    if "vae_conv_direct" in sd_params:
+        kwargs["vae_conv_direct"] = True
+        logger.info("Enabled vae_conv_direct for SD3.5 GGUF")
 
     return StableDiffusion(**kwargs)
 
@@ -398,6 +436,9 @@ def _load_wan_gguf(model_path: Path, gguf_file: str = None):
     )
     if "flash_attn" in sd_params:
         kwargs["flash_attn"] = True
+    if "vae_conv_direct" in sd_params:
+        kwargs["vae_conv_direct"] = True
+        logger.info("Enabled vae_conv_direct for Wan GGUF")
 
     return StableDiffusion(**kwargs)
 
@@ -511,6 +552,9 @@ class ImageService:
                 str(self.lama_model_path), map_location=self.lama_device
             )
             self.lama_model.eval()
+            # Apply IPEX optimization on Intel CPUs (no-op otherwise)
+            from cpu_info import ipex_optimize
+            self.lama_model = ipex_optimize(self.lama_model)
             logger.info("LaMa model loaded successfully")
             return True
         except Exception as e:
@@ -900,7 +944,7 @@ class ImageService:
                 if init_image is not None:
                     logger.warning(f"{backend} does not support img2img — init_image ignored")
                 neg = negative_prompt if (negative_prompt and self.model_info.get("supports_negative_prompt")) else ""
-                output = self.pipeline.generate_image(
+                gen_kwargs = dict(
                     prompt=prompt,
                     negative_prompt=neg,
                     width=width,
@@ -909,6 +953,13 @@ class ImageService:
                     sample_steps=num_inference_steps,
                     seed=seed if seed is not None else -1,
                 )
+                # SD3.5 flow models use a separate 'guidance' param (distilled guidance scale)
+                if backend == "sd_cpp_sd3":
+                    import inspect as _insp
+                    gen_params = _insp.signature(self.pipeline.generate_image).parameters
+                    if "guidance" in gen_params:
+                        gen_kwargs["guidance"] = guidance_scale
+                output = self.pipeline.generate_image(**gen_kwargs)
                 class _SDCppResultSD3:
                     def __init__(self, images):
                         self.images = images

@@ -193,6 +193,9 @@ class ESRGANService:
                     state = weights
                 net.load_state_dict(state, strict=True)
                 net.eval()
+                # Apply IPEX optimization on Intel CPUs (no-op otherwise)
+                from cpu_info import ipex_optimize
+                net = ipex_optimize(net, dtype=torch.float32)
                 self._models[scale] = net
                 logger.info(f"ESRGAN x{scale} loaded OK")
                 return True
@@ -275,7 +278,7 @@ class ESRGANService:
 
         logger.info(f"ESRGAN tiling: {tiles_y}x{tiles_x} tiles ({total} total)")
 
-        with torch.no_grad():
+        with torch.inference_mode():
             for ty in range(tiles_y):
                 for tx in range(tiles_x):
                     idx = ty * tiles_x + tx

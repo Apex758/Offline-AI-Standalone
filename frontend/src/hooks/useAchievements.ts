@@ -111,7 +111,7 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
     debounceRef.current = setTimeout(() => {
       achievementApi.check(teacherId)
         .then(applyCheckResult)
-        .catch(() => {});
+        .catch(e => console.error('[Achievements] triggerCheck failed:', e));
     }, 300);
   }, [teacherId, applyCheckResult]);
 

@@ -323,8 +323,7 @@ async def lifespan(app):
     if _scheduler and _scheduler.running:
         _scheduler.shutdown(wait=False)
 
-from fastapi.responses import ORJSONResponse
-app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
+app = FastAPI(lifespan=lifespan)
 
 # CORS: restrict to local Electron app origins only.
 # Photo Transfer (which needs LAN access) uses a separate server.

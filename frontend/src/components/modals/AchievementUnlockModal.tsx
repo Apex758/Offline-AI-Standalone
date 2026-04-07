@@ -183,11 +183,6 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
       const t1 = requestAnimationFrame(() => {
         requestAnimationFrame(() => setPhase('visible'));
       });
-      // Auto-dismiss for unlock notifications only
-      if (!viewOnly) {
-        const timer = setTimeout(dismiss, 10000);
-        return () => { cancelAnimationFrame(t1); clearTimeout(timer); };
-      }
       return () => cancelAnimationFrame(t1);
     } else {
       setPhase('idle');
