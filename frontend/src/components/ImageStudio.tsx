@@ -684,8 +684,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         };
         setModelCapabilities(caps);
         setActiveModelName(data.modelName || '');
-        // Lock SDXL Turbo to 2 inference steps
+        // Reset steps to model-appropriate default when switching models
         if ((data.modelName || '').startsWith('sdxl-turbo')) {
+          setNumInferenceSteps(1);
+        } else {
           setNumInferenceSteps(2);
         }
         // Clear reference images if model doesn't support img2img
@@ -2140,7 +2142,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       {[
                         {
                           id: 'cartoon_3d',
-                          label: '3D Cartoon',
+                          label: 'Cartoon',
                           icon: (
                             <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none">
                               <circle cx="32" cy="28" r="18" fill="#7DD3FC" stroke="#0284C7" strokeWidth="2"/>
@@ -2152,11 +2154,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                               <path d="M26 35 Q32 40 38 35" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" fill="none"/>
                             </svg>
                           ),
-                          hint: 'Colorful & friendly, Pixar-like 3D look',
+                          hint: 'Vibrant cartoon with bold colors and smooth shading',
                         },
                         {
                           id: 'line_art_bw',
-                          label: 'Line Art',
+                          label: 'Sketch',
                           icon: (
                             <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none">
                               <rect x="8" y="8" width="48" height="48" rx="4" fill="white" stroke="#374151" strokeWidth="2"/>
@@ -2166,7 +2168,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                               <line x1="16" y1="44" x2="48" y2="44" stroke="#111827" strokeWidth="2" strokeLinecap="round"/>
                             </svg>
                           ),
-                          hint: 'Clean B&W lines, coloring-book style',
+                          hint: 'Pencil sketch with fine linework and crosshatching',
                         },
                         {
                           id: 'illustrated_painting',
@@ -2181,7 +2183,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                               <path d="M10 52 Q30 44 54 52" stroke="#92400E" strokeWidth="2" strokeLinecap="round" fill="none"/>
                             </svg>
                           ),
-                          hint: 'Textured brushstrokes, illustrated look',
+                          hint: 'Rich oil painting with visible brushstrokes',
                         },
                         {
                           id: 'realistic',
@@ -2202,7 +2204,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                               <ellipse cx="32" cy="48" rx="16" ry="5" fill="#334155" stroke="#475569" strokeWidth="1"/>
                             </svg>
                           ),
-                          hint: 'Photorealistic, high-detail rendering',
+                          hint: 'Professional photo with natural lighting',
                         },
                       ].map((style) => {
                         const active = selectedStyle === style.id;
@@ -2340,18 +2342,22 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </select>
                   </div>
 
-                  {/* Quality Preset — only shown for non-Turbo models (hidden until model detected) */}
-                  {activeModelName && !activeModelName.startsWith('sdxl-turbo') && (
+                  {/* Quality Preset */}
+                  {activeModelName && (
                   <div>
                     <label className="block text-sm font-medium text-theme-label mb-2">Quality</label>
                     <NeuroSegment
-                      options={[
+                      options={activeModelName.startsWith('sdxl-turbo') ? [
+                        { value: '1',  label: 'Fast' },
+                        { value: '2',  label: 'Balanced' },
+                        { value: '3',  label: 'Quality' },
+                      ] : [
                         { value: '2',  label: 'Fast' },
                         { value: '8',  label: 'Balanced' },
                         { value: '16', label: 'Quality' },
                       ]}
                       value={String(numInferenceSteps)}
-                      onChange={(v) => setNumInferenceSteps(Number(v) as 2 | 8 | 16)}
+                      onChange={(v) => setNumInferenceSteps(Number(v))}
                       size="sm"
                       shape="rect"
                       className="w-full"
@@ -3542,8 +3548,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                 <label className="block text-sm font-medium text-theme-label mb-2">Visual Style</label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { id: 'cartoon_3d', label: '3D Cartoon' },
-                    { id: 'line_art_bw', label: 'Line Art' },
+                    { id: 'cartoon_3d', label: 'Cartoon' },
+                    { id: 'line_art_bw', label: 'Sketch' },
                     { id: 'illustrated_painting', label: 'Painting' },
                     { id: 'realistic', label: 'Realistic' },
                   ].map((style) => (

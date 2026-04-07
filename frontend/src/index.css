@@ -87,9 +87,11 @@
   animation: validationPulse 1.5s ease-in-out 2;
 }
 
-/* Global Inter font */
+/* Global Inter font + prevent outer window scroll */
 html, body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Normalize form input font-size to match surrounding text (text-sm = 0.875rem) */

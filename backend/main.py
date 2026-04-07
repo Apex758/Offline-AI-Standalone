@@ -9416,13 +9416,23 @@ async def export_data(categories: str = ""):
     if "achievements" in cats:
         try:
             from routes.achievements import achievement_service
+            from achievement_service import _get_conn as _get_ach_conn
             teacher_id = "default"  # Will be expanded with teacher-specific export
             earned = achievement_service.get_earned_achievements(teacher_id)
-            # Extract just the all_earned list for portability
-            result["achievements"] = earned.get("all_earned", []) if isinstance(earned, dict) else []
+            all_earned = earned.get("all_earned", []) if isinstance(earned, dict) else []
+            # Also export activity log for streak/active-day data
+            ach_conn = _get_ach_conn()
+            try:
+                activity_log = [dict(r) for r in ach_conn.execute(
+                    'SELECT teacher_id, activity_date FROM achievement_activity_log WHERE teacher_id = ?',
+                    (teacher_id,)
+                ).fetchall()]
+            finally:
+                ach_conn.close()
+            result["achievements"] = {"all_earned": all_earned, "activity_log": activity_log}
         except Exception as e:
             logging.warning(f"Failed to export achievements: {e}")
-            result["achievements"] = []
+            result["achievements"] = {"all_earned": [], "activity_log": []}
 
     if "milestones" in cats:
         try:
@@ -9475,6 +9485,38 @@ async def export_data(categories: str = ""):
         except Exception as e:
             logging.warning(f"Failed to export calendar: {e}")
             result["calendar"] = {"reminders": []}
+
+    if "teacher_metrics" in cats:
+        try:
+            import teacher_metrics_service
+            import school_year_service
+            # Snapshots from teacher.db
+            tms_conn = sqlite3.connect(teacher_metrics_service._get_db_path())
+            tms_conn.row_factory = sqlite3.Row
+            try:
+                snapshots = [dict(r) for r in tms_conn.execute('SELECT * FROM teacher_metric_snapshots').fetchall()]
+            finally:
+                tms_conn.close()
+            # School year config + phases from students.db
+            sy_conn = sqlite3.connect(school_year_service._get_db_path())
+            sy_conn.row_factory = sqlite3.Row
+            try:
+                configs = [dict(r) for r in sy_conn.execute('SELECT * FROM school_year_config').fetchall()]
+                phases = [dict(r) for r in sy_conn.execute('SELECT * FROM academic_phases').fetchall()]
+                summaries = [dict(r) for r in sy_conn.execute('SELECT * FROM academic_phase_summaries').fetchall()]
+                events = [dict(r) for r in sy_conn.execute('SELECT * FROM school_year_events').fetchall()]
+            finally:
+                sy_conn.close()
+            result["teacher_metrics"] = {
+                "snapshots": snapshots,
+                "school_year_config": configs,
+                "academic_phases": phases,
+                "academic_phase_summaries": summaries,
+                "school_year_events": events,
+            }
+        except Exception as e:
+            logging.warning(f"Failed to export teacher_metrics: {e}")
+            result["teacher_metrics"] = {"snapshots": [], "school_year_config": [], "academic_phases": [], "academic_phase_summaries": [], "school_year_events": []}
 
     return {
         "exportDate": datetime.now().isoformat(),
@@ -9557,50 +9599,102 @@ async def import_data(payload: dict):
             except Exception as e:
                 errors.append(f"{cat_key}: {e}")
 
-    # Import achievements
+    # Import achievements (earned + activity log for streaks)
     if "achievements" in cats and "achievements" in data:
         try:
             from achievement_service import _get_conn
-            teacher_id = "default"  # Will be expanded with teacher-specific import
             count = 0
-            for achievement in data["achievements"]:
-                try:
-                    conn = _get_conn()
-                    conn.execute(
-                        "INSERT OR IGNORE INTO earned_achievements (teacher_id, achievement_id, earned_at) VALUES (?, ?, ?)",
-                        (teacher_id, achievement.get("achievement_id"), achievement.get("earned_at"))
-                    )
-                    conn.commit()
-                    conn.close()
-                    count += 1
-                except Exception:
-                    pass  # skip duplicates
+            ach_data = data["achievements"]
+            # Handle both formats: list (old) or dict with all_earned + activity_log (new)
+            if isinstance(ach_data, dict):
+                earned_list = ach_data.get("all_earned", [])
+                activity_log = ach_data.get("activity_log", [])
+            else:
+                earned_list = ach_data
+                activity_log = []
+
+            conn = _get_conn()
+            try:
+                for achievement in earned_list:
+                    try:
+                        teacher_id = achievement.get("teacher_id", "default")
+                        conn.execute(
+                            "INSERT OR IGNORE INTO earned_achievements (teacher_id, achievement_id, earned_at) VALUES (?, ?, ?)",
+                            (teacher_id, achievement.get("achievement_id"), achievement.get("earned_at"))
+                        )
+                        count += 1
+                    except Exception:
+                        pass
+                for entry in activity_log:
+                    try:
+                        teacher_id = entry.get("teacher_id", "default")
+                        conn.execute(
+                            "INSERT OR IGNORE INTO achievement_activity_log (teacher_id, activity_date) VALUES (?, ?)",
+                            (teacher_id, entry.get("activity_date"))
+                        )
+                    except Exception:
+                        pass
+                conn.commit()
+            finally:
+                conn.close()
             imported["achievements"] = count
         except Exception as e:
             errors.append(f"achievements: {e}")
 
-    # Import milestones
+    # Import milestones — initialize from curriculum first, then UPDATE statuses
     if "milestones" in cats and "milestones" in data:
         try:
             from routes.milestones import get_milestone_db
-            teacher_id = "default"  # Will be expanded with teacher-specific import
             db = get_milestone_db()
+            # Auto-initialize milestones from curriculum if they don't exist yet
+            teacher_ids_seen = set()
+            for m in data["milestones"]:
+                tid = m.get("teacher_id", "default_teacher")
+                if tid not in teacher_ids_seen:
+                    teacher_ids_seen.add(tid)
+                    try:
+                        from curriculum_matcher import CurriculumMatcher
+                        matcher = CurriculumMatcher()
+                        pages = matcher.all_pages()
+                        db.generate_milestones_from_curriculum(tid, pages)
+                    except Exception:
+                        pass
+            conn = db.get_connection()
             count = 0
-            for milestone in data["milestones"]:
-                try:
-                    db.create_milestone(
-                        teacher_id=teacher_id,
-                        topic_id=milestone.get("topic_id"),
-                        topic_title=milestone.get("topic_title", ""),
-                        grade=milestone.get("grade", ""),
-                        subject=milestone.get("subject", ""),
-                        strand=milestone.get("strand", ""),
-                        route=milestone.get("route", ""),
-                        status=milestone.get("status", "not_started")
-                    )
-                    count += 1
-                except Exception:
-                    pass  # skip duplicates
+            try:
+                for milestone in data["milestones"]:
+                    mid = milestone.get("id", "")
+                    topic_id = milestone.get("topic_id", "")
+                    # Try to update existing milestone status first (from auto-initialized curriculum)
+                    existing = conn.execute('SELECT id FROM milestones WHERE id = ?', (mid,)).fetchone()
+                    if existing:
+                        # Update status, completed_at, due_date, checklist, notes on existing record
+                        conn.execute('''UPDATE milestones SET status = ?, completed_at = ?,
+                            due_date = ?, checklist_json = ?, notes = ?, is_hidden = ?,
+                            updated_at = CURRENT_TIMESTAMP
+                            WHERE id = ?''',
+                            (milestone.get("status", "not_started"),
+                             milestone.get("completed_at"),
+                             milestone.get("due_date"),
+                             milestone.get("checklist_json", "[]"),
+                             milestone.get("notes"),
+                             milestone.get("is_hidden", 0),
+                             mid))
+                        count += 1
+                    else:
+                        # Insert new milestone if it doesn't exist
+                        cols = list(milestone.keys())
+                        vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in milestone.values()]
+                        placeholders = ','.join(['?' for _ in cols])
+                        col_names = ','.join(cols)
+                        try:
+                            conn.execute(f'INSERT OR IGNORE INTO milestones ({col_names}) VALUES ({placeholders})', vals)
+                            count += 1
+                        except Exception:
+                            pass
+                conn.commit()
+            finally:
+                conn.close()
             imported["milestones"] = count
         except Exception as e:
             errors.append(f"milestones: {e}")
@@ -9690,6 +9784,86 @@ async def import_data(payload: dict):
             imported["calendar"] = count
         except Exception as e:
             errors.append(f"calendar: {e}")
+
+    if "teacher_metrics" in cats and "teacher_metrics" in data:
+        try:
+            import teacher_metrics_service
+            import school_year_service
+            # Ensure tables exist before inserting
+            teacher_metrics_service._init_db()
+            school_year_service.init_tables()
+            tm_data = data["teacher_metrics"]
+            count = 0
+
+            # Import snapshots into teacher.db
+            tms_conn = sqlite3.connect(teacher_metrics_service._get_db_path())
+            tms_conn.row_factory = sqlite3.Row
+            try:
+                for snap in tm_data.get("snapshots", []):
+                    cols = list(snap.keys())
+                    vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in snap.values()]
+                    placeholders = ','.join(['?' for _ in cols])
+                    col_names = ','.join(cols)
+                    try:
+                        tms_conn.execute(f'INSERT OR IGNORE INTO teacher_metric_snapshots ({col_names}) VALUES ({placeholders})', vals)
+                        count += 1
+                    except Exception:
+                        pass
+                tms_conn.commit()
+            finally:
+                tms_conn.close()
+
+            # Import school year config + phases into students.db
+            sy_conn = sqlite3.connect(school_year_service._get_db_path())
+            sy_conn.row_factory = sqlite3.Row
+            try:
+                for config in tm_data.get("school_year_config", []):
+                    cols = list(config.keys())
+                    vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in config.values()]
+                    placeholders = ','.join(['?' for _ in cols])
+                    col_names = ','.join(cols)
+                    try:
+                        sy_conn.execute(f'INSERT OR IGNORE INTO school_year_config ({col_names}) VALUES ({placeholders})', vals)
+                    except Exception:
+                        pass
+
+                for phase in tm_data.get("academic_phases", []):
+                    cols = list(phase.keys())
+                    vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in phase.values()]
+                    placeholders = ','.join(['?' for _ in cols])
+                    col_names = ','.join(cols)
+                    try:
+                        sy_conn.execute(f'INSERT OR IGNORE INTO academic_phases ({col_names}) VALUES ({placeholders})', vals)
+                    except Exception:
+                        pass
+
+                for summary in tm_data.get("academic_phase_summaries", []):
+                    cols = list(summary.keys())
+                    vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in summary.values()]
+                    placeholders = ','.join(['?' for _ in cols])
+                    col_names = ','.join(cols)
+                    try:
+                        sy_conn.execute(f'INSERT OR IGNORE INTO academic_phase_summaries ({col_names}) VALUES ({placeholders})', vals)
+                    except Exception:
+                        pass
+
+                for event in tm_data.get("school_year_events", []):
+                    cols = list(event.keys())
+                    vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in event.values()]
+                    placeholders = ','.join(['?' for _ in cols])
+                    col_names = ','.join(cols)
+                    try:
+                        sy_conn.execute(f'INSERT OR IGNORE INTO school_year_events ({col_names}) VALUES ({placeholders})', vals)
+                    except Exception:
+                        pass
+
+                sy_conn.commit()
+            finally:
+                sy_conn.close()
+
+            imported["teacher_metrics"] = count
+        except Exception as e:
+            errors.append(f"teacher_metrics: {e}")
 
     return {
         "success": len(errors) == 0,
@@ -9785,6 +9959,66 @@ async def factory_reset():
             deleted.append(str(db_path))
     except Exception as e:
         errors.append(f"Failed to delete students.db: {e}")
+
+    # Close and delete teacher.db (metric snapshots, consultant conversations)
+    try:
+        import teacher_metrics_service as _tms
+        db_path = Path(_tms._get_db_path())
+        if db_path.exists():
+            os.remove(db_path)
+            deleted.append(str(db_path))
+    except Exception as e:
+        errors.append(f"Failed to delete teacher.db: {e}")
+
+    # Close and delete achievements.db
+    try:
+        db_path = data_dir / "achievements.db"
+        if db_path.exists():
+            os.remove(db_path)
+            deleted.append(str(db_path))
+    except Exception as e:
+        errors.append(f"Failed to delete achievements.db: {e}")
+
+    # Delete insights JSON files
+    for fname in ["insights_reports.json", "insights_schedule.json"]:
+        fpath = data_dir / fname
+        if fpath.exists():
+            try:
+                os.remove(fpath)
+                deleted.append(str(fpath))
+            except Exception as e:
+                errors.append(f"Failed to delete {fname}: {e}")
+
+    # Re-initialize all databases so the backend can keep running with empty tables
+    try:
+        student_service.init_db()
+    except Exception:
+        pass
+    try:
+        import school_year_service
+        school_year_service.init_tables()
+    except Exception:
+        pass
+    try:
+        import teacher_metrics_service
+        teacher_metrics_service._init_db()
+    except Exception:
+        pass
+    try:
+        from achievement_service import init_db as _ach_init
+        _ach_init()
+    except Exception:
+        pass
+    try:
+        from routes.milestones import get_milestone_db
+        get_milestone_db()  # constructor calls _init_db
+    except Exception:
+        pass
+    try:
+        _cm._instance = None  # force re-init on next use
+        get_chat_memory()
+    except Exception:
+        pass
 
     logger.info(f"Factory reset completed. Deleted: {deleted}. Errors: {errors}")
     return {

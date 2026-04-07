@@ -448,6 +448,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     { key: 'storybooks', label: t('settingsPage.dangerZone.categories.storybooks') },
     { key: 'sticky_notes', label: t('settingsPage.dangerZone.categories.stickyNotes') },
     { key: 'lesson_drafts', label: t('settingsPage.dangerZone.categories.lessonDrafts') },
+    { key: 'teacher_metrics', label: 'Teacher Metrics & School Year' },
     { key: 'settings', label: t('settingsPage.dangerZone.categories.appSettings') },
   ] as const;
   const [exportSelected, setExportSelected] = useState<Set<string>>(new Set(DATA_CATEGORIES.map(c => c.key)));

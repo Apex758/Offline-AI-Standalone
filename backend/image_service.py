@@ -135,17 +135,42 @@ def _detect_openvino_device() -> str:
 
 
 def _load_openvino(model_path: Path):
-    """Load SDXL-Turbo via OpenVINO with optional Tiny Autoencoder and INT8 UNet."""
+    """Load SDXL-Turbo via OpenVINO with optional INT8 UNet and full perf config."""
     from optimum.intel.openvino import OVStableDiffusionXLPipeline
     import openvino as ov
 
-    # INT8 quantized models produce NaN on GPU — force CPU for reliability
-    pipe = OVStableDiffusionXLPipeline.from_pretrained(
-        str(model_path), compile=False, device="CPU",
-        ov_config={"CACHE_DIR": ""},
+    # Build OpenVINO config for optimal CPU inference latency
+    cache_dir = str(model_path / ".ov_cache_v1")
+    physical_cores = _get_physical_core_count()
+    cpu_features = _detect_cpu_features()
+    precision = "bf16" if cpu_features.get("bf16") else "f16"
+
+    ov_config = {
+        "CACHE_DIR": cache_dir,
+        "PERFORMANCE_HINT": "LATENCY",
+        "NUM_STREAMS": "1",
+        "INFERENCE_PRECISION_HINT": precision,
+        "INFERENCE_NUM_THREADS": str(physical_cores),
+        "ENABLE_HYPER_THREADING": "NO",
+    }
+    # AFFINITY was removed in OpenVINO 2024.x -- only set if supported
+    try:
+        core = ov.Core()
+        supported = core.get_property("CPU", "SUPPORTED_PROPERTIES")
+        if "AFFINITY" in supported:
+            ov_config["AFFINITY"] = "CORE"
+    except Exception:
+        core = ov.Core()
+
+    logger.info(
+        f"OpenVINO SDXL config: threads={physical_cores}, precision={precision}, "
+        f"bf16={cpu_features.get('bf16')}, cache={cache_dir}"
     )
 
-    core = ov.Core()
+    pipe = OVStableDiffusionXLPipeline.from_pretrained(
+        str(model_path), compile=False, device="CPU",
+        ov_config=ov_config,
+    )
 
     # Use INT8 quantized UNet if available
     int8_unet_path = model_path / "optimized_unet" / "openvino_model.xml"
@@ -155,26 +180,41 @@ def _load_openvino(model_path: Path):
         pipe.unet.request = None
         logger.info("INT8 UNet loaded.")
 
-    # NOTE: LoRA loading is not supported by OVStableDiffusionXLPipeline (OpenVINO IR).
-    # LoRAs must be fused into model weights before OpenVINO conversion, or use
-    # openvino_genai.Text2ImagePipeline which supports runtime LoRA adapters.
-
     pipe.compile()
     return pipe
 
 
 def _load_openvino_img2img(model_path: Path):
-    """Load SDXL-Turbo Image-to-Image pipeline via OpenVINO."""
+    """Load SDXL-Turbo Image-to-Image pipeline via OpenVINO with full perf config."""
     from optimum.intel.openvino import OVStableDiffusionXLImg2ImgPipeline
     import openvino as ov
 
-    # INT8 quantized models produce NaN on GPU — force CPU for reliability (same as txt2img)
+    # Reuse same perf config as txt2img
+    cache_dir = str(model_path / ".ov_cache_v1")
+    physical_cores = _get_physical_core_count()
+    cpu_features = _detect_cpu_features()
+    precision = "bf16" if cpu_features.get("bf16") else "f16"
+
+    ov_config = {
+        "CACHE_DIR": cache_dir,
+        "PERFORMANCE_HINT": "LATENCY",
+        "NUM_STREAMS": "1",
+        "INFERENCE_PRECISION_HINT": precision,
+        "INFERENCE_NUM_THREADS": str(physical_cores),
+        "ENABLE_HYPER_THREADING": "NO",
+    }
+    try:
+        core = ov.Core()
+        supported = core.get_property("CPU", "SUPPORTED_PROPERTIES")
+        if "AFFINITY" in supported:
+            ov_config["AFFINITY"] = "CORE"
+    except Exception:
+        core = ov.Core()
+
     pipe = OVStableDiffusionXLImg2ImgPipeline.from_pretrained(
         str(model_path), compile=False, device="CPU",
-        ov_config={"CACHE_DIR": ""},
+        ov_config=ov_config,
     )
-
-    core = ov.Core()
 
     # Use INT8 quantized UNet if available
     int8_unet_path = model_path / "optimized_unet" / "openvino_model.xml"
@@ -563,6 +603,7 @@ class ImageService:
             return False
 
     _pipeline_lock = threading.Lock()
+    _inference_lock = threading.Lock()
 
     def initialize_pipeline(self) -> bool:
         """Initialize the image generation pipeline (lazy loading, thread-safe)."""
@@ -603,21 +644,24 @@ class ImageService:
                     self.pipeline = loader(self.model_path)
                 logger.info("Pipeline loaded successfully.")
 
-                # Warmup: run a tiny dummy inference to pre-allocate buffers
-                if backend == "openvino_flux":
-                    try:
-                        logger.info("Running warmup inference for Flux OpenVINO...")
-                        _warmup_start = time.time()
-                        self.pipeline(
-                            prompt="warmup",
-                            num_inference_steps=1,
-                            guidance_scale=0.0,
-                            height=64, width=64,
-                            output_type="np",
-                        )
-                        logger.info(f"Warmup done in {time.time() - _warmup_start:.1f}s")
-                    except Exception as warmup_err:
-                        logger.warning(f"Warmup inference failed (non-fatal): {warmup_err}")
+                # Warmup: run a tiny dummy inference to pre-allocate buffers.
+                # Hold _inference_lock so generate_image waits until warmup finishes.
+                if backend in ("openvino_flux", "openvino"):
+                    with self._inference_lock:
+                        try:
+                            _label = "Flux" if backend == "openvino_flux" else "SDXL"
+                            logger.info(f"Running warmup inference for {_label} OpenVINO...")
+                            _warmup_start = time.time()
+                            self.pipeline(
+                                prompt="warmup",
+                                num_inference_steps=1,
+                                guidance_scale=0.0,
+                                height=64, width=64,
+                                output_type="np",
+                            )
+                            logger.info(f"Warmup done in {time.time() - _warmup_start:.1f}s")
+                        except Exception as warmup_err:
+                            logger.warning(f"Warmup inference failed (non-fatal): {warmup_err}")
 
                 return True
             except Exception as e:
@@ -675,45 +719,16 @@ class ImageService:
         return self._get_esrgan().enhance(image_bytes, scale)
 
     def prepare_prompt(self, prompt: str) -> bool:
-        """Pre-encode a prompt and cache the embeddings (Flux OpenVINO only).
+        """Pre-encode a prompt and cache the embeddings.
 
-        Call this while the user is still configuring settings to hide
-        the T5-XXL encoding latency. Returns True if embeddings were cached.
+        Disabled for OpenVINO Flux because its inference requests are not
+        reentrant — calling encode_prompt concurrently with generate_image
+        causes 'Infer Request is busy' errors. The pipeline handles encoding
+        internally during generation instead.
         """
-        backend = self.model_info.get("backend", "openvino")
-        if backend != "openvino_flux":
-            return False
-        if not self.initialize_pipeline():
-            return False
-
-        import hashlib
-        prompt = _truncate_to_clip_tokens(prompt, max_tokens=75)
-        prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
-
-        if prompt_hash in self._prompt_cache:
-            return True  # Already cached
-
-        try:
-            if not hasattr(self.pipeline, 'encode_prompt'):
-                return False
-            logger.info(f"Eagerly encoding prompt: {prompt[:40]}...")
-            enc_start = time.time()
-            enc_result = self.pipeline.encode_prompt(prompt=prompt)
-            p_embeds = enc_result[0]
-            p_pooled = enc_result[1] if len(enc_result) > 1 else None
-
-            if len(self._prompt_cache) >= self._prompt_cache_max:
-                oldest_key = next(iter(self._prompt_cache))
-                del self._prompt_cache[oldest_key]
-            self._prompt_cache[prompt_hash] = {
-                "prompt_embeds": p_embeds,
-                "pooled_prompt_embeds": p_pooled,
-            }
-            logger.info(f"Prompt pre-encoded in {time.time() - enc_start:.1f}s")
-            return True
-        except Exception as e:
-            logger.debug(f"Eager prompt encoding failed: {e}")
-            return False
+        # OpenVINO inference requests cannot run concurrently, so eager
+        # encoding would race with generate_image.  Return False to skip.
+        return False
 
     def generate_image(self,
                         prompt: str,
@@ -726,11 +741,16 @@ class ImageService:
                         init_image: Optional[bytes] = None,
                         strength: float = 0.8) -> Optional[bytes]:
         """Generate image using the configured model backend."""
+        _holds_inference_lock = False
         try:
             if not self.initialize_pipeline():
                 print("[IMAGE-DEBUG] Pipeline initialization FAILED", flush=True)
                 logger.error("Pipeline not initialized")
                 return None
+
+            # Serialize inference — OpenVINO requests are not reentrant
+            self._inference_lock.acquire()
+            _holds_inference_lock = True
 
             # Use model defaults if caller didn't specify
             if num_inference_steps is None:
@@ -748,20 +768,14 @@ class ImageService:
                 logger.info(f"Clamping height {height} -> {max_h} (model limit)")
                 height = max_h
 
-            # Auto-inject LoRA negative trigger words (e.g. "wrong" for wrong_lora)
-            extra_neg = _get_negative_trigger_words()
-            if extra_neg and extra_neg not in negative_prompt:
-                negative_prompt = f"{negative_prompt}, {extra_neg}"
-
-            # SDXL-Turbo anatomy fix: inject negative prompt and prompt tweaks
-            if self.model_key and self.model_key.startswith("sdxl-turbo"):
-                anatomy_neg = "deformed fingers, extra fingers, fused fingers, bad hands, malformed hands, bad eyes, crossed eyes, deformed face, extra limbs, mutated hands, poorly drawn hands, poorly drawn face, disfigured, ugly"
-                if anatomy_neg not in negative_prompt:
-                    negative_prompt = f"{negative_prompt}, {anatomy_neg}"
-                # Avoid close-up anatomy issues — nudge toward mid-distance framing
-                if "close-up" not in prompt.lower() and "closeup" not in prompt.lower():
-                    if "mid-distance" not in prompt.lower() and "wide shot" not in prompt.lower():
-                        prompt = f"{prompt}, mid-distance shot, well-proportioned"
+            # SDXL-Turbo: no negative prompts or prompt tweaks (ADD training ignores them)
+            if self.model_info.get("supports_negative_prompt", True):
+                # Auto-inject LoRA negative trigger words (e.g. "wrong" for wrong_lora)
+                extra_neg = _get_negative_trigger_words()
+                if extra_neg and extra_neg not in negative_prompt:
+                    negative_prompt = f"{negative_prompt}, {extra_neg}"
+            else:
+                negative_prompt = ""
 
             # Truncate prompt to CLIP's 77-token limit to avoid silent truncation
             prompt = _truncate_to_clip_tokens(prompt, max_tokens=75)
@@ -829,69 +843,20 @@ class ImageService:
 
             elif backend == "openvino_flux":
                 # FLUX INT4 OpenVINO — no negative_prompt or img2img support
+                # Note: OpenVINO infer requests are NOT thread-safe / reentrant,
+                # so we call the pipeline directly instead of doing a separate
+                # encode_prompt + pipeline(prompt_embeds=...) which races on the
+                # same T5 inference request and raises "Infer Request is busy".
                 if init_image is not None:
                     logger.warning("FLUX Schnell does not support img2img — init_image ignored")
 
-                # Try to use cached prompt embeddings for repeat prompts
-                import hashlib
-                prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
-                cached = self._prompt_cache.get(prompt_hash)
-
-                if cached is not None:
-                    logger.info("Using cached prompt embeddings")
-                    result = self.pipeline(
-                        prompt_embeds=cached["prompt_embeds"],
-                        pooled_prompt_embeds=cached["pooled_prompt_embeds"],
-                        num_inference_steps=num_inference_steps,
-                        guidance_scale=guidance_scale,
-                        height=height, width=width,
-                        output_type="np",
-                    )
-                else:
-                    # Try to encode and cache prompt separately
-                    try:
-                        if hasattr(self.pipeline, 'encode_prompt'):
-                            enc_result = self.pipeline.encode_prompt(prompt=prompt)
-                            p_embeds = enc_result[0]
-                            p_pooled = enc_result[1] if len(enc_result) > 1 else None
-
-                            # Cache it (evict oldest if full)
-                            if len(self._prompt_cache) >= self._prompt_cache_max:
-                                oldest_key = next(iter(self._prompt_cache))
-                                del self._prompt_cache[oldest_key]
-                            self._prompt_cache[prompt_hash] = {
-                                "prompt_embeds": p_embeds,
-                                "pooled_prompt_embeds": p_pooled,
-                            }
-
-                            kwargs = {
-                                "prompt_embeds": p_embeds,
-                                "num_inference_steps": num_inference_steps,
-                                "guidance_scale": guidance_scale,
-                                "height": height, "width": width,
-                                "output_type": "np",
-                            }
-                            if p_pooled is not None:
-                                kwargs["pooled_prompt_embeds"] = p_pooled
-                            result = self.pipeline(**kwargs)
-                        else:
-                            # Fallback: no encode_prompt method available
-                            result = self.pipeline(
-                                prompt=prompt,
-                                num_inference_steps=num_inference_steps,
-                                guidance_scale=guidance_scale,
-                                height=height, width=width,
-                                output_type="np",
-                            )
-                    except Exception as cache_err:
-                        logger.debug(f"Prompt caching failed, using direct call: {cache_err}")
-                        result = self.pipeline(
-                            prompt=prompt,
-                            num_inference_steps=num_inference_steps,
-                            guidance_scale=guidance_scale,
-                            height=height, width=width,
-                            output_type="np",
-                        )
+                result = self.pipeline(
+                    prompt=prompt,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    height=height, width=width,
+                    output_type="np",
+                )
 
             elif backend == "sd_cpp_sdxl":
                 # SDXL-Turbo GGUF via stable-diffusion.cpp — supports negative_prompt + img2img
@@ -912,6 +877,7 @@ class ImageService:
                             sample_steps=num_inference_steps,
                             strength=strength,
                             seed=seed if seed is not None else -1,
+                            vae_tiling=width > 512 or height > 512,
                         )
                     except Exception as img2img_err:
                         logger.warning(f"SDXL GGUF img2img failed, falling back to txt2img: {img2img_err}")
@@ -923,6 +889,7 @@ class ImageService:
                             cfg_scale=guidance_scale,
                             sample_steps=num_inference_steps,
                             seed=seed if seed is not None else -1,
+                            vae_tiling=width > 512 or height > 512,
                         )
                 else:
                     output = self.pipeline.generate_image(
@@ -933,6 +900,7 @@ class ImageService:
                         cfg_scale=guidance_scale,
                         sample_steps=num_inference_steps,
                         seed=seed if seed is not None else -1,
+                        vae_tiling=width > 512 or height > 512,
                     )
                 class _SDCppResultSDXL:
                     def __init__(self, images):
@@ -952,6 +920,7 @@ class ImageService:
                     cfg_scale=guidance_scale,
                     sample_steps=num_inference_steps,
                     seed=seed if seed is not None else -1,
+                    vae_tiling=True,
                 )
                 # SD3.5 flow models use a separate 'guidance' param (distilled guidance scale)
                 if backend == "sd_cpp_sd3":
@@ -1022,6 +991,9 @@ class ImageService:
             logger.error(f"Error generating image: {e}")
             logger.error(tb)
             return None
+        finally:
+            if _holds_inference_lock:
+                self._inference_lock.release()
 
     def generate_batch_images(self,
                              prompt: str,

@@ -307,7 +307,22 @@
       "Bash(./venv/Scripts/python -c \"import sys; print\\(sys.version\\)\")",
       "Bash(./venv/Scripts/python -m pip install intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ --dry-run)",
       "Bash(./venv/Scripts/python -m pip install intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ --dry-run -v)",
-      "Bash(curl -L -o \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\models\\\\image_generation\\\\sd35-medium-gguf\\\\taesd3_decoder.safetensors\" \"https://huggingface.co/madebyollin/taesd3/resolve/main/diffusion_pytorch_model.safetensors\")"
+      "Bash(curl -L -o \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\models\\\\image_generation\\\\sd35-medium-gguf\\\\taesd3_decoder.safetensors\" \"https://huggingface.co/madebyollin/taesd3/resolve/main/diffusion_pytorch_model.safetensors\")",
+      "Bash(du -sh \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/flux-schnell/\"*/)",
+      "Bash(du -sh \"C:/Users/LG/Desktop/Projects/Offline AI Standalone/dist-electron/win-unpacked/resources/models/image_generation/flux-schnell/\"*/)",
+      "Bash(rm -rf \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/sdxl-turbo-int8\")",
+      "Bash(mv \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/sdxl-turbo-int8-new\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/image_generation/sdxl-turbo-int8\")",
+      "WebFetch(domain:education.civitai.com)",
+      "WebFetch(domain:www.reddit.com)",
+      "WebFetch(domain:stable-diffusion-art.com)",
+      "WebFetch(domain:docs.openvino.ai)",
+      "WebFetch(domain:neurocanvas.net)",
+      "Bash(python3 -c \"import json; data=json.load\\(open\\('c:/Users/LG/Desktop/Projects/Offline AI Standalone/demo_backup.json'\\)\\); cats=list\\(data['data'].keys\\(\\)\\); print\\('Categories:', cats\\); [print\\(f'{k}: {len\\(v\\)} items'\\) for k,v in data['data'].items\\(\\)]\")",
+      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/0398f6da-20c2-4c11-907c-be1ff43dfb85/tasks/**)",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Bash(where py:*)",
+      "Bash(C:/Users/LG/AppData/Local/Programs/Python/Python311/python.exe -c ':*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
@@ -324,7 +339,8 @@
       "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\oak\\download-link",
       "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\dashboard",
       "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\app\\api\\oak\\licenses\\[id]",
-      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\components"
+      "C:\\Users\\LG\\Desktop\\Projects\\SSO SandBox Demo\\sso-demo\\components",
+      "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\models\\image_generation\\sdxl-turbo-int8-new"
     ]
   }
 }
