@@ -476,7 +476,7 @@ function createWindow() {
       webSecurity: false // Allow local file access
     },
     show: false,
-    backgroundColor: '#f9fafb' // Match splashscreen background
+    backgroundColor: '#2b2b2b' // Match dark theme background
   });
   
   // Remove menu

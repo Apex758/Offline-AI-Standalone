@@ -121,6 +121,7 @@ interface ChartCarouselProps {
   onTimeframeChange: (timeframe: Timeframe) => void;
   forcePaused?: boolean;
   tabColors?: { [key: string]: string };
+  onViewInsights?: () => void;
 }
 
 const ChartCarousel: React.FC<ChartCarouselProps> = ({
@@ -129,10 +130,11 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   timeframe,
   onTimeframeChange,
   forcePaused = false,
-  tabColors = {}
+  tabColors = {},
+  onViewInsights,
 }) => {
-  const views: Array<'trend' | 'metrics'> = ['trend', 'metrics'];
-  const [currentView, setCurrentView] = useState<'trend' | 'metrics'>('trend');
+  const views: Array<'trend' | 'educator-insights'> = ['trend', 'educator-insights'];
+  const [currentView, setCurrentView] = useState<'trend' | 'educator-insights'>('trend');
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
@@ -218,15 +220,31 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
           <ResourceTrendChart data={trendData} timeframe={timeframe} tabColors={tabColors} />
         </div>
 
-        {/* Teacher Metrics Chart View */}
+        {/* Educator Insights View */}
         <div
           className={`transition-all duration-500 h-full ${
-            currentView === 'metrics'
+            currentView === 'educator-insights'
               ? 'opacity-100 translate-x-0'
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
           }`}
         >
-          <TeacherMetricsChart data={metricsHistory} height={460} compact />
+          <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--dash-card-bg)' }}>
+            <div className="flex items-center justify-between px-4 pt-3 pb-1 flex-shrink-0">
+              <span className="text-sm font-bold" style={{ color: 'var(--dash-text)' }}>Educator Insights</span>
+              {onViewInsights && (
+                <button
+                  onClick={onViewInsights}
+                  className="text-xs font-medium px-3 py-1 rounded-lg transition-opacity hover:opacity-80"
+                  style={{ backgroundColor: 'var(--dash-primary)', color: 'var(--dash-primary-fg)' }}
+                >
+                  View Full Report
+                </button>
+              )}
+            </div>
+            <div className="flex-1 min-h-0">
+              <TeacherMetricsChart data={metricsHistory} height={460} compact />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -247,6 +265,30 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
       >
         <ChevronRight className="w-4 h-4" style={{ color: 'var(--dash-text-sub)' }} />
       </button>
+
+      {/* Dot indicators */}
+      <div
+        className="absolute bottom-3 left-1/2 flex gap-1.5"
+        style={{ transform: 'translateX(-50%)', zIndex: 20 }}
+      >
+        {views.map((v) => (
+          <button
+            key={v}
+            onClick={() => setCurrentView(v)}
+            aria-label={v === 'trend' ? 'Resource Trends' : 'Educator Insights'}
+            style={{
+              width: currentView === v ? 18 : 6,
+              height: 6,
+              borderRadius: 3,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'width 0.25s ease, background-color 0.25s ease',
+              backgroundColor: currentView === v ? 'var(--dash-primary)' : 'var(--dash-border)',
+              padding: 0,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };

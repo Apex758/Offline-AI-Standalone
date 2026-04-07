@@ -65,37 +65,37 @@ Rate 1-5 or just delete if bad.
 - A friendly robot helping a student with homework, cel shading *(cel shading)*-3.7
 - A friendly robot helping a student with homework, Pixar style *(Pixar style)* -3.
 - A friendly robot helping a student with homework, anime style *(anime style)* -3.4
-- A friendly robot helping a student with homework, flat vector art *(flat vector art)*
-- A friendly robot helping a student with homework, Disney style *(Disney style)*
-- A friendly robot helping a student with homework, Ghibli style *(Ghibli style)*
-- A friendly robot helping a student with homework, chibi style *(chibi style)*
+- A friendly robot helping a student with homework, flat vector art *(flat vector art)* -4.5    
+- A friendly robot helping a student with homework, Disney style *(Disney style)* -3.8
+- A friendly robot helping a student with homework, Ghibli style *(Ghibli style)* 4.1
+- A friendly robot helping a student with homework, chibi style *(chibi style)* - 3.9
 
 ### Color/mood keywords
-- A dragon reading to baby dragons in a cozy cave, bright saturated colors *(bright saturated)*
-- A dragon reading to baby dragons in a cozy cave, pastel tones *(pastel tones)*
-- A dragon reading to baby dragons in a cozy cave, neon colors, high contrast *(neon / high contrast)*
-- A dragon reading to baby dragons in a cozy cave, warm color palette *(warm palette)*
-- A dragon reading to baby dragons in a cozy cave, soft gradient colors *(soft gradient)*
+- A dragon reading to baby dragons in a cozy cave, bright saturated colors *(bright saturated)* -4 (good color, feels nice for kids, nice line work, features are just messed up a bit)
+- A dragon reading to baby dragons in a cozy cave, pastel tones *(pastel tones)* -3.8
+- A dragon reading to baby dragons in a cozy cave, neon colors, high contrast *(neon / high contrast)* -4.3 (great color, feels nice for kids, nice line work, features are just messed up a bit)
+- A dragon reading to baby dragons in a cozy cave, warm color palette *(warm palette)* -3.8
+- A dragon reading to baby dragons in a cozy cave, soft gradient colors *(soft gradient)* -4.4
 
 ### Detail keywords
-- A cat wearing glasses at a tiny desk, cute and expressive *(cute / expressive)*
-- A cat wearing glasses at a tiny desk, exaggerated features *(exaggerated features)*
-- A cat wearing glasses at a tiny desk, simple and clean *(simple / clean)*
-- A cat wearing glasses at a tiny desk, highly detailed *(highly detailed)*
+- A cat wearing glasses at a tiny desk, cute and expressive *(cute / expressive)* -4.3
+- A cat wearing glasses at a tiny desk, exaggerated features *(exaggerated features)* -4.1
+- A cat wearing glasses at a tiny desk, simple and clean *(simple / clean)* -3.9
+- A cat wearing glasses at a tiny desk, highly detailed *(highly detailed)* -4.4
 
 ### Subject variety (clean — rely on preset suffix)
-- Children exploring a magical forest with glowing mushrooms
-- A treehouse school in the clouds with a rainbow bridge
-- A penguin scientist mixing potions in a laboratory
-- An astronaut planting a flag on the moon with Earth behind
-- A fox and owl sharing a picnic on a log, autumn forest
-- A wizard casting a spell with sparkles and swirling energy
-- A submarine exploring a coral reef with smiling fish
-- A baker pulling bread from a brick oven, cheerful kitchen
-- A girl flying a kite on a windy hilltop, bright sky
-- A group of animals having a tea party in a garden
-- A knight riding a friendly dragon over a castle
-- A snowman coming to life in a winter wonderland
+- Children exploring a magical forest with glowing mushrooms -4.7
+- A treehouse school in the clouds with a rainbow bridge -4.7
+- A penguin scientist mixing potions in a laboratory -4.5
+- An astronaut planting a flag on the moon with Earth behind -3.9 (multiple flags)
+- A fox and owl sharing a picnic on a log, autumn forest -3.8
+- A wizard casting a spell with sparkles and swirling energy -4.95
+- A submarine exploring a coral reef with smiling fish -2 (it made a fish shaped submarine lol)
+- A baker pulling bread from a brick oven, cheerful kitchen -2.5
+- A girl flying a kite on a windy hilltop, bright sky -3
+- A group of animals having a tea party in a garden -1.1
+- A knight riding a friendly dragon over a castle -3.8
+- A snowman coming to life in a winter wonderland -4.7
 
 ---
 
@@ -103,9 +103,9 @@ Rate 1-5 or just delete if bad.
 *Preset adds: `, oil painting, textured brushstrokes`*
 
 ### Medium keywords
-- A misty mountain lake at dawn with pine trees, impressionist *(impressionist)*
-- A misty mountain lake at dawn with pine trees, watercolor *(watercolor)*
-- A misty mountain lake at dawn with pine trees, acrylic *(acrylic)*
+- A misty mountain lake at dawn with pine trees, impressionist *(impressionist)* -4.9
+- A misty mountain lake at dawn with pine trees, watercolor *(watercolor)* -5
+- A misty mountain lake at dawn with pine trees, acrylic *(acrylic)* -4.9
 - A misty mountain lake at dawn with pine trees, gouache *(gouache)*
 - A misty mountain lake at dawn with pine trees, digital painting *(digital painting)*
 - A misty mountain lake at dawn with pine trees, fresco style *(fresco)*

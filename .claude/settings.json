@@ -322,7 +322,10 @@
       "Bash(where python:*)",
       "Bash(where python3:*)",
       "Bash(where py:*)",
-      "Bash(C:/Users/LG/AppData/Local/Programs/Python/Python311/python.exe -c ':*)"
+      "Bash(C:/Users/LG/AppData/Local/Programs/Python/Python311/python.exe -c ':*)",
+      "Bash(grep -v \"^\\\\s*//\")",
+      "Bash(grep -l \"flip\" *.tsx)",
+      "Bash(find . -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -path \"*/frontend/src/*\" -exec grep -l \"ResourceDistribution\" {} \\\\;)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

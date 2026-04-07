@@ -88,10 +88,11 @@
 }
 
 /* Global Inter font + prevent outer window scroll */
-html, body {
+html, body, #root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* Normalize form input font-size to match surrounding text (text-sm = 0.875rem) */
