@@ -383,7 +383,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         if (Array.isArray(metricsRes.data?.history)) {
           setMetricsHistory(metricsRes.data.history);
         }
-      } catch {}
+      } catch (metricsErr) {
+        console.error('Failed to load teacher metrics history:', metricsErr);
+      }
     } catch (error) {
       console.error('Failed to load analytics data:', error);
     } finally {

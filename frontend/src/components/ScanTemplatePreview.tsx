@@ -52,7 +52,7 @@ const ScanTemplatePreview: React.FC<ScanTemplatePreviewProps> = ({
             transform: 'scale(0.85)',
             transformOrigin: 'top center',
           }}
-          sandbox="allow-same-origin"
+          sandbox="allow-same-origin allow-scripts"
         />
       </div>
       <div style={{

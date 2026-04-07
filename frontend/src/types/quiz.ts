@@ -335,31 +335,34 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
 
 // Parser utility - handles both JSON and text-based quiz formats
 export function parseQuizFromAI(aiResponse: string): ParsedQuiz | null {
+  // Try text-based parsing first (primary format from prompt)
+  const textResult = parseTextBasedQuiz(aiResponse);
+  if (textResult && textResult.questions.length > 0) {
+    console.log(`Successfully parsed ${textResult.questions.length} questions in text format`);
+    return textResult;
+  }
+
+  // Fall back to JSON parsing (for responses wrapped in ```json blocks)
   try {
-    // First, try to extract JSON from markdown code blocks
     const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
     const jsonString = jsonMatch ? jsonMatch[1] : aiResponse;
-    
-    // Try parsing as JSON first
+
     const parsed = JSON.parse(jsonString);
-    
-    // Validate structure
+
     if (!parsed.metadata || !parsed.questions || !Array.isArray(parsed.questions)) {
       console.error('Invalid quiz structure');
       return null;
     }
-    
-    // Add IDs if missing
+
     parsed.questions = parsed.questions.map((q: QuizQuestion, index: number) => ({
       ...q,
       id: q.id || `q_${Date.now()}_${index}`
     }));
-    
+
     return parsed as ParsedQuiz;
   } catch {
-    // If JSON parsing fails, try to parse text-based format
-    console.log('JSON parsing failed, attempting text-based parsing...');
-    return parseTextBasedQuiz(aiResponse);
+    console.log('Both text and JSON parsing failed for quiz response');
+    return null;
   }
 }
 
