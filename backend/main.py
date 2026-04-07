@@ -9668,10 +9668,10 @@ async def import_data(payload: dict):
                     # Try to update existing milestone status first (from auto-initialized curriculum)
                     existing = conn.execute('SELECT id FROM milestones WHERE id = ?', (mid,)).fetchone()
                     if existing:
-                        # Update status, completed_at, due_date, checklist, notes on existing record
+                        # Update status, completed_at, due_date, checklist, notes, phase_id on existing record
                         conn.execute('''UPDATE milestones SET status = ?, completed_at = ?,
                             due_date = ?, checklist_json = ?, notes = ?, is_hidden = ?,
-                            updated_at = CURRENT_TIMESTAMP
+                            phase_id = ?, updated_at = CURRENT_TIMESTAMP
                             WHERE id = ?''',
                             (milestone.get("status", "not_started"),
                              milestone.get("completed_at"),
@@ -9679,6 +9679,7 @@ async def import_data(payload: dict):
                              milestone.get("checklist_json", "[]"),
                              milestone.get("notes"),
                              milestone.get("is_hidden", 0),
+                             milestone.get("phase_id"),
                              mid))
                         count += 1
                     else:

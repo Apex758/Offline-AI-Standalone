@@ -948,10 +948,12 @@ def generate_worksheet_grades(students, ws_refs):
     return grades
 
 
-def generate_milestones():
+def generate_milestones(academic_phases):
     """Generate curriculum milestones using REAL topic_ids, progressively completed."""
     milestones = []
     teaching_phases = [(k, l, s, o, st, en) for k, l, s, o, st, en in PHASES if is_teaching_phase(k)]
+    # Build a lookup from phase_key to the academic_phase UUID for phase_id assignment
+    phase_key_to_id = {p["phase_key"]: p["id"] for p in academic_phases}
 
     # Collect all topics for grades we teach
     all_topics = []
@@ -976,6 +978,7 @@ def generate_milestones():
             completed_at = random_date_in_range(phase_start, phase_end)
             completed_str = f"{completed_at.isoformat()} {random.randint(10,16)}:{random.randint(0,59):02d}:00"
             due_date = phase_end.isoformat()
+            milestone_phase_id = phase_key_to_id.get(phase_key)
         elif i < n_completed + n_in_progress:
             status = "in-progress"
             completed_str = None
@@ -983,12 +986,14 @@ def generate_milestones():
             phase_idx = min(len(teaching_phases) - 1, len(teaching_phases) - 3 + (i - n_completed))
             phase_key, _, _, _, phase_start, phase_end = teaching_phases[phase_idx]
             due_date = phase_end.isoformat()
+            milestone_phase_id = phase_key_to_id.get(phase_key)
         else:
             status = "not_started"
             completed_str = None
             phase_start = YEAR_START
             phase_end = YEAR_END
             due_date = None
+            milestone_phase_id = None
 
         # Build checklist with 3 sub-items
         checklist = []
@@ -1023,7 +1028,7 @@ def generate_milestones():
             "created_at": f"{YEAR_START.isoformat()} 09:00:00",
             "updated_at": f"{random_date_in_range(phase_start, phase_end).isoformat()} 09:00:00",
             "checklist_json": json.dumps(checklist),
-            "phase_id": None,
+            "phase_id": milestone_phase_id,
         })
     return milestones
 
@@ -1376,20 +1381,28 @@ def generate_images():
 
 
 def generate_settings():
+    # appSettings must match the frontend Settings interface from SettingsContext.tsx
+    # The profile.gradeSubjects mapping drives which grades/subjects appear throughout the app
     return {
         "appSettings": {
-            "teacherName": TEACHER_NAME,
-            "schoolName": SCHOOL_NAME,
-            "country": COUNTRY,
-            "grades": GRADES,
-            "subjects": ["Mathematics", "Science", "Language Arts", "Social Studies"],
+            "fontSize": 100,
             "theme": "light",
             "language": "en",
             "aiModel": "default",
-            "fontSize": "medium",
+            "profile": {
+                "displayName": TEACHER_NAME,
+                "school": SCHOOL_NAME,
+                "gradeSubjects": {
+                    "1": ["Mathematics"],
+                    "2": ["Science", "Language Arts"],
+                    "4": ["Mathematics"],
+                },
+                "filterContentByProfile": True,
+            },
         },
         "user": {
-            "name": "Claudette Joseph",
+            "username": TEACHER_ID,
+            "name": TEACHER_NAME,
             "email": "claudette.joseph@example.com",
             "role": "teacher",
             "school": SCHOOL_NAME,
@@ -1424,7 +1437,7 @@ def main():
     attendance = generate_attendance(students)
     quiz_grades = generate_quiz_grades(students, quiz_refs)
     worksheet_grades = generate_worksheet_grades(students, ws_refs)
-    milestones = generate_milestones()
+    milestones = generate_milestones(academic_phases)
     achievements = generate_achievements()
     tasks = generate_tasks()
     chats = generate_chats()
