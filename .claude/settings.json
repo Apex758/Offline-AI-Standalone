@@ -326,7 +326,8 @@
       "Bash(grep -v \"^\\\\s*//\")",
       "Bash(grep -l \"flip\" *.tsx)",
       "Bash(find . -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -path \"*/frontend/src/*\" -exec grep -l \"ResourceDistribution\" {} \\\\;)",
-      "Bash(grep -l \"grade\\\\|grading\\\\|evaluating\" /c/Users/LG/Desktop/Projects/\"Offline AI Standalone\"/backend/*.py)"
+      "Bash(grep -l \"grade\\\\|grading\\\\|evaluating\" /c/Users/LG/Desktop/Projects/\"Offline AI Standalone\"/backend/*.py)",
+      "Bash(find /c/Users/LG/Desktop/Projects/'Offline AI Standalone'/frontend/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"calculateDistribution\\\\|DistributionData\" {} \\\\;)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
