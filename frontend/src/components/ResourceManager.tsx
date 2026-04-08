@@ -65,8 +65,9 @@ const LayersIcon: React.FC<{ className?: string; style?: React.CSSProperties }> 
 const ExternalLinkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LinkSquare01IconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
-import ResourceDistributionChart from './charts/ResourceDistributionChart';
+import CategoryRadialChart from './charts/CategoryRadialChart';
 import type { DistributionData } from '../types/analytics';
+import { RESOURCE_TO_TOOL_TYPE } from '../lib/analyticsHelpers';
 
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
@@ -125,7 +126,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const { settings } = useSettings();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDistChart, setShowDistChart] = useState(true);
+
 
   // Restore persisted state from savedData
   const [searchQuery, setSearchQuery] = useState(savedData?.searchQuery || '');
@@ -467,36 +468,30 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     return Icon;
   };
 
+  const getTabColor = (type: string): string => {
+    const toolType = RESOURCE_TO_TOOL_TYPE[type];
+    return toolType ? (tabColors[toolType] || '#6b7280') : '#6b7280';
+  };
+
   const getTypeColor = (type: string) => {
-    const colors: { [key: string]: string } = {
-      'lesson': 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700',
-      'quiz': 'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-700',
-      'worksheet': 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
-      'rubric': 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700',
-      'kindergarten': 'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-700',
-      'multigrade': 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700',
-      'cross-curricular': 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700',
-      'images': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700',
-      'presentation': 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700',
-      'storybook': 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-700'
+    return 'border';
+  };
+
+  const getTypeStyle = (type: string): React.CSSProperties => {
+    const hex = getTabColor(type);
+    return {
+      backgroundColor: `${hex}18`,
+      color: hex,
+      borderColor: `${hex}40`,
     };
-    return colors[type] || 'bg-theme-tertiary text-theme-label border-theme';
   };
 
   const getTypeDotColor = (type: string) => {
-    const colors: { [key: string]: string } = {
-      'lesson': 'bg-purple-500',
-      'quiz': 'bg-cyan-500',
-      'worksheet': 'bg-blue-500',
-      'rubric': 'bg-amber-500',
-      'kindergarten': 'bg-pink-500',
-      'multigrade': 'bg-indigo-500',
-      'cross-curricular': 'bg-teal-500',
-      'images': 'bg-green-500',
-      'presentation': 'bg-orange-500',
-      'storybook': 'bg-rose-500'
-    };
-    return colors[type] || 'bg-gray-500';
+    return '';
+  };
+
+  const getTypeDotStyle = (type: string): React.CSSProperties => {
+    return { backgroundColor: getTabColor(type) };
   };
 
   const filteredAndSortedResources = useMemo(() => resources
@@ -753,32 +748,6 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       /* ── "In App" Tab Content (original) ── */
       <div className="flex-1 flex min-h-0">
 
-      {/* ── Right Panel: Distribution Chart (collapsible) ── */}
-      {distributionData.length > 0 && (
-        <div className={`flex-shrink-0 border-l border-theme bg-theme-surface transition-all duration-300 overflow-hidden ${showDistChart ? 'w-72' : 'w-0'}`}>
-          <div className="w-72 h-full flex flex-col p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-theme-heading uppercase tracking-wider">Distribution</span>
-              <button onClick={() => setShowDistChart(false)} className="p-1 rounded hover:bg-theme-hover transition-colors">
-                <ChevronRight className="w-3.5 h-3.5 text-theme-muted" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0">
-              <ResourceDistributionChart data={distributionData} tabColors={tabColors} />
-            </div>
-          </div>
-        </div>
-      )}
-      {!showDistChart && distributionData.length > 0 && (
-        <button
-          onClick={() => setShowDistChart(true)}
-          className="flex-shrink-0 w-8 border-l border-theme bg-theme-surface flex items-center justify-center hover:bg-theme-hover transition-colors"
-          title="Show distribution chart"
-        >
-          <ChevronDown className="w-3.5 h-3.5 text-theme-muted -rotate-90" />
-        </button>
-      )}
-
       {/* ── Left Sidebar: Category Filters ── */}
       <div className="w-60 flex-shrink-0 bg-theme-surface border-r border-theme flex flex-col h-full">
         {/* Sidebar Header */}
@@ -788,9 +757,11 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
 
         {/* Category List */}
         <nav className="flex-1 overflow-y-auto p-2 space-y-0.5" data-tutorial="resource-filters">
-          {resourceTypes.map(({ key, labelKey, icon: Icon }) => {
+          {resourceTypes.map(({ key, labelKey, icon: TypeIcon }) => {
             const count = getCountForType(key);
             const isActive = filterType === key;
+            const toolType = RESOURCE_TO_TOOL_TYPE[key];
+            const iconColor = toolType ? tabColors[toolType] : undefined;
 
             return (
               <button
@@ -798,11 +769,15 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                 onClick={() => setFilterType(key)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white'
+                    ? 'text-white'
                     : 'text-theme-label hover:bg-theme-hover'
                 }`}
+                style={isActive && iconColor ? { backgroundColor: iconColor } : isActive ? { backgroundColor: '#2563eb' } : undefined}
               >
-                <Icon className="w-4 h-4 flex-shrink-0" />
+                <TypeIcon
+                  className="w-4 h-4 flex-shrink-0"
+                  style={!isActive && iconColor ? { color: iconColor } : undefined}
+                />
                 <span className="flex-1 text-left truncate">{t(labelKey)}</span>
                 <span className={`text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${
                   isActive
@@ -815,6 +790,27 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
             );
           })}
         </nav>
+
+        {/* Category Distribution Chart */}
+        {resources.length > 0 && (
+          <div className="border-t border-theme px-3 py-3">
+            <p className="text-xs font-semibold text-theme-heading uppercase tracking-wider mb-2">Distribution</p>
+            <CategoryRadialChart
+              data={resourceTypes
+                .filter(rt => rt.key !== 'all')
+                .map(rt => ({
+                  type: rt.key,
+                  label: t(rt.labelKey),
+                  count: getCountForType(rt.key),
+                  color: getTabColor(rt.key),
+                }))
+                .filter(d => d.count > 0)
+              }
+              activeType={filterType}
+              onTypeClick={setFilterType}
+            />
+          </div>
+        )}
 
         {/* Sidebar Footer: Stats */}
         <div className="p-4 border-t border-theme">
@@ -972,7 +968,9 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                     onEdit={() => onEditResource?.(resource.type, resource)}
                     getTypeIcon={getTypeIcon}
                     getTypeColor={getTypeColor}
+                    getTypeStyle={getTypeStyle}
                     getTypeDotColor={getTypeDotColor}
+                    getTypeDotStyle={getTypeDotStyle}
                     selectionMode={selectionMode}
                     isSelected={selectedResources.has(resource.id)}
                     onToggleSelection={() => toggleResourceSelection(resource.id)}
@@ -1018,7 +1016,9 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                     onEdit={() => onEditResource?.(resource.type, resource)}
                     getTypeIcon={getTypeIcon}
                     getTypeColor={getTypeColor}
+                    getTypeStyle={getTypeStyle}
                     getTypeDotColor={getTypeDotColor}
+                    getTypeDotStyle={getTypeDotStyle}
                     selectionMode={selectionMode}
                     isSelected={selectedResources.has(resource.id)}
                     onToggleSelection={() => toggleResourceSelection(resource.id)}
@@ -1117,7 +1117,9 @@ interface ResourceCardProps {
   onEdit: () => void;
   getTypeIcon: (type: string) => any;
   getTypeColor: (type: string) => string;
+  getTypeStyle: (type: string) => React.CSSProperties;
   getTypeDotColor: (type: string) => string;
+  getTypeDotStyle: (type: string) => React.CSSProperties;
   selectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelection?: () => void;
@@ -1132,7 +1134,9 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   onEdit,
   getTypeIcon,
   getTypeColor,
+  getTypeStyle,
   getTypeDotColor,
+  getTypeDotStyle,
   selectionMode = false,
   isSelected = false,
   onToggleSelection
@@ -1163,7 +1167,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
               />
             </div>
           ) : (
-            <div className={`p-2 rounded-lg ${getTypeColor(resource.type)} border`}>
+            <div className={`p-2 rounded-lg ${getTypeColor(resource.type)}`} style={getTypeStyle(resource.type)}>
               <Icon className="w-4 h-4" />
             </div>
           )}
@@ -1194,7 +1198,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
       <div className="flex items-center text-xs text-theme-hint mb-3">
         <Calendar className="w-3 h-3 mr-1" />
         {new Date(resource.timestamp).toLocaleDateString()}
-        <span className={`ml-2 w-2 h-2 rounded-full ${getTypeDotColor(resource.type)}`} />
+        <span className="ml-2 w-2 h-2 rounded-full" style={getTypeDotStyle(resource.type)} />
         <span className="ml-1 capitalize">{resource.type === 'cross-curricular' ? 'Cross-Curr.' : resource.type}</span>
       </div>
 

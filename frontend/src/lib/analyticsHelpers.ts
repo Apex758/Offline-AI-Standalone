@@ -142,6 +142,23 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
 }
 
 /**
+ * Map resource types to tool types for color lookup
+ */
+export const RESOURCE_TO_TOOL_TYPE: Record<string, string> = {
+  lesson: 'lesson-planner',
+  quiz: 'quiz-generator',
+  rubric: 'rubric-generator',
+  kindergarten: 'kindergarten-planner',
+  multigrade: 'multigrade-planner',
+  'cross-curricular': 'cross-curricular-planner',
+  worksheet: 'worksheet-generator',
+  image: 'image-studio',
+  images: 'image-studio',
+  presentation: 'presentation-builder',
+  storybook: 'storybook'
+};
+
+/**
  * Calculate resource type distribution
  */
 export function calculateDistribution(resources: any[], tabColors: { [key: string]: string } = {}, timeframe: Timeframe = 'all'): DistributionData[] {
@@ -159,23 +176,9 @@ export function calculateDistribution(resources: any[], tabColors: { [key: strin
     storybook: 'Storybooks'
   };
 
-  // Map resource types to tool types for color lookup
-  const resourceToToolType: { [key: string]: string } = {
-    lesson: 'lesson-planner',
-    quiz: 'quiz-generator',
-    rubric: 'rubric-generator',
-    kindergarten: 'kindergarten-planner',
-    multigrade: 'multigrade-planner',
-    'cross-curricular': 'cross-curricular-planner',
-    worksheet: 'worksheet-generator',
-    image: 'image-studio',
-    presentation: 'presentation-builder',
-    storybook: 'storybook'
-  };
-
   // Get color for a resource type
   const getResourceColor = (resourceType: string): string => {
-    const toolType = resourceToToolType[resourceType];
+    const toolType = RESOURCE_TO_TOOL_TYPE[resourceType];
     return tabColors[toolType] || '#6b7280'; // fallback color
   };
 

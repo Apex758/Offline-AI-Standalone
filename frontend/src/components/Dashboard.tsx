@@ -2022,6 +2022,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               onViewResource={handleViewResource}
               onEditResource={handleEditResource}
               isActive={isActive}
+              tabColors={Object.fromEntries(
+                Object.entries(tabColors).map(([type, colors]) => [type, colors.border])
+              )}
             />
             
             {/* ResourceManager Tutorial Components */}

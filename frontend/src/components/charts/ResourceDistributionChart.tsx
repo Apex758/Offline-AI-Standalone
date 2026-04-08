@@ -13,22 +13,12 @@ const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperti
 
 const BarChart2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BarChartIconData} {...p} />;
 import type { DistributionData } from '../../types/analytics';
+import { RESOURCE_TO_TOOL_TYPE } from '../../lib/analyticsHelpers';
 
 interface ResourceDistributionChartProps {
   data: DistributionData[];
   tabColors?: { [key: string]: string };
 }
-
-const resourceToToolType: { [key: string]: string } = {
-  lesson: 'lesson-planner',
-  quiz: 'quiz-generator',
-  rubric: 'rubric-generator',
-  kindergarten: 'kindergarten-planner',
-  multigrade: 'multigrade-planner',
-  'cross-curricular': 'cross-curricular-planner',
-  worksheet: 'worksheet-generator',
-  image: 'image-studio',
-};
 
 const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data, tabColors = {} }) => {
   const { t } = useTranslation();
@@ -45,7 +35,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
   const total = data.reduce((sum, item) => sum + item.count, 0);
   const max = Math.max(...data.map((d) => d.count), 1);
 
-  const getColor = (type: string): string => tabColors[resourceToToolType[type]] || '#6b7280';
+  const getColor = (type: string): string => tabColors[RESOURCE_TO_TOOL_TYPE[type]] || '#6b7280';
 
   const allRadialData = data
     .filter((d) => d.count > 0)
