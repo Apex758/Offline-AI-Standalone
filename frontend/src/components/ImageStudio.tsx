@@ -2991,6 +2991,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page', needsDiffusion: false, needsLama: false },
                       { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker', needsDiffusion: false, needsLama: false },
                       { id: 'comic-maker' as EditorTool, icon: BookOpen, label: 'Comic Maker', needsDiffusion: true, needsLama: false },
+                      { id: 'enhance' as EditorTool, icon: RefreshCw, label: 'Enhance', needsDiffusion: false, needsLama: false },
                     ]).map(({ id, icon: ToolIcon, label, needsDiffusion, needsLama }, idx) => {
                       const toolLocked = (needsDiffusion && !hasDiffusion) || (needsLama && !hasLama);
                       return (

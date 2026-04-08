@@ -4,7 +4,7 @@
     "name": "Sketch Art",
     "description": "Clean pencil sketch with fine linework and crosshatching",
     "grade_bands": ["K", "1", "2", "3", "4", "5", "6"],
-    "base_prompt_suffix": ", detailed pencil sketch, hand-drawn",
+    "base_prompt_suffix": ", detailed pencil sketch, crosshatching, smooth gradients",
     "negative_prompt": "color, painted, photorealistic, 3d render, blurry, watermark, text",
     "sdxl_settings": {
       "width": 512,
@@ -18,7 +18,7 @@
     "name": "Cartoon",
     "description": "Vibrant and friendly cartoon style with bold colors",
     "grade_bands": ["K", "1", "2", "3", "4", "5", "6"],
-    "base_prompt_suffix": ", cartoon illustration, vibrant colors",
+    "base_prompt_suffix": ", cartoon illustration, flat vector art, soft gradient colors, correct anatomy",
     "negative_prompt": "photorealistic, dark, scary, blurry, watermark, text",
     "sdxl_settings": {
       "width": 512,
@@ -32,7 +32,7 @@
     "name": "Painting",
     "description": "Rich textured painting with visible brushwork and warm tones",
     "grade_bands": ["K", "1", "2", "3", "4", "5", "6"],
-    "base_prompt_suffix": ", oil painting, textured brushstrokes",
+    "base_prompt_suffix": ", oil painting, moody and atmospheric, rich deep colors",
     "negative_prompt": "photographic, flat, blurry, watermark, text",
     "sdxl_settings": {
       "width": 512,
@@ -46,7 +46,7 @@
     "name": "Photorealistic",
     "description": "Professional photograph with natural lighting and sharp detail",
     "grade_bands": ["K", "1", "2", "3", "4", "5", "6"],
-    "base_prompt_suffix": ", hyper realistic",
+    "base_prompt_suffix": ", hyper realistic, anatomically correct",
     "negative_prompt": "cartoon, painting, drawing, blurry, watermark, text",
     "sdxl_settings": {
       "width": 512,
