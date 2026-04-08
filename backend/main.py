@@ -9317,8 +9317,9 @@ async def enhance_image(request: Request):
         })
 
     except Exception as e:
-        logger.error(f"Error enhancing image: {e}")
-        return JSONResponse(status_code=500, content={"error": "An internal error occurred"})
+        import traceback
+        logger.error(f"Error enhancing image: {e}\n{traceback.format_exc()}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.get("/api/image-service/esrgan-status")

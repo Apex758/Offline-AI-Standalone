@@ -85,14 +85,8 @@ def optimize_model(model, dtype=None):
         except Exception as exc:
             logger.warning("[cpu_info] IPEX optimize failed, trying fallback: %s", exc)
 
-    # Fall back to torch.compile (works on all CPUs with PyTorch 2.x)
-    if TORCH_COMPILE_AVAILABLE:
-        try:
-            optimized = torch.compile(model, backend="inductor", mode="reduce-overhead")
-            logger.info("[cpu_info] Applied torch.compile optimization")
-            return optimized
-        except Exception as exc:
-            logger.warning("[cpu_info] torch.compile failed, skipping: %s", exc)
+    # torch.compile with inductor requires a C compiler (cl.exe on Windows).
+    # Skip it entirely to avoid runtime errors on machines without MSVC.
 
     return model
 
