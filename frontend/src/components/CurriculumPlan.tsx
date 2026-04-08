@@ -12,6 +12,7 @@ import type { Milestone } from '../types/milestone';
 import type { AcademicPhase } from '../types/insights';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
+import { getTeacherGrades, GRADE_VALUE_MAP } from '../data/teacherConstants';
 import { TreeBrowserSkeleton } from './ui/TreeBrowserSkeleton';
 
 const Icon: React.FC<{ icon: any; size?: number; style?: React.CSSProperties }> = ({ icon, size = 16, style }) => (
@@ -84,27 +85,43 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
 
   useEffect(() => { loadMilestones(); }, [loadMilestones]);
 
+  // Filter milestones to only grades/subjects configured in settings (mirrors CurriculumTracker logic)
+  const filteredMilestones = useMemo(() => {
+    const gradeMapping = settings.profile.gradeSubjects || {};
+    const filterOn = settings.profile.filterContentByProfile;
+    if (!filterOn) return milestones;
+    const tGrades = getTeacherGrades(gradeMapping);
+    if (tGrades.length === 0) return milestones;
+    return milestones.filter(m => {
+      const gradeKey = (GRADE_VALUE_MAP[m.grade] || m.grade).toLowerCase();
+      if (!tGrades.includes(gradeKey)) return false;
+      if (gradeKey === 'k') return true; // Kindergarten uses "Unknown" subject — pass through
+      const gradeSubjectList = gradeMapping[gradeKey] || [];
+      return gradeSubjectList.length === 0 || gradeSubjectList.includes(m.subject);
+    });
+  }, [milestones, settings.profile.gradeSubjects, settings.profile.filterContentByProfile]);
+
   // Group milestones by grade → subject
   const grouped = useMemo(() => {
     const map = new Map<string, Map<string, Milestone[]>>();
-    for (const m of milestones) {
+    for (const m of filteredMilestones) {
       if (!map.has(m.grade)) map.set(m.grade, new Map());
       const subMap = map.get(m.grade)!;
       if (!subMap.has(m.subject)) subMap.set(m.subject, []);
       subMap.get(m.subject)!.push(m);
     }
     return map;
-  }, [milestones]);
+  }, [filteredMilestones]);
 
   // Count milestones per phase
   const phaseCountMap = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const m of milestones) {
+    for (const m of filteredMilestones) {
       const key = m.phase_id || '__unassigned__';
       counts[key] = (counts[key] || 0) + 1;
     }
     return counts;
-  }, [milestones]);
+  }, [filteredMilestones]);
 
   const unassignedCount = phaseCountMap['__unassigned__'] || 0;
 
@@ -140,7 +157,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
   };
 
   const selectAll = () => {
-    setSelectedMilestoneIds(new Set(milestones.map(m => m.id)));
+    setSelectedMilestoneIds(new Set(filteredMilestones.map(m => m.id)));
   };
 
   const selectNone = () => {
@@ -461,7 +478,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
               );
             })}
 
-          {milestones.length === 0 && (
+          {filteredMilestones.length === 0 && (
             <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>
               No milestones found. Initialize your curriculum in the Progress Tracker first.
             </div>
@@ -478,7 +495,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
           fontSize: 12, color: '#f59e0b', fontWeight: 500, flexShrink: 0,
         }}>
           Unassigned: {unassignedCount} ELO{unassignedCount !== 1 ? 's' : ''} across{' '}
-          {new Set(milestones.filter(m => !m.phase_id).map(m => m.subject)).size} subject{new Set(milestones.filter(m => !m.phase_id).map(m => m.subject)).size !== 1 ? 's' : ''}
+          {new Set(filteredMilestones.filter(m => !m.phase_id).map(m => m.subject)).size} subject{new Set(filteredMilestones.filter(m => !m.phase_id).map(m => m.subject)).size !== 1 ? 's' : ''}
         </div>
       )}
     </div>
