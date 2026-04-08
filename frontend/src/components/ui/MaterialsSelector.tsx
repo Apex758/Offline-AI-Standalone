@@ -87,8 +87,8 @@ export function MaterialsSelector({ value, onChange, tabColor = '#4f46e5' }: Mat
       } else {
         next.add(material);
       }
-      const composed = composeValue(next, otherText);
-      onChange(composed);
+      // Defer onChange to avoid setState-during-render warning
+      queueMicrotask(() => onChange(composeValue(next, otherText)));
       return next;
     });
   }, [otherText, onChange]);

@@ -32,9 +32,9 @@ const CategoryRadialChart: React.FC<CategoryRadialChartProps> = ({ data, activeT
       fill: d.color,
     }));
 
-  const chartSize = Math.min(chartWidth || 190, 190);
-  const outerRadius = Math.floor(chartSize / 2) - 10;
-  const innerRadius = Math.max(outerRadius - (radialData.length * 8 + 6), 20);
+  const chartSize = Math.min(chartWidth || 220, 220);
+  const outerRadius = Math.floor(chartSize / 2) - 8;
+  const innerRadius = Math.max(outerRadius - (radialData.length * 8 + 6), 28);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !payload?.[0]) return null;

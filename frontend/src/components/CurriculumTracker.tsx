@@ -1218,7 +1218,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               <div className="text-center py-16">
                 <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                 <p className="text-theme-muted font-semibold">No milestones found</p>
-                <p className="text-theme-hint text-sm mt-2">Try adjusting your filters</p>
+                <p className="text-theme-hint text-sm mt-2">Have you set milestones for this phase?</p>
               </div>
             ) : (
               <div className="space-y-2" data-tutorial="curriculum-tree">
