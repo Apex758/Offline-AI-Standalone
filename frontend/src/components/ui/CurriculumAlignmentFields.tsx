@@ -52,6 +52,8 @@ export default function CurriculumAlignmentFields({
 
   const [scoDropdownOpen, setScoDropdownOpen] = useState(false);
   const scoDropdownRef = useRef<HTMLDivElement>(null);
+  const [eloDropdownOpen, setEloDropdownOpen] = useState(false);
+  const eloDropdownRef = useRef<HTMLDivElement>(null);
 
   // Use a unique delimiter to separate SCOs, since individual SCO texts may contain newlines
   const SCO_DELIM = '\n---SCO---\n';
@@ -80,6 +82,9 @@ export default function CurriculumAlignmentFields({
     const handleClickOutside = (e: MouseEvent) => {
       if (scoDropdownRef.current && !scoDropdownRef.current.contains(e.target as Node)) {
         setScoDropdownOpen(false);
+      }
+      if (eloDropdownRef.current && !eloDropdownRef.current.contains(e.target as Node)) {
+        setEloDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -143,23 +148,52 @@ export default function CurriculumAlignmentFields({
           {(() => {
             const elosStructured = getELOsStructured(subject, gradeLevel, strand);
             return elosStructured.length > 0 ? (
-              <select
-                value={essentialOutcomes}
-                onChange={(e) => {
-                  onELOChange(e.target.value);
-                  onSCOsChange('');
-                }}
-                data-validation-error={validationErrors.essentialOutcomes ? 'true' : undefined}
-                className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.essentialOutcomes ? 'validation-error' : ''}`}
-                style={ringStyle}
-              >
-                <option value="">{t('curriculum.selectELO')}</option>
-                {elosStructured.map((elo, idx) => (
-                  <option key={idx} value={elo.text} title={elo.text}>
-                    {elo.id ? `[${elo.id}] ` : ''}{elo.text.length > 100 ? elo.text.substring(0, 100) + '...' : elo.text}
-                  </option>
-                ))}
-              </select>
+              <div ref={eloDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setEloDropdownOpen(!eloDropdownOpen)}
+                  data-validation-error={validationErrors.essentialOutcomes ? 'true' : undefined}
+                  className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800 ${validationErrors.essentialOutcomes ? 'validation-error' : ''}`}
+                  style={ringStyle}
+                >
+                  <span className={`min-w-0 overflow-hidden ${!essentialOutcomes ? 'text-gray-400' : 'text-theme-heading'}`}>
+                    {!essentialOutcomes ? t('curriculum.selectELO') : (() => {
+                      const selected = elosStructured.find(e => e.text === essentialOutcomes);
+                      return selected ? (
+                        <span className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                          {selected.id && <span className="inline-block shrink-0 text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">{selected.id}</span>}
+                          <span className="truncate">{selected.text}</span>
+                        </span>
+                      ) : essentialOutcomes;
+                    })()}
+                  </span>
+                  <svg className={`w-4 h-4 shrink-0 transition-transform ${eloDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {eloDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 border border-theme-strong rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-80 overflow-y-auto">
+                    <label
+                      className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme"
+                      onClick={() => { onELOChange(''); onSCOsChange(''); setEloDropdownOpen(false); }}
+                    >
+                      <span className="text-sm text-gray-400">{t('curriculum.selectELO')}</span>
+                    </label>
+                    {elosStructured.map((elo, idx) => (
+                      <label
+                        key={idx}
+                        className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
+                        onClick={() => { onELOChange(elo.text); onSCOsChange(''); setEloDropdownOpen(false); }}
+                      >
+                        <span className="text-sm text-theme-heading">
+                          {elo.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mr-1.5">{elo.id}</span>}
+                          {elo.text}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               <p className="text-sm text-theme-hint italic px-4 py-2">
                 No ELOs found for the selected strand
