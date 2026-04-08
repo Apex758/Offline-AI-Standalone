@@ -1887,8 +1887,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           )}
         </div>
 
-        <AIDisclaimer />
-
         <div className="border-t border-theme py-4 pr-4 pl-20">
           {/* Attached file chips */}
           {(attachedFiles.length > 0 || pendingDropFiles.length > 0 || attachingFile) && (
@@ -2046,6 +2044,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             <p className="text-xs text-theme-hint mt-2">Speak now — your words will appear above</p>
           )}
         </div>
+        <AIDisclaimer />
       </div>
 
       {/* ── Right sidebar: History or Files ── */}
