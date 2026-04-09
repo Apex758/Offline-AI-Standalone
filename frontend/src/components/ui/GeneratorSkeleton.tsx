@@ -1,5 +1,4 @@
 import React from 'react';
-import { Skeleton } from './skeleton';
 import { ShimmerBar } from './ShimmerBar';
 
 interface GeneratorSkeletonProps {
@@ -73,13 +72,13 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
                 <>
                   <div className="grid grid-cols-4 gap-3">
                     {[1, 2, 3, 4].map((i) => (
-                      <Skeleton key={i} className="h-8 rounded" />
+                      <ShimmerBar key={i} accentColor={accentColor} className="h-8 rounded" />
                     ))}
                   </div>
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="grid grid-cols-4 gap-3">
                       {[1, 2, 3, 4].map((j) => (
-                        <Skeleton key={j} className="h-16 rounded" />
+                        <ShimmerBar key={j} accentColor={accentColor} className="h-16 rounded" />
                       ))}
                     </div>
                   ))}

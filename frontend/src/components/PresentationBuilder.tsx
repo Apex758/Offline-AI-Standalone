@@ -2300,13 +2300,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           {/* Header */}
           <div className="border-b border-theme p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Skeleton className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor={tabColor} className="w-8 h-8 rounded-lg" />
               <div className="space-y-1">
                 <ShimmerBar accentColor={tabColor} className="h-5 w-36" />
                 <ShimmerBar accentColor={tabColor} className="h-3 w-24" />
               </div>
             </div>
-            <Skeleton className="w-8 h-8 rounded-lg" />
+            <ShimmerBar accentColor={tabColor} className="w-8 h-8 rounded-lg" />
           </div>
           {/* Form area */}
           <div className="flex-1 overflow-y-auto">
@@ -2314,9 +2314,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               {/* Mode toggle */}
               <div className="flex justify-center">
                 <div className="flex bg-theme-tertiary rounded-lg p-1 gap-1">
-                  <Skeleton className="h-9 w-28 rounded-md" />
-                  <Skeleton className="h-9 w-32 rounded-md" />
-                  <Skeleton className="h-9 w-28 rounded-md" />
+                  <ShimmerBar accentColor={tabColor} className="h-9 w-28 rounded-md" />
+                  <ShimmerBar accentColor={tabColor} className="h-9 w-32 rounded-md" />
+                  <ShimmerBar accentColor={tabColor} className="h-9 w-28 rounded-md" />
                 </div>
               </div>
               {/* Form fields */}
@@ -2324,7 +2324,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 {Array(6).fill(0).map((_, i) => (
                   <div key={i} className="space-y-2">
                     <ShimmerBar accentColor={tabColor} className="h-4 w-20" />
-                    <Skeleton className="h-10 w-full rounded-lg" />
+                    <ShimmerBar accentColor={tabColor} className="h-10 w-full rounded-lg" />
                   </div>
                 ))}
               </div>
@@ -2333,12 +2333,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 <ShimmerBar accentColor={tabColor} className="h-5 w-28" />
                 <div className="grid grid-cols-3 gap-3">
                   {Array(6).fill(0).map((_, i) => (
-                    <Skeleton key={i} className="h-20 rounded-xl" />
+                    <ShimmerBar key={i} accentColor={tabColor} className="h-20 rounded-xl" />
                   ))}
                 </div>
               </div>
               {/* Generate button */}
-              <Skeleton className="h-11 w-full rounded-xl" />
+              <ShimmerBar accentColor={tabColor} className="h-11 w-full rounded-xl" />
             </div>
           </div>
         </div>

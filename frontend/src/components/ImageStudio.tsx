@@ -67,7 +67,6 @@ import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
-import { Skeleton } from './ui/skeleton';
 import { ShimmerBar } from './ui/ShimmerBar';
 import AIDisclaimer from './AIDisclaimer';
 import { NeuroSegment } from './ui/NeuroSegment';
@@ -2050,8 +2049,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         {/* Tab toggle */}
         <div className="flex justify-end p-4 border-b border-theme">
           <div className="flex bg-theme-tertiary rounded-lg p-1 gap-1">
-            <Skeleton className="h-8 w-28 rounded-md" />
-            <Skeleton className="h-8 w-24 rounded-md" />
+            <ShimmerBar accentColor={tabColor} className="h-8 w-28 rounded-md" />
+            <ShimmerBar accentColor={tabColor} className="h-8 w-24 rounded-md" />
           </div>
         </div>
         {/* Content */}
@@ -2062,28 +2061,28 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
               <ShimmerBar accentColor={tabColor} className="h-5 w-24" />
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {Array(8).fill(0).map((_, i) => (
-                  <Skeleton key={i} className="h-24 rounded-xl" />
+                  <ShimmerBar key={i} accentColor={tabColor} className="h-24 rounded-xl" />
                 ))}
               </div>
             </div>
             {/* Prompt */}
             <div className="space-y-2">
               <ShimmerBar accentColor={tabColor} className="h-5 w-20" />
-              <Skeleton className="h-32 w-full rounded-xl" />
+              <ShimmerBar accentColor={tabColor} className="h-32 w-full rounded-xl" />
             </div>
             {/* Options row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <ShimmerBar accentColor={tabColor} className="h-4 w-16" />
-                <Skeleton className="h-10 w-full rounded-lg" />
+                <ShimmerBar accentColor={tabColor} className="h-10 w-full rounded-lg" />
               </div>
               <div className="space-y-2">
                 <ShimmerBar accentColor={tabColor} className="h-4 w-20" />
-                <Skeleton className="h-10 w-full rounded-lg" />
+                <ShimmerBar accentColor={tabColor} className="h-10 w-full rounded-lg" />
               </div>
             </div>
             {/* Generate button */}
-            <Skeleton className="h-11 w-full rounded-xl" />
+            <ShimmerBar accentColor={tabColor} className="h-11 w-full rounded-xl" />
           </div>
         </div>
       </div>

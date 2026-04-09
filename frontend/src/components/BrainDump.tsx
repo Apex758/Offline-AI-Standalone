@@ -1741,7 +1741,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       <div className="p-6 space-y-5">
                         {/* Skeleton header bar */}
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-purple-500/15 animate-pulse" />
+                          <ShimmerBar accentColor={accentColor} className="w-10 h-10 rounded-xl" />
                           <div className="space-y-2 flex-1">
                             <ShimmerBar accentColor={accentColor} className="h-4 w-2/5" />
                             <ShimmerBar accentColor={accentColor} className="h-3 w-1/4" animationDelay="150ms" />
@@ -1759,15 +1759,15 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         {/* Skeleton action cards */}
                         <div className="space-y-3 pt-2">
                           {[0, 1, 2].map(i => (
-                            <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl bg-theme-tertiary/50 animate-pulse" style={{ animationDelay: `${700 + i * 150}ms` }}>
-                              <div className="w-9 h-9 rounded-xl bg-theme-tertiary" />
+                            <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: `${accentColor}08` }}>
+                              <ShimmerBar accentColor={accentColor} className="w-9 h-9 rounded-xl" />
                               <div className="flex-1 space-y-2">
                                 <ShimmerBar accentColor={accentColor} className="h-3 w-1/3" />
                                 <ShimmerBar accentColor={accentColor} className="h-2.5 w-2/3" />
                               </div>
                               <div className="flex gap-1.5">
-                                <div className="w-8 h-8 rounded-xl bg-theme-tertiary" />
-                                <div className="w-8 h-8 rounded-xl bg-theme-tertiary" />
+                                <ShimmerBar accentColor={accentColor} className="w-8 h-8 rounded-xl" />
+                                <ShimmerBar accentColor={accentColor} className="w-8 h-8 rounded-xl" />
                               </div>
                             </div>
                           ))}
@@ -1778,15 +1778,15 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           style={{ maxHeight: skeletonExpanded ? '200px' : '0px', opacity: skeletonExpanded ? 1 : 0 }}
                         >
                           {[3, 4].map(i => (
-                            <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl bg-theme-tertiary/50 animate-pulse" style={{ animationDelay: `${700 + i * 150}ms` }}>
-                              <div className="w-9 h-9 rounded-xl bg-theme-tertiary" />
+                            <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: `${accentColor}08` }}>
+                              <ShimmerBar accentColor={accentColor} className="w-9 h-9 rounded-xl" />
                               <div className="flex-1 space-y-2">
                                 <ShimmerBar accentColor={accentColor} className="h-3 w-2/5" />
                                 <ShimmerBar accentColor={accentColor} className="h-2.5 w-1/2" />
                               </div>
                               <div className="flex gap-1.5">
-                                <div className="w-8 h-8 rounded-xl bg-theme-tertiary" />
-                                <div className="w-8 h-8 rounded-xl bg-theme-tertiary" />
+                                <ShimmerBar accentColor={accentColor} className="w-8 h-8 rounded-xl" />
+                                <ShimmerBar accentColor={accentColor} className="w-8 h-8 rounded-xl" />
                               </div>
                             </div>
                           ))}

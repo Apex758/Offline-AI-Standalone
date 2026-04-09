@@ -1,4 +1,4 @@
-                    import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -78,7 +78,6 @@ import FilePreviewModal from './FilePreviewModal';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP, GRADE_LEVELS } from '../data/teacherConstants';
 import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
-import { Skeleton } from './ui/skeleton';
 import { ShimmerBar } from './ui/ShimmerBar';
 
 // ── File API abstraction (works in Electron & dev/browser) ──
@@ -1635,44 +1634,44 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           {/* Header */}
           <div className="border-b border-theme p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Skeleton className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
               <div className="space-y-1">
                 <ShimmerBar accentColor="#3b82f6" className="h-5 w-36" />
                 <ShimmerBar accentColor="#3b82f6" className="h-3 w-24" />
               </div>
             </div>
             <div className="flex gap-2">
-              <Skeleton className="w-8 h-8 rounded-lg" />
-              <Skeleton className="w-8 h-8 rounded-lg" />
-              <Skeleton className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
             </div>
           </div>
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="flex justify-end">
-              <Skeleton className="h-10 w-48 rounded-2xl" />
+              <ShimmerBar accentColor="#3b82f6" className="h-10 w-48 rounded-2xl" />
             </div>
             <div className="flex justify-start gap-3">
-              <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
-              <Skeleton className="h-16 w-64 rounded-2xl" />
+              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-full flex-shrink-0" />
+              <ShimmerBar accentColor="#3b82f6" className="h-16 w-64 rounded-2xl" />
             </div>
             <div className="flex justify-end">
-              <Skeleton className="h-8 w-32 rounded-2xl" />
+              <ShimmerBar accentColor="#3b82f6" className="h-8 w-32 rounded-2xl" />
             </div>
             <div className="flex justify-start gap-3">
-              <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
-              <Skeleton className="h-20 w-72 rounded-2xl" />
+              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-full flex-shrink-0" />
+              <ShimmerBar accentColor="#3b82f6" className="h-20 w-72 rounded-2xl" />
             </div>
             <div className="flex justify-start gap-3">
-              <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
-              <Skeleton className="h-12 w-56 rounded-2xl" />
+              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-full flex-shrink-0" />
+              <ShimmerBar accentColor="#3b82f6" className="h-12 w-56 rounded-2xl" />
             </div>
           </div>
           {/* Input bar */}
           <div className="border-t border-theme p-4">
             <div className="flex items-end gap-2">
-              <Skeleton className="flex-1 h-12 rounded-xl" />
-              <Skeleton className="w-10 h-10 rounded-xl" />
+              <ShimmerBar accentColor="#3b82f6" className="flex-1 h-12 rounded-xl" />
+              <ShimmerBar accentColor="#3b82f6" className="w-10 h-10 rounded-xl" />
             </div>
           </div>
         </div>
