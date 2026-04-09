@@ -2739,7 +2739,7 @@ async def storybook_websocket(websocket: WebSocket):
 
     cancelled_job_ids = set()
 
-    async def _run_generation(inference, prompt_text, full_prompt_tpl, max_tok, temp, job_id, *, stream_tokens=True, repeat_penalty=1.1, token_type="token"):
+    async def _run_generation(inference, prompt_text, full_prompt_tpl, max_tok, temp, job_id, *, stream_tokens=True, repeat_penalty=1.1, token_type="token", json_schema=None):
         """Run a generation pass. If stream_tokens is False, collect internally and return the text.
         token_type controls the WebSocket message type (e.g. 'narrative_token' for Pass 1 preview)."""
         collected = []
@@ -2752,6 +2752,7 @@ async def storybook_websocket(websocket: WebSocket):
             max_tokens=max_tok,
             temperature=temp,
             repeat_penalty=repeat_penalty,
+            **({"json_schema": json_schema} if json_schema else {}),
         ):
             if job_id in cancelled_job_ids:
                 if _token_buf:
@@ -2883,10 +2884,15 @@ async def storybook_websocket(websocket: WebSocket):
 
                     full_prompt = build_prompt(system_prompt, prompt)
 
+                    # Use JSON Schema grammar enforcement for faster, more reliable output
+                    from schemas.storybook_schema import STORYBOOK_JSON_SCHEMA
+                    _story_schema = STORYBOOK_JSON_SCHEMA
+
                     result = await _run_generation(
                         inference, prompt, full_prompt,
                         max_tokens, temperature, job_id, stream_tokens=True,
                         repeat_penalty=repeat_penalty,
+                        json_schema=_story_schema,
                     )
                     if result is not None:
                         try:
@@ -2894,6 +2900,40 @@ async def storybook_websocket(websocket: WebSocket):
                             await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
+
+                        # ── Comprehension Questions (separate lightweight pass) ───
+                        curriculum_info = data.get("curriculumInfo", "")
+                        if curriculum_info and result:
+                            try:
+                                from schemas.storybook_schema import COMPREHENSION_JSON_SCHEMA
+                                # Extract a brief summary from the story for the question generator
+                                story_summary = result[:800] if len(result) > 800 else result
+                                comp_prompt = (
+                                    f"Based on this children's story, generate 4-6 comprehension questions "
+                                    f"for the teacher to ask after reading.\n\n"
+                                    f"STORY (excerpt):\n{story_summary}\n\n"
+                                    f"CURRICULUM:\n{curriculum_info}\n\n"
+                                    f"Generate questions that mix literal recall, inferential thinking, and "
+                                    f"connection to the curriculum. Include a brief expected answer for each.\n"
+                                    f"Return ONLY valid JSON: {{\"questions\": [{{\"question\": \"...\", \"answer\": \"...\", \"outcomeRef\": \"...\"}}]}}"
+                                )
+                                comp_system = "You are an educational assessment writer. Generate comprehension questions. Return ONLY valid JSON."
+                                comp_full = build_prompt(comp_system, comp_prompt)
+
+                                comp_result = await _run_generation(
+                                    inference, comp_prompt, comp_full,
+                                    500, 0.5, job_id + "_comp",
+                                    stream_tokens=False, repeat_penalty=1.1,
+                                    json_schema=COMPREHENSION_JSON_SCHEMA,
+                                )
+                                if comp_result:
+                                    await websocket.send_json({
+                                        "type": "comprehension",
+                                        "content": comp_result,
+                                    })
+                            except Exception as comp_err:
+                                logger.warning(f"[Storybook] Comprehension questions generation failed: {comp_err}")
+                                # Non-fatal — story was already delivered
 
             except Exception as e:
                 logger.error(f"Storybook generation error: {e}")
@@ -3016,24 +3056,35 @@ def _save_learned_keyword(word: str, category: str):
 def _get_matching_categories(text: str) -> list[str]:
     """Return category names whose keywords appear in the text.
     Checks both hardcoded and user-learned keywords.
-    If fewer than 2 categories match, return ALL categories (ambiguous input)."""
+    If fewer than 2 categories match, return top-3 by keyword score (not all)."""
     text_lower = text.lower()
-    matched = set()
+    scores: dict[str, int] = {cat: 0 for cat in BRAIN_DUMP_CATEGORIES}
 
-    # Check hardcoded keywords
+    # Score hardcoded keywords
     for cat_name, cat_info in BRAIN_DUMP_CATEGORIES.items():
-        if any(kw in text_lower for kw in cat_info["keywords"]):
-            matched.add(cat_name)
+        for kw in cat_info["keywords"]:
+            if kw in text_lower:
+                scores[cat_name] += 1
 
-    # Check learned keywords
+    # Score learned keywords
     learned = _load_learned_keywords()
     for cat_name, words in learned.items():
-        if cat_name in BRAIN_DUMP_CATEGORIES and any(w in text_lower for w in words):
-            matched.add(cat_name)
+        if cat_name in BRAIN_DUMP_CATEGORIES:
+            for w in words:
+                if w in text_lower:
+                    scores[cat_name] += 1
 
-    if len(matched) < 2:
-        return list(BRAIN_DUMP_CATEGORIES.keys())
-    return list(matched)
+    matched = [cat for cat, score in scores.items() if score > 0]
+
+    if len(matched) >= 2:
+        return matched
+    # Fewer than 2 matches — return top-3 by score + any matched (avoids sending all 17 types)
+    sorted_cats = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    top = [cat for cat, _ in sorted_cats[:3]]
+    for m in matched:
+        if m not in top:
+            top.append(m)
+    return top if top else list(BRAIN_DUMP_CATEGORIES.keys())
 
 
 def _build_brain_dump_prompt(matched_categories: list[str]) -> str:
@@ -3057,7 +3108,8 @@ Return ONLY a valid JSON object:
       "type": "<type from list above>",
       "title": "<max 60 chars>",
       "description": "<1-2 sentences>",
-      "details": {{"subject": "...", "grade": "...", "topic": "...", "date": "..."}}
+      "details": {{}},
+      "priority": "normal"
     }}
   ],
   "unmatched": ["<text snippets that don't fit any action type>"]
@@ -3065,6 +3117,8 @@ Return ONLY a valid JSON object:
 
 Rules:
 - For each sentence: identify the intended action, pick the closest type, extract details.
+- DETAILS EXTRACTION: Only include values the teacher ACTUALLY mentioned. If they wrote "grade 4 math quiz on fractions", details = {{"subject": "Mathematics", "grade": "4", "topic": "fractions"}}. Do NOT invent values — omit keys the teacher did not mention.
+- PRIORITY: Set "urgent" if the teacher uses words like URGENT, ASAP, immediately, right now. Set "high" if they mention a deadline (by Friday, due tomorrow, this week, soon). Default is "normal".
 - If a sentence adds context to another action, fold it into that action's description -- do NOT put it in unmatched.
 - Only put text in "unmatched" if it genuinely cannot map to any action (e.g., greetings, personal reminders unrelated to teaching).
 - Never return both empty actions AND empty unmatched.
@@ -3072,7 +3126,8 @@ Rules:
 
 
 async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperature,
-                        token_type="token", done_type="done", tool_name="brain-dump"):
+                        token_type="token", done_type="done", tool_name="brain-dump",
+                        json_schema=None):
     """Shared streaming helper for brain dump websocket responses."""
     _token_buf = ""
     _last_flush = time.monotonic()
@@ -3082,6 +3137,7 @@ async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperat
         prompt_template=prompt,
         max_tokens=max_tokens,
         temperature=temperature,
+        **({"json_schema": json_schema} if json_schema else {}),
     ):
         if chunk.get("error"):
             if _token_buf:
@@ -3145,17 +3201,18 @@ async def brain_dump_websocket(websocket: WebSocket):
 
 App tools: {type_names}
 
-For each fragment that maps to a tool, return a JSON array:
-[{{"text": "<fragment>", "suggestedTypes": ["<tool>"], "confidence": "low"|"medium"}}]
+For each fragment that maps to a tool, return a JSON object:
+{{"suggestions": [{{"text": "<fragment>", "suggestedTypes": ["<tool>"], "confidence": "low"|"medium"}}]}}
 
-Only include fragments with a genuine match. If nothing fits, return [].
-Return ONLY the JSON array."""
+Only include fragments with a genuine match. If nothing fits, return {{"suggestions": []}}.
+Return ONLY the JSON object."""
 
                 suggest_full = "<|begin_of_text|>"
-                suggest_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou match fragments of teacher notes to app features. Only suggest a tool if the text clearly implies that action. Return an empty array if nothing fits confidently.<|eot_id|>"
+                suggest_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou match fragments of teacher notes to app features. Only suggest a tool if the text clearly implies that action. Return an empty JSON object with suggestions array if nothing fits.<|eot_id|>"
                 suggest_full += f"<|start_header_id|>user<|end_header_id|>\n\n{suggest_prompt_text}<|eot_id|>"
                 suggest_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
 
+                from schemas.brain_dump_schema import BRAIN_DUMP_SUGGESTION_SCHEMA
                 slot_mode = None
                 try:
                     slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
@@ -3164,7 +3221,8 @@ Return ONLY the JSON array."""
                     await _stream_to_ws(websocket, inference, suggest_full, unmatched_text,
                                         max_tokens=500, temperature=0.3,
                                         token_type="suggestion_token", done_type="suggestions_done",
-                                        tool_name="brain-dump-suggest")
+                                        tool_name="brain-dump-suggest",
+                                        json_schema=BRAIN_DUMP_SUGGESTION_SCHEMA)
                 except Exception as e:
                     logger.error(f"Brain dump suggestion error: {e}")
                     try:
@@ -3202,25 +3260,44 @@ Return ONLY the JSON array."""
                             _save_learned_keyword(word, category)
 
                 type_desc = BRAIN_DUMP_ACTION_DESCRIPTIONS.get(action_type, f'- "{action_type}": (unknown type)')
+                # Type-specific extraction hints
+                _type_hints = {
+                    "quiz": "Extract question count and difficulty if mentioned. Include the specific topic.",
+                    "rubric": "Extract criteria/skills to assess if mentioned.",
+                    "worksheet": "Extract question type (fill-in, multiple choice, etc.) if mentioned.",
+                    "lesson-plan": "Include duration and one concrete activity idea.",
+                    "kindergarten-plan": "Include theme and suggested hands-on activity.",
+                    "calendar-task": "Extract the date/deadline. If relative (e.g., 'Friday'), note it in details as-is.",
+                    "storybook": "Suggest a title, grade level (K-2), and brief story description.",
+                    "presentation": "Suggest a slide count (5-15) based on topic complexity.",
+                    "attendance": "Extract class name and date if mentioned.",
+                }
+                extra_hint = _type_hints.get(action_type, "")
                 gen_prompt_text = f"""Teacher's note: "{action_text}"
 
 Create one action of this type:
 {type_desc}
+
+{f"Hint: {extra_hint}" if extra_hint else ""}
 
 Return ONLY a valid JSON object:
 {{
   "type": "{action_type}",
   "title": "<max 60 chars>",
   "description": "<1-2 sentences>",
-  "details": {{"subject": "...", "grade": "...", "topic": "...", "date": "..."}}
+  "details": {{}},
+  "priority": "normal"
 }}
+DETAILS: Only include values the teacher actually mentioned. Do NOT invent values — omit keys not mentioned.
+PRIORITY: Set "urgent" for URGENT/ASAP, "high" for deadline mentions, "normal" otherwise.
 No markdown, no explanation. Only the JSON object."""
 
                 gen_full = "<|begin_of_text|>"
-                gen_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou create structured actions for a Caribbean primary school teacher app. Return ONLY valid JSON objects.<|eot_id|>"
+                gen_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou create structured actions for a Caribbean primary school teacher app. Extract details from the teacher's text — do not invent values. Return ONLY valid JSON objects.<|eot_id|>"
                 gen_full += f"<|start_header_id|>user<|end_header_id|>\n\n{gen_prompt_text}<|eot_id|>"
                 gen_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
 
+                from schemas.brain_dump_schema import BRAIN_DUMP_ACTION_SCHEMA
                 slot_mode = None
                 try:
                     slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
@@ -3229,7 +3306,8 @@ No markdown, no explanation. Only the JSON object."""
                     await _stream_to_ws(websocket, inference, gen_full, action_text,
                                         max_tokens=500, temperature=0.3,
                                         token_type="action_token", done_type="action_done",
-                                        tool_name="brain-dump-action")
+                                        tool_name="brain-dump-action",
+                                        json_schema=BRAIN_DUMP_ACTION_SCHEMA)
                 except Exception as e:
                     logger.error(f"Brain dump generate-action error: {e}")
                     try:
@@ -3270,6 +3348,7 @@ No markdown, no explanation. Only the JSON object."""
 
             full_prompt = build_prompt(system_prompt, text)
 
+            from schemas.brain_dump_schema import BRAIN_DUMP_ANALYSIS_SCHEMA
             slot_mode = None
             try:
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
@@ -3277,7 +3356,8 @@ No markdown, no explanation. Only the JSON object."""
                 inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                 await _stream_to_ws(websocket, inference, full_prompt, text,
                                     max_tokens=_t1_params.get("max_tokens", 3000) if _is_tier1 else 3000,
-                                    temperature=_t1_params.get("temperature", 0.3) if _is_tier1 else 0.3)
+                                    temperature=_t1_params.get("temperature", 0.3) if _is_tier1 else 0.3,
+                                    json_schema=BRAIN_DUMP_ANALYSIS_SCHEMA)
             except Exception as e:
                 logger.error(f"Brain dump analysis error: {e}")
                 try:

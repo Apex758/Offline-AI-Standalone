@@ -71,7 +71,126 @@ function buildImageInstructions(imageMode: ImageMode): string {
   }
 }
 
-// ─── Main Builder ─────────────────────────────────────────────────────────────
+// ─── Pacing Guide Builder ─────────────────────────────────────────────────────
+
+function buildPacingGuide(pageCount: number): string {
+  if (pageCount <= 4) {
+    return `STORY STRUCTURE (${pageCount} pages):
+- Page 1: Introduce the main character doing something — show them in their world
+- Page 2: A small problem, question, or want appears
+- Page ${pageCount - 1}: The character tries to solve it — something surprising or funny happens
+- Page ${pageCount}: Resolution — the character succeeds or finds an answer through action`;
+  }
+
+  // For longer stories, compute approximate page ranges
+  const intro = Math.max(1, Math.floor(pageCount * 0.2));       // ~20% intro
+  const problemStart = intro + 1;
+  const midEnd = Math.floor(pageCount * 0.7);                    // ~70% through
+  const climax = midEnd + 1;
+  const resolution = pageCount;
+
+  const introRange = intro === 1 ? 'Page 1' : `Pages 1-${intro}`;
+  const problemRange = problemStart === midEnd ? `Page ${problemStart}` : `Pages ${problemStart}-${midEnd}`;
+  const climaxRange = climax === resolution - 1 ? `Page ${climax}` : `Pages ${climax}-${resolution - 1}`;
+
+  return `STORY STRUCTURE (distribute across ${pageCount} pages):
+- ${introRange}: Introduce the main character DOING something — show their world through action, not description
+- ${problemRange}: A small problem, want, or question drives the story forward — include a setback or surprise
+- ${climaxRange}: The character tries to solve the problem — build to the most exciting moment
+- Page ${resolution}: Resolution — the character succeeds or learns something through their own actions (NOT a lecture)`;
+}
+
+// ─── Dynamic Example JSON Builder ─────────────────────────────────────────────
+
+/**
+ * Build the example JSON block dynamically using actual character names from formData.
+ * This prevents name contamination — the model only sees the user's chosen names.
+ */
+function buildExampleJSON(formData: StorybookFormData, hasCurriculum: boolean): string {
+  const grade = formData.gradeLevel;
+  const hasMultipleSpeakers = formData.speakerCount > 1;
+
+  // Get actual character names from speaker config, with fallbacks
+  const charNames: string[] = formData.speakers
+    .filter(s => s.role !== 'narrator' && s.characterName)
+    .map(s => s.characterName!);
+
+  // Build characters array and characterDescriptions example
+  let charactersExample: string;
+  let charDescExample: string;
+  let voiceExample: string;
+  let textSegmentsExample: string;
+
+  if (!hasMultipleSpeakers || charNames.length === 0) {
+    // Narrator-only mode
+    charactersExample = '[]';
+    charDescExample = '{}';
+    voiceExample = `{
+    "narrator": "${formData.speakers[0]?.voice || 'lessac'}"
+  }`;
+    textSegmentsExample = `[
+        { "speaker": "narrator", "text": "The little bird hopped along the branch." }
+      ]`;
+  } else if (charNames.length === 1) {
+    // Narrator + 1 character
+    const name = charNames[0];
+    const voice = formData.speakers.find(s => s.characterName === name)?.voice || 'ryan';
+    charactersExample = `["${name}"]`;
+    charDescExample = `{
+    "${name}": "detailed visual description for ${name}..."
+  }`;
+    voiceExample = `{
+    "narrator": "${formData.speakers[0]?.voice || 'lessac'}",
+    "${name}": "${voice}"
+  }`;
+    textSegmentsExample = `[
+        { "speaker": "narrator", "text": "The garden was full of bright flowers." },
+        { "speaker": "${name}", "text": "Look at all the colors!" }
+      ]`;
+  } else {
+    // Narrator + 2 characters
+    const name1 = charNames[0];
+    const name2 = charNames[1];
+    const voice1 = formData.speakers.find(s => s.characterName === name1)?.voice || 'ryan';
+    const voice2 = formData.speakers.find(s => s.characterName === name2)?.voice || 'amy';
+    charactersExample = `["${name1}", "${name2}"]`;
+    charDescExample = `{
+    "${name1}": "detailed visual description for ${name1}...",
+    "${name2}": "detailed visual description for ${name2}..."
+  }`;
+    voiceExample = `{
+    "narrator": "${formData.speakers[0]?.voice || 'lessac'}",
+    "${name1}": "${voice1}",
+    "${name2}": "${voice2}"
+  }`;
+    textSegmentsExample = `[
+        { "speaker": "narrator", "text": "They walked together through the sunny park." },
+        { "speaker": "${name1}", "text": "What is that sound?" },
+        { "speaker": "${name2}", "text": "Let us go and see!" }
+      ]`;
+  }
+
+  return `{
+  "title": "string",
+  "gradeLevel": "${grade}",
+  "learningObjectiveSummary": ${hasCurriculum ? '"one sentence — what students learn from this story"' : 'null'},
+  "characters": ${charactersExample},
+  "characterDescriptions": ${charDescExample},
+  "voiceAssignments": ${voiceExample},
+  "scenes": [
+    { "id": "park", "description": "a sunny green park with tall oak trees and a wooden bench" }
+  ],
+  "pages": [
+    {
+      "pageNumber": 1,
+      "textSegments": ${textSegmentsExample},
+      "sceneId": "park",
+      "characterScene": "8-15 word image prompt describing the character action",
+      "imagePlacement": "right"
+    }
+  ]
+}`;
+}
 
 // ─── Curriculum Block Builder ─────────────────────────────────────────────────
 
@@ -98,10 +217,6 @@ function buildCurriculumBlock(formData: StorybookFormData): string {
   lines.push('- Do NOT lecture — embed the learning in the characters\' actions, discoveries, or dialogue');
   lines.push('- Keep the story fun and engaging; the curriculum is the invisible backbone, not a lesson plan');
   lines.push('- Generate "learningObjectiveSummary": one sentence summarising what students will have learned by the end');
-  lines.push('- Generate "comprehensionQuestions": 4-6 questions teachers can ask after reading');
-  lines.push('  - Mix literal recall, inferential, and connection-to-classwork question types');
-  lines.push('  - Include a brief expected answer/discussion point for each');
-  lines.push('  - For curriculum-aligned questions, include an "outcomeRef" matching the SCO it targets');
 
   return lines.join('\n');
 }
@@ -122,12 +237,14 @@ export function buildStorybookPrompt(formData: StorybookFormData, language?: str
   const speakerInstruction = hasMultipleSpeakers
     ? `SPEAKERS (exactly ${formData.speakerCount} total — no more, no fewer):
 ${speakerLines}
-IMPORTANT: Use ONLY these ${formData.speakerCount} speakers. Do NOT invent additional characters who speak. Tag every text segment with the correct speaker name. Narrator reads scene/action text. Characters only speak in dialogue. The "voiceAssignments" object must contain exactly these speakers and no others.`
+IMPORTANT: Use ONLY these ${formData.speakerCount} speakers. Do NOT invent additional characters who speak. Do NOT rename these characters. Tag every text segment with the correct speaker name exactly as listed above. Narrator reads scene/action text. Characters only speak in dialogue. The "voiceAssignments" object must contain exactly these speakers and no others.`
     : `SPEAKER: Single narrator only. All text uses speaker: "narrator". Do NOT create any speaking characters. The entire story must be narrated in third person by the narrator. The "voiceAssignments" object must contain only: {"narrator": "${formData.speakers[0]?.voice || 'lessac'}"}.`;
 
   const imageInstructions = buildImageInstructions(formData.imageMode);
   const curriculumBlock = buildCurriculumBlock(formData);
   const hasCurriculum = formData.useCurriculum && formData.strand;
+  const pacingGuide = buildPacingGuide(formData.pageCount);
+  const exampleJSON = buildExampleJSON(formData, !!hasCurriculum);
 
   const prompt = `You are a children's storybook author specializing in ${spec.name} (${spec.age}) literacy.
 
@@ -139,16 +256,24 @@ Description: ${formData.description}
 Grade Level: ${spec.name} (${spec.age})${formData.subject ? `\nSubject: ${formData.subject}` : ''}
 Total Pages: ${formData.pageCount}
 
+${pacingGuide}
+
 ${curriculumBlock ? curriculumBlock + '\n\n' : ''}WRITING RULES:
 - ${spec.sentences}
 - Sentence length: ${spec.sentenceLength}
 - Vocabulary: ${spec.vocabulary}
 - Dialogue style: ${spec.dialogue}
 - Story style: ${spec.style}
-- Keep language warm, positive, and encouraging
+- Show emotions through actions and dialogue, not narration (write "she jumped up and clapped" not "she was happy")
 - Each page must have ONE clear moment or action — do not pack too much into a page
-- Introduce characters naturally on early pages
-- Build to a simple, satisfying conclusion
+- Page 1 should be a narrator introduction: 1-2 sentences that set the scene and hook the reader before the story action begins
+- Introduce the main character DOING something on an early page — not through description
+- Include at least one moment of humor, surprise, or wonder
+- Vary sentence beginnings — never start 3+ consecutive sentences with the same word
+- Use sensory details — colors, sounds, textures — that young readers can picture
+- Do NOT end with a moral lesson or summary paragraph (no "And so they learned that...")
+- Characters should solve problems with creativity, humor, or kindness — not be told the answer
+${hasMultipleSpeakers ? '- Give each character a distinct speaking style — one might ask questions, another uses exclamations' : ''}
 
 ${speakerInstruction}
 
@@ -160,54 +285,13 @@ SCENE GROUPING:
 
 IMAGE INSTRUCTIONS:
 ${imageInstructions}
-- textAnimation: always "fadeIn"
 
 CHARACTER DESCRIPTIONS (for image consistency):
 For each named character, provide a "characterDescriptions" object with a hyper-detailed visual description (20-30 words) that will be prepended to every image prompt to maintain consistency across pages. Example: "a small golden retriever puppy with floppy ears, round dark eyes, red collar with a silver bell, fluffy tail".
 
-STYLE SUFFIX (include in output):
-"styleSuffix": "${STORYBOOK_STYLE_SUFFIX}"
-
 OUTPUT FORMAT — return ONLY valid JSON, no markdown, no explanation:
 
-{
-  "title": "string",
-  "gradeLevel": "${grade}",
-  "learningObjectiveSummary": ${hasCurriculum ? '"one sentence — what students learn from this story"' : 'null'},
-  "characters": ["name1", "name2"],
-  "characterDescriptions": {
-    "CharacterName": "detailed visual description..."
-  },
-  "voiceAssignments": {
-    "narrator": "lessac",
-    "CharacterName": "ryan"
-  },
-  "styleSuffix": "${STORYBOOK_STYLE_SUFFIX}",
-  "scenes": [
-    { "id": "park", "description": "a sunny green park with tall oak trees and a wooden bench" }
-  ],
-  "pages": [
-    {
-      "pageNumber": 1,
-      "textSegments": [
-        { "speaker": "narrator", "text": "One sunny morning, Max woke up early." },
-        { "speaker": "Max", "text": "Today is a great day!" }
-      ],
-      "sceneId": "park",
-      "characterScene": "a golden puppy stretching and yawning near a bright window",
-      "imagePlacement": "right",
-      "characterAnimation": "slideInRight",
-      "textAnimation": "fadeIn"
-    }
-  ],
-  "comprehensionQuestions": ${hasCurriculum ? `[
-    {
-      "question": "What did the character do when...?",
-      "answer": "Expected answer or discussion points for the teacher",
-      "outcomeRef": "SCO text it targets"
-    }
-  ]` : '[]'}
-}
+${exampleJSON}
 
 Generate all ${formData.pageCount} pages. Every page must have at least one textSegment. Return ONLY the JSON object.`;
 
@@ -225,13 +309,19 @@ export function buildNarrativePrompt(formData: StorybookFormData): string {
   const spec = GRADE_SPECS[grade];
   const hasMultipleSpeakers = formData.speakerCount > 1;
   const curriculumBlock = buildCurriculumBlock(formData);
+  const pacingGuide = buildPacingGuide(formData.pageCount);
 
   const speakerNames = formData.speakers
     .filter(s => s.role !== 'narrator' && s.characterName)
     .map(s => s.characterName);
   const characterNote = speakerNames.length > 0
-    ? `Include these characters: ${speakerNames.join(', ')}.`
+    ? `Use ONLY these characters: ${speakerNames.join(', ')}. Do NOT rename them or add new speaking characters.`
     : 'Create 1-2 named characters for the story.';
+
+  // Build dialogue example using actual character names (not hardcoded names)
+  const dialogueExample = speakerNames.length > 0
+    ? `- Write dialogue with the character name before each line, like:\n  Narrator: The garden was full of bright flowers.\n  ${speakerNames[0]}: "Look at all the colors!"`
+    : '- Write dialogue with the character name before each line, like:\n  Narrator: The garden was full of bright flowers.\n  Character: "Look at all the colors!"';
 
   return `You are a children's storybook author for ${spec.name} (${spec.age}).
 
@@ -242,18 +332,22 @@ Title: "${formData.title}"
 Description: ${formData.description}
 Grade Level: ${spec.name} (${spec.age})${formData.subject ? `\nSubject: ${formData.subject}` : ''}
 
+${pacingGuide}
+
 ${curriculumBlock ? curriculumBlock + '\n\n' : ''}WRITING RULES:
 - ${spec.sentences}
 - Sentence length: ${spec.sentenceLength}
 - Vocabulary: ${spec.vocabulary}
 - Dialogue style: ${spec.dialogue}
 - Story style: ${spec.style}
-- Keep language warm, positive, and encouraging
+- Show emotions through actions and dialogue, not narration
 - Each page should have ONE clear moment or action
-- Introduce characters naturally on early pages
-- Build to a simple, satisfying conclusion
+- Introduce the main character DOING something on the first page
+- Include at least one moment of humor, surprise, or wonder
+- Vary sentence beginnings — never start 3+ consecutive sentences with the same word
+- Do NOT end with a moral lesson or summary paragraph
 - ${characterNote}
-${hasMultipleSpeakers ? '- Write dialogue with the character name before each line, like:\n  Narrator: One sunny morning, Max woke up early.\n  Max: "Today is a great day!"' : '- Write in third person narrative voice.'}
+${hasMultipleSpeakers ? dialogueExample : '- Write in third person narrative voice.'}
 
 IMPORTANT: The story must flow naturally from page to page. Each page should connect to the next. The story needs a clear beginning, middle, and end.
 
@@ -266,7 +360,6 @@ Write exactly ${formData.pageCount} pages separated by "---PAGE BREAK---". Start
  * with the actual story text from pass 1.
  */
 export function buildStructurePromptTemplate(formData: StorybookFormData): string {
-  const grade = formData.gradeLevel;
   const imageInstructions = buildImageInstructions(formData.imageMode);
   const hasCurriculum = formData.useCurriculum && formData.strand;
 
@@ -275,12 +368,14 @@ export function buildStructurePromptTemplate(formData: StorybookFormData): strin
     return `  - ${s.role === 'narrator' ? 'Narrator' : name} (voice: ${s.voice})`;
   }).join('\n');
 
+  const exampleJSON = buildExampleJSON(formData, !!hasCurriculum);
+
   return `Convert the following children's story into structured JSON format.
 
 THE STORY:
 {{NARRATIVE}}
 
-SPEAKERS:
+SPEAKERS (use these EXACT names — do not rename or add characters):
 ${speakerLines}
 
 SCENE GROUPING:
@@ -290,54 +385,34 @@ SCENE GROUPING:
 
 IMAGE INSTRUCTIONS:
 ${imageInstructions}
-- textAnimation: always "fadeIn"
 
 CHARACTER DESCRIPTIONS (for image consistency):
 For each named character, provide a "characterDescriptions" object with a detailed visual description (20-30 words).
 
-STYLE SUFFIX (include in output):
-"styleSuffix": "${STORYBOOK_STYLE_SUFFIX}"
-
 OUTPUT FORMAT — return ONLY valid JSON, no markdown, no explanation:
 
-{
-  "title": "${formData.title}",
-  "gradeLevel": "${grade}",
-  "learningObjectiveSummary": ${hasCurriculum ? '"one sentence — what students learn from this story"' : 'null'},
-  "characters": ["name1", "name2"],
-  "characterDescriptions": {
-    "CharacterName": "detailed visual description..."
-  },
-  "voiceAssignments": {
-    "narrator": "lessac",
-    "CharacterName": "ryan"
-  },
-  "styleSuffix": "${STORYBOOK_STYLE_SUFFIX}",
-  "scenes": [
-    { "id": "park", "description": "a sunny green park with tall oak trees and a wooden bench" }
-  ],
-  "pages": [
-    {
-      "pageNumber": 1,
-      "textSegments": [
-        { "speaker": "narrator", "text": "One sunny morning, Max woke up early." },
-        { "speaker": "Max", "text": "Today is a great day!" }
-      ],
-      "sceneId": "park",
-      "characterScene": "a golden puppy stretching and yawning near a bright window",
-      "imagePlacement": "right",
-      "characterAnimation": "slideInRight",
-      "textAnimation": "fadeIn"
-    }
-  ],
-  "comprehensionQuestions": ${hasCurriculum ? `[
-    {
-      "question": "What did the character do when...?",
-      "answer": "Expected answer or discussion points for the teacher",
-      "outcomeRef": "SCO text it targets"
-    }
-  ]` : '[]'}
+${exampleJSON}
+
+IMPORTANT: Preserve the story text exactly as written above. Split it into pages matching the page breaks. Tag each sentence with the correct speaker using the EXACT names from the SPEAKERS list. Return ONLY the JSON object.`;
 }
 
-IMPORTANT: Preserve the story text exactly as written above. Split it into pages matching the page breaks. Tag each sentence with the correct speaker. Return ONLY the JSON object.`;
+// ─── Curriculum Info Builder (for comprehension questions pass) ────────────────
+
+/**
+ * Build a compact curriculum info string to send to the backend for the
+ * separate comprehension questions generation pass.
+ * Returns empty string if no curriculum is configured.
+ */
+export function buildCurriculumInfo(formData: StorybookFormData): string {
+  if (!formData.useCurriculum || !formData.strand) return '';
+
+  const parts: string[] = [];
+  if (formData.subject) parts.push(`Subject: ${formData.subject}`);
+  if (formData.strand) parts.push(`Strand: ${formData.strand}`);
+  if (formData.essentialOutcomes) parts.push(`ELO: ${formData.essentialOutcomes}`);
+  if (formData.specificOutcomes) {
+    const scos = formData.specificOutcomes.split('\n').filter(s => s.trim());
+    if (scos.length > 0) parts.push(`SCOs: ${scos.join('; ')}`);
+  }
+  return parts.join('\n');
 }

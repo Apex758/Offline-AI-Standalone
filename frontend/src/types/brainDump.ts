@@ -23,6 +23,8 @@ export interface BrainDumpAction {
   description: string;
   details: Record<string, any>;
   status: 'pending' | 'accepted' | 'denied';
+  /** Urgency level — extracted from teacher text (URGENT/ASAP → urgent, deadline → high) */
+  priority?: 'normal' | 'high' | 'urgent';
 }
 
 export interface BrainDumpSuggestion {

@@ -273,7 +273,13 @@ TIER1_PROMPTS = {
 
     "storybook": (
         "You are a children's storybook writer for K-2 students. Return ONLY valid JSON -- no markdown, no explanation.\n"
-        "Use this exact structure:\n"
+        "Story rules:\n"
+        "- Every story needs: a character who wants something, a problem, and a resolution\n"
+        "- Show emotions through actions, not words (write 'he jumped up' not 'he was happy')\n"
+        "- No moralizing at the end. No 'And they all learned that...'\n"
+        "- Vary sentence starts. Never begin 3 sentences in a row with the same word\n"
+        "- Use the EXACT character names from the prompt -- do not rename or add characters\n"
+        "Use this exact JSON structure:\n"
         "{\"title\":\"...\",\"gradeLevel\":\"K\",\"characters\":[\"name\"],\n"
         "\"characterDescriptions\":{\"Name\":\"20-word visual description\"},\n"
         "\"voiceAssignments\":{\"narrator\":\"lessac\"},\n"
@@ -282,7 +288,7 @@ TIER1_PROMPTS = {
         "\"pages\":[{\"pageNumber\":1,\"textSegments\":[{\"speaker\":\"narrator\",\"text\":\"One short sentence.\"}],\n"
         "\"sceneId\":\"park\",\"characterScene\":\"8-12 word image prompt\",\"imagePlacement\":\"right\",\n"
         "\"characterAnimation\":\"slideInRight\",\"textAnimation\":\"fadeIn\"}]}\n"
-        "Rules: simple words only, short sentences, dialogue-driven, no moralizing. Start with {"
+        "Start with {"
     ),
 
     "brain-dump": (

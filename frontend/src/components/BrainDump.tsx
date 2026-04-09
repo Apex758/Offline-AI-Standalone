@@ -874,6 +874,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
           description: a.description || '',
           details: a.details || a.suggestedData || {},
           status: 'pending' as const,
+          priority: a.priority || 'normal',
         }));
 
     const tryParseResult = (parsed: any): { actions: BrainDumpAction[]; unmatched: string[] } | null => {
@@ -1206,8 +1207,12 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
           setIsSuggestLoading(false);
           try {
             let raw = suggestAccumulatedRef.current.trim();
-            // Try to extract JSON array
+            // Try to extract JSON — handle both wrapped {suggestions: [...]} and bare array formats
             let parsed = JSON.parse(raw);
+            // Unwrap {suggestions: [...]} if present
+            if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.suggestions)) {
+              parsed = parsed.suggestions;
+            }
             if (!Array.isArray(parsed)) {
               const match = raw.match(/\[[\s\S]*\]/);
               parsed = match ? JSON.parse(match[0]) : [];
@@ -2072,6 +2077,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                       <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">{meta.label}</span>
+                                      {action.priority === 'urgent' && <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-full">🔴 URGENT</span>}
+                                      {action.priority === 'high' && <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-full">🟡 High</span>}
                                       {isAccepted && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full"><Check className="w-2.5 h-2.5" /> Done</span>}
                                       {isDenied && <span className="text-[10px] text-theme-hint line-through">Declined</span>}
                                     </div>
@@ -2137,6 +2144,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">{meta.label}</span>
+                                {action.priority === 'urgent' && <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-full">🔴 URGENT</span>}
+                                {action.priority === 'high' && <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-full">🟡 High</span>}
                                 {isAccepted && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full"><Check className="w-2.5 h-2.5" /> Done</span>}
                                 {isDenied && <span className="text-[10px] text-theme-hint line-through">Declined</span>}
                               </div>
