@@ -365,6 +365,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [sendingToCloud, setSendingToCloud] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // If initialScreenshot is provided, flip to reporting and open create view
@@ -404,6 +405,54 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
     persistState();
     return () => { if (persistTimer.current) clearTimeout(persistTimer.current); };
   }, [persistState]);
+
+  // -- Cloud sync: poll for resolved reports --
+  useEffect(() => {
+    if (!isLicensed || !oakLicense) return;
+
+    const checkCloudUpdates = async () => {
+      try {
+        const { data, error } = await supabase.rpc('check_support_updates', {
+          p_oak_license: oakLicense,
+        });
+        if (error || !data || !Array.isArray(data)) return;
+
+        // Match resolved cloud reports to local tickets
+        const resolvedMap = new Map<string, string>();
+        for (const report of data) {
+          if (report.admin_response) {
+            resolvedMap.set(report.report_id, report.admin_response);
+          }
+        }
+
+        if (resolvedMap.size === 0) return;
+
+        let anyUpdated = false;
+        const updated = tickets.map(t => {
+          if (t.cloudReportId && resolvedMap.has(t.cloudReportId) && !t.adminResponse) {
+            anyUpdated = true;
+            return {
+              ...t,
+              status: 'resolved' as const,
+              adminResponse: resolvedMap.get(t.cloudReportId),
+            };
+          }
+          return t;
+        });
+
+        if (anyUpdated) {
+          setTickets(updated);
+        }
+      } catch {
+        // Offline or error - silently ignore
+      }
+    };
+
+    // Check on mount and every 5 minutes
+    checkCloudUpdates();
+    const interval = setInterval(checkCloudUpdates, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [isLicensed, oakLicense]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [initialLoad, setInitialLoad] = React.useState(true);
   React.useEffect(() => { setInitialLoad(false); }, []);
@@ -497,8 +546,6 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
   };
 
   // -- Cloud sync: send ticket to Supabase via RPC --
-  const [sendingToCloud, setSendingToCloud] = useState<string | null>(null);
-
   const handleSendToCloud = async (ticket: Ticket) => {
     if (!oakLicense || ticket.sent) return;
     setSendingToCloud(ticket.id);
@@ -535,54 +582,6 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
       setSendingToCloud(null);
     }
   };
-
-  // -- Cloud sync: poll for resolved reports --
-  useEffect(() => {
-    if (!isLicensed || !oakLicense) return;
-
-    const checkCloudUpdates = async () => {
-      try {
-        const { data, error } = await supabase.rpc('check_support_updates', {
-          p_oak_license: oakLicense,
-        });
-        if (error || !data || !Array.isArray(data)) return;
-
-        // Match resolved cloud reports to local tickets
-        const resolvedMap = new Map<string, string>();
-        for (const report of data) {
-          if (report.admin_response) {
-            resolvedMap.set(report.report_id, report.admin_response);
-          }
-        }
-
-        if (resolvedMap.size === 0) return;
-
-        let anyUpdated = false;
-        const updated = tickets.map(t => {
-          if (t.cloudReportId && resolvedMap.has(t.cloudReportId) && !t.adminResponse) {
-            anyUpdated = true;
-            return {
-              ...t,
-              status: 'resolved' as const,
-              adminResponse: resolvedMap.get(t.cloudReportId),
-            };
-          }
-          return t;
-        });
-
-        if (anyUpdated) {
-          setTickets(updated);
-        }
-      } catch {
-        // Offline or error - silently ignore
-      }
-    };
-
-    // Check on mount and every 5 minutes
-    checkCloudUpdates();
-    const interval = setInterval(checkCloudUpdates, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [isLicensed, oakLicense]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredTickets = tickets
     .filter(t => filterStatus === 'all' || t.status === filterStatus)
