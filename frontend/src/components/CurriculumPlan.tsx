@@ -61,7 +61,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
     return 'default_teacher';
   }, []);
 
-  const { allPhases, loading: phasesLoading } = useCurrentPhase(teacherId);
+  const { currentPhase, allPhases, loading: phasesLoading } = useCurrentPhase(teacherId);
 
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -231,6 +231,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
           {allPhases.map(p => {
             const color = getPhaseColor(p.phase_key, p.semester);
             const count = phaseCountMap[p.id] || 0;
+            const isCurrent = currentPhase?.id === p.id;
             const isSelected = selectedPhaseId === p.id;
             // When an ELO is active, find its current phase for pre-checking
             const activeEloPhaseId = activeEloId
@@ -252,6 +253,9 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   {getPhaseBadge(p.id)}
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', flex: 1 }}>{p.phase_label}</span>
+                  {isCurrent && (
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0, boxShadow: `0 0 6px ${color}` }} />
+                  )}
                   {/* Radio-style checkbox when an ELO is active */}
                   {activeEloId !== null && (
                     <input
