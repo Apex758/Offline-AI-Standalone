@@ -3343,22 +3343,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 function AchievementUnlockModalBridge() {
   const { pendingUnlocks, dismissUnlock } = useAchievementContext();
   const [trophySrc, setTrophySrc] = React.useState<string | undefined>(undefined);
-  const [trophyResolved, setTrophyResolved] = React.useState(false);
 
   const current = pendingUnlocks.length > 0 ? pendingUnlocks[0] : null;
 
+  // Load trophy image in the background — do NOT block modal display on this
   React.useEffect(() => {
-    if (!current) { setTrophySrc(undefined); setTrophyResolved(false); return; }
+    if (!current) { setTrophySrc(undefined); return; }
     setTrophySrc(undefined);
-    setTrophyResolved(false);
     const tType = getTrophyType(current.achievement_id);
-    if (!tType) { setTrophyResolved(true); return; }
+    if (!tType) return;
     getTrophyImageForTier(tType, (current.tier ?? 'gold') as TrophyTier)
-      .then(src => { setTrophySrc(src); setTrophyResolved(true); })
-      .catch(() => setTrophyResolved(true));
+      .then(src => { setTrophySrc(src); })
+      .catch(() => {});
   }, [current?.achievement_id, current?.tier]);
 
-  if (!current || !trophyResolved) return null;
+  // Show immediately when an achievement is pending — don't wait for the image
+  if (!current) return null;
 
   if (trophySrc) {
     return (
@@ -3371,6 +3371,7 @@ function AchievementUnlockModalBridge() {
     );
   }
 
+  // AchievementUnlockModal has its own internal image loading — safe to show right away
   return (
     <AchievementUnlockModal
       achievement={current}

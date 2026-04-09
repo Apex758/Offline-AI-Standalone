@@ -76,6 +76,7 @@ import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
 import FilePreviewModal from './FilePreviewModal';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP, GRADE_LEVELS } from '../data/teacherConstants';
 import { preloadAllCurriculum, getAllCurriculumFiles } from '../data/curriculumLoader';
 import { ShimmerBar } from './ui/ShimmerBar';
@@ -245,6 +246,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [filesTab, setFilesTab] = useState<FilesTab>('on-pc');
   const { settings, updateSettings } = useSettings();
   const { hasVision, supportsThinking } = useCapabilities();
+  const triggerCheck = useAchievementTrigger();
   const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [folderContents, setFolderContents] = useState<Record<string, FileEntry[]>>({});
@@ -624,6 +626,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         };
         console.log('[Chat] Finalizing streaming message:', finalMessage);
         setMessages(prev => [...prev, finalMessage]);
+        triggerCheck();
         clearStreaming(tabId, ENDPOINT);
 
         if (!titleSet && messages.length === 1) {

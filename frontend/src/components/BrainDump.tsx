@@ -65,6 +65,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType, BrainDumpSuggestion } from '../types/brainDump';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { Skeleton } from './ui/skeleton';
@@ -773,6 +774,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   const { guardOffline } = useOfflineGuard();
+  const triggerCheck = useAchievementTrigger();
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   const WS_ENDPOINT = '/ws/brain-dump';
   useQueueCancellation(tabId, WS_ENDPOINT, setLocalLoadingMap);
@@ -1181,6 +1183,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
           }
           setActions(parsed);
           setIsAnalyzing(false);
+          triggerCheck();
           // Trigger suggestion flow for unmatched text (after action reveal animation)
           if (unmatched.length > 0) {
             const delay = Math.max(parsed.length * 120 + 500, 800);

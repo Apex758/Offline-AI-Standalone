@@ -115,6 +115,17 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
     }, 300);
   }, [teacherId, applyCheckResult]);
 
+  // Periodic fallback poll every 2 minutes — catches any achievements missed by triggerCheck
+  useEffect(() => {
+    if (!teacherId) return;
+    const id = setInterval(() => {
+      achievementApi.check(teacherId)
+        .then(applyCheckResult)
+        .catch(() => {});
+    }, 2 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [teacherId, applyCheckResult]);
+
   const dismissUnlock = useCallback(() => {
     setPendingUnlocks(prev => {
       if (prev.length === 0) return prev;

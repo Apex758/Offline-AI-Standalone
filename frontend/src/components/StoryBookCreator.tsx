@@ -43,6 +43,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
@@ -1301,6 +1302,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const { enqueue, queueEnabled } = useQueue();
   const { speak, stop: stopTTS, isSpeaking } = useTTS();
   const { guardOffline } = useOfflineGuard();
+  const triggerCheck = useAchievementTrigger();
 
   const accentColor = (settings.tabColors as any)['storybook'] || '#a855f7';
 
@@ -1667,6 +1669,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         // Auto-save completed storybook
         const saved = saveStorybook(formData, validated, currentDraftId || undefined);
         setCurrentDraftId(saved.id);
+        triggerCheck();
         // User can click "Generate Images" or generate per-page individually
       } else {
         // Full parse failed (e.g. generation timed out mid-JSON).
@@ -1974,6 +1977,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       setCurrentDraftId(saved.id);
       setSaveToast('Draft saved!');
       setTimeout(() => setSaveToast(null), 2000);
+      triggerCheck();
       return;
     }
     // Show save options dialog for completed storybooks
@@ -2028,6 +2032,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       setShowSaveDialog(false);
       setSaveToast('Storybook saved!');
       setTimeout(() => setSaveToast(null), 2000);
+      triggerCheck();
     } catch (e) {
       console.error('[StoryBook] Save failed:', e);
       setSaveToast('Save failed');
