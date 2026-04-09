@@ -1294,7 +1294,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const { t } = useTranslation();
   const { settings } = useSettings();
   const { hasDiffusion, hasVision, tier } = useCapabilities();
-  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   const { speak, stop: stopTTS, isSpeaking } = useTTS();
   const { guardOffline } = useOfflineGuard();
@@ -1310,7 +1310,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   }, []);
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [view, setView] = useState<View>('input');
+  const [view, setViewState] = useState<View>('input');
+  const viewRef = useRef<View>('input');
+  const setView = (v: View) => { viewRef.current = v; setViewState(v); };
   const [formData, setFormData] = useState<StorybookFormData>(DEFAULT_FORM);
   const [parsedBook, setParsedBook] = useState<ParsedStorybook | null>(null);
   const [livePages, setLivePages] = useState<StoryPage[]>([]);
@@ -1508,6 +1510,17 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     }
   }, [guardOffline, formData, tabId, tier, hasDiffusion, getConnection, clearStreaming]);
 
+  // Pre-create the connection on mount so the subscribe below finds it immediately
+  useEffect(() => {
+    getConnection(tabId, WS_ENDPOINT);
+  }, [tabId]);
+
+  // Subscribe to streaming updates so the component re-renders on every token batch (60fps)
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId, WS_ENDPOINT, () => {});
+    return unsubscribe;
+  }, [tabId, subscribe]);
+
   // ── Watch streaming content ────────────────────────────────────────────────
   const isStreaming = getIsStreaming(tabId, WS_ENDPOINT);
   const streamingContent = getStreamingContent(tabId, WS_ENDPOINT);
@@ -1531,7 +1544,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       setLivePages(allPages);
 
       // Transition from skeleton to editor as soon as first page arrives
-      if (view === 'streaming' && allPages.length >= 1) {
+      if (viewRef.current === 'streaming' && allPages.length >= 1) {
         // Build a temporary parsedBook with completed pages + placeholders for remaining
         const completedPages: StoryPage[] = allPages.map(p => ({
           ...p,
@@ -1565,7 +1578,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         });
         setCurrentPageIdx(0);
         setView('editor');
-      } else if (view === 'editor' && isStreaming) {
+      } else if (viewRef.current === 'editor' && isStreaming) {
         // Update in-progress pages in the editor as more content streams in
         setParsedBook(prev => {
           if (!prev) return prev;
@@ -1623,7 +1636,41 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         setCurrentDraftId(saved.id);
         // User can click "Generate Images" or generate per-page individually
       } else {
-        setView('input');
+        // Full parse failed (e.g. generation timed out mid-JSON).
+        // Fall back to whatever pages were already parsed incrementally during streaming.
+        const cachedPages = cachedParsedPagesRef.current;
+        if (cachedPages.length > 0) {
+          console.log('[StoryBook] Full parse failed — recovering', cachedPages.length, 'incrementally-parsed pages');
+          const pages = cachedPages.map(p => ({
+            ...p,
+            bundledSceneId: findBestScene(p.sceneId).id,
+          }));
+          const gradeLabel = formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`;
+          const coverPage: CoverPage = {
+            title: formData.title || 'Untitled',
+            subtitle: `${gradeLabel}${formData.subject ? ' • ' + formData.subject : ''}`,
+            authorName: formData.authorName || undefined,
+          };
+          const recovered: ParsedStorybook = {
+            title: formData.title || 'Untitled',
+            gradeLevel: formData.gradeLevel,
+            pages,
+            scenes: [],
+            characters: formData.speakers?.filter(s => s.characterName).map(s => s.characterName!) || [],
+            characterDescriptions: {},
+            voiceAssignments: {},
+            styleSuffix: '',
+            coverPage,
+          };
+          const validated = validateSpeakers(recovered, formData);
+          setParsedBook({ ...validated, coverPage });
+          setCurrentPageIdx(-1);
+          setView('editor');
+          const saved = saveStorybook(formData, validated, currentDraftId || undefined);
+          setCurrentDraftId(saved.id);
+        } else {
+          setView('input');
+        }
       }
     }
   }, [streamingContent, isStreaming]);
@@ -2994,15 +3041,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                         onClick={async () => {
                           try {
                             const prompt = `Children's book cover illustration for "${parsedBook.title}", ${parsedBook.styleSuffix || 'colorful cartoon style, vibrant and playful'}`;
-                            const res = await fetch('http://localhost:8000/api/generate-image', {
+                            const res = await fetch('http://localhost:8000/api/generate-image-base64', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ prompt, width: 768, height: 512 }),
                             });
                             if (!res.ok) throw new Error('Failed');
                             const data = await res.json();
-                            if (data.image) {
-                              const imageData = data.image.startsWith('data:') ? data.image : `data:image/png;base64,${data.image}`;
+                            if (data.imageData) {
+                              const imageData = data.imageData;
                               setParsedBook(prev => prev ? { ...prev, coverPage: { ...prev.coverPage!, coverImageData: imageData } } : prev);
                             }
                           } catch (e) {

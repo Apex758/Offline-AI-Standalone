@@ -658,7 +658,7 @@ class LlamaInference:
             loop = asyncio.get_running_loop()
             stream_task = loop.run_in_executor(None, stream_in_thread)
             stream_start = time.perf_counter()
-            STREAM_TIMEOUT = 300  # 5 minutes max for streaming
+            STREAM_TIMEOUT = 900  # 15 minutes max for streaming (CPU-only inference is slow)
 
             # ✅ Yield tokens as they arrive in queue
             while True:
@@ -907,7 +907,7 @@ class LlamaInference:
             loop = asyncio.get_running_loop()
             stream_task = loop.run_in_executor(None, stream_vision_in_thread)
             stream_start = time.perf_counter()
-            STREAM_TIMEOUT = 300  # 5 minutes max for streaming
+            STREAM_TIMEOUT = 900  # 15 minutes max for streaming (CPU-only inference is slow)
 
             while True:
                 try:

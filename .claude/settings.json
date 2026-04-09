@@ -329,7 +329,8 @@
       "Bash(grep -l \"grade\\\\|grading\\\\|evaluating\" /c/Users/LG/Desktop/Projects/\"Offline AI Standalone\"/backend/*.py)",
       "Bash(find /c/Users/LG/Desktop/Projects/'Offline AI Standalone'/frontend/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"calculateDistribution\\\\|DistributionData\" {} \\\\;)",
       "Bash(node_modules/.bin/tsc --noEmit)",
-      "Bash(dir /s /b \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\src\\\\components\\\\ui\\\\MaterialsSelector.tsx\")"
+      "Bash(dir /s /b \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\src\\\\components\\\\ui\\\\MaterialsSelector.tsx\")",
+      "Bash(find /c/Users/LG/Desktop/Projects/\"Offline AI Standalone\"/backend -name \"*.py\" -exec grep -l \"presentation\" {} \\\\;)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

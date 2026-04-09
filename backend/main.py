@@ -2823,7 +2823,7 @@ async def storybook_websocket(websocket: WebSocket):
             _is_tier1 = _tier_info["tier"] == 1
             _t1_params = get_tier1_gen_params("storybook") if _is_tier1 else {}
 
-            max_tokens = _t1_params.get("max_tokens", 4000) if _is_tier1 else 4000
+            max_tokens = _t1_params.get("max_tokens", 3000) if _is_tier1 else 3500
             temperature = _t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
             repeat_penalty = _t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1
 

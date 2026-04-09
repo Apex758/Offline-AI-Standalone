@@ -69,7 +69,7 @@ RULES:
 - bullets: max 12 words each, max 3-4 bullets per slide
 - Generate exactly ${sc} slides
 - Slide order: title (1) → objectives (1) → hook (1) → ${Math.max(1, sc - 6)} instruction slide(s) → activity (1) → assessment (1) → closing (1)${sc <= 6 ? '\n- With fewer slides, combine assessment into closing slide' : ''}${sc >= 12 ? '\n- With more slides, add more instruction sub-topics and consider splitting activity into guided + independent practice' : ''}
-- Title slide: headline = topic, subtitle = "Grade ${formData.gradeLevel} · ${formData.subject}", badge = "Grade ${formData.gradeLevel} · ${formData.subject}"
+- Title slide: headline = topic, subtitle = "Grade ${formData.gradeLevel} · ${formData.subject}", badge = "Grade ${formData.gradeLevel} · ${formData.subject}", NO bullets (bullets must be null or omitted)
 - Objectives slide: 2-3 clear learning objectives as bullets
 - Hook slide: an engaging question or scenario as headline, body text for context
 - Instruction slides: break key concepts into digestible chunks with bullets
@@ -204,7 +204,7 @@ RULES:
 - bullets: max 12 words each, max 3-4 bullets per slide
 - Generate exactly ${sc} slides
 - Slide order: title (1) → objectives (1) → hook (1) → ${Math.max(1, sc - 6)} instruction slide(s) → activity (1) → assessment (1) → closing (1)${sc <= 6 ? '\n- With fewer slides, combine assessment into closing slide' : ''}${sc >= 12 ? '\n- With more slides, add more instruction sub-topics and consider splitting activity into guided + independent practice' : ''}
-- Title slide: headline = topic, subtitle = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}", badge = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}"
+- Title slide: headline = topic, subtitle = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}", badge = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}", NO bullets (bullets must be null or omitted)
 - Objectives slide: use the actual learning objectives from the lesson plan as bullets
 - Hook slide: extract the hook/introduction from the lesson as an engaging question
 - Instruction slides: break the direct instruction content into digestible chunks with bullets

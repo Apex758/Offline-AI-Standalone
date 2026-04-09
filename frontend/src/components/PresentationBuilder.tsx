@@ -2071,7 +2071,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     setUploadedImages(prev => prev.filter(img => img.id !== id));
   };
 
-  const hasBullets = cur && (['objectives', 'instruction', 'assessment'].includes(cur.layout) || (cur.content?.bullets?.length || 0) > 0);
+  const hasBullets = cur && cur.layout !== 'title' && (['objectives', 'instruction', 'assessment'].includes(cur.layout) || (cur.content?.bullets?.length || 0) > 0);
   const hasBody = cur && (['hook', 'activity', 'closing'].includes(cur.layout) || cur.content?.body !== undefined);
 
   // Image generation for a slide
@@ -3317,6 +3317,39 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       >
                         {t('presentation.removeImage')}
                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Image layout picker — visible whenever slide has an image zone */}
+                {(cur.content.imagePlacement || cur.content.imageScene) && (
+                  <div className="mt-4 pt-3.5 border-t border-theme-border">
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-2">IMAGE LAYOUT</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {([
+                        { value: 'right',        label: 'Right' },
+                        { value: 'left',         label: 'Left' },
+                        { value: 'top',          label: 'Top' },
+                        { value: 'half',         label: 'Half' },
+                        { value: 'background',   label: 'BG' },
+                        { value: 'bottom-right', label: 'Corner' },
+                      ] as const).map(opt => {
+                        const active = (cur.content.imagePlacement || 'right') === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => updateSlide('imagePlacement', opt.value)}
+                            className="px-1.5 py-1.5 rounded text-[10px] font-semibold border transition-all"
+                            style={{
+                              background: active ? `${primaryColor}22` : 'transparent',
+                              borderColor: active ? primaryColor : 'transparent',
+                              color: active ? primaryColor : undefined,
+                            }}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
