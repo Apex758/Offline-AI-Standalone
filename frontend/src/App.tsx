@@ -21,6 +21,7 @@ import { useDisplayFilters } from './hooks/useDisplayFilters';
 import { usePreload } from './hooks/usePreload';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 import { EngineStatusProvider } from './contexts/EngineStatusContext';
+import { TimetableProvider } from './contexts/TimetableContext';
 
 const SetupWizard = lazy(() => import('./components/SetupWizard/SetupWizard'));
 function AppContent() {
@@ -107,8 +108,10 @@ function App() {
                 <QueueProvider>
                   <TabBusyProvider>
                     <StickyNoteProvider>
-                      <AppContent />
-                      <ToastContainer />
+                      <TimetableProvider>
+                        <AppContent />
+                        <ToastContainer />
+                      </TimetableProvider>
                     </StickyNoteProvider>
                   </TabBusyProvider>
                 </QueueProvider>

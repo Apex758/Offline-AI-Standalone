@@ -913,7 +913,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
   const validateForm = (): boolean => {
     const errors: Record<string, boolean> = {};
-    if (!formData.assignmentTitle) errors.assignmentTitle = true;
     if (!formData.assignmentType) errors.assignmentType = true;
     if (!formData.subject) errors.subject = true;
     if (!formData.gradeLevel) errors.gradeLevel = true;
@@ -1138,7 +1137,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
               <div className="max-w-3xl mx-auto space-y-6">
                 <div data-tutorial="rubric-generator-assignment">
                   <label className="block text-sm font-medium text-theme-label mb-2">
-                    Assignment Title <span className="text-red-500">*</span>
+                    Assignment Title <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
                   </label>
                   <SmartInput
                     value={formData.assignmentTitle}

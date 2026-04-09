@@ -122,6 +122,27 @@ def init_tables():
             ON academic_phase_summaries(teacher_id)
         ''')
 
+        # -- Timetable slots (weekly schedule) --
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS timetable_slots (
+                id          TEXT PRIMARY KEY,
+                teacher_id  TEXT NOT NULL,
+                day_of_week TEXT NOT NULL,
+                start_time  TEXT NOT NULL,
+                end_time    TEXT NOT NULL,
+                subject     TEXT NOT NULL,
+                grade_level TEXT NOT NULL,
+                class_name  TEXT,
+                notes       TEXT,
+                created_at  TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at  TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_ts_teacher
+            ON timetable_slots(teacher_id, day_of_week)
+        ''')
+
         # Migrations for existing tables
         for col, definition in [
             ('reminders_enabled', 'INTEGER DEFAULT 0'),
@@ -639,5 +660,96 @@ def get_phase_summary(teacher_id: str, phase_key: str) -> dict | None:
         except Exception:
             d['dimension_deltas'] = {}
         return d
+    finally:
+        conn.close()
+
+
+# -- Timetable CRUD ---------------------------------------------------------------
+
+DAY_ORDER = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4}
+
+
+def get_timetable(teacher_id: str) -> list[dict]:
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT * FROM timetable_slots WHERE teacher_id = ? ORDER BY start_time ASC',
+            (teacher_id,)
+        ).fetchall()
+        result = [dict(r) for r in rows]
+        result.sort(key=lambda s: (DAY_ORDER.get(s['day_of_week'], 9), s['start_time']))
+        return result
+    finally:
+        conn.close()
+
+
+def upsert_timetable_slot(data: dict) -> dict:
+    conn = _get_conn()
+    try:
+        slot_id = data.get('id') or str(uuid.uuid4())
+        now = datetime.now().isoformat()
+        conn.execute('''
+            INSERT INTO timetable_slots
+                (id, teacher_id, day_of_week, start_time, end_time,
+                 subject, grade_level, class_name, notes, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                day_of_week = excluded.day_of_week,
+                start_time  = excluded.start_time,
+                end_time    = excluded.end_time,
+                subject     = excluded.subject,
+                grade_level = excluded.grade_level,
+                class_name  = excluded.class_name,
+                notes       = excluded.notes,
+                updated_at  = excluded.updated_at
+        ''', (
+            slot_id,
+            data['teacher_id'],
+            data['day_of_week'],
+            data['start_time'],
+            data['end_time'],
+            data['subject'],
+            data['grade_level'],
+            data.get('class_name'),
+            data.get('notes'),
+            now, now
+        ))
+        conn.commit()
+        row = conn.execute('SELECT * FROM timetable_slots WHERE id = ?', (slot_id,)).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
+def delete_timetable_slot(slot_id: str) -> bool:
+    conn = _get_conn()
+    try:
+        cursor = conn.execute('DELETE FROM timetable_slots WHERE id = ?', (slot_id,))
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        conn.close()
+
+
+def lookup_timetable_slot(teacher_id: str, grade_level: str, subject: str) -> dict | None:
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            '''SELECT * FROM timetable_slots
+               WHERE teacher_id = ? AND grade_level = ? AND subject = ?
+               ORDER BY start_time ASC LIMIT 1''',
+            (teacher_id, grade_level, subject)
+        ).fetchone()
+        if not row:
+            return None
+        slot = dict(row)
+        # Compute duration in minutes
+        try:
+            sh, sm = map(int, slot['start_time'].split(':'))
+            eh, em = map(int, slot['end_time'].split(':'))
+            slot['duration_minutes'] = (eh * 60 + em) - (sh * 60 + sm)
+        except (ValueError, KeyError):
+            slot['duration_minutes'] = 0
+        return slot
     finally:
         conn.close()

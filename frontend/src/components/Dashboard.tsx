@@ -136,9 +136,8 @@ const PresentationBuilder = React.lazy(() => import('./PresentationBuilder'));
 const StoryBookCreator = React.lazy(() => import('./StoryBookCreator'));
 const Achievements = React.lazy(() => import('./Achievements'));
 const EducatorInsights = React.lazy(() => import('./EducatorInsights'));
-const CurriculumPlan = React.lazy(() => import('./CurriculumPlan'));
 const PhotoReceiver = React.lazy(() => import('./PhotoReceiver'));
-const SchoolYearCalendar = React.lazy(() => import('./SchoolYearCalendar'));
+const SchoolYearHub = React.lazy(() => import('./SchoolYearHub'));
 import TutorialOverlay, { getDashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -202,14 +201,6 @@ const getTools = (t: TFunction): Tool[] => [
     icon: 'TrendingUp',
     type: 'curriculum-tracker',
     description: t('sidebar.descriptions.progressTracker'),
-    group: 'my-classroom'
-  },
-  {
-    id: 'curriculum-plan',
-    name: 'Curriculum Plan',
-    icon: 'CalendarRange',
-    type: 'curriculum-plan',
-    description: t('sidebar.descriptions.curriculumPlan'),
     group: 'my-classroom'
   },
   {
@@ -377,7 +368,6 @@ const SIDEBAR_I18N: Record<string, string> = {
   'educator-insights': 'sidebar.educatorInsights',
   'brain-dump': 'sidebar.brainDump',
   'curriculum-tracker': 'sidebar.progressTracker',
-  'curriculum-plan': 'sidebar.curriculumPlan',
   'resource-manager': 'sidebar.myResources',
   'school-year-calendar': 'sidebar.schoolYear',
   'chat': 'sidebar.askPearl',
@@ -576,7 +566,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 
 const MAX_TABS_PER_TYPE = 3;
 const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements', 'storybook', 'educator-insights', 'photo-transfer', 'school-year-calendar']);
-const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'curriculum-plan', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook', 'brain-dump', 'school-year-calendar', 'photo-transfer', 'class-management']);
+const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements', 'storybook', 'brain-dump', 'school-year-calendar', 'photo-transfer', 'class-management']);
 
 const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
   'lesson-planner': { storagePrefix: 'lesson_state_', plannerType: 'lesson', generatedKey: 'generatedPlan' },
@@ -1194,7 +1184,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     // Track this tool visit for workflow progression
     trackToolVisit(tool.type);
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'curriculum-plan', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights', 'school-year-calendar'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements', 'educator-insights', 'school-year-calendar'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -1959,8 +1949,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         );
       case 'curriculum-tracker':
         return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
-      case 'curriculum-plan':
-        return <CurriculumPlan tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'chat':
         return (
           <Chat
@@ -2162,7 +2150,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       case 'photo-transfer':
         return <PhotoReceiver tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'school-year-calendar':
-        return <SchoolYearCalendar tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
+        return <SchoolYearHub tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} isActive={isActive} />;
       case 'brain-dump':
         return (
           <BrainDump

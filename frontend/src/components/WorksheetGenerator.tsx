@@ -1417,7 +1417,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
                   <div data-tutorial="worksheet-generator-title">
                     <label className="block text-sm font-medium text-theme-label mb-2">
-                      Worksheet Title <span className="text-theme-hint">(optional)</span>
+                      Worksheet Title <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
                     </label>
                     <SmartInput
                       value={formData.worksheetTitle}

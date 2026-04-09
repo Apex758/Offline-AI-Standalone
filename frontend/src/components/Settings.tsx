@@ -158,7 +158,6 @@ const getGroupChildren = (t: (key: string) => string): GroupChildrenMap => ({
   'my-classroom': [
     { type: 'class-management', name: t('sidebar.myClasses'), iconData: UserMultipleIconData },
     { type: 'curriculum-tracker', name: t('sidebar.progressTracker'), iconData: ChartIncreaseIconData },
-    { type: 'curriculum-plan', name: t('sidebar.curriculumPlan'), iconData: Calendar03IconData },
     { type: 'achievements', name: t('sidebar.achievements'), iconData: Trophy01IconData },
     { type: 'photo-transfer', name: t('sidebar.photoTransfer'), iconData: Camera01IconData },
   ],
@@ -997,7 +996,6 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     { type: 'class-management', label: t('sidebar.myClasses'), defaultColor: '#dc2626' },
     { type: 'curriculum-tracker', label: t('sidebar.progressTracker'), defaultColor: '#10b981' },
     { type: 'achievements', label: t('sidebar.achievements'), defaultColor: '#eab308' },
-    { type: 'curriculum-plan', label: t('sidebar.curriculumPlan'), defaultColor: '#059669' },
     // Lesson planners group
     { type: 'lesson-planner', label: t('sidebar.lessonPlan'), defaultColor: '#f59e0b' },
     { type: 'kindergarten-planner', label: t('sidebar.earlyChildhood'), defaultColor: '#ec4899' },

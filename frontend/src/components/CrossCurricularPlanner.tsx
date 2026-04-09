@@ -59,6 +59,7 @@ import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
+import { useTimetableAutofill } from '../hooks/useTimetableAutofill';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface CrossCurricularPlannerProps {
@@ -612,6 +613,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
     return getDefaultFormData();
   });
+  const timetableAutofill = useTimetableAutofill(formData.gradeLevel, formData.primarySubject);
+
   const { matchCount, matchedHistories, sortedHistories: sortedCrossCurricularHistories } = useHistoryMatching(formData, crossCurricularHistories, { subject: 'primarySubject' });
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
     // First check savedData (for resource manager view/edit)
@@ -924,6 +927,16 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     loadDrafts();
   }, []);
 
+  useEffect(() => {
+    if (timetableAutofill.isLoading) return;
+    setFormData(prev => {
+      if (!prev.duration && timetableAutofill.duration) {
+        return { ...prev, duration: timetableAutofill.duration };
+      }
+      return prev;
+    });
+  }, [timetableAutofill.duration, timetableAutofill.isLoading]);
+
   const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -953,7 +966,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const validateStep = (): boolean => {
     const errors: Record<string, boolean> = {};
     if (step === 1) {
-      if (!formData.lessonTitle) errors.lessonTitle = true;
       if (!formData.gradeLevel) errors.gradeLevel = true;
       if (!formData.duration) errors.duration = true;
       if (!formData.bigIdea) errors.bigIdea = true;
@@ -1280,7 +1292,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {displayStep === 1 && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-theme-label mb-2">Lesson Title *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Lesson Title <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span></label>
                       <SmartInput value={formData.lessonTitle} onChange={(val) => handleInputChange('lessonTitle', val)}
                         data-validation-error={validationErrors.lessonTitle ? 'true' : undefined}
                         className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.lessonTitle ? 'validation-error' : ''}`} placeholder="Enter lesson title" />

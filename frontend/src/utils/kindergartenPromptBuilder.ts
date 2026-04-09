@@ -76,7 +76,7 @@ export function buildKindergartenPrompt(formData: KindergartenFormData, language
   
   let prompt = `Create a kindergarten daily lesson plan using play-based, developmentally appropriate practices.
 
-THEME: ${formData.theme}
+THEME: ${formData.theme || '[Generate an appropriate lesson theme/topic based on the curriculum unit, age group, and learning domains provided.]'}
 CURRICULUM UNIT: ${formData.curriculumUnit}
 WEEK: ${formData.week} | DAY: ${formData.day} | DATE: ${formData.date}
 AGE GROUP: ${formData.ageGroup} | STUDENTS: ${formData.students} | DURATION: ${formData.duration}
@@ -95,7 +95,7 @@ KINDERGARTEN REQUIREMENTS:
 LESSON PLAN STRUCTURE:
 
 1. THEME & OBJECTIVES
-   - Daily theme connection to "${formData.theme}" (Week ${formData.week}, Day ${formData.day})
+   - Daily theme connection to "${formData.theme || '[auto-generated theme]'}" (Week ${formData.week}, Day ${formData.day})
    - Child-friendly essential question
    - 2-3 clear learning objectives with "Child can..." statements
 

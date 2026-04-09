@@ -220,7 +220,7 @@ export function buildMultigradePrompt(formData: MultigradeFormData, language?: s
 
   let prompt = `Create a comprehensive multigrade lesson plan for ${formData.gradeLevels.join(', ')} students learning together.
 
-TOPIC: ${formData.topic}
+TOPIC: ${formData.topic || '[Generate an appropriate lesson topic based on the subject, grade levels, strand, and learning outcomes provided.]'}
 SUBJECT: ${formData.subject}
 GRADE LEVELS: ${formData.gradeLevels.join(', ')} (${rangeSpec.name})
 DURATION: ${formData.duration}

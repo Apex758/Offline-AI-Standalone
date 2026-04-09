@@ -30,7 +30,7 @@ export function buildLessonPrompt(formData: any, curriculumRefs?: CurriculumRefe
 
 
 SUBJECT: ${formData.subject}
-TOPIC: ${formData.topic}
+TOPIC: ${formData.topic || '[Generate an appropriate lesson topic based on the subject, grade level, strand, and learning outcomes provided.]'}
 STRAND: ${formData.strand}
 DURATION: ${formData.duration}
 CLASS SIZE: ${formData.studentCount} students

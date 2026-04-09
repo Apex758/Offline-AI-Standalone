@@ -42,6 +42,18 @@ class BulkEventsCreate(BaseModel):
     events: List[SchoolYearEventCreate]
 
 
+class TimetableSlotCreate(BaseModel):
+    id: Optional[str] = None
+    teacher_id: str
+    day_of_week: str
+    start_time: str
+    end_time: str
+    subject: str
+    grade_level: str
+    class_name: Optional[str] = None
+    notes: Optional[str] = None
+
+
 # ── Config Endpoints ──
 
 @router.get("/config/{teacher_id}")
@@ -150,4 +162,49 @@ async def get_due_reminders(teacher_id: str):
         return {"reminders": reminders}
     except Exception as e:
         logger.error(f"Failed to get due reminders: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# -- Timetable Endpoints --
+
+@router.get("/timetable/{teacher_id}")
+async def get_timetable(teacher_id: str):
+    try:
+        return {"slots": school_year_service.get_timetable(teacher_id)}
+    except Exception as e:
+        logger.error(f"Failed to get timetable: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/timetable")
+async def upsert_timetable_slot(data: TimetableSlotCreate):
+    try:
+        slot = school_year_service.upsert_timetable_slot(data.dict())
+        return {"slot": slot}
+    except Exception as e:
+        logger.error(f"Failed to upsert timetable slot: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/timetable/{slot_id}")
+async def delete_timetable_slot(slot_id: str):
+    try:
+        deleted = school_year_service.delete_timetable_slot(slot_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Slot not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete timetable slot: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/timetable/{teacher_id}/lookup")
+async def lookup_timetable_slot(teacher_id: str, grade_level: str, subject: str):
+    try:
+        slot = school_year_service.lookup_timetable_slot(teacher_id, grade_level, subject)
+        return {"slot": slot}
+    except Exception as e:
+        logger.error(f"Failed to lookup timetable slot: {e}")
         raise HTTPException(status_code=500, detail=str(e))

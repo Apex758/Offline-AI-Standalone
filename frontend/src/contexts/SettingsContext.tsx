@@ -28,7 +28,6 @@ export interface TabColors {
   'achievements': string;
   'storybook': string;
   'educator-insights': string;
-  'curriculum-plan': string;
   'school-year-calendar': string;
   'photo-transfer': string;
 }
@@ -196,7 +195,6 @@ export const DEFAULT_SETTINGS: Settings = {
     'achievements': '#eab308',
     'storybook': '#c084fc',
     'educator-insights': '#d97706',
-    'curriculum-plan': '#059669',
     'school-year-calendar': '#0d9488',
     'photo-transfer': '#818cf8',
   },

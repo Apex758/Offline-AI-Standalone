@@ -199,7 +199,7 @@ export function buildRubricPrompt(formData: RubricFormData, language?: string): 
   let prompt = `Create an assessment rubric for ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}).
 
 ASSIGNMENT DETAILS:
-- Title: ${formData.assignmentTitle || formData.assignmentType}
+- Title: ${formData.assignmentTitle || '[Generate a clear, descriptive rubric title based on the subject and assignment type]'}
 - Type: ${formData.assignmentType}
 - Subject: ${formData.subject}
 - Learning Objectives: ${formData.learningObjectives || 'Aligned to grade-level standards'}
@@ -225,7 +225,7 @@ ${getSubjectGuidance(formData.subject)}
 
 **CRITICAL OUTPUT FORMAT - FOLLOW EXACTLY:**
 
-1. Start with a title line: "**${formData.assignmentTitle || formData.assignmentType + ' Rubric'} - Assessment Rubric**"
+1. Start with a title line: "**${formData.assignmentTitle || '[auto-generated title based on subject and assignment type]'} - Assessment Rubric**"
 
 2. Then create a clean markdown table with this EXACT structure:
 ${tableHeader}

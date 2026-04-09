@@ -65,6 +65,7 @@ import { MaterialsSelector } from './ui/MaterialsSelector';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
+import { useTimetableAutofill } from '../hooks/useTimetableAutofill';
 import AIDisclaimer from './AIDisclaimer';
 
 interface LessonPlannerProps {
@@ -345,6 +346,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     return getDefaultFormData();
   });
 
+  const timetableAutofill = useTimetableAutofill(formData.gradeLevel, formData.subject);
+
   const { matchCount, matchedHistories, sortedHistories: sortedLessonHistories } = useHistoryMatching(formData, lessonPlanHistories);
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
@@ -622,7 +625,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     if (step === 1) {
       if (!formData.subject) errors.subject = true;
       if (!formData.gradeLevel) errors.gradeLevel = true;
-      if (!formData.topic) errors.topic = true;
       if (!formData.strand) errors.strand = true;
       if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
       if (!formData.specificOutcomes) errors.specificOutcomes = true;
@@ -848,6 +850,16 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     loadLessonPlanHistories();
     loadDrafts();
   }, []);
+
+  useEffect(() => {
+    if (timetableAutofill.isLoading) return;
+    setFormData(prev => {
+      const updates: Partial<typeof prev> = {};
+      if (!prev.studentCount && timetableAutofill.studentCount) updates.studentCount = timetableAutofill.studentCount;
+      if (!prev.duration && timetableAutofill.duration) updates.duration = timetableAutofill.duration;
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+    });
+  }, [timetableAutofill.studentCount, timetableAutofill.duration, timetableAutofill.isLoading]);
 
   const clearForm = () => {
     setFormData(getDefaultFormData());
@@ -1242,7 +1254,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     {/* Rest of the form fields below (full width) */}
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">
-                        {t('forms.topic')} <span className="text-red-500">*</span>
+                        {t('forms.topic')} <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
                       </label>
                       <SmartInput
                         value={formData.topic}

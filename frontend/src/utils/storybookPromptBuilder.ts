@@ -251,7 +251,7 @@ IMPORTANT: Use ONLY these ${formData.speakerCount} speakers. Do NOT invent addit
 TASK: Write a complete illustrated storybook based on the teacher's description below.
 
 STORY REQUEST:
-Title: "${formData.title}"
+Title: "${formData.title || '[Generate a creative, engaging story title based on the description, subject, and grade level]'}"
 Description: ${formData.description}
 Grade Level: ${spec.name} (${spec.age})${formData.subject ? `\nSubject: ${formData.subject}` : ''}
 Total Pages: ${formData.pageCount}
@@ -328,7 +328,7 @@ export function buildNarrativePrompt(formData: StorybookFormData): string {
 Write a complete ${formData.pageCount}-page children's story as plain text. Each page should be separated by "---PAGE BREAK---".
 
 STORY REQUEST:
-Title: "${formData.title}"
+Title: "${formData.title || '[Generate a creative, engaging story title based on the description, subject, and grade level]'}"
 Description: ${formData.description}
 Grade Level: ${spec.name} (${spec.age})${formData.subject ? `\nSubject: ${formData.subject}` : ''}
 

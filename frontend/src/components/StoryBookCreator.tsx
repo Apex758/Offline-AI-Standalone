@@ -1436,7 +1436,6 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   // ── Validate & Generate ────────────────────────────────────────────────────
   const validate = (): boolean => {
     const errors: Record<string, boolean> = {};
-    if (!formData.title.trim()) errors.title = true;
     if (!formData.useCurriculum && !formData.description.trim()) errors.description = true;
     if (!formData.subject) errors.subject = true;
     if (!formData.gradeLevel) errors.gradeLevel = true;
@@ -2165,13 +2164,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-theme-label mb-1.5">
-              {t('storybook.storyTitle')} <span className="text-red-500">*</span>
+              {t('storybook.storyTitle')} <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
             </label>
             <SmartInput
               value={formData.title}
               onChange={v => updateForm('title', v)}
               placeholder={t('storybook.titlePlaceholder')}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.title ? 'border-red-500' : 'border-theme-strong'}`}
+              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             />
           </div>

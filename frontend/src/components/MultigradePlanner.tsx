@@ -59,6 +59,7 @@ import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
+import { useTimetableAutofill } from '../hooks/useTimetableAutofill';
 // Curriculum data is loaded on demand by MultigradeAlignmentFields
 
 interface MultigradePlannerProps {
@@ -398,6 +399,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
     return getDefaultFormData();
   });
+  const firstGradeFromRange = formData.gradeRange ? formData.gradeRange.split(/[-,]/)[0].trim() : '';
+  const timetableAutofill = useTimetableAutofill(firstGradeFromRange, formData.subject);
+
   const { matchCount, matchedHistories, sortedHistories: sortedMultigradeHistories } = useHistoryMatching(formData, multigradeHistories, { gradeLevel: 'gradeRange', essentialOutcomes: 'essentialLearningOutcomes', specificOutcomes: 'specificLearningObjectives' });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
@@ -741,6 +745,16 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   }, [formData.subject, formData.gradeRange]);
 
+  useEffect(() => {
+    if (timetableAutofill.isLoading) return;
+    setFormData(prev => {
+      const updates: Partial<typeof prev> = {};
+      if (!prev.totalStudents && timetableAutofill.studentCount) updates.totalStudents = timetableAutofill.studentCount;
+      if (!prev.duration && timetableAutofill.duration) updates.duration = timetableAutofill.duration;
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+    });
+  }, [timetableAutofill.studentCount, timetableAutofill.duration, timetableAutofill.isLoading]);
+
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
     const currentArray = formData[field] as string[];
     if (currentArray.includes(value)) {
@@ -755,7 +769,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     if (step === 1) {
       if (!formData.subject) errors.subject = true;
       if (!formData.gradeRange) errors.gradeRange = true;
-      if (!formData.topic) errors.topic = true;
       if (!formData.totalStudents) errors.totalStudents = true;
       if (!formData.duration) errors.duration = true;
       if (!formData.strand) errors.strand = true;
@@ -1153,7 +1166,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                     <div data-tutorial="multigrade-planner-theme">
                       <label className="block text-sm font-medium text-theme-label mb-2">
-                        {t('forms.topic')} <span className="text-red-500">*</span>
+                        {t('forms.topic')} <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
                       </label>
                       <SmartInput
                         value={formData.topic}

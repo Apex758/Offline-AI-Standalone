@@ -33,7 +33,7 @@ const MODULE_PROGRESSIONS: Record<FeatureModuleId, ToolStep[]> = {
   ],
   'student-management': [
     { type: 'class-management', name: 'My Classes', reason: 'Set up your classes and student lists.' },
-    { type: 'curriculum-plan', name: 'Curriculum Plan', reason: 'Assign curriculum milestones to academic phases.' },
+    { type: 'school-year-calendar', name: 'School Year', reason: 'Manage your calendar, curriculum plan, and timetable.' },
     { type: 'achievements', name: 'Achievements', reason: 'Track your teaching milestones and earn rewards.' },
   ],
   'creative-studio': [

@@ -53,6 +53,7 @@ import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
+import { useTimetableAutofill } from '../hooks/useTimetableAutofill';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface KindergartenPlannerProps {
@@ -494,6 +495,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     return getDefaultFormData();
   });
 
+  const timetableAutofill = useTimetableAutofill(formData.ageGroup, formData.curriculumSubject);
+
   const { matchCount, matchedHistories, sortedHistories: sortedKindergartenHistories } = useHistoryMatching(formData, kindergartenHistories, { subject: 'curriculumSubject', gradeLevel: null });
 
 
@@ -807,6 +810,16 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     loadDrafts();
   }, []);
 
+  useEffect(() => {
+    if (timetableAutofill.isLoading) return;
+    setFormData(prev => {
+      if (!prev.duration && timetableAutofill.duration) {
+        return { ...prev, duration: timetableAutofill.duration };
+      }
+      return prev;
+    });
+  }, [timetableAutofill.duration, timetableAutofill.isLoading]);
+
   // Helper function to calculate ISO week number
   const getISOWeek = (date: Date): number => {
     const target = new Date(date.valueOf());
@@ -952,7 +965,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   const validateForm = (): boolean => {
     const errors: Record<string, boolean> = {};
-    if (!formData.lessonTopic) errors.lessonTopic = true;
     if (!formData.curriculumUnit) errors.curriculumUnit = true;
     if (!formData.week) errors.week = true;
     if (!formData.dayOfWeek) errors.dayOfWeek = true;
@@ -1188,7 +1200,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
               <div className="max-w-3xl mx-auto space-y-6">
                 <div data-tutorial="kinder-planner-theme">
                   <label className="block text-sm font-medium text-theme-label mb-2">
-                    {t('forms.topic')} <span className="text-red-500">*</span>
+                    {t('forms.topic')} <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
                   </label>
                   <SmartInput
                     value={formData.lessonTopic}

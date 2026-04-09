@@ -983,7 +983,7 @@ SUBJECT-SPECIFIC GUIDANCE:
 ${getSubjectGuidance(formData.subject)}
 
 WORKSHEET DETAILS:
-- Title: ${formData.worksheetTitle || formData.topic + ' Worksheet'}
+- Title: ${formData.worksheetTitle || (formData.topic ? formData.topic + ' Worksheet' : '[Generate a creative, engaging worksheet title based on the subject and content]')}
 - Question Type: ${formData.questionType}
 - Number of Questions: ${questionCount}
 - Template: ${formData.selectedTemplate}
