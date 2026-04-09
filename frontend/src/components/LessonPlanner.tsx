@@ -127,7 +127,6 @@ interface FormData {
   specialNeeds: boolean;
   specialNeedsDetails: string;
   additionalInstructions: string;
-  referenceUrl: string;
   // selectedCurriculum removed
 }
 
@@ -322,8 +321,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     prerequisiteSkills: '',
     specialNeeds: false,
     specialNeedsDetails: '',
-    additionalInstructions: '',
-    referenceUrl: ''
+    additionalInstructions: ''
   });
 
   // Start with defaults - will be restored from localStorage or savedData
@@ -1474,19 +1472,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Reference URL
-                      </label>
-                      <input
-                        type="url"
-                        value={formData.referenceUrl}
-                        onChange={(e) => handleInputChange('referenceUrl', e.target.value)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        placeholder="https://example.com/resource"
-                      />
-                    </div>
                   </div>
                 )}
               </div>

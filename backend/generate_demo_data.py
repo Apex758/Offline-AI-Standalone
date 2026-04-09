@@ -555,7 +555,6 @@ def generate_lesson_plans():
                     "specialNeeds": False,
                     "specialNeedsDetails": "",
                     "additionalInstructions": "",
-                    "referenceUrl": "",
                 },
                 "generatedPlan": f"# {topic}\n\n## Objective\nStudents will learn about {topic}.\n\n## Introduction (10 min)\nReview prior knowledge and introduce new concepts.\n\n## Development (30 min)\nGuided practice with examples and activities.\n\n## Closure (10 min)\nReview key points and assign practice work.",
                 "parsedLesson": None,
