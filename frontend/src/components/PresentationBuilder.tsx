@@ -1575,7 +1575,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [presentationMode, setPresentationMode] = useState<PresentationMode>(savedData?.presentationMode || 'kids');
   const presImgContainerRef = useRef<HTMLDivElement>(null);
   const presImgBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [presImgPill, setPresImgPill] = useState({ left: 0, width: 0 });
+  const [presImgPill, setPresImgPill] = useState<{ left: number; width: number } | null>(null);
   const updatePresImgPill = useCallback(() => {
     const modes: ImageMode[] = ['none', 'suggested', ...(hasVision ? ['my-images' as ImageMode] : []), ...(hasDiffusion ? ['ai' as ImageMode] : [])];
     const activeIdx = modes.indexOf(imageMode);
@@ -2633,7 +2633,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       className="ng-segment ng-rect w-full"
                       style={{ display: 'grid', gridTemplateColumns: `repeat(${imgOpts.length}, 1fr)`, '--ng-accent': tabColor } as React.CSSProperties}
                     >
-                      <div className="ng-segment-pill" style={{ left: presImgPill.left, width: presImgPill.width }} aria-hidden="true" />
+                      {presImgPill && (
+                        <div className="ng-segment-pill" style={{ left: presImgPill.left, width: presImgPill.width }} aria-hidden="true" />
+                      )}
                       {imgOpts.map((opt, idx) => (
                         <button
                           key={opt.id}
