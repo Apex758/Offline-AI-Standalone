@@ -61,14 +61,13 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
     return 'default_teacher';
   }, []);
 
-  const { currentPhase, allPhases, loading: phasesLoading } = useCurrentPhase(teacherId);
+  const { allPhases, loading: phasesLoading } = useCurrentPhase(teacherId);
 
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null);
-  const [selectedMilestoneIds, setSelectedMilestoneIds] = useState<Set<string>>(new Set());
+  const [activeEloId, setActiveEloId] = useState<string | null>(null);
   const [expandedGrades, setExpandedGrades] = useState<Set<string>>(new Set());
-  const [assigning, setAssigning] = useState(false);
 
   const loadMilestones = useCallback(async () => {
     setLoading(true);
@@ -125,18 +124,14 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
 
   const unassignedCount = phaseCountMap['__unassigned__'] || 0;
 
-  // Assign selected milestones to a phase
-  const handleAssign = async (phaseId: string | null) => {
-    if (selectedMilestoneIds.size === 0) return;
-    setAssigning(true);
+  // Assign a single ELO to a phase
+  const handleAssignSingle = async (eloId: string, phaseId: string | null) => {
     try {
-      await milestoneApi.bulkAssignPhase(Array.from(selectedMilestoneIds), phaseId);
-      setSelectedMilestoneIds(new Set());
+      await milestoneApi.bulkAssignPhase([eloId], phaseId);
+      setActiveEloId(null);
       await loadMilestones();
     } catch (err) {
       console.error('Failed to assign phase:', err);
-    } finally {
-      setAssigning(false);
     }
   };
 
@@ -146,22 +141,6 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
       next.has(grade) ? next.delete(grade) : next.add(grade);
       return next;
     });
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedMilestoneIds(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const selectAll = () => {
-    setSelectedMilestoneIds(new Set(filteredMilestones.map(m => m.id)));
-  };
-
-  const selectNone = () => {
-    setSelectedMilestoneIds(new Set());
   };
 
   const getPhaseBadge = (phaseId: string | null) => {
@@ -237,54 +216,6 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
         )}
       </div>
 
-      {/* Bulk action bar */}
-      {selectedMilestoneIds.size > 0 && (
-        <div style={{
-          padding: '8px 24px',
-          background: 'var(--bg-secondary)',
-          borderBottom: '1px solid var(--border-color)',
-          display: 'flex', alignItems: 'center', gap: 12,
-          fontSize: 13, flexShrink: 0,
-        }}>
-          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-            {selectedMilestoneIds.size} selected
-          </span>
-          <span style={{ color: 'var(--text-muted)' }}>Assign to:</span>
-          {allPhases.map(p => {
-            const color = getPhaseColor(p.phase_key, p.semester);
-            return (
-              <button
-                key={p.id}
-                onClick={() => handleAssign(p.id)}
-                disabled={assigning}
-                style={{
-                  padding: '3px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-                  background: `${color}18`, color, border: `1px solid ${color}40`,
-                  cursor: assigning ? 'wait' : 'pointer',
-                }}
-              >
-                {p.phase_label}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => handleAssign(null)}
-            disabled={assigning}
-            style={{
-              padding: '3px 10px', borderRadius: 6, fontSize: 12,
-              background: 'var(--bg-tertiary)', color: 'var(--text-secondary)',
-              border: '1px solid var(--border-color)', cursor: assigning ? 'wait' : 'pointer',
-            }}
-          >
-            Unassign
-          </button>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-            <button onClick={selectAll} style={{ fontSize: 12, color: accentColor, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>{t('curriculum.selectAll')}</button>
-            <button onClick={selectNone} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>{t('common.clear')}</button>
-          </div>
-        </div>
-      )}
-
       {/* Main content: phases sidebar + milestones */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Left: Phase list */}
@@ -300,12 +231,16 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
           {allPhases.map(p => {
             const color = getPhaseColor(p.phase_key, p.semester);
             const count = phaseCountMap[p.id] || 0;
-            const isCurrent = currentPhase?.id === p.id;
             const isSelected = selectedPhaseId === p.id;
+            // When an ELO is active, find its current phase for pre-checking
+            const activeEloPhaseId = activeEloId
+              ? filteredMilestones.find(m => m.id === activeEloId)?.phase_id ?? null
+              : null;
+            const isChecked = activeEloId !== null && activeEloPhaseId === p.id;
             return (
               <div
                 key={p.id}
-                onClick={() => setSelectedPhaseId(isSelected ? null : p.id)}
+                onClick={() => activeEloId ? handleAssignSingle(activeEloId, p.id) : setSelectedPhaseId(isSelected ? null : p.id)}
                 style={{
                   padding: '10px 14px',
                   cursor: 'pointer',
@@ -315,10 +250,17 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {isCurrent && (
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0, boxShadow: `0 0 6px ${color}` }} />
+                  {getPhaseBadge(p.id)}
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', flex: 1 }}>{p.phase_label}</span>
+                  {/* Radio-style checkbox when an ELO is active */}
+                  {activeEloId !== null && (
+                    <input
+                      type="radio"
+                      readOnly
+                      checked={isChecked}
+                      style={{ accentColor: color, flexShrink: 0, pointerEvents: 'none' }}
+                    />
                   )}
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.phase_label}</span>
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                   {format(parseISO(p.start_date), 'MMM d')} &ndash; {format(parseISO(p.end_date), 'MMM d')}
@@ -331,7 +273,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
           })}
           {/* Unassigned section */}
           <div
-            onClick={() => setSelectedPhaseId(selectedPhaseId === '__unassigned__' ? null : '__unassigned__')}
+            onClick={() => activeEloId ? handleAssignSingle(activeEloId, null) : setSelectedPhaseId(selectedPhaseId === '__unassigned__' ? null : '__unassigned__')}
             style={{
               padding: '10px 14px',
               cursor: 'pointer',
@@ -343,9 +285,17 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <Icon icon={AlertCircleIconData} size={14} style={{ color: '#f59e0b' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: unassignedCount > 0 ? '#f59e0b' : 'var(--text-muted)' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: unassignedCount > 0 ? '#f59e0b' : 'var(--text-muted)', flex: 1 }}>
                 Unassigned
               </span>
+              {activeEloId !== null && (
+                <input
+                  type="radio"
+                  readOnly
+                  checked={filteredMilestones.find(m => m.id === activeEloId)?.phase_id == null}
+                  style={{ accentColor: '#f59e0b', flexShrink: 0, pointerEvents: 'none' }}
+                />
+              )}
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
               {unassignedCount} ELO{unassignedCount !== 1 ? 's' : ''}
@@ -432,7 +382,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
                           {subject}
                         </div>
                         {ms.map(m => {
-                          const isSelected = selectedMilestoneIds.has(m.id);
+                          const isActive = activeEloId === m.id;
                           return (
                             <div
                               key={m.id}
@@ -440,19 +390,13 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
                                 display: 'flex', alignItems: 'center', gap: 8,
                                 padding: '6px 10px', marginBottom: 2,
                                 borderRadius: 6,
-                                background: isSelected ? `${accentColor}12` : 'transparent',
+                                background: isActive ? `${accentColor}18` : 'transparent',
+                                border: isActive ? `1px solid ${accentColor}40` : '1px solid transparent',
                                 cursor: 'pointer',
                                 transition: 'background 0.1s ease',
                               }}
-                              onClick={() => toggleSelect(m.id)}
+                              onClick={() => setActiveEloId(isActive ? null : m.id)}
                             >
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => toggleSelect(m.id)}
-                                onClick={e => e.stopPropagation()}
-                                style={{ accentColor, flexShrink: 0 }}
-                              />
                               {m.status === 'completed' && (
                                 <Icon icon={CheckmarkCircle01IconData} size={14} style={{ color: '#22c55e', flexShrink: 0 }} />
                               )}
