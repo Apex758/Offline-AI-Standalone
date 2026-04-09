@@ -1511,7 +1511,7 @@ function tryParsePartialSlides(raw: string, scanFrom: number = 0): { slides: Sli
    MAIN COMPONENT
 ═══════════════════════════════════════ */
 
-export default function PresentationBuilder({ tabId, savedData, onDataChange }: PresentationBuilderProps) {
+export default function PresentationBuilder({ tabId, savedData, onDataChange, isActive }: PresentationBuilderProps) {
   const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   const { hasDiffusion, hasVision } = useCapabilities();
@@ -1573,6 +1573,25 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   });
   const [slideCount, setSlideCount] = useState<number>(savedData?.slideCount ?? 8);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>(savedData?.presentationMode || 'kids');
+  const presModeContainerRef = useRef<HTMLDivElement>(null);
+  const presModeBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [presModePill, setPresModePill] = useState<{ left: number; width: number } | null>(null);
+  const updatePresModePill = useCallback(() => {
+    const modes: PresentationMode[] = ['kids', 'professional'];
+    const activeIdx = modes.indexOf(presentationMode);
+    if (activeIdx === -1) return;
+    const btn = presModeBtnRefs.current[activeIdx];
+    const container = presModeContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setPresModePill({ left: br.left - cr.left, width: br.width });
+  }, [presentationMode, isActive]);
+  useLayoutEffect(() => { updatePresModePill(); }, [updatePresModePill]);
+  useEffect(() => {
+    const t = setTimeout(updatePresModePill, 0);
+    return () => clearTimeout(t);
+  }, [updatePresModePill]);
   const presImgContainerRef = useRef<HTMLDivElement>(null);
   const presImgBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [presImgPill, setPresImgPill] = useState<{ left: number; width: number } | null>(null);
@@ -1586,7 +1605,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     const cr = container.getBoundingClientRect();
     const br = btn.getBoundingClientRect();
     setPresImgPill({ left: br.left - cr.left, width: br.width });
-  }, [imageMode, hasVision, hasDiffusion]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [imageMode, hasVision, hasDiffusion, isActive]); // eslint-disable-line react-hooks/exhaustive-deps
   useLayoutEffect(() => { updatePresImgPill(); }, [updatePresImgPill]);
   useEffect(() => {
     const t = setTimeout(updatePresImgPill, 0);
@@ -2582,27 +2601,25 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 {t('presentation.presentationStyle')}
               </div>
               <div
+                ref={presModeContainerRef}
                 className="ng-segment ng-rect w-full"
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', '--ng-accent': tabColor } as React.CSSProperties}
               >
+                {presModePill && (
+                  <div className="ng-segment-pill" style={{ left: presModePill.left, width: presModePill.width }} aria-hidden="true" />
+                )}
                 {([
                   { id: 'kids' as PresentationMode, label: t('presentation.forStudents'), desc: t('presentation.studentDesc') },
                   { id: 'professional' as PresentationMode, label: t('presentation.professional'), desc: t('presentation.professionalDesc') },
-                ] as const).map(opt => {
+                ]).map((opt, idx) => {
                   const active = presentationMode === opt.id;
                   return (
                     <button
                       key={opt.id}
+                      ref={el => { presModeBtnRefs.current[idx] = el; }}
                       onClick={() => setPresentationMode(opt.id)}
-                      className="ng-segment-btn flex-col gap-0.5 py-2.5"
-                      style={{
-                        height: 'auto',
-                        borderRadius: '5px',
-                        color: active ? tabColor : undefined,
-                        background: active ? `${tabColor}14` : undefined,
-                        outline: active ? `2px solid ${tabColor}55` : undefined,
-                        outlineOffset: '-2px',
-                      }}
+                      className={`ng-segment-btn flex-col gap-0.5 py-2.5${active ? ' ng-seg-active' : ''}`}
+                      style={{ height: 'auto', borderRadius: '5px' }}
                     >
                       <span className="text-xs font-semibold leading-tight">{opt.label}</span>
                       <span className="text-[10px] leading-tight" style={{ opacity: 0.7 }}>{opt.desc}</span>

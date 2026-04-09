@@ -406,7 +406,7 @@ function cpAnalyzeImage(imageData: ImageData, currentMethod: string): { stats: C
 
 // ═══════════════════════════════════════════════════════════════════
 
-const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
+const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange, isActive }) => {
   const { t } = useTranslation();
   const hasRestoredRef = useRef(false);
   const triggerCheck = useAchievementTrigger();
@@ -458,6 +458,25 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // Style Management States (NEW)
   // ========================================
   const [selectedStyle, setSelectedStyle] = useState<string>('cartoon_3d');
+  const styleContainerRef = useRef<HTMLDivElement>(null);
+  const styleBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [stylePill, setStylePill] = useState<{ left: number; width: number } | null>(null);
+  const updateStylePill = useCallback(() => {
+    const ids = ['cartoon_3d', 'line_art_bw', 'illustrated_painting', 'realistic'];
+    const activeIdx = ids.indexOf(selectedStyle);
+    if (activeIdx === -1) return;
+    const btn = styleBtnRefs.current[activeIdx];
+    const container = styleContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setStylePill({ left: br.left - cr.left, width: br.width });
+  }, [selectedStyle, isActive]);
+  useLayoutEffect(() => { updateStylePill(); }, [updateStylePill]);
+  useEffect(() => {
+    const t = setTimeout(updateStylePill, 0);
+    return () => clearTimeout(t);
+  }, [updateStylePill]);
   const [styleProfiles, setStyleProfiles] = useState<Record<string, StyleProfile>>({});
   const [loadingStyles, setLoadingStyles] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -2135,9 +2154,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       Visual Style
                     </label>
                     <div
+                      ref={styleContainerRef}
                       className="ng-segment ng-rect w-full"
-                      style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}
+                      style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', '--ng-accent': tabColor } as React.CSSProperties}
                     >
+                      {stylePill && (
+                        <div className="ng-segment-pill" style={{ left: stylePill.left, width: stylePill.width }} aria-hidden="true" />
+                      )}
                       {[
                         {
                           id: 'cartoon_3d',
@@ -2205,24 +2228,21 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           ),
                           hint: 'Professional photo with natural lighting',
                         },
-                      ].map((style) => {
+                      ].map((style, idx) => {
                         const active = selectedStyle === style.id;
                         return (
                           <button
                             key={style.id}
+                            ref={el => { styleBtnRefs.current[idx] = el; }}
                             type="button"
                             disabled={loadingStyles}
                             onClick={() => setSelectedStyle(style.id)}
-                            className="ng-segment-btn flex-col gap-2 py-3"
+                            className={`ng-segment-btn flex-col gap-2 py-3${active ? ' ng-seg-active' : ''}`}
                             style={{
                               height: 'auto',
                               borderRadius: '5px',
                               opacity: loadingStyles ? 0.5 : 1,
                               cursor: loadingStyles ? 'not-allowed' : 'pointer',
-                              outline: active ? `2px solid ${tabColor}` : undefined,
-                              outlineOffset: '-2px',
-                              background: active ? `${tabColor}14` : undefined,
-                              color: active ? tabColor : undefined,
                             }}
                           >
                             <div>{style.icon}</div>

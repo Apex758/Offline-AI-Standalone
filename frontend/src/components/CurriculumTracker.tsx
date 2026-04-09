@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
@@ -144,6 +144,25 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const highlightTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [progressView, setProgressView] = useState<'overall' | 'phase'>('overall');
+  const viewToggleContainerRef = useRef<HTMLDivElement>(null);
+  const viewToggleBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [viewTogglePill, setViewTogglePill] = useState<{ left: number; width: number } | null>(null);
+  const updateViewTogglePill = useCallback(() => {
+    const modes: ('overall' | 'phase')[] = ['overall', 'phase'];
+    const activeIdx = modes.indexOf(progressView);
+    if (activeIdx === -1) return;
+    const btn = viewToggleBtnRefs.current[activeIdx];
+    const container = viewToggleContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setViewTogglePill({ left: br.left - cr.left, width: br.width });
+  }, [progressView, isActive]);
+  useLayoutEffect(() => { updateViewTogglePill(); }, [updateViewTogglePill]);
+  useEffect(() => {
+    const t = setTimeout(updateViewTogglePill, 0);
+    return () => clearTimeout(t);
+  }, [updateViewTogglePill]);
 
   // Completion warning modal state
   const [completionWarning, setCompletionWarning] = useState<{
@@ -1062,30 +1081,22 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         <div className="flex items-center space-x-4">
           {/* Overall / Phase toggle */}
           <div
-            style={{
-              display: 'inline-flex',
-              borderRadius: 8,
-              border: '1px solid var(--border-color, #e5e7eb)',
-              overflow: 'hidden',
-              flexShrink: 0,
-            }}
+            ref={viewToggleContainerRef}
+            className="ng-segment ng-rect"
+            style={{ display: 'inline-flex', '--ng-accent': accentColor, flexShrink: 0 } as React.CSSProperties}
           >
-            {(['overall', 'phase'] as const).map(mode => {
+            {viewTogglePill && (
+              <div className="ng-segment-pill" style={{ left: viewTogglePill.left, width: viewTogglePill.width }} aria-hidden="true" />
+            )}
+            {(['overall', 'phase'] as const).map((mode, idx) => {
               const active = progressView === mode;
               return (
                 <button
                   key={mode}
+                  ref={el => { viewToggleBtnRefs.current[idx] = el; }}
                   onClick={() => setProgressView(mode)}
-                  style={{
-                    padding: '6px 14px',
-                    fontSize: 13,
-                    fontWeight: active ? 600 : 400,
-                    background: active ? accentColor : 'transparent',
-                    color: active ? '#fff' : 'var(--text-secondary, #6b7280)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
+                  className={`ng-segment-btn${active ? ' ng-seg-active' : ''}`}
+                  style={{ padding: '6px 14px', fontSize: 13 }}
                 >
                   {mode === 'overall' ? 'Overall' : 'Phase'}
                 </button>

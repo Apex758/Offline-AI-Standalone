@@ -486,18 +486,6 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
         </div>
       </div>
 
-      {/* Bottom: Unassigned summary bar */}
-      {unassignedCount > 0 && (
-        <div style={{
-          padding: '8px 24px',
-          borderTop: '1px solid var(--border-color)',
-          background: 'var(--bg-secondary)',
-          fontSize: 12, color: '#f59e0b', fontWeight: 500, flexShrink: 0,
-        }}>
-          Unassigned: {unassignedCount} ELO{unassignedCount !== 1 ? 's' : ''} across{' '}
-          {new Set(filteredMilestones.filter(m => !m.phase_id).map(m => m.subject)).size} subject{new Set(filteredMilestones.filter(m => !m.phase_id).map(m => m.subject)).size !== 1 ? 's' : ''}
-        </div>
-      )}
     </div>
   );
 };
