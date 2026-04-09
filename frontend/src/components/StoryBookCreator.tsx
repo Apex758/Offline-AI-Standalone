@@ -2481,9 +2481,10 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           {/* Generate button */}
           <button
             onClick={handleGenerate}
-            className="w-full py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+            className="w-full py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-2"
             style={{ background: accentColor }}
           >
+            <Icon icon={BookOpen01IconData} className="w-5 h-5" />
             {t('generators.generateStory')}
           </button>
         </div>

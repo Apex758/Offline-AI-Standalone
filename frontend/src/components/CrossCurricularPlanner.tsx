@@ -14,6 +14,7 @@ import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
+import GitMergeIcon from '@hugeicons/core-free-icons/GitMergeIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -32,6 +33,7 @@ const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
 const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01Icon} {...p} />;
 const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01Icon} {...p} />;
+const Merge: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GitMergeIcon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import AIDisclaimer from './AIDisclaimer';
@@ -1572,7 +1574,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         </>
                       ) : (
                         <>
-                          <School className="w-5 h-5 mr-2" />
+                          <Merge className="w-5 h-5 mr-2" />
                           Generate Lesson Plan
                         </>
                       )}

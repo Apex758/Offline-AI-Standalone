@@ -12,6 +12,7 @@ import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
+import Baby01Icon from '@hugeicons/core-free-icons/Baby01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -28,6 +29,7 @@ const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
 const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01Icon} {...p} />;
 const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01Icon} {...p} />;
+const Baby: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Baby01Icon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import KindergartenEditor from './KindergartenEditor';
@@ -431,6 +433,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
+  // ✅ Moved generatedPlan before streamingContent to fix TDZ error
+  const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
+
   const streamingContent = useStreamingRenderer({
     text: streamingPlan || generatedPlan,
     isStreaming: !!(loading && streamingPlan),
@@ -489,7 +494,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     return getDefaultFormData();
   });
 
-  const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
   const { matchCount, matchedHistories, sortedHistories: sortedKindergartenHistories } = useHistoryMatching(formData, kindergartenHistories, { subject: 'curriculumSubject', gradeLevel: null });
 
 
@@ -1467,7 +1471,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       </>
                     ) : (
                       <>
-                        <GraduationCap className="w-5 h-5 mr-2" />
+                        <Baby className="w-5 h-5 mr-2" />
                         Generate Lesson Plan
                       </>
                     )}

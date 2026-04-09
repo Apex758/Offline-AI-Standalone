@@ -24,6 +24,7 @@ import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
 import ImageNotFound01IconData from '@hugeicons/core-free-icons/ImageNotFound01Icon';
+import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -51,6 +52,7 @@ const PaintBrush: React.FC<{ className?: string; style?: React.CSSProperties }> 
 const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
 const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
 const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ImageNotFound01IconData} {...p} />;
+const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
 import { getCurriculumSync } from '../data/curriculumLoader';
 import {
   MultipleChoiceTemplate,
@@ -1978,7 +1980,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   </>
                 ) : (
                   <>
-                    <FileText className="w-5 h-5 mr-2" />
+                    <FileSpreadsheet className="w-5 h-5 mr-2" />
                     {classMode && selectedStudentIds.size > 0
                       ? `Generate for ${selectedStudentIds.size} Students`
                       : t('generators.generateWorksheet')}

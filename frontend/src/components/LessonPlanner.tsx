@@ -10,6 +10,7 @@ import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
 import Loading02Icon from '@hugeicons/core-free-icons/Loading02Icon';
 import File01Icon from '@hugeicons/core-free-icons/File01Icon';
+import BookBookmark01Icon from '@hugeicons/core-free-icons/BookBookmark01Icon';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
 import SaveIcon from '@hugeicons/core-free-icons/SaveIcon';
 import Download01Icon from '@hugeicons/core-free-icons/Download01Icon';
@@ -30,6 +31,7 @@ const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }
 const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01Icon} {...p} />;
 const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading02Icon} {...p} />;
 const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01Icon} {...p} />;
+const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookBookmark01Icon} {...p} />;
 const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02Icon} {...p} />;
 const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIcon} {...p} />;
 const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01Icon} {...p} />;
@@ -1540,7 +1542,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         </>
                       ) : (
                         <>
-                          <FileText className="w-5 h-5 mr-2" />
+                          <BookMarked className="w-5 h-5 mr-2" />
                           {t('generators.generateLesson')}
                         </>
                       )}

@@ -12,6 +12,7 @@ import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -28,6 +29,7 @@ const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
 const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+const ClipboardList: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import AIDisclaimer from './AIDisclaimer';
@@ -1352,7 +1354,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       </>
                     ) : (
                       <>
-                        <FileText className="w-5 h-5 mr-2" />
+                        <ClipboardList className="w-5 h-5 mr-2" />
                         {t('generators.generateRubric')}
                       </>
                     )}

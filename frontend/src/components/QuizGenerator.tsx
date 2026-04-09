@@ -23,6 +23,7 @@ import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import PanelRightCloseIconData from '@hugeicons/core-free-icons/PanelRightCloseIcon';
 import PanelRightOpenIconData from '@hugeicons/core-free-icons/PanelRightOpenIcon';
+import PenTool01IconData from '@hugeicons/core-free-icons/PenTool01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -50,6 +51,7 @@ const ClipboardCheck: React.FC<{ className?: string; style?: React.CSSProperties
 const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
 const PanelRightClose: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PanelRightCloseIconData} {...p} />;
 const PanelRightOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PanelRightOpenIconData} {...p} />;
+const PenTool: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PenTool01IconData} {...p} />;
 import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
 import ScanTemplatePreview from './ScanTemplatePreview';
@@ -1687,7 +1689,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                     </>
                   ) : (
                     <>
-                      <ListChecks className="w-5 h-5 mr-2" />
+                      <PenTool className="w-5 h-5 mr-2" />
                       {t('generators.generateQuiz')}
                     </>
                   )}
