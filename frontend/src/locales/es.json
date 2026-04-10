@@ -9,7 +9,7 @@
     "curriculumPlan": "Plan Curricular",
     "myResources": "Mis Recursos",
     "schoolYear": "Ano Escolar",
-    "askPearl": "Preguntar a PEARL",
+    "askPearl": "Preguntar a {{coworkerName}}",
     "curriculumBrowser": "Explorador Curricular",
     "quizBuilder": "Creador de Examenes",
     "rubricBuilder": "Creador de Rubricas",
@@ -43,7 +43,7 @@
       "curriculumPlan": "Planifica tu curriculo trimestral y anual de un vistazo",
       "myResources": "Navega y gestiona todos tus materiales de clase guardados",
       "schoolYear": "Consulta y planifica tu calendario escolar completo",
-      "askPearl": "Chatea con PEARL, tu asistente de ensenanza con IA",
+      "askPearl": "Chatea con {{coworkerName}}, tu asistente de ensenanza con IA",
       "curriculumBrowser": "Busca y explora el curriculo OECS completo",
       "quizBuilder": "Genera examenes y evaluaciones instantaneamente",
       "rubricBuilder": "Crea rubricas de calificacion consistentes en segundos",
@@ -509,7 +509,7 @@
     "catPowerUser2": "La consistencia es el ingrediente secreto de una gran ensenanza.",
     "catPowerUser3": "Tu compromiso con tu oficio es inspirador.",
     "catChat1": "Hacer preguntas es como nacen las grandes ideas.",
-    "catChat2": "Cada conversacion con PEARL genera nuevas posibilidades.",
+    "catChat2": "Cada conversacion con {{coworkerName}} genera nuevas posibilidades.",
     "catChat3": "La colaboracion — incluso con IA — fortalece la ensenanza.",
     "catBrainDump1": "Convertir pensamientos en accion es un superpoder.",
     "catBrainDump2": "Tus ideas merecen convertirse en realidad.",
@@ -784,7 +784,7 @@
   },
   "settingsPage": {
     "title": "Configuracion",
-    "subtitle": "Personalizar PEARL",
+    "subtitle": "Personalizar {{coworkerName}}",
     "profile": {
       "title": "Perfil",
       "description": "Su nombre, escuela y rol",
@@ -811,13 +811,13 @@
       "setupWizard": "Asistente de Configuracion",
       "setupWizardDesc": "Vuelva a ejecutar la configuracion inicial para cambiar las funciones en su barra lateral.",
       "redoSetup": "Repetir Configuracion",
-      "tellPearl": "Cuentele a PEARL sobre usted para personalizar su experiencia",
+      "tellPearl": "Cuentele a {{coworkerName}} sobre usted para personalizar su experiencia",
       "displayNamePlaceholder": "p. ej. Ms. Johnson",
       "schoolPlaceholder": "p. ej. Escuela Primaria Castries"
     },
     "appearance": {
       "title": "Apariencia",
-      "description": "Personalizar la apariencia de PEARL",
+      "description": "Personalizar la apariencia de {{coworkerName}}",
       "theme": "Tema",
       "themeDesc": "Elija su esquema de colores preferido",
       "light": "Claro",
@@ -1453,7 +1453,7 @@
       "tip8": "El Estudio de Imagenes puede generar imagenes personalizadas para tus hojas de trabajo.",
       "tip9": "La Presentacion convierte tus planes de clase en diapositivas listas para presentar.",
       "tip10": "El Creador de Libros de Cuentos esta disenado para narracion ilustrada de K-2.",
-      "tip11": "Pregunta a PEARL cualquier cosa — conoce todo el curriculo OECS.",
+      "tip11": "Pregunta a {{coworkerName}} cualquier cosa — conoce todo el curriculo OECS.",
       "tip12": "Los planes de leccion integrada conectan multiples materias en una actividad.",
       "tip13": "Mis Recursos almacena todo el contenido generado en una biblioteca.",
       "tip14": "Usa Mis Clases para organizar estudiantes y rastrear su progreso.",
@@ -1561,8 +1561,8 @@
         "description": "Cada pestana muestra su herramienta activa. Puede hacer clic en la X para cerrar una pestana, o hacer clic derecho para dividirla junto a otra herramienta."
       },
       "step5": {
-        "title": "Chat con PEARL",
-        "description": "Abra otra herramienta! Chatee con PEARL para obtener ayuda, ideas o para discutir sus planes de leccion. Adelante, haga clic para abrirlo!",
+        "title": "Chat con {{coworkerName}}",
+        "description": "Abra otra herramienta! Chatee con {{coworkerName}} para obtener ayuda, ideas o para discutir sus planes de leccion. Adelante, haga clic para abrirlo!",
         "actionHint": "Haga clic para abrir!"
       },
       "step6": {

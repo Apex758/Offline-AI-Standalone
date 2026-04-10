@@ -74,9 +74,28 @@ const StickyNoteContext = createContext<StickyNoteContextValue | null>(null);
 // ---------------------------------------------------------------------------
 // Storage
 // ---------------------------------------------------------------------------
-const STORAGE_KEY = 'pearl_sticky_notes';
-const GROUP_STORAGE_KEY = 'pearl_sticky_note_groups';
+const STORAGE_KEY = 'app_sticky_notes';
+const GROUP_STORAGE_KEY = 'app_sticky_note_groups';
+const LEGACY_STORAGE_KEY = 'pearl_sticky_notes';
+const LEGACY_GROUP_STORAGE_KEY = 'pearl_sticky_note_groups';
 const MAX_NOTES = 50;
+
+// One-time migration: copy legacy pearl_* keys to new app_* keys, then delete the old.
+function migrateLegacyKey(legacyKey: string, newKey: string) {
+  try {
+    const legacy = localStorage.getItem(legacyKey);
+    if (legacy !== null && localStorage.getItem(newKey) === null) {
+      localStorage.setItem(newKey, legacy);
+    }
+    if (legacy !== null) {
+      localStorage.removeItem(legacyKey);
+    }
+  } catch {
+    // ignore
+  }
+}
+migrateLegacyKey(LEGACY_STORAGE_KEY, STORAGE_KEY);
+migrateLegacyKey(LEGACY_GROUP_STORAGE_KEY, GROUP_STORAGE_KEY);
 
 function loadNotes(): StickyNote[] {
   try {

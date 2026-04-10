@@ -283,12 +283,12 @@ const FAQ_DATA: FAQCategory[] = [
     ]
   },
   {
-    id: 'ask-pearl', title: 'Ask PEARL', icon: MessageSquare, color: '#0ea5e9',
-    description: 'Getting the most out of PEARL',
+    id: 'ask-coworker', title: 'Ask {coworkerName}', icon: MessageSquare, color: '#0ea5e9',
+    description: 'Getting the most out of {coworkerName}',
     items: [
-      { question: 'What can I ask PEARL?', answer: 'PEARL can help with lesson planning ideas, explain curriculum concepts, suggest teaching strategies, help differentiate instruction, create activity ideas, and answer questions about pedagogy. Think of PEARL as a knowledgeable teaching assistant.' },
-      { question: 'Does PEARL know the OECS curriculum?', answer: 'Yes! PEARL is trained on OECS curriculum standards and can reference specific learning outcomes, suggest aligned activities, and help you plan lessons that meet curriculum requirements for your subject and grade level.' },
-      { question: 'Can I have multiple chat conversations?', answer: 'Yes, you can open up to 3 Ask PEARL tabs simultaneously. Each conversation is independent, so you can discuss different topics or subjects in parallel.' },
+      { question: 'What can I ask {coworkerName}?', answer: '{coworkerName} can help with lesson planning ideas, explain curriculum concepts, suggest teaching strategies, help differentiate instruction, create activity ideas, and answer questions about pedagogy. Think of {coworkerName} as a knowledgeable teaching assistant.' },
+      { question: 'Does {coworkerName} know the OECS curriculum?', answer: 'Yes! {coworkerName} is trained on OECS curriculum standards and can reference specific learning outcomes, suggest aligned activities, and help you plan lessons that meet curriculum requirements for your subject and grade level.' },
+      { question: 'Can I have multiple chat conversations?', answer: 'Yes, you can open up to 3 Ask {coworkerName} tabs simultaneously. Each conversation is independent, so you can discuss different topics or subjects in parallel.' },
     ]
   },
   {
@@ -332,6 +332,8 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
   const { settings } = useSettings();
   const { t } = useTranslation();
   const { isLicensed, oakLicense } = useLicense();
+  const coworkerName = (settings.profile?.coworkerName || '').trim() || 'Coworker';
+  const substituteCoworkerName = React.useCallback((s: string) => s.replace(/\{coworkerName\}/g, coworkerName), [coworkerName]);
 
   // Which face is showing: false = Support (front), true = Reporting (back)
   const [flipped, setFlipped] = useState<boolean>(savedData?.flipped || false);
@@ -733,8 +735,8 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                             <Icon className="w-4 h-4" style={{ color: cat.color }} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{(cat as any).titleKey ? t((cat as any).titleKey) : cat.title}</p>
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cat.description} · {cat.items.length} question{cat.items.length !== 1 ? 's' : ''}</p>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{substituteCoworkerName((cat as any).titleKey ? t((cat as any).titleKey) : cat.title)}</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{substituteCoworkerName(cat.description)} · {cat.items.length} question{cat.items.length !== 1 ? 's' : ''}</p>
                           </div>
                           <NeuroChevron
                             expanded={isExp}
@@ -759,7 +761,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                     onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = 'transparent'; }}
                                   >
                                     <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: isOpen ? cat.color : 'var(--text-muted)' }} />
-                                    <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>{item.question}</span>
+                                    <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>{substituteCoworkerName(item.question)}</span>
                                     <NeuroChevron
                                       expanded={isOpen}
                                       onToggle={() => {}}
@@ -769,7 +771,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                   </button>
                                   {isOpen && (
                                     <div className="ml-9 mr-3 mt-1 mb-2">
-                                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item.answer}</p>
+                                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{substituteCoworkerName(item.answer)}</p>
                                       <div className="flex items-center gap-3 mt-3">
                                         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Was this helpful?</span>
                                         <button

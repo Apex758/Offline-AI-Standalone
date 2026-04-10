@@ -58,6 +58,7 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { FEATURE_MODULES } from '../lib/featureModules';
 import { FeatureModuleId } from '../types/feature-disclosure';
+import { useCoworkerName } from '../hooks/useCoworkerName';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -367,6 +368,7 @@ interface DownloadableModel {
 const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { t } = useTranslation();
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
+  const coworkerName = useCoworkerName();
   const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, supportsThinking, dualModel, refreshCapabilities, recommendations } = useCapabilities();
   const { getActiveStreams } = useWebSocket();
   const { queue } = useQueue();
@@ -1248,8 +1250,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       // Add sticky notes from localStorage if selected
       if (includeStickyNotes) {
         try {
-          const notes = localStorage.getItem('pearl_sticky_notes');
-          const groups = localStorage.getItem('pearl_sticky_note_groups');
+          const notes = localStorage.getItem('app_sticky_notes');
+          const groups = localStorage.getItem('app_sticky_note_groups');
           backendData['sticky_notes'] = {
             notes: notes ? JSON.parse(notes) : [],
             groups: groups ? JSON.parse(groups) : [],
@@ -1385,17 +1387,17 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
         try {
           const imported = filteredData['sticky_notes'] as { notes?: unknown[]; groups?: unknown[] };
           // Merge notes
-          const existingNotes: Array<{ id: string; [k: string]: unknown }> = JSON.parse(localStorage.getItem('pearl_sticky_notes') || '[]');
+          const existingNotes: Array<{ id: string; [k: string]: unknown }> = JSON.parse(localStorage.getItem('app_sticky_notes') || '[]');
           const existingNoteIds = new Set(existingNotes.map(n => n.id));
           const newNotes = (imported.notes || []) as Array<{ id: string; [k: string]: unknown }>;
           const mergedNotes = [...existingNotes, ...newNotes.filter(n => !existingNoteIds.has(n.id))];
-          localStorage.setItem('pearl_sticky_notes', JSON.stringify(mergedNotes));
+          localStorage.setItem('app_sticky_notes', JSON.stringify(mergedNotes));
           // Merge groups
-          const existingGroups: Array<{ id: string; [k: string]: unknown }> = JSON.parse(localStorage.getItem('pearl_sticky_note_groups') || '[]');
+          const existingGroups: Array<{ id: string; [k: string]: unknown }> = JSON.parse(localStorage.getItem('app_sticky_note_groups') || '[]');
           const existingGroupIds = new Set(existingGroups.map(g => g.id));
           const newGroups = (imported.groups || []) as Array<{ id: string; [k: string]: unknown }>;
           const mergedGroups = [...existingGroups, ...newGroups.filter(g => !existingGroupIds.has(g.id))];
-          localStorage.setItem('pearl_sticky_note_groups', JSON.stringify(mergedGroups));
+          localStorage.setItem('app_sticky_note_groups', JSON.stringify(mergedGroups));
         } catch (e) {
           console.error('Error importing sticky notes:', e);
         }
@@ -1674,6 +1676,25 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           value={settings.profile.school}
                           onChange={(e) => updateSettings({ profile: { ...settings.profile, school: e.target.value } })}
                         />
+                      </div>
+
+                      {/* Coworker Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-theme-label mb-1.5">What should your AI assistant be called?</label>
+                        <Input
+                          placeholder="Coworker"
+                          maxLength={30}
+                          value={settings.profile.coworkerName || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            updateSettings({ profile: { ...settings.profile, coworkerName: val } });
+                          }}
+                          onBlur={(e) => {
+                            const trimmed = e.target.value.trim();
+                            updateSettings({ profile: { ...settings.profile, coworkerName: trimmed || 'Coworker' } });
+                          }}
+                        />
+                        <p className="text-xs text-theme-hint mt-1">This name will be used throughout the app. Leave blank to use "Coworker".</p>
                       </div>
 
                       {/* Grade Levels */}
@@ -3762,8 +3783,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <p className="font-medium">How file access works:</p>
                         <ul className="list-disc list-inside space-y-1 text-xs text-blue-700 dark:text-blue-300">
                           <li>A files button will appear in the Chat panel to browse your folders</li>
-                          <li>You can attach files as reference context when chatting with PEARL</li>
-                          <li>Ask PEARL to organize or find files in your allowed folders</li>
+                          <li>You can attach files as reference context when chatting with {coworkerName}</li>
+                          <li>Ask {coworkerName} to organize or find files in your allowed folders</li>
                           <li>The Resource Manager will show an "On PC" tab with your files</li>
                           <li>Files are <strong>never deleted</strong> — organizing only moves files into subfolders</li>
                           <li>Only these file types are visible: Word, PowerPoint, PDF, Excel, text, and images</li>

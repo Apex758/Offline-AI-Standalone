@@ -1028,18 +1028,20 @@ async def websocket_chat(websocket: WebSocket):
             profile_context = message_data.get("profile_context", "")
             # Context files attached from the frontend file picker
             context_files = message_data.get("context_files", None) or message_data.get("contextFiles", None)
+            # Configurable coworker name (AI persona name set by user in Settings)
+            coworker_name = (message_data.get("coworker_name") or "Coworker").strip() or "Coworker"
 
             if not user_message:
                 continue
 
-            default_system_prompt = get_tier2_system_prompt("chat")
+            default_system_prompt = get_tier2_system_prompt("chat", coworker_name=coworker_name)
 
             # Tier-1 awareness: use simpler prompt and tighter params for small models
             from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
             _tier_info = compute_effective_tier()
             _is_tier1 = _tier_info["tier"] == 1
             if _is_tier1:
-                default_system_prompt = get_tier1_system_prompt("chat")
+                default_system_prompt = get_tier1_system_prompt("chat", coworker_name=coworker_name)
                 _t1_params = get_tier1_gen_params("chat")
 
             # Use custom system prompt if provided, otherwise use default
@@ -1643,10 +1645,11 @@ async def websocket_lesson_plan(websocket: WebSocket):
             _t1_params = get_tier1_gen_params("lesson-plan") if _is_tier1 else {}
 
             _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
+            _coworker_name = (data.get("coworker_name") or "Coworker").strip() or "Coworker"
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("lesson-plan", _grade)
+                system_prompt = get_tier1_system_prompt("lesson-plan", _grade, coworker_name=_coworker_name)
             else:
-                system_prompt = get_tier2_system_prompt("lesson-plan")
+                system_prompt = get_tier2_system_prompt("lesson-plan", coworker_name=_coworker_name)
 
             # Prefer user-selected ELO/SCOs from the form over generic curriculum context
             user_elo = ""

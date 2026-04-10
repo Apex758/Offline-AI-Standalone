@@ -116,13 +116,13 @@ export const FEATURE_CATALOG: DiscoverableFeature[] = [
   },
   {
     id: 'tool-chat',
-    name: 'Ask PEARL',
+    name: 'Ask Coworker',
     category: 'core',
-    description: 'Chat with PEARL, your AI teaching assistant. Get help with lesson ideas, curriculum questions, differentiation strategies, and more through natural conversation.',
+    description: 'Chat with your Coworker, your AI teaching assistant. Get help with lesson ideas, curriculum questions, differentiation strategies, and more through natural conversation.',
     howToUse: [
-      'Click "Ask PEARL" in the sidebar',
+      'Click "Ask Coworker" in the sidebar',
       'Type your question or request in the chat input',
-      'PEARL can help with lesson ideas, explain curriculum standards, suggest activities, and more',
+      'Your Coworker can help with lesson ideas, explain curriculum standards, suggest activities, and more',
       'Your conversation history is saved so you can continue previous chats',
     ],
     toolType: 'chat',

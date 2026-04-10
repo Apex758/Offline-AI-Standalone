@@ -808,8 +808,8 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
   },
   {
     target: '[data-tutorial="tool-chat"]',
-    title: 'Chat with PEARL',
-    description: 'Let\'s open another tool! Chat with PEARL for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
+    title: 'Chat with Coworker',
+    description: 'Let\'s open another tool! Chat with your Coworker for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
     position: 'right',
     interactive: true,
     waitForAction: 'click',

@@ -5,7 +5,20 @@ import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import { useStickyNotes, StickyNoteGroup as GroupType } from '../../contexts/StickyNoteContext';
 import { StickyNoteGroupExpanded } from './StickyNoteGroupExpanded';
 
-const CLOSE_PREF_KEY = 'pearl_folder_close_pref';
+const CLOSE_PREF_KEY = 'app_folder_close_pref';
+const LEGACY_CLOSE_PREF_KEY = 'pearl_folder_close_pref';
+// One-time migration from legacy pearl_* key
+try {
+  const legacy = localStorage.getItem(LEGACY_CLOSE_PREF_KEY);
+  if (legacy !== null && localStorage.getItem(CLOSE_PREF_KEY) === null) {
+    localStorage.setItem(CLOSE_PREF_KEY, legacy);
+  }
+  if (legacy !== null) {
+    localStorage.removeItem(LEGACY_CLOSE_PREF_KEY);
+  }
+} catch {
+  // ignore
+}
 
 interface Props {
   group: GroupType;

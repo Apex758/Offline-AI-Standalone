@@ -269,7 +269,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="lesson-planner-basic-info"]',
         title: 'Basic Information',
-        description: 'Start by selecting the grade level, subject, and lesson topic. This helps PEARL generate relevant content.',
+        description: 'Start by selecting the grade level, subject, and lesson topic. This helps your Coworker generate relevant content.',
         position: 'right'
       },
       {
@@ -375,7 +375,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="multigrade-planner-grades"]',
         title: 'Select Grade Levels',
-        description: 'Choose all grade levels in your classroom. PEARL will help you plan appropriate activities for each.',
+        description: 'Choose all grade levels in your classroom. Your Coworker will help you plan appropriate activities for each.',
         position: 'right',
         interactive: true,
         waitForAction: 'click',
@@ -464,7 +464,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="cross-curricular-planner-objectives"]',
         title: 'Subject Objectives',
-        description: 'Define learning objectives for each subject area. PEARL helps create objectives that naturally connect.',
+        description: 'Define learning objectives for each subject area. Your Coworker helps create objectives that naturally connect.',
         position: 'right'
       },
       {
@@ -829,7 +829,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="settings-welcome"]',
         title: 'Welcome to Settings',
-        description: 'Customize PEARL to match your preferences and teaching style. Adjust appearance, notifications, and more.',
+        description: 'Customize your Coworker to match your preferences and teaching style. Adjust appearance, notifications, and more.',
         position: 'bottom'
       },
       {
@@ -870,19 +870,19 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
 
   [TUTORIAL_IDS.CHAT]: {
     id: TUTORIAL_IDS.CHAT,
-    name: 'Ask PEARL',
-    description: 'Chat with PEARL',
+    name: 'Ask Coworker',
+    description: 'Chat with your Coworker',
     steps: [
       {
         target: '[data-tutorial="chat-welcome"]',
-        title: 'Welcome to Ask PEARL',
-        description: 'Chat with PEARL for lesson ideas, curriculum questions, differentiation strategies, and more. PEARL understands the OECS curriculum and can help you plan effectively.',
+        title: 'Welcome to Ask Coworker',
+        description: 'Chat with your Coworker for lesson ideas, curriculum questions, differentiation strategies, and more. Your Coworker understands the OECS curriculum and can help you plan effectively.',
         position: 'center'
       },
       {
         target: '[data-tutorial="chat-new"]',
         title: 'New Conversation',
-        description: 'Start a fresh conversation with PEARL. Each conversation is saved automatically so you can return to it later.',
+        description: 'Start a fresh conversation with your Coworker. Each conversation is saved automatically so you can return to it later.',
         position: 'right'
       },
       {
@@ -894,19 +894,19 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="chat-history"]',
         title: 'Chat Messages',
-        description: 'Your conversation appears here. PEARL provides formatted responses with suggestions, examples, and curriculum-aligned content.',
+        description: 'Your conversation appears here. Your Coworker provides formatted responses with suggestions, examples, and curriculum-aligned content.',
         position: 'left'
       },
       {
         target: '[data-tutorial="chat-input"]',
         title: 'Type Your Message',
-        description: 'Ask PEARL anything about teaching, lesson planning, or the OECS curriculum. Try questions like "Help me plan a Grade 3 Science lesson on plants" or "What activities work for mixed-ability groups?"',
+        description: 'Ask your Coworker anything about teaching, lesson planning, or the OECS curriculum. Try questions like "Help me plan a Grade 3 Science lesson on plants" or "What activities work for mixed-ability groups?"',
         position: 'top'
       },
       {
         target: '[data-tutorial="chat-send"]',
         title: 'Send Message',
-        description: 'Click send or press Enter to submit your message. PEARL will respond with helpful, curriculum-aligned suggestions.',
+        description: 'Click send or press Enter to submit your message. Your Coworker will respond with helpful, curriculum-aligned suggestions.',
         position: 'top'
       },
       {

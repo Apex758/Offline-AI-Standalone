@@ -312,6 +312,14 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
+  const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.generatedPlan && typeof savedData.generatedPlan === 'string') {
+      return savedData.generatedPlan;
+    }
+    return '';
+  });
+
   const streamingContent = useStreamingRenderer({
     text: streamingPlan || generatedPlan,
     isStreaming: !!(loading && streamingPlan),
@@ -403,14 +411,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const timetableAutofill = useTimetableAutofill(firstGradeFromRange, formData.subject);
 
   const { matchCount, matchedHistories, sortedHistories: sortedMultigradeHistories } = useHistoryMatching(formData, multigradeHistories, { gradeLevel: 'gradeRange', essentialOutcomes: 'essentialLearningOutcomes', specificOutcomes: 'specificLearningObjectives' });
-
-  const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
-    // First check savedData (for resource manager view/edit)
-    if (savedData?.generatedPlan && typeof savedData.generatedPlan === 'string') {
-      return savedData.generatedPlan;
-    }
-    return '';
-  });
 
   // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {

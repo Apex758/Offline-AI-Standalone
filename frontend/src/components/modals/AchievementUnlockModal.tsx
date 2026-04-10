@@ -7,6 +7,7 @@ import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
 import type { NewlyEarnedAchievement, AchievementRarity, AchievementCategory } from '../../types/achievement';
+import { useCoworkerName } from '../../hooks/useCoworkerName';
 import { getTrophyType } from '../../config/trophyMap';
 import { getTrophyImageForTier, type TrophyTier } from '../../assets/trophyImagesLazy';
 
@@ -156,6 +157,7 @@ interface AchievementUnlockModalProps {
 
 export default function AchievementUnlockModal({ achievement, onDismiss, viewOnly }: AchievementUnlockModalProps) {
   const { t } = useTranslation();
+  const coworkerName = useCoworkerName();
   const [phase, setPhase] = useState<'idle' | 'entering' | 'visible' | 'exiting'>('idle');
   const [trophySrc, setTrophySrc] = useState<string | undefined>(undefined);
 
@@ -539,7 +541,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
               fontStyle: 'italic',
               animation: show ? 'ach-text-up 0.5s ease 0.45s both' : 'none',
             }}>
-              {t(quoteKey)}
+              {t(quoteKey, { coworkerName })}
             </p>
           )}
 

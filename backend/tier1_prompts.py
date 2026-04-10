@@ -69,7 +69,7 @@ TIER1_MAX_TOKENS = {
 TIER1_PROMPTS = {
 
     "chat": (
-        "You are PEARL, an AI assistant for Caribbean primary school teachers (K-6). Offline only -- no internet tools.\n\n"
+        "You are {coworker_name}, an AI assistant for Caribbean primary school teachers (K-6). Offline only -- no internet tools.\n\n"
         "### Instructions\n"
         "- Short answers. Match length to question.\n"
         "- Teaching questions: give one specific, ready-to-use idea.\n"
@@ -79,7 +79,7 @@ TIER1_PROMPTS = {
         "- If unsure, say so.\n\n"
         "### Example\n"
         "Teacher: \"How do I make fractions more hands-on?\"\n"
-        "PEARL: \"Cut paper into equal parts and have students fold, label, and compare. No materials needed beyond scrap paper.\""
+        "{coworker_name}: \"Cut paper into equal parts and have students fold, label, and compare. No materials needed beyond scrap paper.\""
     ),
 
     "lesson-plan": (
@@ -414,17 +414,23 @@ TIER1_PROMPTS = {
 
 # ── Public helpers ─────────────────────────────────────────────────────────────
 
-@lru_cache(maxsize=32)
-def get_tier1_system_prompt(task_type: str, grade: str | None = None) -> str | None:
+@lru_cache(maxsize=64)
+def get_tier1_system_prompt(task_type: str, grade: str | None = None, coworker_name: str = "Coworker") -> str | None:
     """Return the Tier-1 system prompt for a task type, or None if unchanged.
 
     If a grade is provided, appends age context so the model knows the target student age.
+    The coworker_name replaces the {coworker_name} placeholder in prompts that use it
+    (e.g. the chat prompt).
     """
     prompt = TIER1_PROMPTS.get(task_type, TIER1_PROMPTS["chat"])
-    if prompt and grade:
-        age = get_age_for_grade(grade)
-        if age:
-            prompt += f"\n\nTarget students: Grade {grade}, typically aged {age}. Ensure all content is developmentally appropriate for this age group."
+    if prompt:
+        # Substitute the coworker name placeholder if present
+        if "{coworker_name}" in prompt:
+            prompt = prompt.replace("{coworker_name}", coworker_name or "Coworker")
+        if grade:
+            age = get_age_for_grade(grade)
+            if age:
+                prompt += f"\n\nTarget students: Grade {grade}, typically aged {age}. Ensure all content is developmentally appropriate for this age group."
     return prompt
 
 

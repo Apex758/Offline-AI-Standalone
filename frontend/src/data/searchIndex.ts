@@ -47,9 +47,9 @@ const searchIndex: SearchEntry[] = [
   },
   {
     id: 'tool-chat',
-    title: 'Ask PEARL',
-    description: 'Chat with PEARL for ideas and help',
-    keywords: ['chat', 'pearl', 'ai', 'assistant', 'conversation', 'ask', 'help', 'question', 'talk', 'message'],
+    title: 'Ask Coworker',
+    description: 'Chat with your Coworker for ideas and help',
+    keywords: ['chat', 'coworker', 'pearl', 'ai', 'assistant', 'conversation', 'ask', 'help', 'question', 'talk', 'message'],
     category: 'tool',
     icon: 'MessageSquare',
     toolType: 'chat',

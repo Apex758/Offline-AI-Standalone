@@ -150,6 +150,21 @@ input, textarea, select {
   transform: rotateY(180deg);
 }
 
+/* CRITICAL: Chromium's preserve-3d + backface-visibility still hit-tests the
+   hidden face in some regions, causing "dead zones" where the cursor shows the
+   I-beam (from hidden form inputs/text) and drags get interrupted. Force the
+   non-visible face to be non-interactive. */
+.image-studio-flip-inner:not(.flipped) .image-studio-flip-back {
+  pointer-events: none;
+}
+.image-studio-flip-inner.flipped .image-studio-flip-front {
+  pointer-events: none;
+}
+.image-studio-flip-inner:not(.flipped) .image-studio-flip-back *,
+.image-studio-flip-inner.flipped .image-studio-flip-front * {
+  pointer-events: none !important;
+}
+
 /* Command palette: settings section highlight flash */
 @keyframes search-highlight {
   0% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }

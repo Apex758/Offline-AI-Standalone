@@ -496,6 +496,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushSize, setBrushSize] = useState(20);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
+  const [comparePos, setComparePos] = useState(50);
+  const [compareDims, setCompareDims] = useState<{ w: number; h: number } | null>(null);
+  const [compareFit, setCompareFit] = useState<{ w: number; h: number } | null>(null);
+  const compareRef = useRef<HTMLDivElement>(null);
+  const compareParentRef = useRef<HTMLDivElement>(null);
   const [coloringSettings, setColoringSettings] = useState<ColoringSettings>({
     edgeSensitivity: .5, lineThickness: 1, smoothing: .4,
     detail: .45, method: 'threshold', gapClose: .25, cleanup: .4,
@@ -595,6 +600,46 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [comicState, setComicState] = useState<'input' | 'generating-prompts' | 'generating-images' | 'done'>('input');
   const setTabProcessingComic = useTabProcessing('comic-generation');
   useEffect(() => { setTabProcessingComic(comicState === 'generating-prompts' || comicState === 'generating-images'); }, [comicState, setTabProcessingComic]);
+
+  // Load natural dimensions for before/after compare (drives the wrapper's aspect ratio)
+  useEffect(() => {
+    if (!showBeforeAfter || !history.original || !history.current) {
+      setCompareDims(null);
+      return;
+    }
+    let cancelled = false;
+    const imgA = new Image();
+    imgA.onload = () => {
+      if (cancelled) return;
+      setCompareDims({ w: imgA.naturalWidth || 1, h: imgA.naturalHeight || 1 });
+    };
+    imgA.src = history.current;
+    return () => { cancelled = true; };
+  }, [showBeforeAfter, history.original, history.current]);
+
+  // Compute fit-to-parent size for compare wrapper (preserves aspect ratio)
+  useEffect(() => {
+    if (!showBeforeAfter || !compareDims) {
+      setCompareFit(null);
+      return;
+    }
+    const parent = compareParentRef.current;
+    if (!parent) return;
+    const ratio = compareDims.w / compareDims.h;
+    const compute = () => {
+      const pw = parent.clientWidth;
+      const ph = parent.clientHeight;
+      if (pw <= 0 || ph <= 0) return;
+      let w = pw;
+      let h = pw / ratio;
+      if (h > ph) { h = ph; w = ph * ratio; }
+      setCompareFit({ w, h });
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, [showBeforeAfter, compareDims]);
   const [comicError, setComicError] = useState<string | null>(null);
   const [comicFinalImage, setComicFinalImage] = useState<string | null>(null);
 
@@ -2695,7 +2740,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           <div className="image-studio-flip-back h-full">
             <div className="h-full flex" data-tutorial="image-studio-editor-panel">
               {/* Main Canvas Area */}
-              <div className="flex-1 p-6 overflow-y-auto">
+              <div className="flex-1 p-6 overflow-hidden min-h-0 min-w-0">
                 {!uploadedImage ? (
                   <div className="h-full flex items-center justify-center" data-tutorial="image-studio-upload">
                     <div className="text-center">
@@ -2715,8 +2760,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
+                  <div className="h-full flex flex-col gap-4 min-h-0">
+                    <div className="flex justify-between items-center shrink-0">
                       <div className="flex items-center gap-2">
                         <button onClick={() => { setUploadedImage(null); setHistory({ original: '', current: '', undoStack: [], redoStack: [] }); setShowBeforeAfter(false); }}
                           className="p-1.5 rounded-lg hover:bg-theme-hover text-theme-secondary" title="Back">
@@ -2725,10 +2770,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         <h2 className="text-xl font-semibold">Image Editor</h2>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => setShowBeforeAfter(!showBeforeAfter)}
-                          className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm">
+                        <button
+                          onClick={() => { setComparePos(50); setShowBeforeAfter(!showBeforeAfter); }}
+                          disabled={!history.original || history.original === history.current}
+                          className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                           {showBeforeAfter ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
-                          {showBeforeAfter ? 'Hide Original' : 'Show Original'}
+                          {showBeforeAfter ? 'Exit Compare' : 'Compare'}
                         </button>
                         <button onClick={openResourcePicker}
                           className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm">
@@ -2743,7 +2790,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
                     {/* Comic Panel Grid (shown when comic-maker is active and has panels) */}
                     {editorTool === 'comic-maker' && comicPanels.length > 0 && (
-                      <div className="border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary p-4">
+                      <div className="flex-1 min-h-0 overflow-y-auto border border-theme-strong rounded-lg bg-theme-tertiary p-4">
                         {comicState === 'generating-prompts' && (
                           <div className="flex items-center justify-center py-12">
                             <HeartbeatLoader className="w-8 h-8 text-blue-600 mr-3" />
@@ -2779,17 +2826,103 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     )}
 
                     {/* Regular Canvas (hidden when comic panel grid is visible) */}
-                    <div className={`relative flex items-center justify-center border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary ${editorTool === 'comic-maker' && comicPanels.length > 0 ? 'hidden' : ''}`} data-tutorial="image-studio-canvas">
-                      {showBeforeAfter && (
-                        <img loading="lazy" src={history.original} alt="Original"
-                          className="absolute top-0 left-0 w-full h-full object-contain"
-                          style={{ pointerEvents: 'none', zIndex: 1 }} />
+                    <div ref={compareParentRef} className={`relative flex-1 min-h-0 flex items-center justify-center border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary ${editorTool === 'comic-maker' && comicPanels.length > 0 ? 'hidden' : ''}`} data-tutorial="image-studio-canvas">
+                      {showBeforeAfter && history.original && history.current && compareDims && compareFit && (
+                        <div
+                          ref={compareRef}
+                          className="relative group shadow-2xl overflow-hidden rounded-lg"
+                          style={{
+                            width: `${compareFit.w}px`,
+                            height: `${compareFit.h}px`,
+                            cursor: 'ew-resize',
+                            userSelect: 'none',
+                            WebkitUserSelect: 'none',
+                            touchAction: 'none',
+                          }}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            const wrap = compareRef.current;
+                            if (!wrap) return;
+                            const rect = wrap.getBoundingClientRect();
+                            const update = (clientX: number) => {
+                              const r = wrap.getBoundingClientRect();
+                              const pct = ((clientX - r.left) / r.width) * 100;
+                              setComparePos(Math.max(0, Math.min(100, pct)));
+                            };
+                            update(e.clientX);
+                            const onMove = (ev: MouseEvent) => { ev.preventDefault(); update(ev.clientX); };
+                            const onUp = () => {
+                              window.removeEventListener('mousemove', onMove);
+                              window.removeEventListener('mouseup', onUp);
+                              document.body.style.cursor = '';
+                              document.body.style.userSelect = '';
+                            };
+                            document.body.style.cursor = 'ew-resize';
+                            document.body.style.userSelect = 'none';
+                            window.addEventListener('mousemove', onMove);
+                            window.addEventListener('mouseup', onUp);
+                            void rect;
+                          }}>
+                          {/* After Image (fills wrapper) */}
+                          <img
+                            src={history.current}
+                            alt="After"
+                            draggable={false}
+                            className="absolute inset-0 w-full h-full block"
+                            style={{ pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
+                          />
+
+                          {/* Before Image (clipped overlay) */}
+                          <img
+                            src={history.original}
+                            alt="Before"
+                            draggable={false}
+                            className="absolute inset-0 w-full h-full block z-10"
+                            style={{ clipPath: `inset(0 ${100 - comparePos}% 0 0)`, pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
+                          />
+
+                          {/* Vertical divider line at slider position */}
+                          <div
+                            className="absolute inset-y-0 w-0.5 bg-white/80 z-20"
+                            style={{ left: `${comparePos}%`, transform: 'translateX(-50%)', pointerEvents: 'none' }}
+                          />
+
+                          {/* After Label */}
+                          <div
+                            className="absolute top-6 right-6 font-bold uppercase tracking-wider z-30 backdrop-blur-md transition-all duration-300"
+                            style={{ padding: '6px 11px', fontSize: '12px', backgroundColor: 'rgba(0, 0, 0, 0.32)', color: '#ffffff', borderRadius: '5px', fontFamily: "'Inter', sans-serif", pointerEvents: 'none', userSelect: 'none' }}
+                          >
+                            After
+                          </div>
+
+                          {/* Before Label */}
+                          <div
+                            className="absolute top-6 left-6 font-bold uppercase tracking-wider z-30 backdrop-blur-md transition-all duration-300"
+                            style={{ padding: '6px 11px', fontSize: '12px', backgroundColor: 'rgba(0, 0, 0, 0.32)', color: '#ffffff', borderRadius: '5px', fontFamily: "'Inter', sans-serif", pointerEvents: 'none', userSelect: 'none' }}
+                          >
+                            Before
+                          </div>
+
+                          {/* Drag Handle (purely visual — every descendant explicitly pointer-events:none) */}
+                          <div
+                            className="absolute inset-y-0 flex items-center justify-center z-40"
+                            style={{ left: `${comparePos}%`, transform: 'translateX(-50%)', pointerEvents: 'none' }}
+                          >
+                            <div
+                              className="w-10 h-10 bg-white rounded-full shadow-[0_0_20px_rgba(0,0,0,0.3)] flex items-center justify-center text-gray-900 border-2 border-transparent transition-transform transform group-hover:scale-110"
+                              style={{ pointerEvents: 'none' }}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5" style={{ pointerEvents: 'none' }}><path d="m15 18-6-6 6-6" style={{ pointerEvents: 'none' }}/></svg>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-0.5" style={{ pointerEvents: 'none' }}><path d="m9 18 6-6-6-6" style={{ pointerEvents: 'none' }}/></svg>
+                            </div>
+                          </div>
+                        </div>
                       )}
-                      <div className="relative transition-opacity duration-500 ease-in-out"
-                        style={{ opacity: showBeforeAfter ? 0 : 1, zIndex: 2 }}>
-                        <canvas ref={imageCanvasRef} className="max-w-full h-auto" style={{ display: 'block', margin: '0 auto' }} />
+                      <div className={`relative max-w-full max-h-full transition-opacity duration-500 ease-in-out ${showBeforeAfter ? 'hidden' : ''}`}
+                        style={{ zIndex: 2 }}>
+                        <canvas ref={imageCanvasRef} style={{ display: 'block', margin: '0 auto', maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto' }} />
                         <canvas ref={maskCanvasRef}
-                          className="absolute top-0 left-0 max-w-full h-auto"
+                          className="absolute inset-0 w-full h-full"
                           style={{
                             mixBlendMode: 'normal',
                             cursor: editorTool === 'remove-object' ? 'none' : 'default',
@@ -2809,11 +2942,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                             pointerEvents: 'none', zIndex: 10,
                           }} />
                         )}
-                        {/* Annotation SVG overlay */}
+                        {/* Annotation SVG overlay — every child primitive has inline pointerEvents:none
+                             so SVG defaults (visiblePainted) can't steal events or show text cursor. */}
                         {editorTool === 'annotate' && (
                           <svg ref={svgRef}
                             className="absolute top-0 left-0 w-full h-full"
-                            style={{ zIndex: 20, cursor: 'crosshair' }}
+                            style={{ zIndex: 20, cursor: 'crosshair', pointerEvents: 'auto', userSelect: 'none', WebkitUserSelect: 'none' }}
                             viewBox="0 0 100 100"
                             preserveAspectRatio="none"
                             onMouseDown={onAnnotationMouseDown}
@@ -2830,13 +2964,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           >
                             {[...annotations, ...(liveAnnotation ? [liveAnnotation] : [])].map(ann => {
                               if (ann.type === 'arrow') return (
-                                <g key={ann.id}>
+                                <g key={ann.id} style={{ pointerEvents: 'none' }}>
                                   <line x1={ann.x1} y1={ann.y1} x2={ann.x2} y2={ann.y2}
-                                    stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+                                    stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke"
+                                    style={{ pointerEvents: 'none' }} />
                                   {ann.head1x !== undefined && (
                                     <polyline
                                       points={`${ann.head1x},${ann.head1y} ${ann.x2},${ann.y2} ${ann.head2x},${ann.head2y}`}
-                                      fill="none" stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+                                      fill="none" stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke"
+                                      style={{ pointerEvents: 'none' }} />
                                   )}
                                 </g>
                               );
@@ -2844,13 +2980,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 <rect key={ann.id}
                                   x={Math.min(ann.x1, ann.x2)} y={Math.min(ann.y1, ann.y2)}
                                   width={Math.abs(ann.x2 - ann.x1)} height={Math.abs(ann.y2 - ann.y1)}
-                                  fill="none" stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+                                  fill="none" stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke"
+                                  style={{ pointerEvents: 'none' }} />
                               );
                               if (ann.type === 'number') return (
-                                <g key={ann.id}>
-                                  <circle cx={ann.x1} cy={ann.y1} r="3" fill={ann.color} />
+                                <g key={ann.id} style={{ pointerEvents: 'none' }}>
+                                  <circle cx={ann.x1} cy={ann.y1} r="3" fill={ann.color} style={{ pointerEvents: 'none' }} />
                                   <text x={ann.x1} y={ann.y1} textAnchor="middle" dominantBaseline="central"
-                                    fill="white" fontSize="3.2" fontWeight="bold">{ann.label}</text>
+                                    fill="white" fontSize="3.2" fontWeight="bold"
+                                    style={{ pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}>{ann.label}</text>
                                 </g>
                               );
                               return null;

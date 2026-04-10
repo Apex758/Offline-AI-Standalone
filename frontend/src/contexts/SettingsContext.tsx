@@ -49,6 +49,7 @@ export interface UserProfile {
   gradeSubjects: GradeSubjectMapping;
   filterContentByProfile: boolean;
   registrationDate?: string;
+  coworkerName: string; // user-set name for the AI assistant, default "Coworker"
   // Legacy fields — kept for migration only
   gradeLevels?: string[];
   subjects?: string[];
@@ -220,6 +221,7 @@ export const DEFAULT_SETTINGS: Settings = {
     school: '',
     gradeSubjects: {},
     filterContentByProfile: true,
+    coworkerName: 'Coworker',
   },
   sidebarOrder: DEFAULT_SIDEBAR_ORDER,
   // Writing assistant defaults
@@ -434,6 +436,8 @@ const loadSettingsFromStorage = (): Settings => {
           gradeSubjects,
           // Backfill registrationDate for existing users who already completed setup
           registrationDate: (parsed.profile?.registrationDate) || (parsed.tutorials?.hasCompletedSetup ? new Date().toISOString() : undefined),
+          // Migration: backfill coworkerName for existing users
+          coworkerName: (parsed.profile?.coworkerName || '').trim() || 'Coworker',
           // Clear legacy fields
           gradeLevels: undefined,
           subjects: undefined,

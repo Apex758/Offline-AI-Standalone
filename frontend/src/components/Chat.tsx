@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useCoworkerName } from '../hooks/useCoworkerName';
 import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
@@ -228,6 +229,8 @@ const shouldSuggestThinking = (message: string): boolean => {
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick, onOpenCurriculumTab, isActive }) => {
   const { t } = useTranslation();
+  const coworkerName = useCoworkerName();
+  const defaultChatTitle = `Ask ${coworkerName}`;
   // DEBUG logging removed to prevent render storm spam
   // LocalStorage key for this chat tab
   const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
@@ -432,7 +435,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         setTitleSet(false);
         setInput('');
         if (onTitleChange) {
-          onTitleChange('Ask PEARL');
+          onTitleChange(defaultChatTitle);
         }
       }
     } else {
@@ -442,7 +445,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       setTitleSet(false);
       setInput('');
       if (onTitleChange) {
-        onTitleChange('Ask PEARL');
+        onTitleChange(defaultChatTitle);
       }
     }
   }, [tabId]);
@@ -461,7 +464,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       input,
       title: messages.length > 0 && messages[0].role === 'user'
         ? (messages[0].content.length > 30 ? messages[0].content.substring(0, 30) + '...' : messages[0].content)
-        : 'Ask PEARL'
+        : defaultChatTitle
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
   }, [messages, streamingMessage, currentChatId, titleSet, input]);
@@ -593,7 +596,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     // Clear localStorage for this chat tab
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     if (onTitleChange) {
-      onTitleChange('Ask PEARL');
+      onTitleChange(defaultChatTitle);
     }
   };
 
@@ -929,6 +932,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       message: text,
       chat_id: currentChatId,
       thinking_enabled: settings.thinkingEnabled && supportsThinking,
+      coworker_name: coworkerName,
       ...(profileContext ? {
         profile_context: profileContext,
         profile_grades: getTeacherGrades(mapping),
@@ -1690,7 +1694,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }}>
         <div className="border-b border-theme p-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-theme-heading">Chat with PEARL</h2>
+            <h2 className="text-xl font-semibold text-theme-heading">Chat with {coworkerName}</h2>
             <p className="text-sm text-theme-hint">
               {/* WebSocket connection status is not available via context API, so this is omitted or needs a new prop */}
             </p>

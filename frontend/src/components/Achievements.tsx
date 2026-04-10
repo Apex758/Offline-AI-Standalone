@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useCoworkerName } from '../hooks/useCoworkerName';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Lock01IconData from '@hugeicons/core-free-icons/LockIcon';
@@ -83,7 +84,7 @@ const IMPACT_LABELS: Record<string, (n: number) => string> = {
   attendance_records: (n) => `${n} attendance record${n !== 1 ? 's' : ''}`,
   attendance_dates: (n) => `${n} day${n !== 1 ? 's' : ''} tracked`,
   milestones_completed: (n) => `${n} milestone${n !== 1 ? 's' : ''} completed`,
-  chat_conversations: (n) => `${n} conversation${n !== 1 ? 's' : ''} with PEARL`,
+  chat_conversations: (n) => `${n} conversation${n !== 1 ? 's' : ''} with {coworkerName}`,
   chat_messages: (n) => `${n} message${n !== 1 ? 's' : ''} sent`,
   total_resources: (n) => `${n} total resource${n !== 1 ? 's' : ''} created`,
   total_generations: (n) => `${n} AI generation${n !== 1 ? 's' : ''}`,
@@ -107,7 +108,7 @@ const CATEGORY_LABELS: Record<AchievementCategory, string> = {
   'curriculum': 'Curriculum',
   'exploration': 'Exploration',
   'power-user': 'Power User',
-  'chat': 'Ask PEARL',
+  'chat': 'Ask {coworkerName}',
   'brain-dump': 'Brain Dump',
   'analytics': 'Analytics',
 };
@@ -134,6 +135,7 @@ interface AchievementsProps {
 
 export default function Achievements({ tabId, isActive = true }: AchievementsProps) {
   const { t } = useTranslation();
+  const coworkerName = useCoworkerName();
   const {
     definitions,
     earned,
@@ -451,7 +453,7 @@ export default function Achievements({ tabId, isActive = true }: AchievementsPro
                           border: `1px solid ${isActive ? `${tabColor}50` : 'var(--dash-border, #333)'}`,
                         }}
                       >
-                        {CATEGORY_LABELS[cat]}{catData ? ` ${catData.earned}/${catData.total}` : ''}
+                        {CATEGORY_LABELS[cat].replace(/\{coworkerName\}/g, coworkerName)}{catData ? ` ${catData.earned}/${catData.total}` : ''}
                       </button>
                     );
                   })}
@@ -679,7 +681,7 @@ function AchievementCard({
   const tierColor = definition.tier ? TIER_COLORS[definition.tier] : null;
   const rarityPct = RARITY_PERCENTAGES[definition.rarity];
   const impactLabel = isEarned && impactCount != null && impactCount > 0 && IMPACT_LABELS[definition.check_key]
-    ? IMPACT_LABELS[definition.check_key](impactCount)
+    ? IMPACT_LABELS[definition.check_key](impactCount).replace(/\{coworkerName\}/g, 'Coworker')
     : null;
 
   // Split name for gradient accent on last word(s)

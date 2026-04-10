@@ -12,7 +12,7 @@ export interface ToolStep {
  */
 const MODULE_PROGRESSIONS: Record<FeatureModuleId, ToolStep[]> = {
   'ai-assistant': [
-    { type: 'chat', name: 'Ask PEARL', reason: 'Your AI teaching assistant -- ask for ideas, lesson outlines, or help with anything.' },
+    { type: 'chat', name: 'Ask Coworker', reason: 'Your AI teaching assistant -- ask for ideas, lesson outlines, or help with anything.' },
     { type: 'brain-dump', name: 'Brain Dump', reason: 'Dump your thoughts and let AI turn them into structured plans.' },
   ],
   'curriculum-resources': [

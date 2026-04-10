@@ -9,7 +9,7 @@
     "curriculumPlan": "Plan de Programme",
     "myResources": "Mes Ressources",
     "schoolYear": "Annee Scolaire",
-    "askPearl": "Demander a PEARL",
+    "askPearl": "Demander a {{coworkerName}}",
     "curriculumBrowser": "Parcourir le Programme",
     "quizBuilder": "Createur de Quiz",
     "rubricBuilder": "Createur de Grille",
@@ -43,7 +43,7 @@
       "curriculumPlan": "Planifiez votre curriculum du trimestre et de l'année",
       "myResources": "Parcourez et gérez tous vos supports de cours enregistrés",
       "schoolYear": "Consultez et planifiez votre calendrier scolaire complet",
-      "askPearl": "Discutez avec PEARL, votre assistant d'enseignement IA",
+      "askPearl": "Discutez avec {{coworkerName}}, votre assistant d'enseignement IA",
       "curriculumBrowser": "Recherchez et explorez le curriculum OECS complet",
       "quizBuilder": "Générez des quiz et des évaluations instantanément",
       "rubricBuilder": "Créez des rubriques de notation cohérentes en quelques secondes",
@@ -509,7 +509,7 @@
     "catPowerUser2": "La coherence est l'ingredient secret d'un grand enseignement.",
     "catPowerUser3": "Votre engagement envers votre metier est inspirant.",
     "catChat1": "Poser des questions, c'est ainsi que naissent les grandes idees.",
-    "catChat2": "Chaque conversation avec PEARL ouvre de nouvelles possibilites.",
+    "catChat2": "Chaque conversation avec {{coworkerName}} ouvre de nouvelles possibilites.",
     "catChat3": "La collaboration — meme avec l'IA — renforce l'enseignement.",
     "catBrainDump1": "Transformer les pensees en action est un superpouvoir.",
     "catBrainDump2": "Vos idees meritent de devenir realite.",
@@ -784,7 +784,7 @@
   },
   "settingsPage": {
     "title": "Parametres",
-    "subtitle": "Personnaliser PEARL",
+    "subtitle": "Personnaliser {{coworkerName}}",
     "profile": {
       "title": "Profil",
       "description": "Votre nom, ecole et role",
@@ -811,13 +811,13 @@
       "setupWizard": "Assistant de Configuration",
       "setupWizardDesc": "Relancer la configuration initiale pour modifier les fonctionnalites affichees dans votre barre laterale.",
       "redoSetup": "Relancer l'Assistant",
-      "tellPearl": "Parlez de vous a PEARL pour personnaliser votre experience",
+      "tellPearl": "Parlez de vous a {{coworkerName}} pour personnaliser votre experience",
       "displayNamePlaceholder": "ex. Mme. Johnson",
       "schoolPlaceholder": "ex. Ecole Primaire Castries"
     },
     "appearance": {
       "title": "Apparence",
-      "description": "Personnaliser l'apparence de PEARL",
+      "description": "Personnaliser l'apparence de {{coworkerName}}",
       "theme": "Theme",
       "themeDesc": "Choisissez votre scheme de couleurs prefere",
       "light": "Clair",
@@ -1453,7 +1453,7 @@
       "tip8": "Image Studio peut générer des visuels personnalisés pour vos fiches de travail.",
       "tip9": "Présentation transforme vos plans de cours en diapositives prêtes à présenter.",
       "tip10": "Créateur de livres d'histoires est conçu pour la narration illustrée K-2.",
-      "tip11": "Demandez à PEARL n'importe quoi — il connaît tout le curriculum OECS.",
+      "tip11": "Demandez à {{coworkerName}} n'importe quoi — il connaît tout le curriculum OECS.",
       "tip12": "Les leçons intégrées connectent plusieurs matières en une seule activité.",
       "tip13": "Mes ressources stocke tout votre contenu généré en une seule bibliothèque.",
       "tip14": "Utilisez Mes classes pour organiser les élèves et suivre leur progression.",
@@ -1561,8 +1561,8 @@
         "description": "Chaque onglet affiche votre outil actif. Vous pouvez cliquer sur le X pour fermer un onglet, ou faire un clic droit pour le diviser cote a cote avec un autre outil."
       },
       "step5": {
-        "title": "Chat avec PEARL",
-        "description": "Ouvrons un autre outil! Chattez avec PEARL pour obtenir de l'aide, des idees ou pour discuter de vos plans de cours. Allez-y et cliquez pour l'ouvrir!",
+        "title": "Chat avec {{coworkerName}}",
+        "description": "Ouvrons un autre outil! Chattez avec {{coworkerName}} pour obtenir de l'aide, des idees ou pour discuter de vos plans de cours. Allez-y et cliquez pour l'ouvrir!",
         "actionHint": "Cliquez pour ouvrir!"
       },
       "step6": {

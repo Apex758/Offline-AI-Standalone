@@ -172,7 +172,7 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-const getTools = (t: TFunction): Tool[] => [
+const getTools = (t: TFunction, coworkerName: string = 'Coworker'): Tool[] => [
   {
     id: 'analytics',
     name: 'My Overview',
@@ -221,10 +221,10 @@ const getTools = (t: TFunction): Tool[] => [
   },
   {
     id: 'chat',
-    name: 'Ask PEARL',
+    name: `Ask ${coworkerName}`,
     icon: 'MessageSquare',
     type: 'chat',
-    description: t('sidebar.descriptions.askPearl')
+    description: t('sidebar.descriptions.askPearl', { coworkerName })
   },
   {
     id: 'curriculum',
@@ -429,7 +429,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   CalendarRange,
 };
 
-const getWelcomeTips = (t: TFunction): string[] => [
+const getWelcomeTips = (t: TFunction, coworkerName: string): string[] => [
   t('dashboard.tips.tip1'),
   t('dashboard.tips.tip2'),
   t('dashboard.tips.tip3'),
@@ -440,17 +440,17 @@ const getWelcomeTips = (t: TFunction): string[] => [
   t('dashboard.tips.tip8'),
   t('dashboard.tips.tip9'),
   t('dashboard.tips.tip10'),
-  t('dashboard.tips.tip11'),
+  t('dashboard.tips.tip11', { coworkerName }),
   t('dashboard.tips.tip12'),
   t('dashboard.tips.tip13'),
   t('dashboard.tips.tip14'),
   t('dashboard.tips.tip15'),
 ];
 
-const getQuicklinkSets = (t: TFunction) => [
+const getQuicklinkSets = (t: TFunction, coworkerName: string) => [
   [
     { icon: LayoutDashboard, label: t('sidebar.myOverview'), type: 'analytics' },
-    { icon: MessageSquare, label: t('sidebar.askPearl'), type: 'chat' },
+    { icon: MessageSquare, label: t('sidebar.askPearl', { coworkerName }), type: 'chat' },
     { icon: Search, label: t('sidebar.curriculumBrowser'), type: 'curriculum' },
   ],
   [
