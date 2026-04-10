@@ -546,8 +546,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         {
           user_message: userMessage,
           assistant_message: assistantMessage
-        },
-        { timeout: 6000 }
+        }
       );
       
       if (response.data && response.data.title) {
