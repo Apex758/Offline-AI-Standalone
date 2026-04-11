@@ -60,12 +60,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ✅ Debounce re-renders to avoid render storm
   const updateTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  // [DIAG] streaming instrumentation — per connection timing
-  const diagRef = useRef<Map<string, {
+  // [WS-TRACE] per-connection message timing
+  const wsTraceRef = useRef<Map<string, {
     t0: number;
     lastMsgT: number;
     msgCount: number;
-    renderCount: number;
   }>>(new Map());
 
   const scheduleUpdate = useCallback((key: string) => {
@@ -79,17 +78,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const timer = setTimeout(() => {
       const conn = connectionsRef.current.get(key);
       if (conn) {
-        // [DIAG] render flush
-        const diag = diagRef.current.get(key);
-        if (diag) {
-          diag.renderCount++;
-          const elapsed = Math.round(performance.now() - diag.t0);
-          console.log(
-            `[DIAG WS ${key}] RENDER_FLUSH t=+${elapsed}ms ` +
-            `render_n=${diag.renderCount} msgs=${diag.msgCount} ` +
-            `content_len=${conn.streamingContent.length}`
-          );
-        }
         conn.listeners.forEach(listener => listener());
       }
       updateTimersRef.current.delete(key);
@@ -129,28 +117,24 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (!conn) return;
 
         if (data.type === 'token') {
-          // [DIAG] token message arrival
+          // [WS-TRACE] Per-message timing — what the backend is *actually*
+          // sending and at what interval. This is the ground truth for
+          // "are we receiving chunks or a smooth stream?".
           const now = performance.now();
-          let diag = diagRef.current.get(key);
-          if (!diag) {
-            diag = { t0: now, lastMsgT: now, msgCount: 0, renderCount: 0 };
-            diagRef.current.set(key, diag);
+          let trace = wsTraceRef.current.get(key);
+          if (!trace) {
+            trace = { t0: now, lastMsgT: now, msgCount: 0 };
+            wsTraceRef.current.set(key, trace);
           }
-          diag.msgCount++;
-          const gapMs = Math.round(now - diag.lastMsgT);
-          const elapsedMs = Math.round(now - diag.t0);
-          if (gapMs >= 200) {
-            console.log(
-              `[DIAG WS ${key}] SLOW_MSG t=+${elapsedMs}ms gap_since_prev=${gapMs}ms ` +
-              `msg_n=${diag.msgCount} payload_len=${data.content?.length ?? 0}`
-            );
-          } else if (diag.msgCount <= 5 || diag.msgCount % 20 === 0) {
-            console.log(
-              `[DIAG WS ${key}] MSG t=+${elapsedMs}ms gap=${gapMs}ms ` +
-              `msg_n=${diag.msgCount} payload_len=${data.content?.length ?? 0}`
-            );
-          }
-          diag.lastMsgT = now;
+          trace.msgCount++;
+          const gapMs = Math.round(now - trace.lastMsgT);
+          const elapsedMs = Math.round(now - trace.t0);
+          const payloadLen = data.content?.length ?? 0;
+          console.log(
+            `[WS-TRACE ${key}] msg=${trace.msgCount} t=+${elapsedMs}ms gap=${gapMs}ms ` +
+            `payload=${payloadLen} content=${JSON.stringify((data.content || "").slice(0, 40))}`
+          );
+          trace.lastMsgT = now;
 
           // ✅ Accumulate content immediately (no delay)
           conn.streamingContent += data.content;
@@ -159,15 +143,15 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           // ✅ Schedule batched update instead of immediate forceUpdate
           scheduleUpdate(key);
         } else if (data.type === 'done' || data.type === 'cancelled') {
-          // [DIAG] stream finished — print summary and clear
-          const diag = diagRef.current.get(key);
-          if (diag) {
-            const total = Math.round(performance.now() - diag.t0);
+          const trace = wsTraceRef.current.get(key);
+          if (trace) {
+            const total = Math.round(performance.now() - trace.t0);
             console.log(
-              `[DIAG WS ${key}] DONE total=${total}ms msgs=${diag.msgCount} ` +
-              `renders=${diag.renderCount} final_len=${conn.streamingContent.length}`
+              `[WS-TRACE ${key}] DONE total=${total}ms msgs=${trace.msgCount} ` +
+              `final_len=${conn.streamingContent.length} ` +
+              `avg_gap=${Math.round(total / Math.max(1, trace.msgCount))}ms`
             );
-            diagRef.current.delete(key);
+            wsTraceRef.current.delete(key);
           }
           conn.isStreaming = false;
           // ✅ Force immediate update on completion

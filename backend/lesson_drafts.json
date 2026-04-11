@@ -412,36 +412,5 @@
     },
     "step": 1,
     "curriculumMatches": []
-  },
-  {
-    "id": "draft_quiz-generator-1775933406298_1775934139612",
-    "title": "Mathematics - 4",
-    "timestamp": "2026-04-11T19:02:19.612Z",
-    "plannerType": "quiz",
-    "formData": {
-      "subject": "Mathematics",
-      "gradeLevel": "4",
-      "learningOutcomes": "",
-      "questionTypes": [
-        "Multiple Choice",
-        "Open-Ended"
-      ],
-      "cognitiveLevels": [
-        "Comprehension",
-        "Application",
-        "Analysis"
-      ],
-      "timeLimitPerQuestion": "",
-      "numberOfQuestions": "4",
-      "strand": "Number Sense",
-      "essentialOutcomes": "N1.2. Whole Number – Representing and Partitioning Quantities",
-      "specificOutcomes": "Skills: 3. Read and write 4-digit whole numbers up to 10 000 in standard and expanded form",
-      "specialNeeds": false,
-      "specialNeedsDetails": "",
-      "additionalInstructions": "",
-      "preferredAssessmentFormat": ""
-    },
-    "step": 1,
-    "curriculumMatches": []
   }
 ]

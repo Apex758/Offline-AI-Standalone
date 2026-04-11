@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -685,10 +685,20 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // Subscribe to streaming updates for re-renders
+  // Subscribe to streaming updates for re-renders.
+  //
+  // CRITICAL: the listener MUST call a state setter/forceRerender.
+  // WebSocketContext.scheduleUpdate invokes each listener every 16ms while
+  // tokens arrive, but only LessonPlanner's own re-render will cause
+  // getStreamingContent() to be re-read and useStreamingLessonJson to
+  // re-parse. A no-op listener (previous behavior) caused the streaming
+  // text to be captured once and never update, bypassing per-field
+  // streaming entirely — fields appeared to "chunk in" because the component
+  // only re-rendered on DONE via the provider's own forceUpdate.
+  const [, forceStreamRerender] = useReducer((x: number) => x + 1, 0);
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
-      // This triggers re-render when streaming updates
+      forceStreamRerender();
     });
     return unsubscribe;
   }, [tabId, subscribe]);

@@ -24,7 +24,7 @@ interface Options {
 export function useStreamingLessonJson({
   rawText,
   isStreaming,
-  throttleMs = 80,
+  throttleMs = 30,
 }: Options): {
   lesson: Partial<OhpcLessonPlan> | null;
   isComplete: boolean;
@@ -43,10 +43,10 @@ export function useStreamingLessonJson({
   const [inProgressValue, setInProgressValue] = useState<string | null>(null);
   const lastParseAt = useRef(0);
   const pendingRaf = useRef<number | null>(null);
-  // [DIAG] incremental parse instrumentation
-  const diagT0 = useRef<number>(0);
-  const diagParseCount = useRef<number>(0);
-  const diagLastFieldsSeen = useRef<string>("");
+  // [PARSE-TRACE] lightweight per-parse trace
+  const traceT0 = useRef<number>(0);
+  const traceLastRawLen = useRef<number>(0);
+  const traceLastPath = useRef<string>("");
 
   useEffect(() => {
     if (!rawText) {
@@ -54,35 +54,37 @@ export function useStreamingLessonJson({
       setIsComplete(false);
       setInProgressPath(null);
       setInProgressValue(null);
-      // [DIAG] reset per-stream counters
-      diagT0.current = 0;
-      diagParseCount.current = 0;
-      diagLastFieldsSeen.current = "";
+      traceT0.current = 0;
+      traceLastRawLen.current = 0;
+      traceLastPath.current = "";
       return;
     }
 
     const runParse = () => {
       pendingRaf.current = null;
       lastParseAt.current = performance.now();
-      // [DIAG]
-      if (diagT0.current === 0) diagT0.current = performance.now();
-      diagParseCount.current++;
-      const t0 = performance.now();
+      if (traceT0.current === 0) traceT0.current = performance.now();
       const result = parsePartialJsonWithProgress<OhpcLessonPlan>(rawText);
       const next = result.data;
-      const parseMs = performance.now() - t0;
-      const elapsedMs = Math.round(performance.now() - diagT0.current);
-      const fieldsSeen = next ? Object.keys(next).sort().join(",") : "(none)";
-      const fieldsChanged = fieldsSeen !== diagLastFieldsSeen.current;
-      if (fieldsChanged || diagParseCount.current <= 3 || diagParseCount.current % 10 === 0) {
+
+      // [PARSE-TRACE] Log when rawText grows — shows how many chars the
+      // backend delivered per parse cycle and whether the parser could
+      // extract an in-progress path/value from the new bytes.
+      const rawDelta = rawText.length - traceLastRawLen.current;
+      const pathStr = result.inProgressPath ? result.inProgressPath.join(".") : "(none)";
+      const pathChanged = pathStr !== traceLastPath.current;
+      if (rawDelta > 0 || pathChanged) {
+        const elapsed = Math.round(performance.now() - traceT0.current);
         console.log(
-          `[DIAG parseLesson] PARSE t=+${elapsedMs}ms n=${diagParseCount.current} ` +
-          `parse_cost=${parseMs.toFixed(1)}ms raw_len=${rawText.length} ` +
-          `${fieldsChanged ? "NEW_FIELDS" : "same"} fields=[${fieldsSeen}] ` +
-          `inProgress=${result.inProgressPath ? result.inProgressPath.join(".") : "none"}`
+          `[PARSE-TRACE] t=+${elapsed}ms raw+${rawDelta} (total=${rawText.length}) ` +
+          `path=${pathStr}${pathChanged ? " (NEW)" : ""} ` +
+          `valLen=${result.inProgressValue?.length ?? 0} ` +
+          `valTail=${JSON.stringify((result.inProgressValue || "").slice(-20))}`
         );
-        diagLastFieldsSeen.current = fieldsSeen;
+        traceLastRawLen.current = rawText.length;
+        traceLastPath.current = pathStr;
       }
+
       if (next) setParsed(next);
       setInProgressPath(result.inProgressPath);
       setInProgressValue(result.inProgressValue);
@@ -94,9 +96,6 @@ export function useStreamingLessonJson({
           setIsComplete(true);
           setInProgressPath(null);
           setInProgressValue(null);
-          console.log(
-            `[DIAG parseLesson] STREAM_COMPLETE t=+${elapsedMs}ms total_parses=${diagParseCount.current}`
-          );
         } catch {
           // keep last parsed partial
         }
