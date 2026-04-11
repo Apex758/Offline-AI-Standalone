@@ -43,10 +43,6 @@ export function useStreamingLessonJson({
   const [inProgressValue, setInProgressValue] = useState<string | null>(null);
   const lastParseAt = useRef(0);
   const pendingRaf = useRef<number | null>(null);
-  // [PARSE-TRACE] lightweight per-parse trace
-  const traceT0 = useRef<number>(0);
-  const traceLastRawLen = useRef<number>(0);
-  const traceLastPath = useRef<string>("");
 
   useEffect(() => {
     if (!rawText) {
@@ -54,37 +50,14 @@ export function useStreamingLessonJson({
       setIsComplete(false);
       setInProgressPath(null);
       setInProgressValue(null);
-      traceT0.current = 0;
-      traceLastRawLen.current = 0;
-      traceLastPath.current = "";
       return;
     }
 
     const runParse = () => {
       pendingRaf.current = null;
       lastParseAt.current = performance.now();
-      if (traceT0.current === 0) traceT0.current = performance.now();
       const result = parsePartialJsonWithProgress<OhpcLessonPlan>(rawText);
       const next = result.data;
-
-      // [PARSE-TRACE] Log when rawText grows — shows how many chars the
-      // backend delivered per parse cycle and whether the parser could
-      // extract an in-progress path/value from the new bytes.
-      const rawDelta = rawText.length - traceLastRawLen.current;
-      const pathStr = result.inProgressPath ? result.inProgressPath.join(".") : "(none)";
-      const pathChanged = pathStr !== traceLastPath.current;
-      if (rawDelta > 0 || pathChanged) {
-        const elapsed = Math.round(performance.now() - traceT0.current);
-        console.log(
-          `[PARSE-TRACE] t=+${elapsed}ms raw+${rawDelta} (total=${rawText.length}) ` +
-          `path=${pathStr}${pathChanged ? " (NEW)" : ""} ` +
-          `valLen=${result.inProgressValue?.length ?? 0} ` +
-          `valTail=${JSON.stringify((result.inProgressValue || "").slice(-20))}`
-        );
-        traceLastRawLen.current = rawText.length;
-        traceLastPath.current = pathStr;
-      }
-
       if (next) setParsed(next);
       setInProgressPath(result.inProgressPath);
       setInProgressValue(result.inProgressValue);

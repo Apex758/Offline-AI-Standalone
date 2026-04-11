@@ -60,13 +60,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ✅ Debounce re-renders to avoid render storm
   const updateTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  // [WS-TRACE] per-connection message timing
-  const wsTraceRef = useRef<Map<string, {
-    t0: number;
-    lastMsgT: number;
-    msgCount: number;
-  }>>(new Map());
-
   const scheduleUpdate = useCallback((key: string) => {
     // Clear existing timer
     const existingTimer = updateTimersRef.current.get(key);
@@ -117,25 +110,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (!conn) return;
 
         if (data.type === 'token') {
-          // [WS-TRACE] Per-message timing — what the backend is *actually*
-          // sending and at what interval. This is the ground truth for
-          // "are we receiving chunks or a smooth stream?".
-          const now = performance.now();
-          let trace = wsTraceRef.current.get(key);
-          if (!trace) {
-            trace = { t0: now, lastMsgT: now, msgCount: 0 };
-            wsTraceRef.current.set(key, trace);
-          }
-          trace.msgCount++;
-          const gapMs = Math.round(now - trace.lastMsgT);
-          const elapsedMs = Math.round(now - trace.t0);
-          const payloadLen = data.content?.length ?? 0;
-          console.log(
-            `[WS-TRACE ${key}] msg=${trace.msgCount} t=+${elapsedMs}ms gap=${gapMs}ms ` +
-            `payload=${payloadLen} content=${JSON.stringify((data.content || "").slice(0, 40))}`
-          );
-          trace.lastMsgT = now;
-
           // ✅ Accumulate content immediately (no delay)
           conn.streamingContent += data.content;
           conn.isStreaming = true;
@@ -143,16 +117,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           // ✅ Schedule batched update instead of immediate forceUpdate
           scheduleUpdate(key);
         } else if (data.type === 'done' || data.type === 'cancelled') {
-          const trace = wsTraceRef.current.get(key);
-          if (trace) {
-            const total = Math.round(performance.now() - trace.t0);
-            console.log(
-              `[WS-TRACE ${key}] DONE total=${total}ms msgs=${trace.msgCount} ` +
-              `final_len=${conn.streamingContent.length} ` +
-              `avg_gap=${Math.round(total / Math.max(1, trace.msgCount))}ms`
-            );
-            wsTraceRef.current.delete(key);
-          }
           conn.isStreaming = false;
           // ✅ Force immediate update on completion
           const existingTimer = updateTimersRef.current.get(key);

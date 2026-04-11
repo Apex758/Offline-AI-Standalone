@@ -14,7 +14,7 @@
  * Styling uses the app's theme tokens + an accent color override so the
  * table picks up the tab's theme color for headers and borders.
  */
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback } from "react";
 import type {
   OhpcLessonPlan,
   TeacherReflections,
@@ -92,43 +92,6 @@ export default function OhpcLessonTable({
 }: Props) {
   const l: Partial<OhpcLessonPlan> = lesson || {};
   const reflect = reflections || EMPTY_TEACHER_REFLECTIONS;
-
-  // [STREAM-TRACE] Log every prop change so we can see EXACTLY what the
-  // table is receiving each render: is inProgressPath populated? Does the
-  // value grow smoothly? Does the committed `lesson` object just jump?
-  const traceRef = useRef<{
-    lastPath: string;
-    lastValueLen: number;
-    lastCommittedKeys: string;
-    lastRenderAt: number;
-    renderCount: number;
-  }>({ lastPath: "", lastValueLen: 0, lastCommittedKeys: "", lastRenderAt: 0, renderCount: 0 });
-  useEffect(() => {
-    if (!isStreaming) return;
-    const now = performance.now();
-    const t = traceRef.current;
-    t.renderCount++;
-    const pathStr = inProgressPath ? inProgressPath.join(".") : "(none)";
-    const valueLen = inProgressValue?.length ?? 0;
-    const committedKeys = Object.keys(l).sort().join(",");
-    const gap = t.lastRenderAt === 0 ? 0 : Math.round(now - t.lastRenderAt);
-    const pathChanged = pathStr !== t.lastPath;
-    const committedChanged = committedKeys !== t.lastCommittedKeys;
-    const valueDelta = valueLen - t.lastValueLen;
-    if (pathChanged || committedChanged || valueDelta > 0) {
-      console.log(
-        `[STREAM-TRACE] r=${t.renderCount} gap=${gap}ms ` +
-        `path=${pathStr}${pathChanged ? " (NEW)" : ""} ` +
-        `valLen=${valueLen}${valueDelta > 0 ? ` (+${valueDelta})` : ""} ` +
-        `preview=${JSON.stringify((inProgressValue || "").slice(-30))} ` +
-        `committed=[${committedKeys}]${committedChanged ? " (NEW)" : ""}`
-      );
-    }
-    t.lastPath = pathStr;
-    t.lastValueLen = valueLen;
-    t.lastCommittedKeys = committedKeys;
-    t.lastRenderAt = now;
-  });
 
   // ---- Streaming field helpers --------------------------------------------
   // A scalar string path is "active" when it exactly matches the parser's
