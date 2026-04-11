@@ -19,6 +19,7 @@ import {
   TEACHER_REFLECTION_PROMPTS,
 } from "../types/ohpcLesson";
 import { getLogoFooterHTML } from "./logoBase64";
+import { LESSON_EXPORT_SPEC, buildColgroup } from "./lessonExportSpec";
 
 interface OhpcExportOptions {
   accentColor: string;
@@ -93,14 +94,25 @@ export function renderOhpcLessonHtml(
   const altRowBg = `${accent}08`;
   const border = cellBorder(accent);
 
-  const tableStyle = `width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;`;
-  const cellStyle = `border:${border};padding:10px 12px;vertical-align:top;`;
-  const labelCell = `${cellStyle}background:${labelBg};color:${headerText};font-weight:600;white-space:nowrap;`;
+  // ---- Locked dimensions (single source of truth) ----
+  // `table-layout:fixed` is the key: it forces WeasyPrint / browsers to honour
+  // the <colgroup> widths instead of auto-redistributing columns to fit content.
+  const { font, cell, tables } = LESSON_EXPORT_SPEC;
+  const tableStyle =
+    `width:100%;border-collapse:collapse;table-layout:fixed;` +
+    `font-size:${font.bodyPx}px;line-height:${cell.lineHeight};margin-bottom:20px;`;
+  const cellStyle =
+    `border:${border};padding:${cell.paddingV}px ${cell.paddingH}px;` +
+    `vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;`;
+  // NB: removed `white-space:nowrap` from labelCell — with fixed widths the
+  // labels must wrap, otherwise they would push the locked column boundaries.
+  const labelCell = `${cellStyle}background:${labelBg};color:${headerText};font-weight:600;`;
   const headerCell = `${cellStyle}background:${headerBg};color:${headerText};font-weight:700;text-align:left;`;
 
   // ---- TABLE 1 : Header / Outcomes ----
   const table1 = `
     <table style="${tableStyle}">
+      ${buildColgroup(tables.header.columnsPct)}
       <tbody>
         <tr>
           <td style="${labelCell}">Subject:</td>
@@ -153,7 +165,7 @@ export function renderOhpcLessonHtml(
     const minsLabel = comp?.duration_minutes ? `${comp.duration_minutes} min` : expectedRange;
     return `
       <tr>
-        <td style="${cellStyle}background:${altRowBg};width:28%;">
+        <td style="${cellStyle}background:${altRowBg};">
           <div style="font-weight:700;color:${headerText};">${esc(label)}</div>
           <div style="font-size:11px;color:#888;margin-top:2px;">(${esc(minsLabel)})</div>
         </td>
@@ -237,9 +249,10 @@ export function renderOhpcLessonHtml(
 
   const table2 = `
     <table style="${tableStyle}">
+      ${buildColgroup(tables.components.columnsPct)}
       <thead>
         <tr>
-          <th style="${headerCell}width:28%;">Components of the Lesson</th>
+          <th style="${headerCell}">Components of the Lesson</th>
           <th style="${headerCell}">Lesson Plan</th>
         </tr>
       </thead>
@@ -258,7 +271,7 @@ export function renderOhpcLessonHtml(
     const val = reflections?.[key] || "";
     return `
       <tr>
-        <td style="${cellStyle}background:${altRowBg};width:38%;">${esc(label)}</td>
+        <td style="${cellStyle}background:${altRowBg};">${esc(label)}</td>
         <td style="${cellStyle}min-height:32px;">
           ${val ? esc(val) : `<span style="color:#bbb;font-style:italic;">(to be completed after lesson)</span>`}
         </td>
@@ -268,6 +281,7 @@ export function renderOhpcLessonHtml(
 
   const table3 = `
     <table style="${tableStyle}">
+      ${buildColgroup(tables.reflections.columnsPct)}
       <thead>
         <tr>
           <th style="${headerCell}" colspan="2">
@@ -300,9 +314,21 @@ export function renderOhpcLessonHtml(
     : "";
 
   // ---- Wrap everything in a document shell ----
+  // The @page rule is consumed by WeasyPrint to set narrow PDF margins.
+  // Browsers ignore @page outside of print, so on-screen preview is unaffected.
+  const pageCss = `
+    <style>
+      @page {
+        size: A4;
+        margin: ${LESSON_EXPORT_SPEC.page.marginMm}mm;
+      }
+      body { margin: 0; }
+    </style>
+  `;
   const fullHTML = `
-    <div id="lesson-plan-html-export" style="font-family:Georgia,'Times New Roman',serif;color:#222;max-width:900px;margin:0 auto;padding:24px;">
-      <h1 style="text-align:center;color:${headerText};font-size:22px;margin:0 0 16px 0;">Lesson Plan</h1>
+    ${pageCss}
+    <div id="lesson-plan-html-export" style="font-family:${font.family};color:#222;margin:0;padding:0;">
+      <h1 style="text-align:center;color:${headerText};font-size:${font.h1Px}px;margin:0 0 12px 0;">Lesson Plan</h1>
       ${table1}
       ${table2}
       ${table3}
