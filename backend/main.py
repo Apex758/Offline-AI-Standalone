@@ -388,6 +388,18 @@ app.include_router(school_year_router)
 from routes.scheduled import router as scheduled_router
 app.include_router(scheduled_router)
 
+# Unified Calendar (Phase 1): single derived event layer across all time/date systems
+from routes.unified_calendar import router as unified_calendar_router
+app.include_router(unified_calendar_router)
+
+# Lesson Plans (Phase 2b): SQLite-backed replacement for the old JSON history endpoints
+from routes.lesson_plans import router as lesson_plans_router
+app.include_router(lesson_plans_router)
+
+# Daily Plans (Phase 2c): Kindergarten/Early Childhood daily activity plans
+from routes.daily_plans import router as daily_plans_router
+app.include_router(daily_plans_router)
+
 
 # ── Serve the phone PWA page at /phone ──────────────────────────────────────
 @app.get("/phone", response_class=HTMLResponse)
@@ -1601,86 +1613,9 @@ class LessonPlanHistory(BaseModel):
     parsedLesson: Optional[dict] = None
     curriculumMatches: Optional[list] = None
 
-@app.get("/api/lesson-plan-history")
-async def get_lesson_plan_history():
-    """Get all lesson plan histories"""
-    try:
-        if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-            with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
-                histories = json.load(f)
-            histories.sort(key=lambda x: x['timestamp'], reverse=True)
-            return histories
-        return []
-    except (json.JSONDecodeError, ValueError):
-        return []
-    except Exception as e:
-        logger.error(f"Error loading lesson plan history: {e}")
-        return []
-
-@app.post("/api/lesson-plan-history")
-async def save_lesson_plan_history(plan: LessonPlanHistory):
-    """Save or update a lesson plan history"""
-    try:
-        histories = []
-        if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-            try:
-                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
-                    histories = json.load(f)
-            except (json.JSONDecodeError, ValueError):
-                histories = []
-        
-        existing_index = None
-        for i, h in enumerate(histories):
-            if h['id'] == plan.id:
-                existing_index = i
-                break
-        
-        plan_dict = plan.model_dump()
-        
-        if existing_index is not None:
-            histories[existing_index] = plan_dict
-        else:
-            histories.append(plan_dict)
-
-        # Cap history to prevent unbounded growth
-        if len(histories) > 50:
-            histories.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-            histories = histories[:50]
-
-        tmp_file = LESSON_PLAN_HISTORY_FILE + ".tmp"
-        with open(tmp_file, 'w', encoding='utf-8') as f:
-            json.dump(histories, f, indent=2, ensure_ascii=False)
-        os.replace(tmp_file, LESSON_PLAN_HISTORY_FILE)
-
-        return {"success": True, "id": plan.id}
-    except Exception as e:
-        logger.error(f"Error saving lesson plan history: {e}")
-        raise HTTPException(status_code=500, detail="Failed to save lesson plan")
-
-@app.delete("/api/lesson-plan-history/{plan_id}")
-async def delete_lesson_plan_history(plan_id: str):
-    """Delete a lesson plan history"""
-    try:
-        if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-            try:
-                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
-                    histories = json.load(f)
-            except (json.JSONDecodeError, ValueError):
-                histories = []
-
-            histories = [h for h in histories if h['id'] != plan_id]
-
-            tmp_file = LESSON_PLAN_HISTORY_FILE + ".tmp"
-            with open(tmp_file, 'w', encoding='utf-8') as f:
-                json.dump(histories, f, indent=2, ensure_ascii=False)
-            os.replace(tmp_file, LESSON_PLAN_HISTORY_FILE)
-            
-            return {"success": True}
-        
-        raise HTTPException(status_code=404, detail="Lesson plan history not found")
-    except Exception as e:
-        logger.error(f"Error deleting lesson plan history: {e}")
-        raise HTTPException(status_code=500, detail="Failed to delete lesson plan")
+# Lesson plan history endpoints moved to backend/routes/lesson_plans.py (Phase 2b).
+# SQLite-backed (lesson_plans table) instead of lesson_plan_history.json.
+# 50-entry cap removed. Live-projected into unified_events.
 
 
 # ── Lesson Plan Drafts ──────────────────────────────────────────────────
@@ -9973,11 +9908,9 @@ async def export_data(categories: str = ""):
 
     if "lesson_plans" in cats:
         try:
-            plans = []
-            if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
-                    plans = json.load(f)
-            result["lesson_plans"] = plans
+            # Phase 2b: lesson plans now live in SQLite (lesson_plans table)
+            import lesson_plan_service
+            result["lesson_plans"] = lesson_plan_service.list_histories()
         except Exception:
             result["lesson_plans"] = []
 
@@ -10158,18 +10091,14 @@ async def import_data(payload: dict):
 
     if "lesson_plans" in cats and "lesson_plans" in data:
         try:
-            existing = []
-            if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
-                    existing = json.load(f)
-            existing_ids = {h.get("id") for h in existing}
+            # Phase 2b: import into SQLite via lesson_plan_service (idempotent on id)
+            import lesson_plan_service
+            existing_ids = {h['id'] for h in lesson_plan_service.list_histories()}
             added = 0
             for plan in data["lesson_plans"]:
                 if plan.get("id") not in existing_ids:
-                    existing.append(plan)
+                    lesson_plan_service.save_history(plan)
                     added += 1
-            with open(LESSON_PLAN_HISTORY_FILE, 'w', encoding='utf-8') as f:
-                json.dump(existing, f, indent=2)
             imported["lesson_plans"] = added
         except Exception as e:
             errors.append(f"lesson_plans: {e}")
@@ -10504,13 +10433,26 @@ async def factory_reset():
             except Exception as e:
                 errors.append(f"Failed to delete {fname}: {e}")
 
-    # 2. Delete lesson_plan_history.json (stored in backend dir)
-    if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-        try:
-            os.remove(LESSON_PLAN_HISTORY_FILE)
-            deleted.append(LESSON_PLAN_HISTORY_FILE)
-        except Exception as e:
-            errors.append(f"Failed to delete lesson_plan_history.json: {e}")
+    # 2. Wipe lesson plans (Phase 2b: SQLite-backed) + remove legacy JSON files if any
+    try:
+        import sqlite3 as _sql
+        import unified_calendar_service as _ucs
+        conn = _sql.connect(_ucs._get_db_path())
+        conn.execute("DELETE FROM lesson_plans")
+        conn.execute("DELETE FROM lesson_plan_edits")
+        conn.execute("DELETE FROM unified_events WHERE source_type = 'lesson_plan'")
+        conn.commit()
+        conn.close()
+        deleted.append("lesson_plans (SQLite)")
+    except Exception as e:
+        errors.append(f"Failed to wipe lesson_plans table: {e}")
+    for legacy in (LESSON_PLAN_HISTORY_FILE, LESSON_PLAN_HISTORY_FILE + ".bak"):
+        if os.path.exists(legacy):
+            try:
+                os.remove(legacy)
+                deleted.append(legacy)
+            except Exception as e:
+                errors.append(f"Failed to delete {os.path.basename(legacy)}: {e}")
 
     # 2b. Delete lesson_drafts.json (stored in backend dir)
     if os.path.exists(LESSON_DRAFTS_FILE):

@@ -147,6 +147,7 @@ def init_tables():
         for col, definition in [
             ('reminders_enabled', 'INTEGER DEFAULT 0'),
             ('reminder_offsets',  "TEXT DEFAULT '[]'"),
+            ('blocks_classes',    'INTEGER DEFAULT 0'),  # Phase 2: holidays that suppress timetable
         ]:
             try:
                 conn.execute(f'ALTER TABLE school_year_events ADD COLUMN {col} {definition}')
@@ -160,6 +161,71 @@ def init_tables():
                 conn.execute(f'ALTER TABLE school_year_config ADD COLUMN {col} {definition}')
             except Exception:
                 pass  # Column already exists
+
+        # ── Phase 2 placeholder schemas (populated by Phase 2b/2c migrations) ──
+        # These tables exist now so projector wiring + future SQLite migrations
+        # have a target. Refactor of lesson plan endpoints + Kindergarten
+        # localStorage migration land in a subsequent turn.
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS lesson_plans (
+                id                    TEXT PRIMARY KEY,
+                teacher_id            TEXT NOT NULL,
+                timetable_slot_id     TEXT,
+                title                 TEXT NOT NULL,
+                form_data_json        TEXT,
+                generated_plan        TEXT,
+                parsed_lesson_json    TEXT,
+                curriculum_matches_json TEXT,
+                suggested_milestone_id TEXT,
+                taught_at             TEXT,
+                status                TEXT DEFAULT 'draft',
+                created_at            TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at            TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_lp_teacher
+            ON lesson_plans(teacher_id, created_at DESC)
+        ''')
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_lp_slot
+            ON lesson_plans(timetable_slot_id)
+        ''')
+
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS lesson_plan_edits (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                lesson_plan_id  TEXT NOT NULL,
+                edited_at       TEXT DEFAULT CURRENT_TIMESTAMP,
+                snapshot_json   TEXT,
+                FOREIGN KEY (lesson_plan_id) REFERENCES lesson_plans(id) ON DELETE CASCADE
+            )
+        ''')
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_lpe_plan
+            ON lesson_plan_edits(lesson_plan_id, edited_at DESC)
+        ''')
+
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS daily_plans (
+                id              TEXT PRIMARY KEY,
+                teacher_id      TEXT NOT NULL,
+                plan_date       TEXT NOT NULL,
+                theme           TEXT,
+                activities_json TEXT,
+                literacy_focus  TEXT,
+                math_focus      TEXT,
+                materials       TEXT,
+                notes           TEXT,
+                color           TEXT,
+                created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at      TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_dp_teacher_date
+            ON daily_plans(teacher_id, plan_date)
+        ''')
 
         conn.commit()
     finally:
@@ -249,6 +315,7 @@ def delete_config(config_id: str) -> bool:
 # ── Event CRUD ──
 
 def save_event(data: dict) -> dict:
+    import unified_calendar_service as ucs
     conn = _get_conn()
     try:
         event_id = data.get('id') or str(uuid.uuid4())
@@ -257,8 +324,8 @@ def save_event(data: dict) -> dict:
         conn.execute('''
             INSERT INTO school_year_events (id, config_id, teacher_id, title, description,
                 event_date, end_date, event_type, color, subject, grade_level, all_day,
-                reminders_enabled, reminder_offsets, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                reminders_enabled, reminder_offsets, blocks_classes, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 title = excluded.title,
                 description = excluded.description,
@@ -270,7 +337,8 @@ def save_event(data: dict) -> dict:
                 grade_level = excluded.grade_level,
                 all_day = excluded.all_day,
                 reminders_enabled = excluded.reminders_enabled,
-                reminder_offsets = excluded.reminder_offsets
+                reminder_offsets = excluded.reminder_offsets,
+                blocks_classes = excluded.blocks_classes
         ''', (
             event_id,
             data['config_id'],
@@ -286,11 +354,31 @@ def save_event(data: dict) -> dict:
             data.get('all_day', 1),
             data.get('reminders_enabled', 0),
             data.get('reminder_offsets', '[]'),
+            int(data.get('blocks_classes', 0)),
             now
         ))
-        conn.commit()
+
         row = conn.execute('SELECT * FROM school_year_events WHERE id = ?', (event_id,)).fetchone()
-        return dict(row)
+        row_dict = dict(row)
+
+        # Phase 2: project into unified_events on the SAME connection (single transaction)
+        try:
+            ucs.project_school_year_event(conn, row_dict)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to project school_year_event {event_id}: {e}")
+
+        # Holiday EXDATE recomputation: if a blocking holiday was added/edited,
+        # re-project the teacher's timetable slots so their RRULE EXDATE picks up the new date.
+        if row_dict.get('event_type') == 'holiday' and int(row_dict.get('blocks_classes') or 0):
+            try:
+                _reproject_teacher_timetable_slots(conn, row_dict['teacher_id'])
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to recompute timetable EXDATE: {e}")
+
+        conn.commit()
+        return row_dict
     finally:
         conn.close()
 
@@ -322,9 +410,37 @@ def list_events_by_range(teacher_id: str, start: str, end: str) -> list[dict]:
 
 
 def delete_event(event_id: str) -> bool:
+    import unified_calendar_service as ucs
     conn = _get_conn()
     try:
+        # Load row first so we know whether it was a blocking holiday
+        row = conn.execute(
+            'SELECT teacher_id, event_type, blocks_classes FROM school_year_events WHERE id = ?',
+            (event_id,)
+        ).fetchone()
+        if not row:
+            return False
+        was_blocking_holiday = (row['event_type'] == 'holiday' and int(row['blocks_classes'] or 0) == 1)
+        teacher_id = row['teacher_id']
+
         cursor = conn.execute('DELETE FROM school_year_events WHERE id = ?', (event_id,))
+
+        # Phase 2: clean up unified_events projection
+        try:
+            ucs.delete_unified_event(conn, 'school_year', event_id)
+            ucs.delete_unified_event(conn, 'holiday', event_id)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to delete unified_events row for {event_id}: {e}")
+
+        # If we deleted a blocking holiday, the timetable slots' EXDATE needs to drop it
+        if was_blocking_holiday:
+            try:
+                _reproject_teacher_timetable_slots(conn, teacher_id)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to recompute timetable EXDATE after holiday delete: {e}")
+
         conn.commit()
         return cursor.rowcount > 0
     finally:
@@ -684,6 +800,7 @@ def get_timetable(teacher_id: str) -> list[dict]:
 
 
 def upsert_timetable_slot(data: dict) -> dict:
+    import unified_calendar_service as ucs
     conn = _get_conn()
     try:
         slot_id = data.get('id') or str(uuid.uuid4())
@@ -714,21 +831,73 @@ def upsert_timetable_slot(data: dict) -> dict:
             data.get('notes'),
             now, now
         ))
-        conn.commit()
+
         row = conn.execute('SELECT * FROM timetable_slots WHERE id = ?', (slot_id,)).fetchone()
-        return dict(row)
+        row_dict = dict(row)
+
+        # Phase 2: project into unified_events. Need active config bounds for the teacher.
+        try:
+            bounds = _get_active_config_bounds(conn, row_dict['teacher_id'])
+            if bounds:
+                ucs.project_timetable_slot(conn, row_dict, school_year_bounds=bounds)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to project timetable_slot {slot_id}: {e}")
+
+        conn.commit()
+        return row_dict
     finally:
         conn.close()
 
 
 def delete_timetable_slot(slot_id: str) -> bool:
+    import unified_calendar_service as ucs
     conn = _get_conn()
     try:
         cursor = conn.execute('DELETE FROM timetable_slots WHERE id = ?', (slot_id,))
+        try:
+            ucs.delete_unified_event(conn, 'timetable_slot', slot_id)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to delete unified_events row for slot {slot_id}: {e}")
         conn.commit()
         return cursor.rowcount > 0
     finally:
         conn.close()
+
+
+# ── Phase 2 helpers (used by save_event/delete_event/upsert_timetable_slot) ──
+
+def _get_active_config_bounds(conn: sqlite3.Connection, teacher_id: str) -> dict | None:
+    """Look up the active school year config's date range without opening a new connection."""
+    row = conn.execute(
+        'SELECT start_date, end_date FROM school_year_config WHERE teacher_id = ? AND is_active = 1 LIMIT 1',
+        (teacher_id,)
+    ).fetchone()
+    if not row:
+        return None
+    return {'start_date': row['start_date'], 'end_date': row['end_date']}
+
+
+def _reproject_teacher_timetable_slots(conn: sqlite3.Connection, teacher_id: str) -> int:
+    """
+    Re-project every timetable slot for a teacher. Called when a blocking holiday
+    is added or removed so the EXDATE component of each slot's RRULE is rebuilt.
+    Uses the same connection as the caller (single transaction).
+    """
+    import unified_calendar_service as ucs
+    bounds = _get_active_config_bounds(conn, teacher_id)
+    if not bounds:
+        return 0
+    rows = conn.execute(
+        'SELECT * FROM timetable_slots WHERE teacher_id = ?',
+        (teacher_id,)
+    ).fetchall()
+    count = 0
+    for row in rows:
+        ucs.project_timetable_slot(conn, dict(row), school_year_bounds=bounds)
+        count += 1
+    return count
 
 
 def lookup_timetable_slot(teacher_id: str, grade_level: str, subject: str) -> dict | None:

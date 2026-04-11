@@ -7,7 +7,9 @@ interface LicenseState {
   oakLicense: string | null;
   teacherName: string | null;
   schoolId: string | null;
+  schoolName: string | null;
   territoryId: string | null;
+  territoryName: string | null;
   error: string | null;
 }
 
@@ -33,7 +35,9 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
     oakLicense: null,
     teacherName: null,
     schoolId: null,
+    schoolName: null,
     territoryId: null,
+    territoryName: null,
     error: null,
   });
 
@@ -63,7 +67,9 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
           oakLicense: null,
           teacherName: null,
           schoolId: null,
+          schoolName: null,
           territoryId: null,
+          territoryName: null,
           error: null,
         });
         return;
@@ -75,7 +81,9 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
         oakLicense,
         teacherName: data.teacher_name,
         schoolId: data.school_id,
+        schoolName: data.school_name ?? data.school_id ?? null,
         territoryId: data.territory_id,
+        territoryName: data.territory_name ?? data.territory_id ?? null,
         error: null,
       });
     } catch {
@@ -88,7 +96,9 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
           oakLicense: stored,
           teacherName: null,
           schoolId: null,
+          schoolName: null,
           territoryId: null,
+          territoryName: null,
           error: null,
         });
       } else {
@@ -125,7 +135,9 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
         oakLicense,
         teacherName: data.teacher_name,
         schoolId: data.school_id,
+        schoolName: data.school_name ?? data.school_id ?? null,
         territoryId: data.territory_id,
+        territoryName: data.territory_name ?? data.territory_id ?? null,
         error: null,
       });
       return true;
@@ -143,7 +155,9 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
       oakLicense: null,
       teacherName: null,
       schoolId: null,
+      schoolName: null,
       territoryId: null,
+      territoryName: null,
       error: null,
     });
   }

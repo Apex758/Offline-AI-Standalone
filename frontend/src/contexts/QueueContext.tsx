@@ -6,6 +6,11 @@ import { useNotification } from './NotificationContext';
 
 export type QueueItemStatus = 'waiting' | 'generating' | 'completed' | 'error';
 
+/** 'ws' = managed by QueueContext via WebSocket processNext loop.
+ *  'external' = the generator owns its own run (HTTP fetch, etc.) and just
+ *  wants to be visible/cancellable in the queue panel. */
+export type QueueItemKind = 'ws' | 'external';
+
 export interface QueueItem {
   id: string;
   label: string;        // e.g. "Quiz - Grade 5 Math"
@@ -20,12 +25,27 @@ export interface QueueItem {
   startedAt?: Date;
   completedAt?: Date;
   errorMessage?: string;
+  kind?: QueueItemKind;        // defaults to 'ws'
+  onCancel?: () => void;        // only used for 'external' items
+}
+
+/** Args for an externally-managed queue entry (HTTP-based generators). */
+export interface ExternalQueueArgs {
+  label: string;
+  toolType: string;
+  tabId: string;
+  onCancel: () => void;
 }
 
 interface QueueContextValue {
   queue: QueueItem[];
   activeItem: QueueItem | null;
   enqueue: (item: Omit<QueueItem, 'id' | 'status' | 'addedAt'>) => void;
+  /** Add an externally-managed item that appears in the panel as 'generating'.
+   *  Returns the new item id; caller must call completeExternalItem when done. */
+  addExternalItem: (args: ExternalQueueArgs) => string;
+  /** Mark an externally-managed item as completed or errored. */
+  completeExternalItem: (id: string, status: 'completed' | 'error', errorMessage?: string) => void;
   removeFromQueue: (id: string) => void;
   cancelGenerating: (id: string) => void;
   reorderQueue: (fromIndex: number, toIndex: number) => void;
@@ -77,7 +97,8 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (processingRef.current) return;
 
     const currentQueue = queueRef.current;
-    const nextItem = currentQueue.find(item => item.status === 'waiting');
+    // External items manage their own execution — skip them in the WS loop.
+    const nextItem = currentQueue.find(item => item.status === 'waiting' && item.kind !== 'external');
     if (!nextItem) return;
 
     processingRef.current = true;
@@ -198,6 +219,17 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const item = queueRef.current.find(i => i.id === id);
     if (!item || item.status !== 'generating') return;
 
+    if (item.kind === 'external') {
+      // Externally-managed item — invoke its own cancel hook. The generator
+      // is responsible for aborting work; we just mark the panel entry done.
+      try { item.onCancel?.(); } catch { /* ignore */ }
+      setQueue(prev => prev.map(i =>
+        i.id === id ? { ...i, status: 'error' as QueueItemStatus, errorMessage: 'Cancelled', completedAt: new Date() } : i
+      ));
+      notify(`${item.label} cancelled`);
+      return;
+    }
+
     // Call the backend cancel REST endpoint
     fetch(`http://localhost:8000/api/cancel/${encodeURIComponent(id)}`, { method: 'POST' })
       .catch(() => {/* fire and forget */});
@@ -215,6 +247,38 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!processingRef.current) processNext();
     }, 300);
   }, [notify, processNext]);
+
+  const addExternalItem = useCallback((args: ExternalQueueArgs): string => {
+    const id = `qx-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const newItem: QueueItem = {
+      id,
+      label: args.label,
+      toolType: args.toolType,
+      tabId: args.tabId,
+      endpoint: '',
+      prompt: '',
+      generationMode: '',
+      status: 'generating',
+      addedAt: new Date(),
+      startedAt: new Date(),
+      kind: 'external',
+      onCancel: args.onCancel,
+    };
+    setQueue(prev => {
+      const updated = [...prev, newItem];
+      queueRef.current = updated;
+      return updated;
+    });
+    return id;
+  }, []);
+
+  const completeExternalItem = useCallback((id: string, status: 'completed' | 'error', errorMessage?: string) => {
+    setQueue(prev => prev.map(i =>
+      i.id === id && i.kind === 'external'
+        ? { ...i, status, completedAt: new Date(), ...(errorMessage ? { errorMessage } : {}) }
+        : i
+    ));
+  }, []);
 
   const reorderQueue = useCallback((fromIndex: number, toIndex: number) => {
     setQueue(prev => {
@@ -273,6 +337,8 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       queue,
       activeItem,
       enqueue,
+      addExternalItem,
+      completeExternalItem,
       removeFromQueue,
       cancelGenerating,
       reorderQueue,

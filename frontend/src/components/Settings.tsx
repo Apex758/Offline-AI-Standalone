@@ -303,6 +303,7 @@ import { achievementApi } from '../lib/achievementApi';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
+import ScheduledTaskSettings from './ScheduledTaskSettings';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useLicense } from '../contexts/LicenseContext';
 import { FEATURE_CATALOG, CATEGORY_LABELS, type FeatureCategory } from '../data/featureDiscoveryData';
@@ -525,7 +526,12 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   // Fire profile_complete achievement flag when all profile fields are filled
   useEffect(() => {
     const hasName = !!settings.profile.displayName?.trim();
-    const hasSchool = !!settings.profile.school?.trim();
+    // School is only required for OAK-verified users (it auto-populates from their license).
+    // Manual users can no longer enter a school, so it must not gate the achievement.
+    const hasSchool =
+      settings.profile.schoolSource === 'oak'
+        ? !!settings.profile.school?.trim()
+        : true;
     const hasGrades = Object.keys(settings.profile.gradeSubjects || {}).length > 0;
     const hasPhoto = !!localStorage.getItem('user-profile-image');
     if (hasName && hasSchool && hasGrades && hasPhoto) {
@@ -1675,15 +1681,42 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         </div>
                       </div>
 
-                      {/* School */}
-                      <div>
-                        <label className="block text-sm font-medium text-theme-label mb-1.5">{t('settingsPage.profile.school')}</label>
-                        <Input
-                          placeholder={t('settingsPage.profile.schoolPlaceholder')}
-                          value={settings.profile.school}
-                          onChange={(e) => updateSettings({ profile: { ...settings.profile, school: e.target.value } })}
-                        />
-                      </div>
+                      {/* School + Territory - ONLY shown when verified via OAK (locked/read-only) */}
+                      {settings.profile.schoolSource === 'oak' && settings.profile.school && (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-theme-label mb-1.5 flex items-center gap-2">
+                              {t('settingsPage.profile.school')}
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Verified via OAK
+                              </span>
+                            </label>
+                            <div
+                              className="w-full px-3 py-2 rounded-md text-sm bg-theme-subtle/50 border border-theme-strong/20 text-theme-primary select-text"
+                              title="Retrieved from your OAK license - not editable"
+                            >
+                              {settings.profile.school}
+                            </div>
+                          </div>
+                          {settings.profile.territory && (
+                            <div>
+                              <label className="block text-sm font-medium text-theme-label mb-1.5">Country / Territory</label>
+                              <div
+                                className="w-full px-3 py-2 rounded-md text-sm bg-theme-subtle/50 border border-theme-strong/20 text-theme-primary select-text"
+                                title="Retrieved from your OAK license - not editable"
+                              >
+                                {settings.profile.territory}
+                              </div>
+                            </div>
+                          )}
+                          <p className="text-xs text-theme-hint">
+                            Your school and country are managed by your OAK license. Deactivate or change your license to update them.
+                          </p>
+                        </div>
+                      )}
 
                       {/* Coworker Name */}
                       <div>
@@ -2602,6 +2635,26 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         Forget everything Coworker remembers about me
                       </button>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Background Schedule (Feature 3B: scheduled tasks) */}
+                <Card data-search-section="background-schedule">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="w-4.5 h-4.5 text-blue-500">🗓️</span>
+                      Background Schedule
+                    </CardTitle>
+                    <CardDescription>
+                      Run planning tasks automatically while you're away. Coworker can
+                      prepare a weekly ELO breakdown, attendance summary, or progress
+                      report on a schedule you choose.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ScheduledTaskSettings
+                      teacherId={settings.profile.displayName?.trim() || 'default_teacher'}
+                    />
                   </CardContent>
                 </Card>
 
@@ -4319,7 +4372,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
 function LicenseSection() {
   const { t } = useTranslation();
-  const { isLicensed, oakLicense, teacherName, schoolId, territoryId, loading, error, activate, deactivate } = useLicense();
+  const { isLicensed, oakLicense, teacherName, schoolId, schoolName, territoryId, territoryName, loading, error, activate, deactivate } = useLicense();
   const [oakInput, setOakInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -4357,8 +4410,8 @@ function LicenseSection() {
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">OAK License Active</p>
                   {teacherName && <p className="text-xs text-emerald-600 dark:text-emerald-400">{teacherName}</p>}
-                  {schoolId && <p className="text-xs text-emerald-600 dark:text-emerald-400">School: {schoolId}</p>}
-                  {territoryId && <p className="text-xs text-emerald-600 dark:text-emerald-400">Territory: {territoryId}</p>}
+                  {(schoolName || schoolId) && <p className="text-xs text-emerald-600 dark:text-emerald-400">School: {schoolName || schoolId}</p>}
+                  {(territoryName || territoryId) && <p className="text-xs text-emerald-600 dark:text-emerald-400">Territory: {territoryName || territoryId}</p>}
                   {oakLicense && <p className="text-xs text-emerald-500 dark:text-emerald-500 mt-1 font-mono">{oakLicense}</p>}
                   <p className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">Updates and cloud support are enabled</p>
                 </div>

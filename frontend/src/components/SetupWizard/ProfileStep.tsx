@@ -1,13 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { GRADE_LEVELS, SUBJECTS, GradeSubjectMapping, GRADE_LABEL_MAP } from '../../data/teacherConstants';
+import { GRADE_LEVELS, SUBJECTS, GradeSubjectMapping } from '../../data/teacherConstants';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface ProfileStepProps {
   name: string;
-  school: string;
   gradeSubjects: GradeSubjectMapping;
+  mode: 'oak' | 'manual';
   onNameChange: (name: string) => void;
-  onSchoolChange: (school: string) => void;
   onGradeToggle: (grade: string) => void;
   onSubjectToggle: (grade: string, subject: string) => void;
   onApplyToAll: (sourceGrade: string) => void;
@@ -16,12 +16,17 @@ interface ProfileStepProps {
 }
 
 const ProfileStep: React.FC<ProfileStepProps> = ({
-  name, school, gradeSubjects,
-  onNameChange, onSchoolChange, onGradeToggle, onSubjectToggle, onApplyToAll,
+  name, gradeSubjects, mode,
+  onNameChange, onGradeToggle, onSubjectToggle, onApplyToAll,
   onNext, onBack,
 }) => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
   const selectedGrades = Object.keys(gradeSubjects);
+
+  // For the OAK path, the bridge has already populated these from validate_oak.
+  const oakSchool = settings.profile.school;
+  const oakTerritory = settings.profile.territory;
 
   return (
     <div className="px-8 py-6">
@@ -29,6 +34,38 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
       <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.55)' }}>{t('setupWizard.tailorContent')}</p>
 
       <div className="space-y-5 max-w-lg mx-auto">
+        {/* OAK verified banner - only shown if user activated OAK */}
+        {mode === 'oak' && oakSchool && (
+          <div
+            className="rounded-lg p-3 flex items-start gap-3"
+            style={{
+              backgroundColor: 'rgba(16,185,129,0.12)',
+              border: '1px solid rgba(16,185,129,0.35)',
+            }}
+          >
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: 'rgba(16,185,129,0.25)' }}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="#6ee7b7" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-xs font-semibold" style={{ color: '#6ee7b7' }}>
+                Verified via OAK
+              </p>
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                {oakSchool}
+                {oakTerritory ? ` - ${oakTerritory}` : ''}
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Locked - managed by your license
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Name */}
         <div>
           <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('setupWizard.yourName')}</label>
@@ -37,24 +74,6 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
             placeholder={t('setupWizard.namePlaceholder')}
-            className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              color: '#fff',
-              ringColor: '#F2A631',
-            }}
-          />
-        </div>
-
-        {/* School */}
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>School (optional)</label>
-          <input
-            type="text"
-            value={school}
-            onChange={(e) => onSchoolChange(e.target.value)}
-            placeholder={t('setupWizard.schoolPlaceholder')}
             className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
             style={{
               backgroundColor: 'rgba(255,255,255,0.08)',

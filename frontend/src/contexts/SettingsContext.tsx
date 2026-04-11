@@ -46,6 +46,13 @@ export interface TutorialState {
 export interface UserProfile {
   displayName: string;
   school: string;
+  // Country / OECS territory. Populated only when schoolSource === 'oak'.
+  territory?: string;
+  // Where school/territory came from:
+  //   'oak'    -> verified via OAK license, locked in Settings
+  //   'manual' -> legacy manually entered (no longer editable, kept for migration)
+  //   null     -> not set (manual users going forward)
+  schoolSource?: 'oak' | 'manual' | null;
   gradeSubjects: GradeSubjectMapping;
   filterContentByProfile: boolean;
   registrationDate?: string;
@@ -221,6 +228,8 @@ export const DEFAULT_SETTINGS: Settings = {
   profile: {
     displayName: '',
     school: '',
+    territory: '',
+    schoolSource: null,
     gradeSubjects: {},
     filterContentByProfile: true,
     coworkerName: 'Coworker',
@@ -440,6 +449,14 @@ const loadSettingsFromStorage = (): Settings => {
           registrationDate: (parsed.profile?.registrationDate) || (parsed.tutorials?.hasCompletedSetup ? new Date().toISOString() : undefined),
           // Migration: backfill coworkerName for existing users
           coworkerName: (parsed.profile?.coworkerName || '').trim() || 'Coworker',
+          // Migration: backfill schoolSource. Existing users with a school string
+          // are flagged 'manual' (hidden from settings going forward). Users with
+          // no school get null. OAK-activated users are re-flagged by LicenseSettingsBridge.
+          schoolSource:
+            parsed.profile?.schoolSource !== undefined
+              ? parsed.profile.schoolSource
+              : (parsed.profile?.school ? 'manual' : null),
+          territory: parsed.profile?.territory || '',
           // Clear legacy fields
           gradeLevels: undefined,
           subjects: undefined,

@@ -36,6 +36,7 @@ class SchoolYearEventCreate(BaseModel):
     all_day: int = 1
     reminders_enabled: int = 0
     reminder_offsets: Optional[str] = '[]'
+    blocks_classes: int = 0  # Phase 2: holidays that block the timetable
 
 
 class BulkEventsCreate(BaseModel):

@@ -9,16 +9,20 @@ import CompletionStep from './CompletionStep';
 
 const STEPS = ['welcome', 'profile', 'features', 'complete'] as const;
 type Step = typeof STEPS[number];
+type SetupMode = 'oak' | 'manual';
 
 const SetupWizard: React.FC = () => {
   const { settings, completeSetup } = useSettings();
 
   const [step, setStep] = useState<Step>('welcome');
+  const [mode, setMode] = useState<SetupMode>('manual');
   const stepIndex = STEPS.indexOf(step);
 
-  // Profile state
+  // Profile state -- school/territory are NOT collected here anymore.
+  // OAK path: LicenseSettingsBridge writes school + territory into settings.profile
+  //           automatically after a successful activation.
+  // Manual path: school + territory stay blank.
   const [name, setName] = useState(settings.profile.displayName || '');
-  const [school, setSchool] = useState(settings.profile.school || '');
   const [gradeSubjects, setGradeSubjects] = useState<GradeSubjectMapping>(
     () => settings.profile.gradeSubjects || {}
   );
@@ -78,12 +82,25 @@ const SetupWizard: React.FC = () => {
     if (idx > 0) setStep(STEPS[idx - 1]);
   };
 
+  const handleChooseManual = () => {
+    setMode('manual');
+    goNext();
+  };
+
+  const handleOakActivated = () => {
+    setMode('oak');
+    // LicenseSettingsBridge has already written school + territory into settings.
+    goNext();
+  };
+
   const handleFinish = () => {
     const hasAnySubjects = Object.values(gradeSubjects).some(subs => subs.length > 0);
 
+    // Only write the fields this wizard is responsible for. Do NOT touch
+    // school/territory/schoolSource -- OAK path already set them via the bridge,
+    // manual path leaves them null.
     const profileUpdate: Partial<UserProfile> = {
       displayName: name,
-      school,
       gradeSubjects,
       filterContentByProfile: selectedGrades.length > 0 && hasAnySubjects,
     };
@@ -119,14 +136,18 @@ const SetupWizard: React.FC = () => {
         </div>
 
         {/* Step content */}
-        {step === 'welcome' && <WelcomeStep onNext={goNext} />}
+        {step === 'welcome' && (
+          <WelcomeStep
+            onChooseManual={handleChooseManual}
+            onOakActivated={handleOakActivated}
+          />
+        )}
         {step === 'profile' && (
           <ProfileStep
             name={name}
-            school={school}
             gradeSubjects={gradeSubjects}
+            mode={mode}
             onNameChange={setName}
-            onSchoolChange={setSchool}
             onGradeToggle={toggleGrade}
             onSubjectToggle={toggleSubjectForGrade}
             onApplyToAll={applySubjectsToAll}

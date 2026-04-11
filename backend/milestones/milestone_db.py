@@ -8,6 +8,58 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+# ── Phase 2 cross-DB projection helpers ──
+#
+# Milestones live in milestones.db, but unified_events lives in students.db,
+# so projection cannot share a transaction. We open a short-lived connection
+# to students.db and wrap in try/except so a projection failure never breaks
+# the milestone write itself. Validation suite catches drift.
+
+def _project_milestone_safe(milestone: dict) -> None:
+    try:
+        import sqlite3
+        import unified_calendar_service as ucs
+        conn = sqlite3.connect(ucs._get_db_path())
+        conn.row_factory = sqlite3.Row
+        try:
+            ucs.project_milestone(conn, milestone)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Failed to project milestone {milestone.get('id')} into unified_events: {e}")
+
+
+def _resolve_phase_for_date_safe(teacher_id: str, date_str: str) -> str | None:
+    """
+    Phase 3: look up the academic phase that contains a given date for this teacher.
+    Returns the phase id or None. Wrapped so a lookup failure never breaks the
+    milestone write.
+    """
+    try:
+        import school_year_service
+        phase = school_year_service.get_phase_for_date(teacher_id, date_str)
+        return phase.get('id') if phase else None
+    except Exception as e:
+        logger.error(f"Failed to resolve phase for date {date_str}: {e}")
+        return None
+
+
+def _delete_milestone_projection_safe(milestone_id: str) -> None:
+    try:
+        import sqlite3
+        import unified_calendar_service as ucs
+        conn = sqlite3.connect(ucs._get_db_path())
+        try:
+            ucs.delete_unified_event(conn, 'milestone', milestone_id)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"Failed to delete unified_events row for milestone {milestone_id}: {e}")
+
+
 class MilestoneDB:
     """SQLite database for curriculum milestone tracking"""
     
@@ -212,9 +264,15 @@ class MilestoneDB:
             conn.commit()
 
             row = conn.execute("SELECT * FROM milestones WHERE id = ?", (milestone_id,)).fetchone()
-            return dict(row) if row else {}
+            milestone = dict(row) if row else {}
         finally:
             conn.close()
+
+        # Phase 2: project into unified_events (cross-DB write to students.db).
+        # No-op if no due_date (project_milestone returns None).
+        if milestone:
+            _project_milestone_safe(milestone)
+        return milestone
     
     def get_milestones(
         self,
@@ -306,7 +364,13 @@ class MilestoneDB:
             if due_date is not None:
                 updates.append("due_date = ?")
                 params.append(due_date if due_date else None)
-            
+
+                # Phase 3: auto-bucket into the academic phase containing this date
+                if due_date and phase_id == "__UNSET__":
+                    auto_phase = _resolve_phase_for_date_safe(current['teacher_id'], due_date)
+                    if auto_phase:
+                        phase_id = auto_phase  # promote into the regular update path
+
             if is_hidden is not None:
                 updates.append("is_hidden = ?")
                 params.append(1 if is_hidden else 0)
@@ -322,15 +386,23 @@ class MilestoneDB:
             if updates:
                 updates.append("updated_at = CURRENT_TIMESTAMP")
                 params.append(milestone_id)
-                
+
                 query = f"UPDATE milestones SET {', '.join(updates)} WHERE id = ?"
                 conn.execute(query, params)
                 conn.commit()
-            
+
             row = conn.execute("SELECT * FROM milestones WHERE id = ?", (milestone_id,)).fetchone()
-            return dict(row) if row else {}
+            milestone = dict(row) if row else {}
         finally:
             conn.close()
+
+        # Phase 2: project (or remove) the unified_events row for this milestone.
+        if milestone:
+            if milestone.get('is_hidden') or not milestone.get('due_date'):
+                _delete_milestone_projection_safe(milestone_id)
+            else:
+                _project_milestone_safe(milestone)
+        return milestone
     
     def get_progress_summary(self, teacher_id: str) -> Dict[str, Any]:
         """Get overall progress statistics"""

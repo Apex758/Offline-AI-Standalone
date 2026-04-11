@@ -336,7 +336,9 @@
       "Bash(ls Timetable* SchoolYearHub* SchoolYearCalendar* CurriculumPlan*)",
       "Bash(ls routes/timetable*)",
       "Bash(ls timetable*)",
-      "Bash(node --check electron/main.js)"
+      "Bash(node --check electron/main.js)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(ls \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/lesson_plan_history.json\"*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

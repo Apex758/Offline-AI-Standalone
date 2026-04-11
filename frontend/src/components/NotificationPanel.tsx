@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useNotification } from '../contexts/NotificationContext';
 import { useQueue, QueueItem } from '../contexts/QueueContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useSettings } from '../contexts/SettingsContext';
+import ScheduledResultsSection from './ScheduledResultsSection';
 
 // ─── Inline SVG Icons ─────────────────────────────────────────────────────────
 const BellIcon = () => (
@@ -144,10 +146,12 @@ interface NotificationPanelProps {
 type PanelTab = 'notifications' | 'queue';
 
 const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) => {
-  const { history, unreadCount, markAllRead, clearHistory, navigateToTab } = useNotification();
+  const { history, unreadCount, markAllRead, clearHistory, navigateToTab, notify } = useNotification();
   const { queue, removeFromQueue, cancelGenerating, reorderQueue, clearCompleted, queueEnabled } = useQueue();
   const { getActiveStreams, cancelStream } = useWebSocket();
   const { t } = useTranslation();
+  const { settings } = useSettings();
+  const teacherId = settings.profile.displayName?.trim() || 'default_teacher';
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<PanelTab>('notifications');
   const isDark = useIsDark();
@@ -330,6 +334,22 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
           {/* ─── Notifications Tab ──────────────────────────────────── */}
           {activeTab === 'notifications' && (
             <>
+              {/* Feature 3E: Scheduled task results (elo breakdown, attendance, progress) */}
+              <ScheduledResultsSection
+                teacherId={teacherId}
+                onOpen={open}
+                onAcceptElo={(result) => {
+                  // When the teacher accepts an ELO breakdown, notify them that
+                  // the plan is ready. Queueing actual lesson plan generations
+                  // per day is a future enhancement -- for now, the Accept
+                  // button just marks the result accepted and drops a toast.
+                  const dayCount = (result.result?.days || []).length;
+                  notify(
+                    `Accepted ELO plan -- ${dayCount} day(s) scheduled. Open Planning Hub to review.`,
+                    'success'
+                  );
+                }}
+              />
               {history.length > 0 && (
                 <div style={{
                   display: 'flex',

@@ -28,6 +28,7 @@ export interface ImageGenerationRequest {
   numInferenceSteps?: number;
   initImage?: string;   // base64 data URI for img2img
   strength?: number;    // 0.0-1.0, controls how much the init image is changed
+  signal?: AbortSignal; // optional abort signal for cancellation
 }
 
 export interface BatchImageGenerationRequest {
@@ -200,7 +201,8 @@ export const imageApi = {
           numInferenceSteps: steps,
           ...(request.initImage && { initImage: request.initImage }),
           ...(request.strength !== undefined && { strength: request.strength })
-        }
+        },
+        request.signal ? { signal: request.signal } : undefined
       );
       return response.data;
     } catch (error: any) {

@@ -10,6 +10,9 @@ interface TabBusyContextValue {
   isTabHttpBusy: (tabId: string) => boolean;
   /** Get count of busy operations for a tab */
   getTabBusyCount: (tabId: string) => number;
+  /** Reactive set of tab IDs that currently have at least one HTTP busy op.
+   *  Use this in effects/deps so consumers re-run when HTTP busy state changes. */
+  httpBusyTabIds: Set<string>;
 }
 
 const TabBusyContext = createContext<TabBusyContextValue | undefined>(undefined);
@@ -17,15 +20,21 @@ const TabBusyContext = createContext<TabBusyContextValue | undefined>(undefined)
 export const TabBusyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Map of tabId -> Set of operationIds
   const busyMapRef = useRef<Map<string, Set<string>>>(new Map());
-  const [, forceUpdate] = useState({});
+  // Reactive mirror of busyMapRef.keys() — used by consumers that need to
+  // react to HTTP busy changes (e.g. tab pulse animation in Dashboard).
+  const [httpBusyTabIds, setHttpBusyTabIds] = useState<Set<string>>(new Set());
+
+  const refreshBusySet = useCallback(() => {
+    setHttpBusyTabIds(new Set(busyMapRef.current.keys()));
+  }, []);
 
   const setTabBusy = useCallback((tabId: string, operationId: string) => {
     if (!busyMapRef.current.has(tabId)) {
       busyMapRef.current.set(tabId, new Set());
     }
     busyMapRef.current.get(tabId)!.add(operationId);
-    forceUpdate({});
-  }, []);
+    refreshBusySet();
+  }, [refreshBusySet]);
 
   const clearTabBusy = useCallback((tabId: string, operationId: string) => {
     const ops = busyMapRef.current.get(tabId);
@@ -33,8 +42,8 @@ export const TabBusyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ops.delete(operationId);
       if (ops.size === 0) busyMapRef.current.delete(tabId);
     }
-    forceUpdate({});
-  }, []);
+    refreshBusySet();
+  }, [refreshBusySet]);
 
   const isTabHttpBusy = useCallback((tabId: string): boolean => {
     const ops = busyMapRef.current.get(tabId);
@@ -46,7 +55,7 @@ export const TabBusyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   return (
-    <TabBusyContext.Provider value={{ setTabBusy, clearTabBusy, isTabHttpBusy, getTabBusyCount }}>
+    <TabBusyContext.Provider value={{ setTabBusy, clearTabBusy, isTabHttpBusy, getTabBusyCount, httpBusyTabIds }}>
       {children}
     </TabBusyContext.Provider>
   );

@@ -18,6 +18,8 @@ import { useTranslation } from 'react-i18next';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import axios from 'axios';
 import { useTabProcessing } from '../contexts/TabBusyContext';
+import { useTabId } from '../contexts/TabIdContext';
+import { useQueue } from '../contexts/QueueContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -93,6 +95,10 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
   const [grading, setGrading] = useState(false);
   const setTabProcessing = useTabProcessing('worksheet-scan-grade');
   useEffect(() => { setTabProcessing(grading); }, [grading, setTabProcessing]);
+  const tabId = useTabId();
+  const { addExternalItem, completeExternalItem } = useQueue();
+  const gradeAbortRef = useRef<AbortController | null>(null);
+  const gradeQueueIdRef = useRef<string | null>(null);
   const [gradingProgress, setGradingProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<ScanGradeResult[]>([]);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
@@ -172,10 +178,22 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
     formData.append('doc_type', 'worksheet');
     scanFiles.forEach(f => formData.append('student_files', f));
 
+    // Set up cancellation + queue panel entry
+    const abortController = new AbortController();
+    gradeAbortRef.current = abortController;
+    const queueId = addExternalItem({
+      label: `Worksheet Scans: ${scanFiles.length} file${scanFiles.length === 1 ? '' : 's'}`,
+      toolType: 'Worksheet Scan Grading',
+      tabId: tabId || 'worksheet-scan-grader',
+      onCancel: () => { try { abortController.abort(); } catch { /* ignore */ } },
+    });
+    gradeQueueIdRef.current = queueId;
+
     try {
       const response = await fetch(`${API_BASE}/api/smart-grade-stream`, {
         method: 'POST',
         body: formData,
+        signal: abortController.signal,
       });
 
       const reader = response.body?.getReader();
@@ -208,11 +226,24 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
       }
 
       setPhase('review');
+      if (gradeQueueIdRef.current) {
+        completeExternalItem(gradeQueueIdRef.current, 'completed');
+      }
     } catch (err: any) {
-      setWorksheetIdError(err?.message || 'Grading failed');
-      setPhase('upload-scans');
+      if (abortController.signal.aborted || err?.name === 'AbortError') {
+        setPhase('upload-scans');
+        // Queue entry was already marked cancelled by cancelGenerating.
+      } else {
+        setWorksheetIdError(err?.message || 'Grading failed');
+        setPhase('upload-scans');
+        if (gradeQueueIdRef.current) {
+          completeExternalItem(gradeQueueIdRef.current, 'error', err?.message || 'Grading failed');
+        }
+      }
     } finally {
       setGrading(false);
+      gradeAbortRef.current = null;
+      gradeQueueIdRef.current = null;
     }
   };
 

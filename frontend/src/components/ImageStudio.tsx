@@ -63,6 +63,7 @@ import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
 import { useNotification } from '../contexts/NotificationContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTabProcessing } from '../contexts/TabBusyContext';
+import { useQueue } from '../contexts/QueueContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import SmartTextArea from './SmartTextArea';
@@ -438,6 +439,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [generationState, setGenerationState] = useState<'input' | 'generating' | 'results'>('input');
   const setTabProcessingImg = useTabProcessing('image-generation');
   useEffect(() => { setTabProcessingImg(generationState === 'generating'); }, [generationState, setTabProcessingImg]);
+
+  // Queue panel integration: track current generation so it appears in the
+  // global queue panel and can be cancelled from there.
+  const { addExternalItem, completeExternalItem } = useQueue();
+  const generateAbortRef = useRef<AbortController | null>(null);
+  const generateQueueIdRef = useRef<string | null>(null);
 
   // Preload is handled centrally by Dashboard.tsx on tab switch
 
@@ -957,6 +964,20 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setGenerationState('generating');
     setError(null);
 
+    // Set up cancellation + queue panel entry for this batch (one entry per batch).
+    const abortController = new AbortController();
+    generateAbortRef.current = abortController;
+    const labelText = prompt.trim().slice(0, 60) + (prompt.trim().length > 60 ? '...' : '');
+    const queueId = addExternalItem({
+      label: `Image: ${labelText}`,
+      toolType: 'Image',
+      tabId,
+      onCancel: () => {
+        try { abortController.abort(); } catch { /* ignore */ }
+      },
+    });
+    generateQueueIdRef.current = queueId;
+
     // Initialize image slots
     const slots: Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}> = Array.from({ length: numImages }, () => ({
       imageData: null,
@@ -968,7 +989,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     try {
       // 🆕 BUILD STYLED PROMPT
       const finalPrompt = buildStyledPrompt(prompt, selectedStyle);
-      
+
       // Start all generations in parallel
       const generationPromises = slots.map(async (_, index) => {
         // Update slot to generating
@@ -985,6 +1006,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             width,
             height,
             numInferenceSteps,
+            signal: abortController.signal,
             ...(modelCapabilities.supports_img2img && referenceImage && { initImage: referenceImage, strength: img2imgStrength })
           });
 
@@ -1018,16 +1040,35 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       // Wait for all generations to complete
       await Promise.allSettled(generationPromises);
 
-      setGenerationState('results');
-      notify('Image generation complete!', 'success', tabId);
-
-      // Process queued generations
-      processQueue();
+      if (abortController.signal.aborted) {
+        // Cancelled mid-batch — queue panel was already updated by cancelGenerating.
+        setGenerationState('input');
+        setImageSlots([]);
+      } else {
+        setGenerationState('results');
+        notify('Image generation complete!', 'success', tabId);
+        if (generateQueueIdRef.current) {
+          completeExternalItem(generateQueueIdRef.current, 'completed');
+        }
+        // Process queued generations
+        processQueue();
+      }
     } catch (err: any) {
       console.error('Generation error:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to generate images');
-      setGenerationState('input');
-      notify('Image generation failed', 'error', tabId);
+      if (abortController.signal.aborted || err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED') {
+        setGenerationState('input');
+        setImageSlots([]);
+      } else {
+        setError(err.response?.data?.error || err.message || 'Failed to generate images');
+        setGenerationState('input');
+        notify('Image generation failed', 'error', tabId);
+        if (generateQueueIdRef.current) {
+          completeExternalItem(generateQueueIdRef.current, 'error', err?.message || 'Generation failed');
+        }
+      }
+    } finally {
+      generateAbortRef.current = null;
+      generateQueueIdRef.current = null;
     }
   };
 

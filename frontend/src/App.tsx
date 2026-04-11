@@ -15,6 +15,7 @@ import { CapabilitiesProvider } from './contexts/CapabilitiesContext';
 import { LicenseProvider } from './contexts/LicenseContext';
 import { ReminderProvider } from './contexts/ReminderContext';
 import { LicenseGate } from './components/LicenseGate';
+import { LicenseSettingsBridge } from './components/LicenseSettingsBridge';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { useDisplayFilters } from './hooks/useDisplayFilters';
@@ -100,6 +101,7 @@ function App() {
     <LicenseProvider>
       <LicenseGate>
         <SettingsProvider>
+          <LicenseSettingsBridge />
           <CapabilitiesProvider>
             <NotificationProvider>
               <ReminderProvider>

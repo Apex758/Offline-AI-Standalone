@@ -656,7 +656,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { closeConnection, getIsTabBusy, getActiveStreams } = useWebSocket();
   const { unreadCount, registerNavigator } = useNotification();
   const { queue } = useQueue();
-  const { isTabHttpBusy } = useTabBusy();
+  const { isTabHttpBusy, httpBusyTabIds } = useTabBusy();
   const { openNoteIds, fabPanelOpen, setFabPanelOpen, createNote, openNote, notes } = useStickyNotes();
   const activeStreams = getActiveStreams();
   const queuedTabEndpoints = new Set(
@@ -686,6 +686,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         currentBusy.add(item.tabId);
       }
     }
+    // Include HTTP-based busy operations (e.g. ImageStudio diffusion,
+    // OCR scan graders) so the tab pulse fires when they finish too.
+    for (const tabId of httpBusyTabIds) {
+      currentBusy.add(tabId);
+    }
 
     // Tabs that were busy but aren't anymore = just completed
     for (const tabId of prevBusyTabsRef.current) {
@@ -698,7 +703,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
 
     prevBusyTabsRef.current = currentBusy;
-  }, [activeStreams, activeTabId, queue]);
+  }, [activeStreams, activeTabId, queue, httpBusyTabIds]);
 
   // Clear pulse when tab becomes active
   useEffect(() => {
@@ -998,7 +1003,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     localStorage.setItem('teacherWelcomeNoteCreated', 'true');
 
     const hasName = !!(settings.profile.displayName && settings.profile.displayName.trim());
-    const hasSchool = !!(settings.profile.school && settings.profile.school.trim());
+    // School only counts when verified via OAK - manual users can't enter one.
+    const isOakVerified = settings.profile.schoolSource === 'oak';
+    const hasSchool = isOakVerified && !!(settings.profile.school && settings.profile.school.trim());
+    const profileSetupComplete = isOakVerified ? hasName && hasSchool : hasName;
     const hasGrades = Object.keys(settings.profile.gradeSubjects || {}).length > 0;
     const hasPhoto = !!localStorage.getItem('user-profile-image');
 
@@ -1006,7 +1014,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       title: 'Press Ctrl+F to search anything',
       content: 'Use AI search or regular search — great when you\'re lost or looking for a tool.',
       checklist: [
-        { id: 'setup_profile', text: 'Set up your profile (name & school)', completed: hasName && hasSchool },
+        { id: 'setup_profile', text: isOakVerified ? 'Set up your profile (name & school)' : 'Set up your profile (name)', completed: profileSetupComplete },
         { id: 'setup_grades', text: 'Add your grades & subjects', completed: hasGrades },
         { id: 'setup_photo', text: 'Upload a profile photo', completed: hasPhoto },
         { id: 'setup_calendar', text: 'Set up your school year calendar', completed: false },
