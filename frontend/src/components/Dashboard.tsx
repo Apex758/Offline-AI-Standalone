@@ -1015,7 +1015,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       ],
       color: '#fef08a',
       pinned: true,
-      position: { x: Math.max(0, window.innerWidth / 2 - 170), y: 80 },
+      position: { x: Math.max(0, window.innerWidth - 360), y: 16 },
       size: { width: 340, height: 320 },
     });
     openNote(note.id, null);

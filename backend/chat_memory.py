@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 SUMMARY_INTERVAL = 10
 
 
+def _estimate_tokens(text: str) -> int:
+    """Cheap token estimator (~1 token per 3.5 chars). Avoids loading a tokenizer."""
+    if not text:
+        return 0
+    return max(1, int(len(text) / 3.5))
+
+
 def _get_db_path() -> Path:
     """Get the SQLite database path in the app data directory."""
     import os
@@ -372,6 +379,60 @@ class ChatMemory:
         if summary:
             summary_block = f"\n\n[Conversation context so far: {summary}]"
 
+        return summary_block, recent
+
+    def build_context_budgeted(
+        self,
+        chat_id: str,
+        token_budget: int = 2000,
+        n_pairs_max: int = 4,
+        summary_cap_tokens: int = 150,
+        reserved_tokens: int = 0,
+    ) -> Tuple[str, List[Dict]]:
+        """
+        Token-aware version of build_context().
+
+        Fits (summary + recent pairs) into `token_budget - reserved_tokens` by:
+          1. Capping the summary to `summary_cap_tokens` (truncate at sentence boundary)
+          2. Dropping oldest pairs until within budget
+          3. As a last resort, further truncating the summary
+
+        `reserved_tokens` should account for the system prompt + user message + any
+        other blocks the caller plans to inject (curriculum refs, profile context),
+        so the returned context fits alongside them.
+
+        Returns the same shape as build_context(): (summary_block, recent_messages).
+        """
+        summary = self.get_summary(chat_id)
+
+        # Step 1: cap summary length up-front
+        if summary and _estimate_tokens(summary) > summary_cap_tokens:
+            char_cap = int(summary_cap_tokens * 3.5)
+            cut = summary[:char_cap].rfind('. ')
+            summary = summary[:cut + 1] if cut > 0 else summary[:char_cap]
+
+        recent = self.get_context_window(chat_id, n_pairs_max)
+
+        # Step 2: shrink history until within available budget
+        available = max(0, token_budget - reserved_tokens)
+        summary_tokens = _estimate_tokens(summary) if summary else 0
+        history_tokens = sum(_estimate_tokens(m.get("content", "")) for m in recent)
+
+        while (summary_tokens + history_tokens) > available and len(recent) >= 2:
+            # Drop the oldest user+assistant pair
+            recent = recent[2:]
+            history_tokens = sum(_estimate_tokens(m.get("content", "")) for m in recent)
+
+        # Step 3: if still over budget, hard-truncate the summary
+        if summary and (summary_tokens + history_tokens) > available:
+            remaining_for_summary = max(0, available - history_tokens)
+            char_cap = int(remaining_for_summary * 3.5)
+            if char_cap <= 0:
+                summary = ""
+            else:
+                summary = summary[:char_cap]
+
+        summary_block = f"\n\n[Conversation context so far: {summary}]" if summary else ""
         return summary_block, recent
 
     # ── Chat History API Compatibility ────────────────────────────────

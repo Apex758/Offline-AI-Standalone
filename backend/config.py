@@ -639,6 +639,12 @@ def scan_ocr_models() -> list:
 
 TIER_CONFIG_FILE = MODELS_DIR / ".tier-config.json"
 
+# Per-tier total prompt token budget (system prompt + summary + history + user message).
+# Used by build_context_budgeted() in chat_memory / consultant_memory to keep prompts
+# within the model's effective context window. Tier 1 models (2-4K ctx) get the
+# tightest budget; higher tiers get more headroom.
+CONTEXT_BUDGET = {1: 1500, 2: 6000, 3: 8000, 4: 12000}
+
 DEFAULT_TIER_CONFIG = {
     "tier1_models": ["PEARL_AI.gguf"],
     "tier2_models": [],

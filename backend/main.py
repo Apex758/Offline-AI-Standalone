@@ -1056,8 +1056,21 @@ async def websocket_chat(websocket: WebSocket):
                     print(f"[ws/chat] Loading history for {chat_id}...")
                     memory = get_chat_memory()
                     N = LLAMA_PARAMS.get("conversation_history_length", 4)
-                    summary_block, history = memory.build_context(chat_id, n_pairs=N)
-                    print(f"[ws/chat] History loaded: {len(history)} messages")
+                    # Feature 1: token-aware budgeting. Reserve room for the
+                    # system prompt + the incoming user message so summary +
+                    # history get whatever's left of the tier budget.
+                    from chat_memory import _estimate_tokens as _est_tokens
+                    from config import CONTEXT_BUDGET
+                    _tier_budget = CONTEXT_BUDGET.get(_tier_info["tier"], 1500)
+                    _reserved = _est_tokens(base_system_prompt) + _est_tokens(user_message)
+                    summary_block, history = memory.build_context_budgeted(
+                        chat_id,
+                        token_budget=_tier_budget,
+                        n_pairs_max=N,
+                        reserved_tokens=_reserved,
+                    )
+                    print(f"[ws/chat] History loaded: {len(history)} messages "
+                          f"(tier={_tier_info['tier']}, budget={_tier_budget}, reserved~{_reserved})")
                 except Exception as e:
                     print(f"[ws/chat] Error loading chat context: {e}")
             elif client_history:
@@ -4020,8 +4033,26 @@ async def websocket_consultant(websocket: WebSocket):
             except:
                 pass
 
-            # Build conversation context from memory
-            summary_block, history = memory.build_context(chat_id, n_pairs=4)
+            # Build conversation context from memory (Feature 1: token-budgeted)
+            from consultant_memory import _estimate_tokens as _con_est_tokens
+            from config import CONTEXT_BUDGET as _CB
+            _con_tier = compute_effective_tier()["tier"]
+            _con_budget = _CB.get(_con_tier, 1500)
+            # Reserved: base prompt + metric/rec blocks built above + user message.
+            # Trigger / topic blocks below are not yet built; leave a safety margin.
+            _con_reserved = (
+                _con_est_tokens(base_prompt)
+                + _con_est_tokens(metric_block)
+                + _con_est_tokens(rec_block)
+                + _con_est_tokens(user_message)
+                + 200  # safety margin for trigger/topic/dimension blocks added below
+            )
+            summary_block, history = memory.build_context_budgeted(
+                chat_id,
+                token_budget=_con_budget,
+                n_pairs_max=4,
+                reserved_tokens=_con_reserved,
+            )
 
             # Trigger dimension context — rich focused coaching block
             trigger_block = ""

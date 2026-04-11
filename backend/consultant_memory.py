@@ -20,6 +20,13 @@ logger = logging.getLogger(__name__)
 SUMMARY_INTERVAL = 10
 
 
+def _estimate_tokens(text: str) -> int:
+    """Cheap token estimator (~1 token per 3.5 chars). Avoids loading a tokenizer."""
+    if not text:
+        return 0
+    return max(1, int(len(text) / 3.5))
+
+
 def _get_db_path() -> str:
     from teacher_metrics_service import _get_db_path as get_path
     return get_path()
@@ -123,6 +130,65 @@ class ConsultantMemory:
             return summary_block, messages
         finally:
             c.close()
+
+    def build_context_budgeted(
+        self,
+        chat_id: str,
+        token_budget: int = 2000,
+        n_pairs_max: int = 4,
+        summary_cap_tokens: int = 150,
+        reserved_tokens: int = 0,
+    ) -> Tuple[str, List[Dict]]:
+        """
+        Token-aware version of build_context() (consultant flavor).
+
+        Identical pattern to ChatMemory.build_context_budgeted: caps the summary,
+        drops oldest pairs until under budget, and as a last resort truncates the
+        summary further. `reserved_tokens` accounts for the system prompt + user
+        message + any other blocks the caller plans to inject.
+        """
+        c = _conn()
+        try:
+            row = c.execute(
+                "SELECT summary FROM consultant_conversations WHERE id = ?",
+                (chat_id,)
+            ).fetchone()
+            summary = row["summary"] if row and row["summary"] else ""
+
+            messages = c.execute(
+                "SELECT role, content FROM consultant_messages WHERE chat_id = ? ORDER BY id DESC LIMIT ?",
+                (chat_id, n_pairs_max * 2)
+            ).fetchall()
+            recent = [dict(m) for m in reversed(messages)]
+        finally:
+            c.close()
+
+        # Step 1: cap summary length up-front
+        if summary and _estimate_tokens(summary) > summary_cap_tokens:
+            char_cap = int(summary_cap_tokens * 3.5)
+            cut = summary[:char_cap].rfind('. ')
+            summary = summary[:cut + 1] if cut > 0 else summary[:char_cap]
+
+        # Step 2: shrink history until within available budget
+        available = max(0, token_budget - reserved_tokens)
+        summary_tokens = _estimate_tokens(summary) if summary else 0
+        history_tokens = sum(_estimate_tokens(m.get("content", "")) for m in recent)
+
+        while (summary_tokens + history_tokens) > available and len(recent) >= 2:
+            recent = recent[2:]
+            history_tokens = sum(_estimate_tokens(m.get("content", "")) for m in recent)
+
+        # Step 3: if still over budget, hard-truncate the summary
+        if summary and (summary_tokens + history_tokens) > available:
+            remaining_for_summary = max(0, available - history_tokens)
+            char_cap = int(remaining_for_summary * 3.5)
+            if char_cap <= 0:
+                summary = ""
+            else:
+                summary = summary[:char_cap]
+
+        summary_block = f"Previous conversation summary: {summary}\n\n" if summary else ""
+        return summary_block, recent
 
     def needs_summary_update(self, chat_id: str) -> bool:
         """Check if the conversation needs a summary update."""
