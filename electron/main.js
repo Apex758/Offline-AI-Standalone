@@ -564,6 +564,39 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  // Feature 3A: Model offloading. Free RAM when the app is hidden to tray,
+  // reload the model when the user brings it back. Frees ~3-6 GB on Tier 1
+  // setups. Both calls are best-effort and silent on failure.
+  mainWindow.on('hide', async () => {
+    try {
+      const res = await fetch(`http://127.0.0.1:${BACKEND_PORT}/api/model/unload`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        log.info('[offload] Model unloaded (window hidden)');
+      } else {
+        log.warn(`[offload] Unload returned status ${res.status}`);
+      }
+    } catch (e) {
+      log.warn('[offload] Could not unload model:', e.message);
+    }
+  });
+
+  mainWindow.on('show', async () => {
+    try {
+      const res = await fetch(`http://127.0.0.1:${BACKEND_PORT}/api/model/reload`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        log.info('[offload] Model reload triggered (window shown)');
+      } else {
+        log.warn(`[offload] Reload returned status ${res.status}`);
+      }
+    } catch (e) {
+      log.warn('[offload] Could not reload model:', e.message);
+    }
+  });
 }
 
 // Function to load the main application content

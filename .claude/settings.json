@@ -332,7 +332,11 @@
       "Bash(dir /s /b \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\src\\\\components\\\\ui\\\\MaterialsSelector.tsx\")",
       "Bash(find /c/Users/LG/Desktop/Projects/\"Offline AI Standalone\"/backend -name \"*.py\" -exec grep -l \"presentation\" {} \\\\;)",
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('tailwind:', p.dependencies?.tailwindcss||p.devDependencies?.tailwindcss\\);\")",
-      "Bash(find \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend\\\\src\" -name \"*.ts*\" -exec grep -l \"achievements-viewed-ids\\\\|VIEWED_KEY\" {} \\\\;)"
+      "Bash(find \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend\\\\src\" -name \"*.ts*\" -exec grep -l \"achievements-viewed-ids\\\\|VIEWED_KEY\" {} \\\\;)",
+      "Bash(ls Timetable* SchoolYearHub* SchoolYearCalendar* CurriculumPlan*)",
+      "Bash(ls routes/timetable*)",
+      "Bash(ls timetable*)",
+      "Bash(node --check electron/main.js)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

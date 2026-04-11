@@ -121,8 +121,6 @@ export interface Settings {
   startOnBoot: boolean;
   // File access
   fileAccessEnabled: boolean;
-  // Thinking mode (for Qwen2.5/Qwen3 models)
-  thinkingEnabled: boolean;
   // Feature 6: long-term teacher memory (cross-conversation recall)
   memoryEnabled: boolean;
   // Feature discovery
@@ -238,8 +236,6 @@ export const DEFAULT_SETTINGS: Settings = {
   startOnBoot: false,
   // File access
   fileAccessEnabled: false,
-  // Thinking mode
-  thinkingEnabled: false,
   // Feature 6: long-term teacher memory (default ON, teacher can disable)
   memoryEnabled: true,
   // Feature discovery

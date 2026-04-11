@@ -205,6 +205,54 @@ def reload_fast_model():
             _fast_model_name = None
 
 
+# ============================================================================
+# Feature 3A: Model Offloading
+# ============================================================================
+# Used by the Electron main process to free RAM when the app is hidden to tray
+# and restore the model when the app is shown again. Also used by the scheduled
+# task runner to load -> run -> unload around background jobs.
+
+def unload_all_models():
+    """Release every loaded llama.cpp instance and force GC.
+
+    Frees ~3-6 GB on a typical Tier 1 setup. Safe to call multiple times.
+    Returns a dict describing what was released, for logging.
+    """
+    global _local_instance, _fast_model_instance, _fast_model_name
+    released = {"local": False, "fast": False}
+
+    with _local_instance_lock:
+        if _local_instance is not None:
+            logger.info("[unload] Releasing local model...")
+            try:
+                _local_instance.cleanup_sync()
+            except Exception as e:
+                logger.warning(f"[unload] cleanup_sync(local) raised: {e}")
+            _local_instance = None
+            released["local"] = True
+
+    with _fast_model_lock:
+        if _fast_model_instance is not None:
+            logger.info(f"[unload] Releasing fast model ({_fast_model_name})...")
+            try:
+                _fast_model_instance.cleanup_sync()
+            except Exception as e:
+                logger.warning(f"[unload] cleanup_sync(fast) raised: {e}")
+            _fast_model_instance = None
+            _fast_model_name = None
+            released["fast"] = True
+
+    import gc
+    gc.collect()
+    logger.info(f"[unload] Done. Released: {released}")
+    return released
+
+
+def is_model_loaded() -> bool:
+    """True iff the primary local model singleton is currently loaded."""
+    return _local_instance is not None and getattr(_local_instance, "is_loaded", False)
+
+
 def resolve_inference_for_task(task_type: str):
     """Return the inference instance for the given task type.
 

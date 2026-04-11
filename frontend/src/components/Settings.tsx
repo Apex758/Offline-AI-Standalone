@@ -295,6 +295,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { useSettings } from '../contexts/SettingsContext';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, getTeacherGrades, getTeacherSubjects } from '../data/teacherConstants';
 import { downloadJSON } from '../lib/utils';
 import axios from 'axios';
@@ -368,8 +369,9 @@ interface DownloadableModel {
 const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { t } = useTranslation();
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
+  const triggerAchievementCheck = useAchievementTrigger();
   const coworkerName = useCoworkerName();
-  const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, supportsThinking, dualModel, refreshCapabilities, recommendations } = useCapabilities();
+  const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, dualModel, refreshCapabilities, recommendations } = useCapabilities();
   const { getActiveStreams } = useWebSocket();
   const { queue } = useQueue();
   // Build translated metadata inside component so t() is available
@@ -1507,6 +1509,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
       setImportMessage(importedSummary ? t('settingsPage.dangerZone.importedSummary', { summary: importedSummary }) : t('settingsPage.dangerZone.importComplete'));
       setTimeout(() => setImportMessage(''), 6000);
+
+      // Imported content may have crossed achievement thresholds — re-check so
+      // any newly-earned trophies pop up immediately instead of waiting for the
+      // user to navigate to the Achievements tab.
+      triggerAchievementCheck();
     } catch (error) {
       console.error('Import failed:', error);
       setImportMessage(t('settingsPage.dangerZone.importFailed'));
@@ -2543,43 +2550,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   </CardContent>
                 </Card>
 
-                {/* Thinking Mode */}
-                {(supportsThinking || availableModels.some(m => m.supports_thinking)) && (
-                  <Card data-search-section="thinking-mode">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <span className="w-4.5 h-4.5 text-purple-500">💭</span>
-                        {t('settingsPage.models.thinkingMode')}
-                      </CardTitle>
-                      <CardDescription>Enable deep reasoning for complex tasks (supported by Qwen models)</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-theme-heading">Enable Thinking</p>
-                          <p className="text-xs text-theme-hint mt-0.5">
-                            {supportsThinking
-                              ? 'Current model supports thinking mode. When enabled, the model will reason through complex problems step-by-step before answering.'
-                              : 'Current model does not support thinking mode. Switch to a Qwen model to use this feature.'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => updateSettings({ thinkingEnabled: !settings.thinkingEnabled })}
-                          disabled={!supportsThinking}
-                          className={`relative w-11 h-6 rounded-full transition-colors ${
-                            settings.thinkingEnabled && supportsThinking
-                              ? 'bg-purple-600'
-                              : 'bg-gray-300 dark:bg-gray-600'
-                          } ${!supportsThinking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                        >
-                          <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                            settings.thinkingEnabled && supportsThinking ? 'translate-x-5' : ''
-                          }`} />
-                        </button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                {/* Feature 2: Thinking Mode setting removed -- now per-message in Chat */}
 
                 {/* Personalization (Feature 6: Long-term teacher memory) */}
                 <Card data-search-section="personalization">

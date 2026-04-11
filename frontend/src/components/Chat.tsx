@@ -213,19 +213,7 @@ const ThinkingBlock: React.FC<{ content: string; isStreaming?: boolean }> = ({ c
   );
 };
 
-// ── Smart thinking suggestion patterns ──
-const THINKING_PATTERNS = [
-  /\b(explain|analyze|compare|contrast|evaluate|prove|derive)\b/i,
-  /\b(calculate|solve|compute|simplify)\b/i,
-  /\b(debug|fix|refactor|optimize|review)\b.*\b(code|bug|error|issue)\b/i,
-  /\b(why|how does|what if|step[- ]by[- ]step)\b/i,
-  /\b(write|create|build|implement)\b.*\b(code|function|class|program|algorithm)\b/i,
-  /\b(math|equation|algorithm|logic|theorem|proof)\b/i,
-];
-
-const shouldSuggestThinking = (message: string): boolean => {
-  return THINKING_PATTERNS.some(pattern => pattern.test(message));
-};
+// Feature 2: smart thinking suggestion removed -- replaced by explicit Quick/Deep popup.
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick, onOpenCurriculumTab, isActive }) => {
   const { t } = useTranslation();
@@ -248,7 +236,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   // Files panel state
   const [filesTab, setFilesTab] = useState<FilesTab>('on-pc');
   const { settings, updateSettings, getProfileSnapshot } = useSettings();
-  const { hasVision, supportsThinking } = useCapabilities();
+  const { hasVision } = useCapabilities();
   const triggerCheck = useAchievementTrigger();
   const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -314,7 +302,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [waitingForResponse, setWaitingForResponse] = useState(false);
 
   // Smart thinking suggestion
-  const [showThinkingSuggestion, setShowThinkingSuggestion] = useState(false);
+  // Feature 2: per-message thinking mode (local state, not persisted in Settings)
+  const [thinkingMode, setThinkingMode] = useState<'quick' | 'deep'>('quick');
+  const [showThinkingPopup, setShowThinkingPopup] = useState(false);
 
   // Auto-resize textarea to fit content (up to 10 lines, ~220px)
   useEffect(() => {
@@ -384,13 +374,16 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   }, [tts.isSpeaking]);
 
 
-  // Auto-dismiss thinking suggestion after 10 seconds
+  // Feature 2: close thinking popup on outside click
   useEffect(() => {
-    if (showThinkingSuggestion) {
-      const timer = setTimeout(() => setShowThinkingSuggestion(false), 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [showThinkingSuggestion]);
+    if (!showThinkingPopup) return;
+    const close = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-thinking-popup-root]')) setShowThinkingPopup(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [showThinkingPopup]);
 
   // WebSocketContext API
   const ENDPOINT = '/ws/chat';
@@ -868,11 +861,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setMessages(prev => [...prev, userMessage]);
     setInput('');
 
-    // Smart thinking suggestion
-    if (supportsThinking && !settings.thinkingEnabled && shouldSuggestThinking(text)) {
-      setShowThinkingSuggestion(true);
-    }
-
     // ── Two-pass file operation interception ──
 
     // 1. Check for undo request
@@ -931,7 +919,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     const payload: any = {
       message: text,
       chat_id: currentChatId,
-      thinking_enabled: settings.thinkingEnabled && supportsThinking,
+      // Feature 2: per-message thinking mode (Quick / Deep) -- replaces global setting
+      thinking_mode: thinkingMode,
       coworker_name: coworkerName,
       // Feature 6: long-term memory routing
       teacher_id: settings.profile.displayName?.trim() || 'default_teacher',
@@ -2014,26 +2003,49 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 data-tutorial="chat-input"
               />
 
-              {/* Brain / thinking toggle — right side */}
-              {supportsThinking && (
-                <div className="relative flex-shrink-0 group/brain">
-                  <button
-                    onClick={() => updateSettings({ thinkingEnabled: !settings.thinkingEnabled })}
-                    className={`rounded-lg transition flex items-center justify-center ${
-                      settings.thinkingEnabled
-                        ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40'
-                        : 'text-theme-muted hover:text-purple-600 hover:bg-theme-hover'
-                    }`}
-                    style={{ width: '24px', height: '24px' }}
-                  >
-                    <BrainIcon className="w-5 h-5" />
-                  </button>
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover/brain:opacity-100 pointer-events-none transition-opacity bg-gray-900 dark:bg-gray-700 text-white shadow-lg">
-                    Thinking Mode {settings.thinkingEnabled ? '(ON)' : '(OFF)'}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+              {/* Feature 2: Brain icon -> Quick/Deep popup (per-message thinking mode) */}
+              <div className="relative flex-shrink-0" data-thinking-popup-root>
+                <button
+                  onClick={() => setShowThinkingPopup(v => !v)}
+                  className={`rounded-lg transition flex items-center justify-center ${
+                    thinkingMode === 'deep'
+                      ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40'
+                      : 'text-theme-muted hover:text-purple-600 hover:bg-theme-hover'
+                  }`}
+                  style={{ width: '24px', height: '24px' }}
+                  title={`Thinking: ${thinkingMode === 'deep' ? 'Deep' : 'Quick'}`}
+                >
+                  <BrainIcon className="w-5 h-5" />
+                </button>
+                {showThinkingPopup && (
+                  <div className="absolute bottom-full mb-2 right-0 z-50 min-w-[180px] rounded-lg bg-theme-surface border border-theme-strong shadow-xl overflow-hidden">
+                    <button
+                      onClick={() => { setThinkingMode('quick'); setShowThinkingPopup(false); }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-theme-hover flex items-start gap-2 ${
+                        thinkingMode === 'quick' ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                      }`}
+                    >
+                      <span className="text-purple-600 dark:text-purple-400 mt-0.5">{thinkingMode === 'quick' ? '●' : '○'}</span>
+                      <span className="flex-1">
+                        <span className="block font-medium text-theme-heading">Quick</span>
+                        <span className="block text-xs text-theme-hint">Fast, direct answers</span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => { setThinkingMode('deep'); setShowThinkingPopup(false); }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-theme-hover flex items-start gap-2 border-t border-theme ${
+                        thinkingMode === 'deep' ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                      }`}
+                    >
+                      <span className="text-purple-600 dark:text-purple-400 mt-0.5">{thinkingMode === 'deep' ? '●' : '○'}</span>
+                      <span className="flex-1">
+                        <span className="block font-medium text-theme-heading">Deep</span>
+                        <span className="block text-xs text-theme-hint">Step-by-step reasoning</span>
+                      </span>
+                    </button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Send button — right side */}
@@ -2751,30 +2763,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               </>
             )}
 
-            {/* Smart thinking suggestion */}
-            {showThinkingSuggestion && supportsThinking && !settings.thinkingEnabled && (
-              <div className="mx-4 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 text-sm">
-                <BrainIcon className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                <span className="text-purple-700 dark:text-purple-300 text-xs">
-                  This looks like a reasoning task. Thinking mode may produce better results.
-                </span>
-                <button
-                  onClick={() => {
-                    updateSettings({ thinkingEnabled: true });
-                    setShowThinkingSuggestion(false);
-                  }}
-                  className="ml-auto px-2 py-1 text-xs font-medium bg-purple-600 text-white rounded hover:bg-purple-700 transition flex-shrink-0"
-                >
-                  Enable
-                </button>
-                <button
-                  onClick={() => setShowThinkingSuggestion(false)}
-                  className="p-1 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition flex-shrink-0"
-                >
-                  <X className="w-3 h-3 text-purple-400" />
-                </button>
-              </div>
-            )}
+            {/* Feature 2: smart suggestion banner removed -- replaced by explicit Quick/Deep popup */}
 
             {/* Attached files count indicator */}
             {attachedFiles.length > 0 && (

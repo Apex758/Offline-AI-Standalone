@@ -229,6 +229,13 @@ async def lifespan(app):
     except Exception as e:
         logger.error(f"Failed to restore insights schedule: {e}")
 
+    # Feature 3B: restore scheduled task configs and re-register APScheduler jobs
+    try:
+        import scheduled_tasks as _sched_tasks
+        _sched_tasks.restore_all_schedules()
+    except Exception as e:
+        logger.error(f"Failed to restore scheduled task configs: {e}")
+
     # Startup logic
     logger.info("Checking for required files...")
     if not os.path.exists(get_model_path()):
@@ -376,6 +383,10 @@ app.include_router(teacher_metrics.router)
 # Include school year calendar routes
 from routes.school_year import router as school_year_router
 app.include_router(school_year_router)
+
+# Feature 3B: scheduled task configuration + results
+from routes.scheduled import router as scheduled_router
+app.include_router(scheduled_router)
 
 
 # ── Serve the phone PWA page at /phone ──────────────────────────────────────
@@ -568,6 +579,44 @@ async def list_teacher_memory(teacher_id: str = "default_teacher"):
         logger.error(f"Error listing teacher memory: {e}")
         raise HTTPException(status_code=500, detail="Failed to list teacher memory")
 
+
+# ── Feature 3A: Model offloading (called by Electron on hide/show) ──────────
+
+@app.post("/api/model/unload")
+async def model_unload():
+    """Release all loaded llama.cpp instances. Frees ~3-6 GB. Safe to call repeatedly."""
+    try:
+        from inference_factory import unload_all_models, is_model_loaded
+        released = unload_all_models()
+        return {"success": True, "released": released, "loaded": is_model_loaded()}
+    except Exception as e:
+        logger.error(f"Model unload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Model unload failed: {e}")
+
+
+@app.post("/api/model/reload")
+async def model_reload():
+    """Force-reload the primary local model. Takes 5-15s on cold start."""
+    try:
+        from inference_factory import reload_local_model, is_model_loaded
+        # reload_local_model() releases the old instance and re-creates it
+        reload_local_model()
+        return {"success": True, "loaded": is_model_loaded()}
+    except Exception as e:
+        logger.error(f"Model reload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Model reload failed: {e}")
+
+
+@app.get("/api/model/status")
+async def model_status():
+    """Lightweight status probe — used by the frontend 'Model loading...' indicator."""
+    try:
+        from inference_factory import is_model_loaded
+        return {"loaded": is_model_loaded()}
+    except Exception as e:
+        logger.error(f"Model status check failed: {e}")
+        return {"loaded": False, "error": str(e)}
+
 # ============================================================================
 # Shared Prompt Builder — model-aware formatting
 # ============================================================================
@@ -580,6 +629,46 @@ def get_prompt_format() -> str:
         return getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
     except Exception:
         return 'llama'
+
+def get_chat_params_for_mode(
+    thinking_mode: str,
+    prompt_format: str,
+    tier: int,
+    model_supports_thinking: bool,
+    coworker_name: str = "Coworker",
+) -> dict:
+    """Feature 2: resolve system prompt + sampling params for the chat thinking mode.
+
+    Returns dict with: system_prompt, max_tokens, temperature, repeat_penalty.
+    Quick = tier1 prompt, tighter params, faster. Deep = tier2 prompt + CoT
+    nudge for Gemma models, looser params, more headroom.
+    """
+    from tier1_prompts import get_tier1_system_prompt, TIER1_MAX_TOKENS
+
+    if thinking_mode == "deep":
+        system_prompt = get_tier2_system_prompt("chat", coworker_name=coworker_name)
+        # Gemma family doesn't have a /think directive — coax it via system prompt
+        if (prompt_format or "").startswith("gemma"):
+            system_prompt += "\n\nThink carefully step by step before answering."
+        return {
+            "system_prompt": system_prompt,
+            "max_tokens": 3000,
+            "temperature": 0.6,
+            "repeat_penalty": 1.1,
+        }
+
+    # Quick mode (default)
+    if tier == 1:
+        system_prompt = get_tier1_system_prompt("chat", coworker_name=coworker_name)
+    else:
+        system_prompt = get_tier2_system_prompt("chat", coworker_name=coworker_name)
+    return {
+        "system_prompt": system_prompt,
+        "max_tokens": TIER1_MAX_TOKENS.get("chat", 1500),
+        "temperature": 0.4,
+        "repeat_penalty": 1.3,
+    }
+
 
 def build_prompt(system_prompt: str, user_prompt: str, prompt_format: str = None) -> str:
     """Build a single-turn prompt in the correct format for the loaded model."""
@@ -1048,8 +1137,14 @@ async def websocket_chat(websocket: WebSocket):
             custom_system_prompt = None
             # Support conversation history sent from frontend (for panels without chat_id)
             client_history = message_data.get("history", None)
-            # Thinking mode toggle (for Qwen2.5/Qwen3 models)
-            thinking_enabled = message_data.get("thinking_enabled", False)
+            # Feature 2: per-message thinking mode (Quick / Deep). Local to Chat,
+            # not stored in Settings. Accepts the legacy `thinking_enabled` flag
+            # for backward compat: True -> "deep", False -> "quick".
+            thinking_mode = message_data.get("thinking_mode")
+            if not thinking_mode:
+                thinking_mode = "deep" if message_data.get("thinking_enabled") else "quick"
+            if thinking_mode not in ("quick", "deep"):
+                thinking_mode = "quick"
             # Teacher profile context (grade/subject awareness)
             profile_context = message_data.get("profile_context", "")
             # Context files attached from the frontend file picker
@@ -1068,15 +1163,28 @@ async def websocket_chat(websocket: WebSocket):
             if not user_message:
                 continue
 
-            default_system_prompt = get_tier2_system_prompt("chat", coworker_name=coworker_name)
-
-            # Tier-1 awareness: use simpler prompt and tighter params for small models
+            # Feature 2: resolve system prompt + sampling params from thinking_mode.
+            # We need prompt_format for the Gemma CoT branch — peek at it now via
+            # get_prompt_format() (cheap helper). Inference is resolved later, but
+            # the format is determined by the loaded model config.
             from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
             _tier_info = compute_effective_tier()
             _is_tier1 = _tier_info["tier"] == 1
-            if _is_tier1:
-                default_system_prompt = get_tier1_system_prompt("chat", coworker_name=coworker_name)
-                _t1_params = get_tier1_gen_params("chat")
+            _early_prompt_fmt = get_prompt_format()
+            _mode_params = get_chat_params_for_mode(
+                thinking_mode=thinking_mode,
+                prompt_format=_early_prompt_fmt,
+                tier=_tier_info["tier"],
+                model_supports_thinking=False,  # set after inference resolved
+                coworker_name=coworker_name,
+            )
+            default_system_prompt = _mode_params["system_prompt"]
+            # Legacy var name kept for downstream code paths (vision fallback etc.)
+            _t1_params = {
+                "max_tokens": _mode_params["max_tokens"],
+                "temperature": _mode_params["temperature"],
+                "repeat_penalty": _mode_params["repeat_penalty"],
+            }
 
             # Use custom system prompt if provided, otherwise use default
             base_system_prompt = custom_system_prompt if custom_system_prompt else default_system_prompt
@@ -1267,9 +1375,9 @@ async def websocket_chat(websocket: WebSocket):
             prompt_fmt = getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
             model_supports_thinking = getattr(inference, 'model_config', {}).get('supports_thinking', False)
 
-            # Inject /think or /no_think directive for thinking-capable models
+            # Inject /think or /no_think directive for thinking-capable models (Qwen)
             if model_supports_thinking:
-                thinking_directive = "/think" if thinking_enabled else "/no_think"
+                thinking_directive = "/think" if thinking_mode == "deep" else "/no_think"
                 system_prompt = system_prompt + f"\n{thinking_directive}"
 
             print(f"[ws/chat] Building prompt (format={prompt_fmt}, history={len(history)} msgs)...")
@@ -1367,19 +1475,25 @@ async def websocket_chat(websocket: WebSocket):
                         pass
                     continue
                 else:
-                    # Text-only path: use raw prompt completion
-                    # Double max_tokens when thinking is enabled (think block uses extra tokens)
-                    _base_max = _t1_params["max_tokens"] if _is_tier1 else LLAMA_PARAMS["max_tokens"]
-                    effective_max_tokens = _base_max * 2 if (thinking_enabled and model_supports_thinking) else _base_max
-                    print(f"[ws/chat] Starting text-only stream, max_tokens={effective_max_tokens}, prompt_format={prompt_fmt}")
+                    # Text-only path: use raw prompt completion.
+                    # Feature 2: max_tokens / temperature / repeat_penalty all come
+                    # from get_chat_params_for_mode() — Quick uses tight params,
+                    # Deep uses 3000 / 0.6 / 1.1. For Qwen with /think we still
+                    # bump max_tokens to leave headroom for the think block.
+                    effective_max_tokens = _t1_params["max_tokens"]
+                    if thinking_mode == "deep" and model_supports_thinking:
+                        effective_max_tokens = max(effective_max_tokens, 4000)
+                    print(f"[ws/chat] Starting text-only stream, mode={thinking_mode}, "
+                          f"max_tokens={effective_max_tokens}, temp={_t1_params['temperature']}, "
+                          f"prompt_format={prompt_fmt}")
                     print(f"[ws/chat] Prompt preview: {prompt[:500]!r}")
                     stream_gen = inference.generate_stream(
                         tool_name="chat",
                         input_data=user_message,
                         prompt_template=prompt,
                         max_tokens=effective_max_tokens,
-                        temperature=_t1_params["temperature"] if _is_tier1 else LLAMA_PARAMS["temperature"],
-                        repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else LLAMA_PARAMS.get("repeat_penalty", 1.1),
+                        temperature=_t1_params["temperature"],
+                        repeat_penalty=_t1_params["repeat_penalty"],
                     )
 
                 _token_buf = ""
@@ -4058,6 +4172,274 @@ async def educator_insights_websocket(websocket: WebSocket):
         logger.info("Educator Insights WebSocket disconnected")
     except Exception as e:
         logger.error(f"Educator Insights WebSocket error: {e}")
+
+
+# ── Feature 4: Analyse Chat WebSocket ───────────────────────────────────────
+
+@app.websocket("/ws/analyse")
+async def websocket_analyse(websocket: WebSocket):
+    """Feature 4: post-generation enhancement panel.
+
+    Message types from client:
+      - init          : { type, session_id, content, content_type }
+                        -> server sends { type: "greeting", content, sections }
+      - enhance       : { type, session_id, thinking_mode? }
+                        -> server iterates sections, streaming each:
+                           progress -> section_token* -> section_done
+                           followed by a final enhance_complete
+      - edit_section  : { type, session_id, target_section, instruction, thinking_mode? }
+                        -> server streams section_token* then section_done
+      - chat          : { type, session_id, message, thinking_mode? }
+                        -> server streams token* then done
+      - close         : { type, session_id }
+                        -> server discards the session and closes
+
+    Sessions are ephemeral (in-memory) -- closing the panel wipes the session.
+    """
+    await websocket.accept()
+    from analyse_memory import (
+        get_analyse_memory, build_analyse_greeting,
+        build_section_enhance_prompt, build_section_edit_prompt,
+        build_analyse_chat_prompt,
+    )
+    from inference_factory import resolve_inference_for_task
+
+    mem = get_analyse_memory()
+    active_session_id: Optional[str] = None
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            if len(data) > MAX_WS_MESSAGE_BYTES:
+                await websocket.send_json({"type": "error", "message": "Message too large"})
+                continue
+            try:
+                msg = json.loads(data)
+            except (json.JSONDecodeError, ValueError):
+                await websocket.send_json({"type": "error", "message": "Invalid message format"})
+                continue
+
+            msg_type = msg.get("type")
+            session_id = msg.get("session_id")
+
+            # ── init ─────────────────────────────────────────────────
+            if msg_type == "init":
+                content = msg.get("content", "") or ""
+                content_type = msg.get("content_type", "lesson")
+                if not content.strip():
+                    await websocket.send_json({"type": "error", "message": "Empty content"})
+                    continue
+                session = mem.create_session(content, content_type, session_id=session_id)
+                active_session_id = session.id
+                greeting = build_analyse_greeting(content_type, len(session.sections))
+                await websocket.send_json({
+                    "type": "greeting",
+                    "session_id": session.id,
+                    "content": greeting,
+                    "sections": [
+                        {"id": s.id, "name": s.name, "header": s.header}
+                        for s in session.sections
+                    ],
+                })
+                continue
+
+            # All other message types require an active session
+            session = mem.get_session(session_id) if session_id else None
+            if not session:
+                await websocket.send_json({"type": "error", "message": "No active analyse session"})
+                continue
+
+            thinking_mode = msg.get("thinking_mode", "deep")
+            # Resolve sampling params from the same helper Feature 2 uses for chat
+            prompt_fmt = get_prompt_format()
+            _tier_info = compute_effective_tier()
+            _params = get_chat_params_for_mode(
+                thinking_mode=thinking_mode,
+                prompt_format=prompt_fmt,
+                tier=_tier_info["tier"],
+                model_supports_thinking=False,
+                coworker_name="Coworker",
+            )
+            max_tokens = _params["max_tokens"]
+            temperature = _params["temperature"]
+            repeat_penalty = _params["repeat_penalty"]
+
+            inference = resolve_inference_for_task("chat")
+
+            # ── enhance (iterate all sections) ───────────────────────
+            if msg_type == "enhance":
+                if not session.sections:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "Could not detect any sections to enhance in this content."
+                    })
+                    continue
+                for sec in list(session.sections):
+                    await websocket.send_json({
+                        "type": "progress",
+                        "section": sec.id,
+                        "label": f"Expanding {sec.name}...",
+                    })
+                    enhance_prompt_text = build_section_enhance_prompt(
+                        session.content, sec, session.content_type
+                    )
+                    # Build a single-turn prompt in the model's native format
+                    template = build_prompt(
+                        system_prompt=f"You are enhancing a {session.content_type} for a Caribbean primary school teacher. Output only the replacement body for the specified section.",
+                        user_prompt=enhance_prompt_text,
+                        prompt_format=prompt_fmt,
+                    )
+                    accumulated = ""
+                    try:
+                        async for chunk in inference.generate_stream(
+                            tool_name="analyse",
+                            input_data=sec.name,
+                            prompt_template=template,
+                            max_tokens=max_tokens,
+                            temperature=temperature,
+                            repeat_penalty=repeat_penalty,
+                        ):
+                            if chunk.get("token"):
+                                accumulated += chunk["token"]
+                                await websocket.send_json({
+                                    "type": "section_token",
+                                    "section": sec.id,
+                                    "content": chunk["token"],
+                                })
+                            if chunk.get("finished"):
+                                break
+                    except Exception as e:
+                        logger.error(f"/ws/analyse enhance section {sec.id} failed: {e}")
+                        await websocket.send_json({
+                            "type": "error",
+                            "section": sec.id,
+                            "message": f"Enhance failed: {e}",
+                        })
+                        continue
+
+                    # Commit the new body and refresh session content
+                    if accumulated.strip():
+                        mem.update_section(session.id, sec.id, accumulated.strip())
+                        session = mem.get_session(session.id)  # refresh
+                    await websocket.send_json({
+                        "type": "section_done",
+                        "section": sec.id,
+                        "content": accumulated.strip(),
+                    })
+
+                # Send the full reconstituted document so the frontend can
+                # fire onContentUpdate with a single clean write.
+                await websocket.send_json({
+                    "type": "enhance_complete",
+                    "full_content": session.content,
+                })
+                continue
+
+            # ── edit_section ─────────────────────────────────────────
+            if msg_type == "edit_section":
+                target_id = msg.get("target_section")
+                instruction = (msg.get("instruction") or "Make this section more detailed.").strip()
+                target = next((s for s in session.sections if s.id == target_id), None)
+                if not target:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": f"No section '{target_id}' in this content.",
+                    })
+                    continue
+                prompt_text = build_section_edit_prompt(
+                    session.content, target, instruction, session.content_type
+                )
+                template = build_prompt(
+                    system_prompt=f"You are editing a {session.content_type} section. Output only the replacement body for the target section.",
+                    user_prompt=prompt_text,
+                    prompt_format=prompt_fmt,
+                )
+                accumulated = ""
+                try:
+                    async for chunk in inference.generate_stream(
+                        tool_name="analyse",
+                        input_data=target.name,
+                        prompt_template=template,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        repeat_penalty=repeat_penalty,
+                    ):
+                        if chunk.get("token"):
+                            accumulated += chunk["token"]
+                            await websocket.send_json({
+                                "type": "section_token",
+                                "section": target.id,
+                                "content": chunk["token"],
+                            })
+                        if chunk.get("finished"):
+                            break
+                except Exception as e:
+                    logger.error(f"/ws/analyse edit_section {target_id} failed: {e}")
+                    await websocket.send_json({"type": "error", "message": f"Edit failed: {e}"})
+                    continue
+
+                if accumulated.strip():
+                    mem.update_section(session.id, target.id, accumulated.strip())
+                    session = mem.get_session(session.id)
+                await websocket.send_json({
+                    "type": "section_done",
+                    "section": target.id,
+                    "content": accumulated.strip(),
+                    "full_content": session.content,
+                })
+                continue
+
+            # ── chat (no modifications) ──────────────────────────────
+            if msg_type == "chat":
+                user_message = (msg.get("message") or "").strip()
+                if not user_message:
+                    continue
+                system_prompt = build_analyse_chat_prompt(session.content, session.content_type)
+                # Multi-turn with the last 6 messages of the ephemeral history
+                history = list(session.chat_history[-6:])
+                template = build_multi_turn_prompt(system_prompt, history, user_message, prompt_format=prompt_fmt)
+                mem.add_chat_turn(session.id, "user", user_message)
+                accumulated = ""
+                try:
+                    async for chunk in inference.generate_stream(
+                        tool_name="analyse",
+                        input_data=user_message,
+                        prompt_template=template,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        repeat_penalty=repeat_penalty,
+                    ):
+                        if chunk.get("token"):
+                            accumulated += chunk["token"]
+                            await websocket.send_json({"type": "token", "content": chunk["token"]})
+                        if chunk.get("finished"):
+                            break
+                except Exception as e:
+                    logger.error(f"/ws/analyse chat failed: {e}")
+                    await websocket.send_json({"type": "error", "message": f"Chat failed: {e}"})
+                    continue
+
+                if accumulated.strip():
+                    mem.add_chat_turn(session.id, "assistant", accumulated.strip())
+                await websocket.send_json({"type": "done"})
+                continue
+
+            # ── close ────────────────────────────────────────────────
+            if msg_type == "close":
+                mem.close_session(session_id)
+                active_session_id = None
+                continue
+
+            await websocket.send_json({"type": "error", "message": f"Unknown message type: {msg_type}"})
+
+    except WebSocketDisconnect:
+        logger.info("Analyse WebSocket disconnected")
+        if active_session_id:
+            mem.close_session(active_session_id)
+    except Exception as e:
+        logger.error(f"Analyse WebSocket error: {e}")
+        if active_session_id:
+            mem.close_session(active_session_id)
 
 
 # ── Educator Coach WebSocket ─────────────────────────────────────────────────

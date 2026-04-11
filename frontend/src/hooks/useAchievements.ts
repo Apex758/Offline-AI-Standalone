@@ -29,7 +29,19 @@ interface UseAchievementsReturn {
   isLoading: boolean;
 }
 
-const VIEWED_KEY = 'achievements-viewed-ids';
+// One-time migration: clear the legacy `achievements-viewed-ids` localStorage
+// entry. This key previously held a client-side filter that silently swallowed
+// any achievement ID it contained — if the backend DB ever drifted from the
+// localStorage list (via data imports, DB resets, cancelled checks, etc.) the
+// filter would strip legitimate new-earnings and the popup would never fire.
+// The backend's `newly_earned` is already authoritative, so this filter is
+// removed. The migration flag prevents us from deleting user state twice.
+const LEGACY_VIEWED_KEY = 'achievements-viewed-ids';
+const VIEWED_MIGRATION_FLAG = 'achievements-viewed-migration-v1';
+if (typeof window !== 'undefined' && !localStorage.getItem(VIEWED_MIGRATION_FLAG)) {
+  localStorage.removeItem(LEGACY_VIEWED_KEY);
+  localStorage.setItem(VIEWED_MIGRATION_FLAG, '1');
+}
 
 export function useAchievements(teacherId: string | null): UseAchievementsReturn {
   const [definitions, setDefinitions] = useState<AchievementDefinition[]>([]);
@@ -82,13 +94,7 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
     setCounts(result.counts || {});
 
     if (result.newly_earned.length > 0) {
-      // Filter out already-viewed unlocks
-      const viewedRaw = localStorage.getItem(VIEWED_KEY);
-      const viewed: string[] = viewedRaw ? JSON.parse(viewedRaw) : [];
-      const fresh = result.newly_earned.filter(a => !viewed.includes(a.achievement_id));
-      if (fresh.length > 0) {
-        setPendingUnlocks(prev => [...prev, ...fresh]);
-      }
+      setPendingUnlocks(prev => [...prev, ...result.newly_earned]);
     }
   }, []);
 
@@ -127,18 +133,7 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
   }, [teacherId, applyCheckResult]);
 
   const dismissUnlock = useCallback(() => {
-    setPendingUnlocks(prev => {
-      if (prev.length === 0) return prev;
-      // Mark the first one as viewed
-      const dismissed = prev[0];
-      const viewedRaw = localStorage.getItem(VIEWED_KEY);
-      const viewed: string[] = viewedRaw ? JSON.parse(viewedRaw) : [];
-      if (!viewed.includes(dismissed.achievement_id)) {
-        viewed.push(dismissed.achievement_id);
-        localStorage.setItem(VIEWED_KEY, JSON.stringify(viewed));
-      }
-      return prev.slice(1);
-    });
+    setPendingUnlocks(prev => prev.length === 0 ? prev : prev.slice(1));
   }, []);
 
   const updateShowcaseFn = useCallback((ids: string[]) => {
