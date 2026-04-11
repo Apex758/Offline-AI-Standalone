@@ -6,7 +6,7 @@ import { getLogoFooterHTML } from './logoBase64';
  * Generates styled HTML for PDF/DOCX export
  */
 
-import type { ParsedKindergartenPlan } from '../components/KindergartenEditor';
+import type { ParsedKindergartenPlan } from '../types/kindergarten';
 
 interface RenderOptions {
   accentColor: string;

@@ -43,8 +43,8 @@ const Merge: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import AIDisclaimer from './AIDisclaimer';
-import CrossCurricularEditor from './CrossCurricularEditor';
-import type { ParsedCrossCurricularPlan } from './CrossCurricularEditor';
+import CrossCurricularTable from './crossCurricular/CrossCurricularTable';
+import type { ParsedCrossCurricularPlan } from '../types/crossCurricular';
 import axios from 'axios';
 import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
@@ -562,7 +562,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   // State for structured editing
-  const [isEditing, setIsEditing] = useState(false);
   const [parsedPlan, setParsedPlan] = useState<ParsedCrossCurricularPlan | null>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.parsedPlan && typeof savedData.parsedPlan === 'object') {
@@ -713,14 +712,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
   }, [streamingPlan]);
 
-  // Auto-enable editing mode if startInEditMode flag is set
-  useEffect(() => {
-    if (savedData?.startInEditMode && parsedPlan && !isEditing) {
-      console.log('Auto-enabling edit mode for cross-curricular plan');
-      setIsEditing(true);
-    }
-  }, [savedData?.startInEditMode, parsedPlan, isEditing]);
-
   // Card flip animation
   useEffect(() => {
     if (flipPhase === 'idle') setDisplayStep(step);
@@ -864,26 +855,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
   };
 
-  // Enable structured editing mode
-  const enableEditing = () => {
-    if (parsedPlan) {
-      setIsEditing(true);
-    } else {
-      alert('Cannot edit: Cross-curricular plan format not recognized. Try regenerating the plan.');
-    }
-  };
-
-  // Save edited cross-curricular plan
-  const saveCrossCurricularEdit = (editedPlan: ParsedCrossCurricularPlan) => {
-    setParsedPlan(editedPlan);
-    const displayText = crossCurricularPlanToDisplayText(editedPlan);
-    setGeneratedPlan(displayText);
-    setIsEditing(false);
-  };
-
-  // Cancel editing
-  const cancelEditing = () => {
-    setIsEditing(false);
+  // Handle inline edits from CrossCurricularTable
+  const handleCrossCurricularInlineChange = (updated: ParsedCrossCurricularPlan) => {
+    setParsedPlan(updated);
+    setGeneratedPlan(crossCurricularPlanToDisplayText(updated));
   };
 
   const savePlan = async () => {
@@ -1124,7 +1099,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     setGeneratedPlan('');
     setStep(1);
     setCurrentPlanId(null);
-    setIsEditing(false);
     setParsedPlan(null);
 
     // Clear localStorage for this tab
@@ -1138,14 +1112,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan || loading) ? (
           <>
-            {isEditing && parsedPlan ? (
-              // Show Structured Editor
-              <CrossCurricularEditor
-                plan={parsedPlan}
-                onSave={saveCrossCurricularEdit}
-                onCancel={cancelEditing}
-              />
-            ) : loading && !streamingPlan && !generatedPlan ? (
+            {loading && !streamingPlan && !generatedPlan ? (
               <GeneratorSkeleton accentColor={tabColor} type="plan" />
             ) : (
               // Show generated plan (existing display code)
@@ -1159,15 +1126,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={enableEditing}
-                        disabled={!parsedPlan}
-                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
-                        title={!parsedPlan ? "Cross-curricular plan format not recognized" : "Edit plan"}
-                      >
-                        <Edit className="w-3.5 h-3.5 mr-1.5" />
-                        Edit
-                      </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
@@ -1223,7 +1181,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                           setGeneratedPlan('');
                           clearStreaming(tabId, ENDPOINT);
                           setParsedPlan(null);
-                          setIsEditing(false);
                         }}
                         className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
@@ -1297,15 +1254,26 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 </div>
                   )}
 
-                  <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 rounded-xl p-6 widget-glass">
-                      {streamingContent}
-                      {loading && streamingPlan && (
-                        <span className="inline-flex items-center ml-1">
-                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                        </span>
-                      )}
-                    </div>
+                  <div className="max-w-none">
+                    {parsedPlan && !loading ? (
+                      <CrossCurricularTable
+                        plan={parsedPlan}
+                        accentColor={tabColor}
+                        editable
+                        onChange={handleCrossCurricularInlineChange}
+                      />
+                    ) : (
+                      <div className="prose prose-lg max-w-none">
+                        <div className="space-y-1 rounded-xl p-6 widget-glass">
+                          {streamingContent}
+                          {loading && streamingPlan && (
+                            <span className="inline-flex items-center ml-1">
+                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {loading && (

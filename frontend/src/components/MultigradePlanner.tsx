@@ -43,7 +43,7 @@ const Layers: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import AIDisclaimer from './AIDisclaimer';
-import MultigradeEditor from './MultigradeEditor';
+import MultigradeTable from './multigrade/MultigradeTable';
 import axios from 'axios';
 import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
 import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../types/multigrade'; 
@@ -367,8 +367,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }, 300);
   };
 
-  // State for structured editing
-  const [isEditing, setIsEditing] = useState(false);
   const [parsedPlan, setParsedPlan] = useState<ParsedMultigrade | null>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.parsedPlan && typeof savedData.parsedPlan === 'object') {
@@ -549,14 +547,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   }, [streamingPlan, tabId, ENDPOINT, formData, getIsStreaming, clearStreaming, generationTimeout]);
 
-  // Auto-enable editing mode if startInEditMode flag is set
-  useEffect(() => {
-    if (savedData?.startInEditMode && parsedPlan && !isEditing) {
-      console.log('Auto-enabling edit mode for multigrade plan');
-      setIsEditing(true);
-    }
-  }, [savedData?.startInEditMode, parsedPlan, isEditing]);
-
   // Clear timeout when streaming completes or component unmounts
   useEffect(() => {
     return () => {
@@ -686,26 +676,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     return unsubscribe;
   }, [tabId, subscribe]);
 
-  // Enable structured editing mode
-  const enableEditing = () => {
-    if (parsedPlan) {
-      setIsEditing(true);
-    } else {
-      alert('Cannot edit: Multigrade plan format not recognized. Try regenerating the plan.');
-    }
-  };
-
-  // Save edited multigrade plan
-  const saveMultigradeEdit = (editedPlan: ParsedMultigrade) => {
-    setParsedPlan(editedPlan);
-    const displayText = multigradeToDisplayText(editedPlan);
-    setGeneratedPlan(displayText);
-    setIsEditing(false);
-  };
-
-  // Cancel editing
-  const cancelEditing = () => {
-    setIsEditing(false);
+  // Handle inline edits from MultigradeTable
+  const handleMultigradeInlineChange = (updated: ParsedMultigrade) => {
+    setParsedPlan(updated);
+    setGeneratedPlan(multigradeToDisplayText(updated));
   };
 
   const loadMultigradeHistories = async () => {
@@ -980,14 +954,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan || loading) ? (
           <>
-            {isEditing && parsedPlan ? (
-              // Show Structured Editor
-              <MultigradeEditor
-                plan={parsedPlan}
-                onSave={saveMultigradeEdit}
-                onCancel={cancelEditing}
-              />
-            ) : loading && !streamingPlan && !generatedPlan ? (
+            {loading && !streamingPlan && !generatedPlan ? (
               <GeneratorSkeleton accentColor={tabColor} type="plan" />
             ) : (
               // Show generated plan (existing display code)
@@ -1001,15 +968,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={enableEditing}
-                        disabled={!parsedPlan}
-                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
-                        title={!parsedPlan ? "Multigrade plan format not recognized" : "Edit plan"}
-                      >
-                        <Edit className="w-3.5 h-3.5 mr-1.5" />
-                        Edit
-                      </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
@@ -1064,7 +1022,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                           setGeneratedPlan('');
                           clearStreaming(tabId, ENDPOINT);
                           setParsedPlan(null);
-                          setIsEditing(false);
                         }}
                         className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
@@ -1075,7 +1032,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 </div>
             
                 <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
-              {(streamingPlan || generatedPlan) && !isEditing && (
+              {(streamingPlan || generatedPlan) && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
@@ -1138,15 +1095,26 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 </div>
                   )}
 
-                  <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 rounded-xl p-6 widget-glass">
-                      {streamingContent}
-                      {loading && streamingPlan && (
-                        <span className="inline-flex items-center ml-1">
-                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                        </span>
-                      )}
-                    </div>
+                  <div className="max-w-none">
+                    {parsedPlan && !loading ? (
+                      <MultigradeTable
+                        plan={parsedPlan}
+                        accentColor={tabColor}
+                        editable
+                        onChange={handleMultigradeInlineChange}
+                      />
+                    ) : (
+                      <div className="prose prose-lg max-w-none">
+                        <div className="space-y-1 rounded-xl p-6 widget-glass">
+                          {streamingContent}
+                          {loading && streamingPlan && (
+                            <span className="inline-flex items-center ml-1">
+                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {loading && (

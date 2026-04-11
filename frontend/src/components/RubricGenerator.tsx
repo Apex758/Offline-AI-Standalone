@@ -33,8 +33,8 @@ const ClipboardList: React.FC<{ className?: string; style?: React.CSSProperties 
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import AIDisclaimer from './AIDisclaimer';
-import RubricEditor from './RubricEditor';
-import type { ParsedRubric, CriteriaRow } from './RubricEditor';
+import RubricTable from './rubric/RubricTable';
+import type { ParsedRubric, CriteriaRow } from '../types/rubric';
 import axios from 'axios';
 import { buildRubricPrompt } from '../utils/rubricPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
@@ -513,7 +513,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   // State for structured editing
-  const [isEditing, setIsEditing] = useState(false);
   const [parsedRubric, setParsedRubric] = useState<ParsedRubric | null>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.parsedRubric && typeof savedData.parsedRubric === 'object') {
@@ -685,13 +684,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   }, [generatedRubric]);
 
-  // Auto-enable editing mode if startInEditMode flag is set
-  useEffect(() => {
-    if (savedData?.startInEditMode && parsedRubric && !isEditing) {
-      console.log('Auto-enabling edit mode for rubric');
-      setIsEditing(true);
-    }
-  }, [savedData?.startInEditMode, parsedRubric, isEditing]);
 
   // Restore state from localStorage on tab change
   useEffect(() => {
@@ -773,26 +765,10 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   }, [streamingRubric, contextLoading]);
 
 
-  // Enable structured editing mode
-  const enableEditing = () => {
-    if (parsedRubric) {
-      setIsEditing(true);
-    } else {
-      alert('Cannot edit: Rubric format not recognized. Try regenerating the rubric.');
-    }
-  };
-
-  // Save edited rubric
-  const saveEditedRubric = (editedRubric: ParsedRubric) => {
-    setParsedRubric(editedRubric);
-    const displayText = rubricToDisplayText(editedRubric);
-    setGeneratedRubric(displayText);
-    setIsEditing(false);
-  };
-
-  // Cancel editing
-  const cancelEditing = () => {
-    setIsEditing(false);
+  // Handle inline edits from RubricTable — update both structured and text state
+  const handleRubricInlineChange = (updated: ParsedRubric) => {
+    setParsedRubric(updated);
+    setGeneratedRubric(rubricToDisplayText(updated));
   };
 
   const loadRubricHistories = async () => {
@@ -1004,14 +980,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedRubric || streamingRubric || loading) ? (
           <>
-            {isEditing && parsedRubric ? (
-              // Show Structured Editor
-              <RubricEditor
-                rubric={parsedRubric}
-                onSave={saveEditedRubric}
-                onCancel={cancelEditing}
-              />
-            ) : loading && !streamingRubric && !generatedRubric ? (
+            {loading && !streamingRubric && !generatedRubric ? (
               <GeneratorSkeleton accentColor={tabColor} type="rubric" />
             ) : (
               <>
@@ -1024,15 +993,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={enableEditing}
-                        disabled={!parsedRubric}
-                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={!parsedRubric ? "Rubric format not recognized" : "Edit rubric"}
-                      >
-                        <Edit className="w-3.5 h-3.5 mr-1.5" />
-                        Edit
-                      </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
@@ -1087,7 +1047,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                           setGeneratedRubric('');
                           clearStreaming(tabId, ENDPOINT);
                           setParsedRubric(null);
-                          setIsEditing(false);
                         }}
                         className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
@@ -1157,15 +1116,26 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 </div>
                     )}
 
-                  <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 rounded-xl p-6 widget-glass">
-                      {streamingContent}
-                      {loading && streamingRubric && (
-                        <span className="inline-flex items-center ml-1">
-                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                        </span>
-                      )}
-                    </div>
+                  <div className="max-w-none">
+                    {parsedRubric && !loading ? (
+                      <RubricTable
+                        rubric={parsedRubric}
+                        accentColor={tabColor}
+                        editable
+                        onChange={handleRubricInlineChange}
+                      />
+                    ) : (
+                      <div className="prose prose-lg max-w-none">
+                        <div className="space-y-1 rounded-xl p-6 widget-glass">
+                          {streamingContent}
+                          {loading && streamingRubric && (
+                            <span className="inline-flex items-center ml-1">
+                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {loading && (

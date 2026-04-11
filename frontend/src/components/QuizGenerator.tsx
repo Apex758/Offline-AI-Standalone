@@ -56,7 +56,7 @@ import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
 import ScanTemplatePreview from './ScanTemplatePreview';
 import AIAssistantPanel from './AIAssistantPanel';
-import QuizEditor from './QuizEditor';
+import QuizTable from './quiz/QuizTable';
 import QuizGrader from './QuizGrader';
 import ScheduleTestModal from './ScheduleTestModal';
 import axios from 'axios';
@@ -281,7 +281,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // State for structured editing
-  const [isEditing, setIsEditing] = useState(false);
   const [isGrading, setIsGrading] = useState(false);
   const [parsedQuiz, setParsedQuiz] = useState<ParsedQuiz | null>(() => {
     // First check savedData (for resource manager view/edit)
@@ -512,14 +511,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   }, [generatedQuiz]);
 
-  // Auto-enable editing mode if startInEditMode flag is set
-  useEffect(() => {
-    if (savedData?.startInEditMode && parsedQuiz && !isEditing) {
-      console.log('Auto-enabling edit mode for quiz');
-      setIsEditing(true);
-    }
-  }, [savedData?.startInEditMode, parsedQuiz, isEditing]);
-
   // ✅ Connect WebSocket on mount
   useEffect(() => {
     getConnection(tabId, ENDPOINT);
@@ -536,7 +527,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setGeneratedQuiz(parsed.generatedQuiz || '');
         setParsedQuiz(parsed.parsedQuiz || null);
         setCurrentQuizId(parsed.currentQuizId || null);
-        setIsEditing(parsed.isEditing || false);
         // localLoadingMap intentionally NOT restored — runtime-only state
       } catch (e) {
         console.error('Failed to parse saved state:', e);
@@ -544,7 +534,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setGeneratedQuiz('');
         setParsedQuiz(null);
         setCurrentQuizId(null);
-        setIsEditing(false);
         setLocalLoadingMap({});
       }
     } else {
@@ -552,7 +541,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       setGeneratedQuiz('');
       setParsedQuiz(null);
       setCurrentQuizId(null);
-      setIsEditing(false);
       setLocalLoadingMap({});
     }
   }, [tabId]);
@@ -564,32 +552,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       generatedQuiz,
       parsedQuiz,
       currentQuizId,
-      isEditing,
       // localLoadingMap intentionally NOT persisted — runtime-only state
     }));
-  }, [formData, generatedQuiz, parsedQuiz, currentQuizId, isEditing]);
+  }, [formData, generatedQuiz, parsedQuiz, currentQuizId]);
 
-
-  // Enable structured editing mode
-  const enableEditing = () => {
-    if (parsedQuiz) {
-      setIsEditing(true);
-    } else {
-      alert(t('quiz.cannotEditAlert'));
-    }
-  };
-
-  // Save edited quiz
-  const saveEditedQuiz = (editedQuiz: ParsedQuiz) => {
-    setParsedQuiz(editedQuiz);
-    const displayText = quizToDisplayText(editedQuiz);
-    setGeneratedQuiz(displayText);
-    setIsEditing(false);
-  };
-
-  // Cancel editing
-  const cancelEditing = () => {
-    setIsEditing(false);
+  // Handle inline edits from QuizTable — update both structured and text state
+  const handleQuizInlineChange = (updated: ParsedQuiz) => {
+    setParsedQuiz(updated);
+    setGeneratedQuiz(quizToDisplayText(updated));
   };
 
   const loadQuizHistories = async () => {
@@ -974,16 +944,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
               pointerEvents: isGrading ? 'none' : 'auto',
             }}
           >
-        {(generatedQuiz || streamingQuiz || isEditing || loading) ? (
+        {(generatedQuiz || streamingQuiz || loading) ? (
           <>
-            {isEditing && parsedQuiz ? (
-              // Show Structured Editor
-              <QuizEditor
-                quiz={parsedQuiz}
-                onSave={saveEditedQuiz}
-                onCancel={cancelEditing}
-              />
-            ) : loading && !streamingQuiz && !generatedQuiz ? (
+            {loading && !streamingQuiz && !generatedQuiz ? (
               <GeneratorSkeleton accentColor={tabColor} type="quiz" />
             ) : (
               // Show generated quiz (existing display code)
@@ -997,15 +960,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={enableEditing}
-                        disabled={!parsedQuiz}
-                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={!parsedQuiz ? t('quiz.quizFormatNotRecognized') : t('quiz.editQuiz')}
-                      >
-                        <Edit className="w-3.5 h-3.5 mr-1.5" />
-                        {t('common.edit')}
-                      </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
@@ -1161,7 +1115,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           setGeneratedQuiz('');
                           clearStreaming(tabId, ENDPOINT);
                           setParsedQuiz(null);
-                          setIsEditing(false);
                           setIsGrading(false);
                           setClassQuizData(null);
                           setSelectedStudentIdx(null);
@@ -1255,138 +1208,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           }}
                         />
                       ) : displayParsedQuiz && !loading ? (
-                        // Conditionally render based on effectiveVersion (student view when viewing class quiz student)
-                        <div className="space-y-6">
-                          {displayParsedQuiz.questions.map((question, qIndex) => {
-                            const correctAnswerIndex = question.correctAnswer as number;
-                            const correctLetter = question.type === 'multiple-choice' && typeof correctAnswerIndex === 'number'
-                              ? String.fromCharCode(65 + correctAnswerIndex)
-                              : null;
-
-                            return (
-                              <div key={question.id} className="space-y-3">
-                                <h3 className="text-lg font-semibold p-3 rounded-lg" style={{ color: `${tabColor}cc`, backgroundColor: `${tabColor}0d` }}>
-                                  {t('quiz.questionPrefix', { number: qIndex + 1 })}: {question.question}
-                                </h3>
-                                
-                                {question.type === 'multiple-choice' && question.options && (
-                                  <div className="ml-6 space-y-2">
-                                    {question.options.map((option, oIndex) => {
-                                      const letter = String.fromCharCode(65 + oIndex);
-                                      const isCorrect = effectiveVersion === 'teacher' && correctAnswerIndex === oIndex;
-                                      return (
-                                        <div key={oIndex} className="flex items-start">
-                                          <span 
-                                            className={`mr-3 font-semibold ${isCorrect ? 'px-2 py-0.5 rounded' : ''}`}
-                                            style={{ 
-                                              color: isCorrect ? tabColor : `${tabColor}cc`,
-                                              backgroundColor: isCorrect ? `${tabColor}15` : 'transparent',
-                                              fontWeight: isCorrect ? '700' : '600'
-                                            }}
-                                          >
-                                            {letter})
-                                          </span>
-                                          <span className={`text-theme-label ${isCorrect ? 'font-medium' : ''}`}>
-                                            {option}
-                                          </span>
-                                        </div>
-                                      );
-                                    })}
-                                    
-                                    {/* Show answer only in teacher version */}
-                                    {effectiveVersion === 'teacher' && (
-                                      <div className="mt-3 text-sm">
-                                        <span className="font-semibold text-green-700">
-                                          {t('quiz.correctAnswer')}: {correctLetter}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                                
-                                {question.type === 'true-false' && (
-                                  <div className="ml-6 space-y-2">
-                                    <div className="flex items-start">
-                                      <span
-                                        className={`mr-3 font-semibold ${effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? 'px-2 py-0.5 rounded' : ''}`}
-                                        style={{
-                                          color: effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? tabColor : `${tabColor}cc`,
-                                          backgroundColor: effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? `${tabColor}15` : 'transparent'
-                                        }}
-                                      >
-                                        A)
-                                      </span>
-                                      <span className={`text-theme-label ${effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? 'font-medium' : ''}`}>
-                                        {t('quiz.true')}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start">
-                                      <span
-                                        className={`mr-3 font-semibold ${effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? 'px-2 py-0.5 rounded' : ''}`}
-                                        style={{
-                                          color: effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? tabColor : `${tabColor}cc`,
-                                          backgroundColor: effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? `${tabColor}15` : 'transparent'
-                                        }}
-                                      >
-                                        B)
-                                      </span>
-                                      <span className={`text-theme-label ${effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? 'font-medium' : ''}`}>
-                                        {t('quiz.false')}
-                                      </span>
-                                    </div>
-
-                                    {/* Show answer only in teacher version */}
-                                    {effectiveVersion === 'teacher' && (
-                                      <div className="mt-3 text-sm">
-                                        <span className="font-semibold text-green-700">
-                                          {t('quiz.correctAnswer')}: {question.correctAnswer === 'true' ? t('quiz.true') : t('quiz.false')}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                                
-                                {question.type === 'fill-blank' && effectiveVersion === 'teacher' && (
-                                  <div className="ml-6 space-y-2">
-                                    <div className="text-sm">
-                                      <span className="font-semibold text-green-700">
-                                        {t('quiz.correctAnswer')}: {question.correctAnswer}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {question.type === 'open-ended' && effectiveVersion === 'teacher' && (
-                                  <div className="ml-6 space-y-2">
-                                    <div className="text-sm">
-                                      <span className="font-semibold text-theme-label">{t('quiz.sampleAnswer')}</span>
-                                      <p className="text-theme-muted mt-1 whitespace-pre-wrap">{question.correctAnswer}</p>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {/* Show explanation only in teacher version */}
-                                {effectiveVersion === 'teacher' && question.explanation && (
-                                  <div className="ml-6 mt-3 p-3 bg-blue-50 rounded-lg">
-                                    <span className="text-sm font-semibold text-blue-900">{t('quiz.explanation')}: </span>
-                                    <span className="text-sm text-blue-800">{question.explanation}</span>
-                                  </div>
-                                )}
-                                
-                                {effectiveVersion === 'teacher' && (question.cognitiveLevel || question.points) && (
-                                  <div className="ml-6 mt-2 flex gap-4 text-xs text-theme-hint">
-                                    {question.cognitiveLevel && (
-                                      <span>{t('quiz.cognitiveLevel')} {question.cognitiveLevel}</span>
-                                    )}
-                                    {question.points && (
-                                      <span>{t('quiz.points')} {question.points}</span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <QuizTable
+                          quiz={displayParsedQuiz}
+                          accentColor={tabColor}
+                          editable={!viewingStudent}
+                          effectiveVersion={effectiveVersion as 'teacher' | 'student'}
+                          onChange={viewingStudent ? undefined : handleQuizInlineChange}
+                        />
                       ) : (
                         // Fallback to text rendering for streaming or non-parsed content
                         <>
@@ -1845,70 +1673,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   />
                 </div>
 
-              </div>
-            </div>
-
-            {/* Accommodations & Format */}
-            <div className="border-t border-theme p-6">
-              <div className="max-w-3xl mx-auto space-y-5">
-                <h3 className="text-base font-semibold text-theme-heading">Accommodations &amp; Format</h3>
-
-                {/* Assessment Format */}
-                <div>
-                  <label className="block text-sm font-medium text-theme-label mb-2">Preferred Assessment Format</label>
-                  <select
-                    value={formData.preferredAssessmentFormat}
-                    onChange={(e) => handleInputChange('preferredAssessmentFormat', e.target.value)}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme"
-                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                  >
-                    <option value="">-- Select format --</option>
-                    {['Multiple choice', 'Performance-based', 'Portfolio', 'Project', 'Oral', 'Mixed'].map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Special Needs */}
-                <div>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.specialNeeds}
-                      onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
-                      className="w-4 h-4 rounded focus:ring-2"
-                      style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
-                    />
-                    <span className="text-sm font-medium text-theme-label">Students with Special Needs</span>
-                  </label>
-                </div>
-
-                {formData.specialNeeds && (
-                  <div>
-                    <label className="block text-sm font-medium text-theme-label mb-2">Special Needs Details</label>
-                    <SmartTextArea
-                      value={formData.specialNeedsDetails}
-                      onChange={(val) => handleInputChange('specialNeedsDetails', val)}
-                      rows={2}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                      placeholder="Describe specific accommodations or modifications needed"
-                    />
-                  </div>
-                )}
-
-                {/* Additional Instructions */}
-                <div>
-                  <label className="block text-sm font-medium text-theme-label mb-2">Additional Instructions</label>
-                  <SmartTextArea
-                    value={formData.additionalInstructions}
-                    onChange={(val) => handleInputChange('additionalInstructions', val)}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                    placeholder="Any additional context or specific requirements for this quiz"
-                  />
-                </div>
               </div>
             </div>
 

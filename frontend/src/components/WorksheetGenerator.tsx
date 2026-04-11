@@ -54,14 +54,6 @@ const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ImageNotFound01IconData} {...p} />;
 const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
 import { getCurriculumSync } from '../data/curriculumLoader';
-import {
-  MultipleChoiceTemplate,
-  ComprehensionTemplate,
-  MatchingTemplate,
-  ListBasedTemplate,
-  MathTemplate
-} from './templates';
-
 import { imageApi } from '../lib/imageApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -75,7 +67,7 @@ import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
 import ScanTemplatePreview from './ScanTemplatePreview';
-import WorksheetStructuredEditor from './WorksheetStructuredEditor';
+import WorksheetTable from './worksheet/WorksheetTable';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import axios from 'axios';
@@ -506,10 +498,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
     return 'student';
   });
-  const [isEditing, setIsEditing] = useState(false);
-  const [isEditingStructured, setIsEditingStructured] = useState(false);
   const [isGrading, setIsGrading] = useState(false);
-  const [editBuffer, setEditBuffer] = useState('');
 
   // ── Class Mode State ──
   const [classMode, setClassMode] = useState(false);
@@ -1007,97 +996,57 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   const generatedImage = generatedImages.length > 0 ? generatedImages[0] : null;
 
-  const renderTemplatePreview = () => {
-    if (!selectedTemplate) return null;
-
-    // ✅ ROBUST PARSING with validation
-    const getValidQuestionCount = (value: string): number => {
-      const trimmed = value.trim();
-      if (!trimmed) return 10; // Default if empty
-      
-      const parsed = parseInt(trimmed, 10);
-      
-      // Validate range
-      if (isNaN(parsed)) return 10;
-      if (parsed < 1) return 1;
-      if (parsed > 50) return 50;
-      
-      return parsed;
-    };
-
-    const questionCount = getValidQuestionCount(formData.questionCount);
-    
-    // 🔍 Optional: Remove this console.log after debugging
-    console.log('Preview questionCount:', questionCount, 'from input:', formData.questionCount);
-
-    const commonProps = {
-      subject: formData.subject,
-      gradeLevel: formData.gradeLevel,
-      topic: formData.topic,
-      strand: formData.strand,
-      questionCount: questionCount,  // ✅ Use validated count
-      questionType: formData.questionType,
-      worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
-      includeImages: formData.imageMode !== 'none',
-      imagePlacement: formData.imagePlacement,
-      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
-      showAnswers: viewMode === 'teacher',
-      accentColor: accentColor || undefined,
-    };
-
-    switch (selectedTemplate.id) {
-      case 'multiple-choice':
-        return <MultipleChoiceTemplate {...commonProps} />;
-      case 'comprehension':
-        return <ComprehensionTemplate {...commonProps} />;
-      case 'matching':
-        return <MatchingTemplate {...commonProps} />;
-      case 'list-based':
-        return <ListBasedTemplate {...commonProps} />;
-      case 'math':
-        return <MathTemplate {...commonProps} showAnswers={viewMode === 'teacher'} />;
-      default:
-        return null;
-    }
-  };
-
-  // Render a specific student version or answer key using the template
+  // Render a specific student version or answer key using the shared inline table
   const renderStudentVersion = (version: StudentWorksheetVersion | null, isAnswer: boolean) => {
     if (!parsedWorksheet) return null;
-    const baseProps = {
-      subject: formData.subject,
-      gradeLevel: formData.gradeLevel,
-      topic: formData.topic,
-      strand: formData.strand,
-      questionType: formData.questionType,
-      worksheetTitle: formData.worksheetTitle || parsedWorksheet.metadata.title,
-      includeImages: formData.imageMode !== 'none',
-      imagePlacement: formData.imagePlacement,
-      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
-      accentColor: accentColor || undefined,
-      showAnswers: isAnswer,
-      isAnswerKey: isAnswer,
-      studentName: version?.student.full_name,
-      studentId: version?.student.id,
-      className: version?.student.class_name,
-    };
+    const studentWorksheet: ParsedWorksheet = version
+      ? {
+          ...parsedWorksheet,
+          questions: version.questions,
+          wordBank: version.shuffledWordBank || parsedWorksheet.wordBank,
+          matchingItems: version.shuffledColumnB
+            ? {
+                columnA: parsedWorksheet.matchingItems?.columnA || [],
+                columnB: version.shuffledColumnB,
+              }
+            : parsedWorksheet.matchingItems,
+          metadata: {
+            ...parsedWorksheet.metadata,
+            title: formData.worksheetTitle || parsedWorksheet.metadata.title,
+          },
+        }
+      : {
+          ...parsedWorksheet,
+          metadata: {
+            ...parsedWorksheet.metadata,
+            title: formData.worksheetTitle || parsedWorksheet.metadata.title,
+          },
+        };
 
-    const questions = version ? version.questions : parsedWorksheet.questions;
-
-    switch (formData.selectedTemplate) {
-      case 'multiple-choice':
-        return <MultipleChoiceTemplate {...baseProps} questionCount={questions.length} questions={questions.map(q => ({ id: q.id, question: q.question, options: q.options, correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : undefined }))} />;
-      case 'comprehension':
-        return <ComprehensionTemplate {...baseProps} questionCount={questions.length} passage={parsedWorksheet.passage} questions={questions} />;
-      case 'matching':
-        return <MatchingTemplate {...baseProps} questionCount={questions.length} columnA={parsedWorksheet.matchingItems?.columnA} columnB={parsedWorksheet.matchingItems?.columnB} shuffledColumnB={version?.shuffledColumnB} matchingAnswerMap={version?.matchingAnswerMap} />;
-      case 'list-based':
-        return <ListBasedTemplate {...baseProps} questionCount={questions.length} questions={questions} wordBank={version?.shuffledWordBank || parsedWorksheet.wordBank} />;
-      case 'math':
-        return <MathTemplate {...baseProps} questionCount={questions.length} questions={questions} />;
-      default:
-        return null;
-    }
+    return (
+      <div>
+        {version && (
+          <div className="mb-4 text-sm text-theme-muted">
+            <span className="font-semibold">{version.student.full_name}</span>
+            <span className="ml-2 font-mono">{version.student.id}</span>
+            {version.student.class_name && (
+              <span className="ml-2">· {version.student.class_name}</span>
+            )}
+          </div>
+        )}
+        {isAnswer && (
+          <div className="mb-4 inline-block px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+            Answer Key
+          </div>
+        )}
+        <WorksheetTable
+          worksheet={studentWorksheet}
+          accentColor={accentColor || '#3b82f6'}
+          editable={false}
+          viewMode={isAnswer ? 'teacher' : 'student'}
+        />
+      </div>
+    );
   };
 
   const handlePrintAll = () => {
@@ -1110,53 +1059,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setTimeout(() => { printWindow.print(); }, 500);
   };
 
-  const renderTemplateWithLoading = () => {
-    const template = selectedTemplate?.id || formData.selectedTemplate;
-    if (!template) return <GeneratorSkeleton accentColor="#3b82f6" type="worksheet" />;
-
-    const getValidQuestionCount = (value: string): number => {
-      const trimmed = value.trim();
-      if (!trimmed) return 10;
-      const parsed = parseInt(trimmed, 10);
-      if (isNaN(parsed)) return 10;
-      if (parsed < 1) return 1;
-      if (parsed > 50) return 50;
-      return parsed;
-    };
-
-    const qCount = getValidQuestionCount(formData.questionCount);
-
-    const commonProps = {
-      subject: formData.subject,
-      gradeLevel: formData.gradeLevel,
-      topic: formData.topic,
-      strand: formData.strand,
-      questionCount: qCount,
-      questionType: formData.questionType,
-      worksheetTitle: formData.worksheetTitle || 'Worksheet',
-      includeImages: formData.imageMode !== 'none',
-      imagePlacement: formData.imagePlacement,
-      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
-      showAnswers: viewMode === 'teacher',
-      loading: true,
-      accentColor: accentColor || undefined,
-    };
-
-    switch (template) {
-      case 'multiple-choice':
-        return <MultipleChoiceTemplate {...commonProps} />;
-      case 'comprehension':
-        return <ComprehensionTemplate {...commonProps} />;
-      case 'matching':
-        return <MatchingTemplate {...commonProps} />;
-      case 'list-based':
-        return <ListBasedTemplate {...commonProps} />;
-      case 'math':
-        return <MathTemplate {...commonProps} />;
-      default:
-        return <GeneratorSkeleton accentColor="#3b82f6" type="worksheet" />;
-    }
-  };
 
   const saveWorksheet = async () => {
     if (!generatedWorksheet) return;
@@ -2272,24 +2174,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             {(generatedWorksheet || parsedWorksheet) && (
               <>
                 <button
-                  onClick={() => {
-                    if (parsedWorksheet) {
-                      setIsEditingStructured(true);
-                    } else {
-                      setEditBuffer(generatedWorksheet);
-                      setIsEditing(true);
-                    }
-                  }}
-                  className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                  title="Edit generated worksheet"
-                  disabled={!generatedWorksheet && !parsedWorksheet}
-                  data-tutorial="worksheet-generator-edit"
-                >
-                  <FileText className="w-3.5 h-3.5 mr-1.5" />
-                  Edit {parsedWorksheet ? '' : '(Text Mode)'}
-                </button>
-
-                <button
                   onClick={saveWorksheet}
                   disabled={saveStatus === 'saving'}
                   className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
@@ -2367,61 +2251,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
         {/* Template Preview Content */}
                 <div className="flex-1 p-4" data-tutorial="worksheet-generator-preview-pane">
-          {isEditingStructured && parsedWorksheet ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-              <WorksheetStructuredEditor
-                worksheet={{
-                  ...parsedWorksheet,
-                  metadata: {
-                    ...parsedWorksheet.metadata,
-                    subject: formData.subject || parsedWorksheet.metadata.subject,
-                    gradeLevel: formData.gradeLevel || parsedWorksheet.metadata.gradeLevel,
-                    title: formData.worksheetTitle || parsedWorksheet.metadata.title
-                  }
-                }}
-                onSave={(editedWorksheet) => {
-                  setParsedWorksheet(editedWorksheet);
-                  setGeneratedWorksheet(worksheetToDisplayText(editedWorksheet));
-                  setIsEditingStructured(false);
-                  // Auto-save
-                  setTimeout(() => {
-                    saveWorksheet();
-                  }, 100);
-                }}
-                onCancel={() => setIsEditingStructured(false)}
-                accentColor="#3b82f6"
-              />
-            </div>
-          ) : null}
-          {isEditing ? (
-            <div className="rounded-lg h-full overflow-y-auto p-4 space-y-4 widget-glass">
-              <h4 className="text-lg font-semibold text-theme-heading">Edit Worksheet Text</h4>
-              <SmartTextArea
-                value={editBuffer}
-                onChange={(val) => setEditBuffer(val)}
-                className="w-full h-96 border border-theme-strong rounded-lg p-3 font-mono text-sm"
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 rounded bg-theme-tertiary text-theme-label hover:bg-theme-hover"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    const parsed = parseWorksheetFromAI(editBuffer);
-                    setGeneratedWorksheet(editBuffer);
-                    setParsedWorksheet(parsed || null);
-                    setIsEditing(false);
-                  }}
-                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          ) : generationError ? (
+          {generationError ? (
             <div className="rounded-lg p-4 h-full flex items-center justify-center widget-glass">
               <div className="text-center text-red-600">
                 <FileText className="w-12 h-12 mx-auto mb-2 text-red-300" />
@@ -2437,13 +2267,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           ) : (generatedWorksheet || streamingWorksheet || loading) ? (
             <div className="rounded-lg h-full overflow-y-auto widget-glass">
               {loading && !streamingWorksheet && !generatedWorksheet ? (
-                <div className="transform scale-90 origin-top">
-                  {renderTemplateWithLoading()}
-                </div>
-              ) : loading ? (
-                <div className="transform scale-90 origin-top">
-                  {renderTemplateWithLoading()}
-                </div>
+                <GeneratorSkeleton accentColor={accentColor || '#3b82f6'} type="worksheet" />
               ) : scanMode && parsedWorksheet ? (
                 <div className="transform scale-90 origin-top">
                   <ScanTemplatePreview
@@ -2457,89 +2281,17 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   />
                 </div>
               ) : parsedWorksheet ? (
-                <div className="transform scale-90 origin-top">
-                   {formData.selectedTemplate === 'multiple-choice' && (
-                     <MultipleChoiceTemplate
-                       subject={formData.subject}
-                       gradeLevel={formData.gradeLevel}
-                       topic={formData.topic}
-                       questionCount={parsedWorksheet.questions.length}
-                       questionType={formData.questionType}
-                       worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                       includeImages={formData.imageMode !== 'none'}
-                       generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
-                       questions={parsedWorksheet.questions.map((q) => ({
-                         id: q.id,
-                         question: q.question,
-                         options: q.options,
-                         correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : undefined
-                       }))}
-                       showAnswers={viewMode === 'teacher'}
-                       accentColor={accentColor || undefined}
-                     />
-                   )}
-                  {formData.selectedTemplate === 'comprehension' && (
-                    <ComprehensionTemplate
-                      subject={formData.subject}
-                      gradeLevel={formData.gradeLevel}
-                      topic={formData.topic}
-                      questionCount={parsedWorksheet.questions.length}
-                      questionType={formData.questionType}
-                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.imageMode !== 'none'}
-                      imagePlacement={formData.imagePlacement}
-                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
-                      passage={parsedWorksheet.passage}
-                      questions={parsedWorksheet.questions}
-                      showAnswers={viewMode === 'teacher'}
-                      accentColor={accentColor || undefined}
-                    />
-                  )}
-                  {formData.selectedTemplate === 'matching' && (
-                    <MatchingTemplate
-                      subject={formData.subject}
-                      gradeLevel={formData.gradeLevel}
-                      topic={formData.topic}
-                      questionCount={parsedWorksheet.questions.length}
-                      questionType={formData.questionType}
-                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.imageMode !== 'none'}
-                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
-                      columnA={parsedWorksheet.matchingItems?.columnA}
-                      columnB={parsedWorksheet.matchingItems?.columnB}
-                      showAnswers={viewMode === 'teacher'}
-                      accentColor={accentColor || undefined}
-                    />
-                  )}
-                  {formData.selectedTemplate === 'list-based' && (
-                    <ListBasedTemplate
-                      subject={formData.subject}
-                      gradeLevel={formData.gradeLevel}
-                      topic={formData.topic}
-                      questionCount={parsedWorksheet.questions.length}
-                      questionType={formData.questionType}
-                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.imageMode !== 'none'}
-                      generatedImage={generatedImage}
-                      questions={parsedWorksheet.questions}
-                      wordBank={parsedWorksheet.wordBank}
-                      showAnswers={viewMode === 'teacher'}
-                      accentColor={accentColor || undefined}
-                    />
-                  )}
-                  {formData.selectedTemplate === 'math' && (
-                    <MathTemplate
-                      subject={formData.subject}
-                      gradeLevel={formData.gradeLevel}
-                      topic={formData.topic}
-                      strand={formData.strand}
-                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      questions={parsedWorksheet.questions}
-                      showAnswers={viewMode === 'teacher'}
-                      questionCount={parsedWorksheet.questions.length}
-                      accentColor={accentColor || undefined}
-                    />
-                  )}
+                <div className="p-6">
+                  <WorksheetTable
+                    worksheet={parsedWorksheet}
+                    accentColor={accentColor || '#3b82f6'}
+                    editable
+                    viewMode={viewMode}
+                    onChange={(updated) => {
+                      setParsedWorksheet(updated);
+                      setGeneratedWorksheet(worksheetToDisplayText(updated));
+                    }}
+                  />
                 </div>
               ) : (
                 <div className="p-4">
@@ -2549,17 +2301,15 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
               )}
             </div>
-          ) : selectedTemplate ? (
-            <div className="rounded-lg h-full overflow-y-auto widget-glass">
-              <div className="transform scale-90 origin-top">
-                {renderTemplatePreview()}
-              </div>
-            </div>
           ) : (
             <div className="rounded-lg p-4 h-full flex items-center justify-center widget-glass">
               <div className="text-center text-theme-hint">
                 <FileText className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
-                <p className="text-sm">Select a template to preview</p>
+                <p className="text-sm">
+                  {selectedTemplate
+                    ? 'Ready to generate — fill the form and click Generate Worksheet'
+                    : 'Select a template to continue'}
+                </p>
               </div>
             </div>
           )}

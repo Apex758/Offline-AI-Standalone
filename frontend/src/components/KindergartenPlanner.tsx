@@ -38,8 +38,8 @@ const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties 
 const Baby: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Baby01Icon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
-import KindergartenEditor from './KindergartenEditor';
-import type { ParsedKindergartenPlan } from './KindergartenEditor';
+import KindergartenTable from './kindergarten/KindergartenTable';
+import type { ParsedKindergartenPlan } from '../types/kindergarten';
 import axios from 'axios';
 import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
@@ -465,7 +465,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   // State for structured editing
-  const [isEditing, setIsEditing] = useState(false);
   const [parsedPlan, setParsedPlan] = useState<ParsedKindergartenPlan | null>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.parsedPlan && typeof savedData.parsedPlan === 'object') {
@@ -618,7 +617,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         setGeneratedPlan(parsed.generatedPlan || '');
         setParsedPlan(parsed.parsedPlan || null);
         setCurrentPlanId(parsed.currentPlanId || null);
-        setIsEditing(parsed.isEditing || false);
         // localLoadingMap intentionally NOT restored — runtime-only state
         console.log('[KindergartenPlanner] State restored from localStorage for tab:', tabId);
       } catch (e) {
@@ -627,7 +625,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         setGeneratedPlan('');
         setParsedPlan(null);
         setCurrentPlanId(null);
-        setIsEditing(false);
         setLocalLoadingMap({});
       }
     }
@@ -641,11 +638,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       generatedPlan,
       parsedPlan,
       currentPlanId,
-      isEditing,
       // localLoadingMap intentionally NOT persisted — runtime-only state
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [tabId, formData, generatedPlan, parsedPlan, currentPlanId, isEditing]);
+  }, [tabId, formData, generatedPlan, parsedPlan, currentPlanId]);
 
   const curriculumUnits = ['Belonging', 'Weather', 'Celebrations', 'Plants and animals', 'Games'];
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -692,14 +688,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       }
     }
   }, [generatedPlan]);
-
-  // Auto-enable editing mode if startInEditMode flag is set
-  useEffect(() => {
-    if (savedData?.startInEditMode && parsedPlan && !isEditing) {
-      console.log('Auto-enabling edit mode for kindergarten plan');
-      setIsEditing(true);
-    }
-  }, [savedData?.startInEditMode, parsedPlan, isEditing]);
 
   // Tutorial auto-show logic
   useEffect(() => {
@@ -788,26 +776,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     }
   }, [streamingPlan]);
 
-  // Enable structured editing mode
-  const enableEditing = () => {
-    if (parsedPlan) {
-      setIsEditing(true);
-    } else {
-      alert('Cannot edit: Kindergarten plan format not recognized. Try regenerating the plan.');
-    }
-  };
-
-  // Save edited kindergarten plan
-  const saveKindergartenEdit = (editedPlan: ParsedKindergartenPlan) => {
-    setParsedPlan(editedPlan);
-    const displayText = kindergartenPlanToDisplayText(editedPlan);
-    setGeneratedPlan(displayText);
-    setIsEditing(false);
-  };
-
-  // Cancel editing
-  const cancelEditing = () => {
-    setIsEditing(false);
+  // Handle inline edits from KindergartenTable
+  const handleKindergartenInlineChange = (updated: ParsedKindergartenPlan) => {
+    setParsedPlan(updated);
+    setGeneratedPlan(kindergartenPlanToDisplayText(updated));
   };
 
   const loadKindergartenHistories = async () => {
@@ -1075,7 +1047,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     setFormData(getDefaultFormData());
     setGeneratedPlan('');
     setCurrentPlanId(null);
-    setIsEditing(false);
     setParsedPlan(null);
     
     // ✅ Clear localStorage for this tab
@@ -1105,16 +1076,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan || loading) ? (
           <>
-            {isEditing && parsedPlan ? (
-              // Show Structured Editor - wrap in a container with proper height
-              <div className="flex-1 overflow-y-auto p-6">
-                <KindergartenEditor
-                  plan={parsedPlan}
-                  onSave={saveKindergartenEdit}
-                  onCancel={cancelEditing}
-                />
-              </div>
-            ) : loading && !streamingPlan && !generatedPlan ? (
+            {loading && !streamingPlan && !generatedPlan ? (
               <GeneratorSkeleton accentColor={tabColor} type="plan" />
             ) : (
               // Show generated plan (existing display code)
@@ -1128,15 +1090,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={enableEditing}
-                        disabled={!parsedPlan}
-                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
-                        title={!parsedPlan ? "Kindergarten plan format not recognized" : "Edit plan"}
-                      >
-                        <Edit className="w-3.5 h-3.5 mr-1.5" />
-                        Edit
-                      </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
@@ -1192,7 +1145,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                           setGeneratedPlan('');
                           clearStreaming(tabId, ENDPOINT);
                           setParsedPlan(null);
-                          setIsEditing(false);
                         }}
                         className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
@@ -1266,15 +1218,26 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 </div>
                   )}
 
-                  <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 rounded-xl p-6 widget-glass">
-                      {streamingContent}
-                      {loading && streamingPlan && (
-                        <span className="inline-flex items-center ml-1">
-                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                        </span>
-                      )}
-                    </div>
+                  <div className="max-w-none">
+                    {parsedPlan && !loading ? (
+                      <KindergartenTable
+                        plan={parsedPlan}
+                        accentColor={tabColor}
+                        editable
+                        onChange={handleKindergartenInlineChange}
+                      />
+                    ) : (
+                      <div className="prose prose-lg max-w-none">
+                        <div className="space-y-1 rounded-xl p-6 widget-glass">
+                          {streamingContent}
+                          {loading && streamingPlan && (
+                            <span className="inline-flex items-center ml-1">
+                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {loading && (

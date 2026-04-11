@@ -6,7 +6,7 @@ import { getLogoFooterHTML } from './logoBase64';
  * Generates styled HTML for PDF/DOCX export
  */
 
-import type { ParsedCrossCurricularPlan, SubjectObjective, CrossCurricularActivity } from '../components/CrossCurricularEditor';
+import type { ParsedCrossCurricularPlan, SubjectObjective, CrossCurricularActivity } from '../types/crossCurricular';
 
 interface RenderOptions {
   accentColor: string;
