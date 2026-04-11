@@ -70,6 +70,7 @@ def _row_to_history_dict(row: sqlite3.Row) -> dict:
         'edit_count':            d.get('edit_count') or 1,
         'teacher_id':            d.get('teacher_id') or DEFAULT_TEACHER_ID,
         'timetable_slot_id':     d.get('timetable_slot_id'),
+        'scheduled_for':         d.get('scheduled_for'),
         'suggested_milestone_id': d.get('suggested_milestone_id'),
         'taught_at':             d.get('taught_at'),
         'status':                d.get('status') or 'draft',
@@ -79,6 +80,20 @@ def _row_to_history_dict(row: sqlite3.Row) -> dict:
 def _ensure_edit_count_column(conn: sqlite3.Connection):
     try:
         conn.execute("ALTER TABLE lesson_plans ADD COLUMN edit_count INTEGER DEFAULT 1")
+    except sqlite3.OperationalError:
+        pass  # already exists
+
+
+def _ensure_scheduled_for_column(conn: sqlite3.Connection):
+    """Phase 5: concrete calendar date this plan is scheduled to be taught on.
+
+    Distinct from `taught_at`: scheduled_for is the target date picked at
+    generation time (e.g. 'Wed 2026-04-15'); taught_at is only set once the
+    teacher marks the lesson as taught. Together they let the backend report
+    'N upcoming lessons without plans' without conflating draft and done.
+    """
+    try:
+        conn.execute("ALTER TABLE lesson_plans ADD COLUMN scheduled_for TEXT")
     except sqlite3.OperationalError:
         pass  # already exists
 
@@ -144,10 +159,10 @@ def _upsert_row(conn: sqlite3.Connection, row: dict) -> None:
         INSERT INTO lesson_plans (
             id, teacher_id, timetable_slot_id, title, form_data_json,
             generated_plan, parsed_lesson_json, curriculum_matches_json,
-            suggested_milestone_id, taught_at, status, edit_count,
+            suggested_milestone_id, taught_at, scheduled_for, status, edit_count,
             created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             teacher_id              = excluded.teacher_id,
             timetable_slot_id       = COALESCE(excluded.timetable_slot_id, lesson_plans.timetable_slot_id),
@@ -158,6 +173,7 @@ def _upsert_row(conn: sqlite3.Connection, row: dict) -> None:
             curriculum_matches_json = excluded.curriculum_matches_json,
             suggested_milestone_id  = COALESCE(excluded.suggested_milestone_id, lesson_plans.suggested_milestone_id),
             taught_at               = COALESCE(excluded.taught_at, lesson_plans.taught_at),
+            scheduled_for           = COALESCE(excluded.scheduled_for, lesson_plans.scheduled_for),
             status                  = excluded.status,
             edit_count              = excluded.edit_count,
             updated_at              = excluded.updated_at
@@ -172,6 +188,7 @@ def _upsert_row(conn: sqlite3.Connection, row: dict) -> None:
         row.get('curriculum_matches_json'),
         row.get('suggested_milestone_id'),
         row.get('taught_at'),
+        row.get('scheduled_for'),
         row.get('status') or 'draft',
         int(row.get('edit_count') or 1),
         row.get('created_at') or now,
@@ -227,6 +244,7 @@ def list_histories(teacher_id: str | None = None) -> list[dict]:
     conn = _get_conn()
     try:
         _ensure_edit_count_column(conn)
+        _ensure_scheduled_for_column(conn)
         if teacher_id:
             rows = conn.execute(
                 "SELECT * FROM lesson_plans WHERE teacher_id = ? ORDER BY COALESCE(created_at, updated_at) DESC",
@@ -245,6 +263,7 @@ def get_history(plan_id: str) -> dict | None:
     conn = _get_conn()
     try:
         _ensure_edit_count_column(conn)
+        _ensure_scheduled_for_column(conn)
         row = conn.execute("SELECT * FROM lesson_plans WHERE id = ?", (plan_id,)).fetchone()
         return _row_to_history_dict(row) if row else None
     finally:
@@ -263,10 +282,17 @@ def save_history(plan: dict) -> dict:
     conn = _get_conn()
     try:
         _ensure_edit_count_column(conn)
+        _ensure_scheduled_for_column(conn)
 
-        # Phase 3 auto-link: bind slot + suggest milestone if not already set
+        # Phase 5: caller may pass an explicit timetable_slot_id (picked via
+        # GenerateForSelector). Prefer that over the auto-bind guess.
         existing = conn.execute("SELECT * FROM lesson_plans WHERE id = ?", (plan['id'],)).fetchone()
-        slot_id = (existing['timetable_slot_id'] if existing else None) or _auto_bind_slot(conn, teacher_id, form_data)
+        explicit_slot_id = plan.get('timetable_slot_id')
+        slot_id = (
+            explicit_slot_id
+            or (existing['timetable_slot_id'] if existing else None)
+            or _auto_bind_slot(conn, teacher_id, form_data)
+        )
         suggested_milestone_id = (
             (existing['suggested_milestone_id'] if existing else None)
             or _suggest_milestone(plan.get('curriculumMatches') or [], teacher_id)
@@ -283,6 +309,7 @@ def save_history(plan: dict) -> dict:
             'curriculum_matches_json': json.dumps(plan.get('curriculumMatches') or []),
             'suggested_milestone_id':  suggested_milestone_id,
             'taught_at':               plan.get('taught_at'),
+            'scheduled_for':           plan.get('scheduled_for'),
             'status':                  plan.get('status') or 'draft',
             'edit_count':              int(plan.get('edit_count') or 1),
             'created_at':              plan.get('timestamp'),

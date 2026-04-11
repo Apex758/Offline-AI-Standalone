@@ -355,7 +355,21 @@
       "Bash(echo \"exit=$?\")",
       "Bash(python -m json.tool \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/en.json\")",
       "Bash(python -m json.tool \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/es.json\")",
-      "Bash(python -m json.tool \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/fr.json\")"
+      "Bash(python -m json.tool \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/locales/fr.json\")",
+      "Bash(npx tsx -e ':*)",
+      "Bash(ls contexts/Time* hooks/useTime*)",
+      "Bash(wc -l components/ClassManagement.tsx components/SetupWizard/*.tsx)",
+      "Bash(ls components/*[Tt]imetable* components/*[Tt]ime[Tt]able*)",
+      "Bash(ls components/*[Uu]nified* components/*[Ss]chool[Yy]ear*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('backend/lesson_plan_service.py', encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('backend/school_year_service.py', encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('backend/routes/school_year.py', encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(ls backend/*.py)",
+      "Bash(ls backend/routes/*.py)",
+      "Bash(echo \"FRONTEND_EXIT=$?\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('backend/school_year_service.py', encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(ls components/CurriculumAlignment*)",
+      "Bash(grep -ln \"elo\\\\|sco\\\\|essential\\\\|specific\\\\|outcome\" milestones/*.py)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('backend/school_year_service.py', encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('backend/routes/school_year.py', encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(grep -n \"^## PHASE\\\\|^## Appendix\\\\|^---$\" plans/TESTING_PLAN.md)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

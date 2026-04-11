@@ -92,8 +92,11 @@ import ImageModeSelector from './ui/ImageModeSelector';
 import type { ImageMode } from '../types';
 import { NeuroSegment } from './ui/NeuroSegment';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
-import { applyClassDefaults, worksheetGeneratorFieldMap } from '../lib/applyClassDefaults';
+import { applyClassDefaults, listFilledLabels, worksheetGeneratorFieldMap } from '../lib/applyClassDefaults';
 import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
+import ClassDefaultsBanner from './ClassDefaultsBanner';
+import GenerateForSelector from './GenerateForSelector';
+import type { UpcomingOccurrence } from '../lib/upcomingSlots';
 
 
 // Curriculum types removed — now using curriculumLoader directly
@@ -255,7 +258,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   });
 
   // Class config auto-fill state
-  const { activeClass, setActiveClass } = useActiveClass();
+  const { activeClass, setActiveClass, config: activeConfig, hasConfig } = useActiveClass();
   const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
   const [configClassName, setConfigClassName] = useState<string>(activeClass?.key || '');
   const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
@@ -292,6 +295,26 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Class defaults banner + Phase-4 target selector ─────────────────
+  const [overrideOpen, setOverrideOpen] = useState(false);
+  const filledLabels = React.useMemo(
+    () => listFilledLabels(activeConfig, worksheetGeneratorFieldMap),
+    [activeConfig]
+  );
+  const showBanner = hasConfig && filledLabels.length > 0;
+
+  const [targetOccurrence, setTargetOccurrence] = useState<UpcomingOccurrence | null>(null);
+  const targetValue = targetOccurrence ? `${targetOccurrence.slotId}::${targetOccurrence.dateISO}` : null;
+  const handlePickOccurrence = (occ: UpcomingOccurrence | null) => {
+    setTargetOccurrence(occ);
+    if (!occ) return;
+    setFormData(prev => ({
+      ...prev,
+      subject: occ.subject || prev.subject,
+      gradeLevel: occ.gradeLevel || prev.gradeLevel,
+    }));
+  };
 
   const [formData, setFormData] = useState<WorksheetFormData>(() => {
     const validStyles = ['cartoon_3d', 'line_art_bw', 'illustrated_painting', 'realistic'];
@@ -1385,6 +1408,22 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
+            {showBanner && (
+              <ClassDefaultsBanner
+                classLabel={activeClass?.label || classConfigApplied || 'selected class'}
+                filledFieldLabels={filledLabels}
+                overrideOpen={overrideOpen}
+                onToggleOverride={() => setOverrideOpen(v => !v)}
+                accentColor={worksheetTabColor}
+              />
+            )}
+
+            <GenerateForSelector
+              value={targetValue}
+              onPick={handlePickOccurrence}
+              accentColor={worksheetTabColor}
+            />
+
             {/* Class picker -- auto-fills from Class Manager settings */}
             <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: worksheetTabColor, backgroundColor: `${worksheetTabColor}10` }}>
               <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: worksheetTabColor }}>

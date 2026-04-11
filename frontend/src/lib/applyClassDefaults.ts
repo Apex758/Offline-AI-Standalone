@@ -18,9 +18,35 @@ import type { ClassConfig } from './classConfig';
 export type FieldMapEntry = {
   from: keyof ClassConfig;
   transform?: (value: any) => any;
+  /** Human-readable label shown in the ClassDefaultsBanner summary. */
+  label?: string;
 };
 
 export type FieldMap<T> = Partial<Record<keyof T, FieldMapEntry>>;
+
+/**
+ * Given a FieldMap and a ClassConfig, return the list of human-readable
+ * labels for fields that would actually be auto-filled (i.e. the ClassConfig
+ * has a non-empty value for that field). Used by the banner summary.
+ */
+export function listFilledLabels<T>(
+  cfg: ClassConfig | undefined | null,
+  map: FieldMap<T>
+): string[] {
+  if (!cfg) return [];
+  const out: string[] = [];
+  for (const formKeyStr of Object.keys(map)) {
+    const entry = map[formKeyStr as keyof T];
+    if (!entry) continue;
+    const raw = (cfg as any)[entry.from];
+    if (raw == null) continue;
+    if (typeof raw === 'string' && raw.trim() === '') continue;
+    if (Array.isArray(raw) && raw.length === 0) continue;
+    if (typeof raw === 'boolean' && !raw) continue;
+    out.push(entry.label || String(formKeyStr));
+  }
+  return out;
+}
 
 // Common transform helpers
 export const numToStr = (v: any): string => (v != null ? String(v) : '');
@@ -68,105 +94,105 @@ export function applyClassDefaults<T extends Record<string, any>>(
 // -------------------------------------------------------------------------
 
 export const lessonPlannerFieldMap: FieldMap<any> = {
-  subject: { from: 'subject' },
-  strand: { from: 'strand' },
-  essentialOutcomes: { from: 'essentialOutcomes' },
-  specificOutcomes: { from: 'specificOutcomes' },
-  studentCount: { from: 'studentCount', transform: numToStr },
-  duration: { from: 'classPeriodDuration' },
-  pedagogicalStrategies: { from: 'pedagogicalStrategies' },
-  learningStyles: { from: 'learningStyles' },
-  learningPreferences: { from: 'learningPreferences' },
-  multipleIntelligences: { from: 'multipleIntelligences' },
-  customLearningStyles: { from: 'customLearningStyles' },
-  materials: { from: 'availableMaterials' },
-  prerequisiteSkills: { from: 'prerequisiteSkills' },
-  specialNeeds: { from: 'hasSpecialNeeds' },
-  specialNeedsDetails: { from: 'specialNeedsDetails' },
-  additionalInstructions: { from: 'additionalInstructions' },
+  subject: { from: 'subject', label: 'Subject' },
+  strand: { from: 'strand', label: 'Strand' },
+  essentialOutcomes: { from: 'essentialOutcomes', label: 'Essential Outcomes' },
+  specificOutcomes: { from: 'specificOutcomes', label: 'Specific Outcomes' },
+  studentCount: { from: 'studentCount', transform: numToStr, label: 'Student Count' },
+  duration: { from: 'classPeriodDuration', label: 'Duration' },
+  pedagogicalStrategies: { from: 'pedagogicalStrategies', label: 'Pedagogical Strategies' },
+  learningStyles: { from: 'learningStyles', label: 'Learning Styles' },
+  learningPreferences: { from: 'learningPreferences', label: 'Learning Preferences' },
+  multipleIntelligences: { from: 'multipleIntelligences', label: 'Multiple Intelligences' },
+  customLearningStyles: { from: 'customLearningStyles', label: 'Custom Learning Styles' },
+  materials: { from: 'availableMaterials', label: 'Materials' },
+  prerequisiteSkills: { from: 'prerequisiteSkills', label: 'Prerequisite Skills' },
+  specialNeeds: { from: 'hasSpecialNeeds', label: 'Special Needs' },
+  specialNeedsDetails: { from: 'specialNeedsDetails', label: 'Special Needs Details' },
+  additionalInstructions: { from: 'additionalInstructions', label: 'Additional Instructions' },
 };
 
 export const quizGeneratorFieldMap: FieldMap<any> = {
-  subject: { from: 'subject' },
-  strand: { from: 'strand' },
-  essentialOutcomes: { from: 'essentialOutcomes' },
-  specificOutcomes: { from: 'specificOutcomes' },
-  questionTypes: { from: 'defaultQuestionTypes' },
-  cognitiveLevels: { from: 'defaultCognitiveLevels' },
-  timeLimitPerQuestion: { from: 'defaultTimeLimitPerQuestion', transform: numToStr },
-  specialNeeds: { from: 'hasSpecialNeeds' },
-  specialNeedsDetails: { from: 'specialNeedsDetails' },
-  additionalInstructions: { from: 'additionalInstructions' },
-  preferredAssessmentFormat: { from: 'preferredAssessmentFormat' },
+  subject: { from: 'subject', label: 'Subject' },
+  strand: { from: 'strand', label: 'Strand' },
+  essentialOutcomes: { from: 'essentialOutcomes', label: 'Essential Outcomes' },
+  specificOutcomes: { from: 'specificOutcomes', label: 'Specific Outcomes' },
+  questionTypes: { from: 'defaultQuestionTypes', label: 'Question Types' },
+  cognitiveLevels: { from: 'defaultCognitiveLevels', label: 'Cognitive Levels' },
+  timeLimitPerQuestion: { from: 'defaultTimeLimitPerQuestion', transform: numToStr, label: 'Time per Question' },
+  specialNeeds: { from: 'hasSpecialNeeds', label: 'Special Needs' },
+  specialNeedsDetails: { from: 'specialNeedsDetails', label: 'Special Needs Details' },
+  additionalInstructions: { from: 'additionalInstructions', label: 'Additional Instructions' },
+  preferredAssessmentFormat: { from: 'preferredAssessmentFormat', label: 'Assessment Format' },
 };
 
 export const worksheetGeneratorFieldMap: FieldMap<any> = {
-  subject: { from: 'subject' },
-  strand: { from: 'strand' },
-  essentialOutcomes: { from: 'essentialOutcomes' },
-  specificOutcomes: { from: 'specificOutcomes' },
-  studentCount: { from: 'studentCount', transform: numToStr },
-  learningStyles: { from: 'learningStyles' },
-  materials: { from: 'availableMaterials' },
-  prerequisiteSkills: { from: 'prerequisiteSkills' },
-  specialNeeds: { from: 'hasSpecialNeeds' },
-  specialNeedsDetails: { from: 'specialNeedsDetails' },
-  additionalInstructions: { from: 'additionalInstructions' },
+  subject: { from: 'subject', label: 'Subject' },
+  strand: { from: 'strand', label: 'Strand' },
+  essentialOutcomes: { from: 'essentialOutcomes', label: 'Essential Outcomes' },
+  specificOutcomes: { from: 'specificOutcomes', label: 'Specific Outcomes' },
+  studentCount: { from: 'studentCount', transform: numToStr, label: 'Student Count' },
+  learningStyles: { from: 'learningStyles', label: 'Learning Styles' },
+  materials: { from: 'availableMaterials', label: 'Materials' },
+  prerequisiteSkills: { from: 'prerequisiteSkills', label: 'Prerequisite Skills' },
+  specialNeeds: { from: 'hasSpecialNeeds', label: 'Special Needs' },
+  specialNeedsDetails: { from: 'specialNeedsDetails', label: 'Special Needs Details' },
+  additionalInstructions: { from: 'additionalInstructions', label: 'Additional Instructions' },
 };
 
 export const rubricGeneratorFieldMap: FieldMap<any> = {
-  subject: { from: 'subject' },
-  strand: { from: 'strand' },
-  essentialOutcomes: { from: 'essentialOutcomes' },
-  specificOutcomes: { from: 'specificOutcomes' },
-  performanceLevels: { from: 'performanceLevels' },
-  includePointValues: { from: 'includePointValues' },
-  focusAreas: { from: 'gradingFocusAreas' },
-  specificRequirements: { from: 'additionalInstructions' },
+  subject: { from: 'subject', label: 'Subject' },
+  strand: { from: 'strand', label: 'Strand' },
+  essentialOutcomes: { from: 'essentialOutcomes', label: 'Essential Outcomes' },
+  specificOutcomes: { from: 'specificOutcomes', label: 'Specific Outcomes' },
+  performanceLevels: { from: 'performanceLevels', label: 'Performance Levels' },
+  includePointValues: { from: 'includePointValues', label: 'Include Point Values' },
+  focusAreas: { from: 'gradingFocusAreas', label: 'Focus Areas' },
+  specificRequirements: { from: 'additionalInstructions', label: 'Specific Requirements' },
 };
 
 export const kindergartenPlannerFieldMap: FieldMap<any> = {
-  curriculumSubject: { from: 'subject' },
-  strand: { from: 'strand' },
-  essentialOutcomes: { from: 'essentialOutcomes' },
-  specificOutcomes: { from: 'specificOutcomes' },
-  students: { from: 'studentCount', transform: numToStr },
-  duration: { from: 'classPeriodDuration' },
-  additionalRequirements: { from: 'additionalInstructions' },
-  learningStyles: { from: 'learningStyles' },
-  pedagogicalStrategies: { from: 'pedagogicalStrategies' },
-  materials: { from: 'availableMaterials' },
-  prerequisiteSkills: { from: 'prerequisiteSkills' },
-  specialNeeds: { from: 'hasSpecialNeeds' },
-  specialNeedsDetails: { from: 'specialNeedsDetails' },
+  curriculumSubject: { from: 'subject', label: 'Subject' },
+  strand: { from: 'strand', label: 'Strand' },
+  essentialOutcomes: { from: 'essentialOutcomes', label: 'Essential Outcomes' },
+  specificOutcomes: { from: 'specificOutcomes', label: 'Specific Outcomes' },
+  students: { from: 'studentCount', transform: numToStr, label: 'Students' },
+  duration: { from: 'classPeriodDuration', label: 'Duration' },
+  additionalRequirements: { from: 'additionalInstructions', label: 'Additional Requirements' },
+  learningStyles: { from: 'learningStyles', label: 'Learning Styles' },
+  pedagogicalStrategies: { from: 'pedagogicalStrategies', label: 'Pedagogical Strategies' },
+  materials: { from: 'availableMaterials', label: 'Materials' },
+  prerequisiteSkills: { from: 'prerequisiteSkills', label: 'Prerequisite Skills' },
+  specialNeeds: { from: 'hasSpecialNeeds', label: 'Special Needs' },
+  specialNeedsDetails: { from: 'specialNeedsDetails', label: 'Special Needs Details' },
 };
 
 export const multigradePlannerFieldMap: FieldMap<any> = {
-  subject: { from: 'subject' },
-  strand: { from: 'strand' },
-  essentialOutcomes: { from: 'essentialOutcomes' },
-  specificOutcomes: { from: 'specificOutcomes' },
-  totalStudents: { from: 'studentCount', transform: numToStr },
-  duration: { from: 'classPeriodDuration' },
-  pedagogicalStrategies: { from: 'pedagogicalStrategies' },
-  learningStyles: { from: 'learningStyles' },
-  learningPreferences: { from: 'learningPreferences' },
-  multipleIntelligences: { from: 'multipleIntelligences' },
-  customLearningStyles: { from: 'customLearningStyles' },
-  materials: { from: 'availableMaterials' },
-  prerequisiteSkills: { from: 'prerequisiteSkills' },
-  specialNeeds: { from: 'hasSpecialNeeds' },
-  specialNeedsDetails: { from: 'specialNeedsDetails' },
+  subject: { from: 'subject', label: 'Subject' },
+  strand: { from: 'strand', label: 'Strand' },
+  essentialOutcomes: { from: 'essentialOutcomes', label: 'Essential Outcomes' },
+  specificOutcomes: { from: 'specificOutcomes', label: 'Specific Outcomes' },
+  totalStudents: { from: 'studentCount', transform: numToStr, label: 'Total Students' },
+  duration: { from: 'classPeriodDuration', label: 'Duration' },
+  pedagogicalStrategies: { from: 'pedagogicalStrategies', label: 'Pedagogical Strategies' },
+  learningStyles: { from: 'learningStyles', label: 'Learning Styles' },
+  learningPreferences: { from: 'learningPreferences', label: 'Learning Preferences' },
+  multipleIntelligences: { from: 'multipleIntelligences', label: 'Multiple Intelligences' },
+  customLearningStyles: { from: 'customLearningStyles', label: 'Custom Learning Styles' },
+  materials: { from: 'availableMaterials', label: 'Materials' },
+  prerequisiteSkills: { from: 'prerequisiteSkills', label: 'Prerequisite Skills' },
+  specialNeeds: { from: 'hasSpecialNeeds', label: 'Special Needs' },
+  specialNeedsDetails: { from: 'specialNeedsDetails', label: 'Special Needs Details' },
 };
 
 export const crossCurricularPlannerFieldMap: FieldMap<any> = {
-  strand: { from: 'strand' },
-  essentialOutcomes: { from: 'essentialOutcomes' },
-  specificOutcomes: { from: 'specificOutcomes' },
-  duration: { from: 'classPeriodDuration' },
-  learningStyles: { from: 'learningStyles' },
-  learningPreferences: { from: 'learningPreferences' },
-  multipleIntelligences: { from: 'multipleIntelligences' },
-  customLearningStyles: { from: 'customLearningStyles' },
-  materials: { from: 'availableMaterials' },
+  strand: { from: 'strand', label: 'Strand' },
+  essentialOutcomes: { from: 'essentialOutcomes', label: 'Essential Outcomes' },
+  specificOutcomes: { from: 'specificOutcomes', label: 'Specific Outcomes' },
+  duration: { from: 'classPeriodDuration', label: 'Duration' },
+  learningStyles: { from: 'learningStyles', label: 'Learning Styles' },
+  learningPreferences: { from: 'learningPreferences', label: 'Learning Preferences' },
+  multipleIntelligences: { from: 'multipleIntelligences', label: 'Multiple Intelligences' },
+  customLearningStyles: { from: 'customLearningStyles', label: 'Custom Learning Styles' },
+  materials: { from: 'availableMaterials', label: 'Materials' },
 };

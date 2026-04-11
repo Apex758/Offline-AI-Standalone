@@ -550,6 +550,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       // Optimistic local update
       updateMilestoneLocally(milestoneId, update as Partial<Milestone>);
       await milestoneApi.updateMilestone(milestoneId, update);
+      // Phase 6: broadcast so generator dropdowns re-query completion state
+      try { window.dispatchEvent(new CustomEvent('curriculum-completion-changed')); } catch { /* ignore */ }
       triggerCheck();
       if (selectedMilestone?.id === milestoneId) {
         setSelectedMilestone(null);
@@ -577,6 +579,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       const apiUpdate: any = { checklist_json: JSON.stringify(updatedChecklist) };
       if (updates.status) apiUpdate.status = updates.status;
       await milestoneApi.updateMilestone(milestone.id, apiUpdate);
+      // Phase 6: broadcast so generator dropdowns re-query completion state
+      try { window.dispatchEvent(new CustomEvent('curriculum-completion-changed')); } catch { /* ignore */ }
     } catch (error) {
       console.error('Failed to update checklist:', error);
       await loadMilestones();

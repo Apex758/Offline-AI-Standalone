@@ -1634,4 +1634,347 @@ that changed shape; confirm they still match teacher expectations.
 
 ---
 
+## Class Context + Timetable Integration (2026-04-11)
+
+This appendix covers the multi-phase refactor that:
+1. Consolidated per-generator class-config wiring into a shared util
+2. Introduced a global "active class" selection
+3. Added a class-defaults banner with per-section collapse
+4. Fixed a critical focus-loss bug in ClassConfigPanel
+5. Wired ClassConfigPanel to the teacher's timetable + onboarding profile
+6. Added multi-block (double/triple) periods to the Timetable
+7. Removed the standalone "Unified" calendar tab and moved holidays into School Year
+8. Added a "Generate for" target-slot selector to all 7 generators
+9. Persisted the target on save so a "Lessons Needing Plans" dashboard widget can list upcoming unplanned sessions
+10. Wired the widget into the dashboard as a flip card and connected it to notifications
+11. Added class-type-aware routing for widget clicks
+12. Tagged already-covered ELOs/SCOs in the curriculum dropdowns, with live refresh when the Progress Tracker updates
+
+File-level ownership (useful when tracking regressions):
+- Shared lib: `frontend/src/lib/applyClassDefaults.ts`, `frontend/src/lib/upcomingSlots.ts`
+- Shared hooks: `frontend/src/hooks/useCurriculumCompletion.ts`, `frontend/src/hooks/useClassContext.ts`
+- Shared context: `frontend/src/contexts/ActiveClassContext.tsx`
+- Shared components: `frontend/src/components/ClassDefaultsBanner.tsx`, `frontend/src/components/AutoFilledSection.tsx`, `frontend/src/components/GenerateForSelector.tsx`
+- Widget: `frontend/src/components/widgets/LessonsNeedingPlans.tsx`
+- Edited generators: LessonPlanner, QuizGenerator, WorksheetGenerator, RubricGenerator, KindergartenPlanner, MultigradePlanner, CrossCurricularPlanner, ClassConfigPanel, Timetable, SchoolYearHub, SchoolYearCalendar, AnalyticsDashboard, CurriculumTracker, CurriculumAlignmentFields
+- Backend: `backend/lesson_plan_service.py`, `backend/school_year_service.py`, `backend/routes/school_year.py`
+
+### CC.1 Shared applyClassDefaults util (Step A) `[HIGH]`
+
+The seven generators used to each carry an identical ~35-line `applyClassConfig`
+helper. That was consolidated into `applyClassDefaults.ts` with per-generator
+field maps + a single merge function. Bonus bug fix: WorksheetGenerator's old
+copy only merged strings, so arrays and booleans (learningStyles, specialNeeds)
+silently never auto-filled from class config. The shared util handles all four
+shapes (array/boolean/string/other) correctly.
+
+- [ ] In each of the 7 generators (Lesson / Quiz / Worksheet / Rubric / Kindergarten / Multigrade / CrossCurricular), pick a class that has a stored ClassConfig — all the previously-covered fields still auto-fill `[HIGH]`
+- [ ] Regression: **WorksheetGenerator** specifically — pick a class that has `learningStyles` + `hasSpecialNeeds` set in config. Both arrays (learningStyles) and the boolean (specialNeeds) now auto-fill; previously they did not. `[HIGH]`
+- [ ] Editing a pre-filled field is not clobbered by switching classes — existing non-empty user input still wins over class defaults (precedence preserved) `[HIGH]`
+- Findings: ___
+
+### CC.2 ActiveClassContext — global class selection (Step B) `[HIGH]`
+
+A new `ActiveClassProvider` wraps the app. Picking a class in one generator
+updates a global selection; other generators see it automatically. State
+persists to `localStorage['activeClass.v1']`.
+
+- [ ] Pick a class in LessonPlanner → switch to QuizGenerator → the same class is already selected and form is hydrated `[HIGH]`
+- [ ] Reload the app → active class persists `[HIGH]`
+- [ ] Clear the class picker in any generator (empty option) → global state clears, other generators also clear on next visit `[HIGH]`
+- [ ] Seven generators + ImageStudio still work when no class is active (no active class is the default startup state) `[HIGH]`
+- [ ] Switching classes in one generator does not wipe the teacher's in-progress form values in another tab (only auto-fills empty fields) `[MEDIUM]`
+- Findings: ___
+
+### CC.3 ClassDefaultsBanner + AutoFilledSection collapse (Step C) `[HIGH]`
+
+New banner at the top of each generator summarizes which fields were auto-filled
+(e.g. "Using class: Grade 4 Blue — 12 fields auto-filled — Subject • Strand • +4 more").
+An "Override" toggle reveals the underlying inputs. LessonPlanner Step 2
+("Teaching Strategy") is fully collapsed behind this banner because 100% of its
+fields come from ClassConfig; the other 6 generators show the banner only.
+
+- [ ] With a class that has config: LessonPlanner Step 1 and Step 2 both show the banner `[HIGH]`
+- [ ] LessonPlanner Step 2 body collapses to a single "All teaching strategy fields were auto-filled" hint when a class with config is active `[HIGH]`
+- [ ] Click **Override** → full Step 2 form re-appears with the class defaults already populated `[HIGH]`
+- [ ] QuizGenerator, RubricGenerator, WorksheetGenerator, KindergartenPlanner, MultigradePlanner, CrossCurricularPlanner all show the banner (no AutoFilledSection collapse yet) `[MEDIUM]`
+- [ ] With **no** active class → banner doesn't render at all, form is identical to legacy behavior (zero regression) `[HIGH]`
+- [ ] Banner's "Using class" label tracks the active class label, not the generator-local copy `[MEDIUM]`
+- Findings: ___
+
+### CC.4 ClassConfigPanel — focus-loss bug fix (Phase 1) `[CRITICAL]`
+
+`Section`, `Label`, and `ChipGroup` were defined inside `ClassConfigPanel`'s
+render function, causing React to unmount/remount the entire form subtree on
+every keystroke. Typing a single character kicked focus out of the input and
+reset scroll. Fix: all three hoisted to module scope, with `accentColor`
+threaded as a prop.
+
+- [ ] Open Class Manager → pick a class → open its config panel `[CRITICAL]`
+- [ ] Type a long string in the **Subject** input — focus is NOT lost between keystrokes `[CRITICAL]`
+- [ ] Same for all textareas (Essential Outcomes, Specific Outcomes, Special Needs Details, Additional Instructions, etc.) `[HIGH]`
+- [ ] Scroll to a `<ChipGroup>` (e.g. Learning Styles) → click a chip → scroll position stays put, chip toggles, other chips retain state `[CRITICAL]`
+- [ ] Toggle a checkbox (e.g. Has Special Needs) → no scroll jump, conditional textarea appears without remount glitch `[HIGH]`
+- Findings: ___
+
+### CC.5 ClassConfigPanel — timetable & onboarding wiring (Phase 2) `[HIGH]`
+
+The config panel now reads the teacher's onboarding `profile.gradeSubjects` and
+their timetable slots to scope the Subject dropdown, derive a default class
+duration, and display a "Meets:" strip.
+
+**Subject scoping (Q5 answer: timetable wins)**
+- [ ] For a class that appears in the timetable (e.g. Grade 1 Blue Math) → Subject is a dropdown with exactly the subjects the teacher teaches that class in (reading from timetable) `[HIGH]`
+- [ ] For a class NOT yet scheduled in the timetable → Subject dropdown falls back to the teacher's onboarding subjects for that grade `[HIGH]`
+- [ ] If neither source has data → Subject falls back to a free-text input with an amber warning `[MEDIUM]`
+- [ ] Subject caption text reflects the source ("Scoped to subjects you teach this class in your timetable" vs "From your onboarding profile...") `[MEDIUM]`
+- [ ] Changing Subject wipes Strand / Essential Outcomes / Specific Outcomes **without a confirm prompt** (curriculum cascade, per agreement) `[HIGH]`
+
+**Duration derivation**
+- [ ] Schedule a class with a consistent 60-min period on multiple days → ClassConfigPanel auto-pre-fills `classPeriodDuration` to "60 minutes" on first load `[HIGH]`
+- [ ] Schedule the same class with a mix (60 min Mon/Wed, 90 min Fri) → auto-fill uses the **most common** duration and shows a caption "varies per day — showing most common" `[MEDIUM]`
+- [ ] A derived duration that doesn't match the static `DURATIONS` list (e.g. 50 min) still appears as an option labeled "(from timetable)" `[MEDIUM]`
+- [ ] Manually overriding the duration in the panel is preserved — does not get overwritten by subsequent loads `[HIGH]`
+
+**"Meets:" strip**
+- [ ] With scheduled slots → a chip strip near the top shows each day/time + per-slot duration, plus weekly total + "Most common period" line `[MEDIUM]`
+- [ ] With NO scheduled slots → friendly dashed hint directs the teacher to the Timetable view `[MEDIUM]`
+- Findings: ___
+
+### CC.6 Timetable — double/triple periods + Weekly Load summary (Phase 3a/c) `[HIGH]`
+
+The Timetable grid previously required a slot's `start_time` + `end_time` to
+exactly match a single block, so multi-block slots were invisible. Now:
+a slot starting at a block covers N adjacent rows via `rowSpan`, a new "Length"
+select in the modal lets teachers create double periods, and a "Weekly Load"
+summary appears below the grid.
+
+**Modal Length selector**
+- [ ] Click an empty cell → new "Length" dropdown appears below the Class field with options "1 block (single period)", "2 blocks (double period)", "3 blocks", ... capped by how many blocks remain in the day `[HIGH]`
+- [ ] Modal header live-updates "Monday 9:00 AM – 11:00 AM (2 blocks)" when Length changes `[MEDIUM]`
+- [ ] Saving with Length=2 creates a slot whose `end_time` matches the second block's end `[HIGH]`
+- [ ] Editing an existing 2-block slot → the Length dropdown pre-selects "2 blocks" `[HIGH]`
+
+**Rendering**
+- [ ] Multi-block slot renders as a single taller cell spanning N rows in the grid `[HIGH]`
+- [ ] Cells inside a multi-block slot are not rendered separately (no duplicate clickable area) `[HIGH]`
+- [ ] Clicking anywhere on a multi-block slot opens the edit modal `[MEDIUM]`
+
+**Overlap validation**
+- [ ] Try to create a 3-block slot that would overlap an existing slot on the same day → error: "That span overlaps another slot on this day. Shorten the span or move the other slot." `[HIGH]`
+- [ ] Try to create a slot near end-of-day whose span exceeds remaining blocks → error: "Span of N blocks would run past the end of the day." `[MEDIUM]`
+- [ ] Editing an existing double period to span=1 frees up the second block (no overlap false positive because the edit ignores its own ID) `[HIGH]`
+
+**Weekly Load summary below the grid**
+- [ ] Below the legend, a "Weekly Load" strip shows one chip per `(grade, class, subject)` combination `[MEDIUM]`
+- [ ] Each chip shows weekly total time (e.g. "Grade 1 · Blue · Mathematics 3h/week") `[MEDIUM]`
+- [ ] Tooltip shows the session count ("3 sessions per week") `[LOW]`
+- [ ] Hides entirely when no slots exist `[LOW]`
+
+**Deferred (Phase 3b)**
+- Drag-to-resize handles on slot edges (Excel-style). Modal Length selector covers the functional need; visual drag is polish.
+- Findings: ___
+
+### CC.7 Unified view removal + Holidays on School Year `[MEDIUM]`
+
+The standalone "Unified" calendar tab under School Year was removed — the
+unified feed still exists in the backend and powers widgets (CompactCalendar),
+but there's no dedicated page. Holidays became a first-class event type on
+the School Year page with a "Block classes on this day" checkbox.
+
+**Unified tab removal**
+- [ ] SchoolYearHub top nav shows exactly 3 tabs: **School Year**, **Curriculum Plan**, **Timetable**. No "Unified". `[HIGH]`
+- [ ] CompactCalendar widget (if surfaced somewhere) still pulls from the unified feed and shows mixed event types `[MEDIUM]`
+
+**Holidays in School Year Calendar**
+- [ ] Open School Year → click + to create an event → **Type** dropdown now includes "Holiday" as the first option `[HIGH]`
+- [ ] Selecting type=Holiday reveals a new **"Block classes on this day"** checkbox, defaulted to checked `[HIGH]`
+- [ ] Selecting any other type hides the checkbox (and clears the flag) `[MEDIUM]`
+- [ ] Save a holiday with "Block classes" checked → on the date chip, the holiday color is red `[MEDIUM]`
+- [ ] Re-open a saved holiday for edit → blocks-classes state round-trips `[HIGH]`
+- [ ] Save a holiday → existing backend EXDATE logic hides timetable slots on that date in widgets that read the unified feed `[HIGH]`
+- [ ] Save a holiday with "Block classes" UNchecked → date still appears red on the calendar, but timetable slots remain visible `[MEDIUM]`
+- Findings: ___
+
+### CC.8 GenerateForSelector — pick a target session (Phase 4) `[HIGH]`
+
+Each generator now has a "Generate for" card near the top. When an active class
+has timetable slots, it shows a dropdown of the next ~10 upcoming sessions for
+that class. Picking one auto-fills subject/grade/duration (and for Kindergarten
+also `date` / `dayOfWeek`), and stores a `targetOccurrence` used later on save.
+
+- [ ] With NO active class → selector shows "Pick a class above to target a specific lesson" `[HIGH]`
+- [ ] Active class with NO timetable slots → selector shows hint directing to Timetable view `[HIGH]`
+- [ ] Active class with slots → dropdown lists the next ~10 upcoming sessions, formatted like "Wed Apr 15 • 09:00–10:00 • Mathematics (60m)" `[HIGH]`
+- [ ] Selecting an option auto-fills Subject / Grade / Duration in the form `[HIGH]`
+- [ ] Relative hint appears above the dropdown when selected ("today" / "tomorrow" / "in 3 days" / "in 2 weeks") `[MEDIUM]`
+- [ ] "Jump to date" picker finds any occurrence on that date within a 60-occurrence horizon `[MEDIUM]`
+- [ ] "Clear" button drops the targetOccurrence but leaves the teacher's form data intact `[MEDIUM]`
+- [ ] Manually editing Subject after a pick is NOT reverted (pick only fires once) `[HIGH]`
+- [ ] Switching the active class auto-clears any stale target from the selector `[HIGH]`
+- [ ] Double-period slots render as 120m in the dropdown (duration is `end - start`) `[MEDIUM]`
+- [ ] Present in all 7 generators (Lesson / Quiz / Worksheet / Rubric / Kindergarten / Multigrade / CrossCurricular) `[HIGH]`
+- Findings: ___
+
+### CC.9 Phase 5 — lesson ↔ calendar instance attachment `[HIGH]`
+
+Backend:
+- New `scheduled_for` column on `lesson_plans` (idempotent ALTER TABLE)
+- `save_history` accepts explicit `timetable_slot_id` + `scheduled_for`
+- `get_upcoming_unplanned(teacher_id, within_days)` aggregates timetable projection, blocking holidays, and planned-slot data from `lesson_plans` SQLite + the three lesson-like JSON histories
+- New route: `GET /api/school-year/upcoming-unplanned/{teacher_id}?within_days=14`
+
+Frontend:
+- LessonPlanner, KindergartenPlanner, MultigradePlanner, CrossCurricularPlanner all pass `timetable_slot_id` + `scheduled_for` in their save payloads when `targetOccurrence` is set
+- Quiz / Worksheet / Rubric **intentionally** don't attach (supplementary artifacts, not lessons)
+
+**Attachment flow**
+- [ ] Open LessonPlanner, pick a target session, generate, save → refresh dashboard widget → that session no longer appears as unplanned `[HIGH]`
+- [ ] Save a LessonPlanner plan **without** picking a target → previous behavior preserved (backend `_auto_bind_slot` may still try to guess) `[HIGH]`
+- [ ] Delete a plan that had a target → slot reappears in the unplanned list on next fetch `[MEDIUM]`
+- [ ] Old plans without `scheduled_for` still load and render correctly (column is additive, nullable) `[CRITICAL]`
+
+**KindergartenPlanner attachment**
+- [ ] Pick target → save → the slot drops off unplanned list (even though this history is flat JSON, not SQLite) `[HIGH]`
+
+**MultigradePlanner attachment**
+- [ ] Same — save with target populates `timetable_slot_id` + `scheduled_for` in multigrade_history.json, backend reads it `[HIGH]`
+
+**CrossCurricularPlanner attachment**
+- [ ] Same — cross_curricular_history.json entries count toward planned `[HIGH]`
+
+**Holidays filter**
+- [ ] Create a blocking holiday covering one of the upcoming target dates → that occurrence drops off the unplanned list immediately `[HIGH]`
+- [ ] Non-blocking holiday (blocks_classes=0) does NOT remove the occurrence `[MEDIUM]`
+
+**Backend sanity**
+- [ ] `curl http://localhost:8000/api/school-year/upcoming-unplanned/default?within_days=14` returns `{ occurrences: [...], count: N }` `[HIGH]`
+- [ ] Fresh install with no lesson plans / no histories → endpoint returns valid payload (`count: 0` or raw projections), no 500 `[HIGH]`
+- Findings: ___
+
+### CC.10 Dashboard flip card + notifications `[HIGH]`
+
+The existing "Upcoming Quizzes" widget on AnalyticsDashboard became a CSS 3D
+flip card with `LessonsNeedingPlans` on the back. The widget also fires a
+one-shot info notification on first discovery.
+
+**Flip card**
+- [ ] AnalyticsDashboard shows the flip card whenever there's upcoming quizzes OR tasks (existing `hasAny` gate) `[HIGH]`
+- [ ] Front face shows the existing upcoming quizzes list (plus an empty-state fallback "No upcoming quizzes scheduled.") `[MEDIUM]`
+- [ ] Header toggle button reads "Show lesson plans" (front) / "Show quizzes" (back) `[MEDIUM]`
+- [ ] Clicking the toggle rotates the card 180° (0.6s transition); both faces remain same size `[MEDIUM]`
+- [ ] `backfaceVisibility: hidden` + `pointerEvents` gating so clicks never reach the hidden face `[MEDIUM]`
+- [ ] Back face shows `LessonsNeedingPlans` widget with count badge (amber > 0, green = 0) + preview of up to 5 sessions `[HIGH]`
+
+**Notifications**
+- [ ] First load in a new browser session with unplanned lessons > 0 → a toast appears ("N upcoming lessons have no plans yet.") AND an entry is added to the Notifications history `[HIGH]`
+- [ ] Notification fires exactly **once per session** — switching tabs / remounting the widget does not re-fire `[HIGH]`
+- [ ] Reload the browser tab → new session → fires again `[MEDIUM]`
+- [ ] Singular phrasing for count=1: "1 upcoming lesson has no plan yet." `[LOW]`
+- [ ] Clicking the notification entry routes back to the dashboard (tabId `'dashboard'`) `[MEDIUM]`
+- [ ] Environments without `sessionStorage` still work (graceful fallback) `[LOW]`
+- Findings: ___
+
+### CC.11 Widget click → open generator pre-targeted (with class-type routing) `[HIGH]`
+
+Clicking a row in `LessonsNeedingPlans` hands off the occurrence to the
+appropriate generator via `sessionStorage['pendingLessonTarget']` and routes to
+the right tab based on grade.
+
+**Routing heuristic** (in `AnalyticsDashboard.handleUnplannedClick`):
+- `grade === 'k' | 'kindergarten' | 'kg'` → **KindergartenPlanner**
+- grade contains `-` / `–` / `—` (e.g. "1-2", "K-3") → **MultigradePlanner**
+- otherwise → **LessonPlanner**
+- CrossCurricularPlanner is never auto-routed (it's cross-cutting)
+
+**Happy paths**
+- [ ] Click an unplanned Grade 3 Math session → **LessonPlanner** opens → class is set → subject/grade/duration pre-filled → target highlighted in GenerateForSelector `[HIGH]`
+- [ ] Click an unplanned Grade K session → **KindergartenPlanner** opens and applies the same pre-fill (including `date` + `dayOfWeek`) `[HIGH]`
+- [ ] Click an unplanned "1-2" multigrade session → **MultigradePlanner** opens and pre-fills `[HIGH]`
+
+**Mount-time consumer**
+- [ ] LessonPlanner, KindergartenPlanner, and MultigradePlanner all read `pendingLessonTarget` on mount, consume (clear) the sessionStorage key, call `setActiveClass(buildSelection(...))` + local `handleSelectClass(key)`, then call their own `handlePickOccurrence` `[HIGH]`
+- [ ] Reload the generator after click → the handoff is NOT re-applied (key is cleared on first read) `[HIGH]`
+- [ ] Synced from a different active class → the target's class wins; the old active class is replaced `[MEDIUM]`
+
+**Edge cases**
+- [ ] Cross-curricular class (if it somehow matched the routing) → falls through to LessonPlanner `[LOW]`
+- [ ] Click with `class_name` missing → routes by grade only; active class stays as-is `[LOW]`
+- Findings: ___
+
+### CC.12 Curriculum completion tagging in ELO/SCO dropdowns (Phase 6) `[HIGH]`
+
+`CurriculumAlignmentFields` now accepts optional `completedELOs` / `completedSCOs`
+`Set<string>` props. Matching entries display an emerald "Completed" badge next
+to the text (inline, not hiding). Source sets are fetched via new
+`useCurriculumCompletion(subject, gradeLevel)` hook.
+
+Backend aggregation (in `get_curriculum_completion`):
+1. `lesson_plans` with `status='completed'` (taught only)
+2. kindergarten_history.json / multigrade_history.json / cross_curricular_history.json (any save)
+3. `milestones.db` — full milestone with `status='completed'` contributes topic_title AND all checklist items; individual `checked=true` items contribute SCOs even when the parent milestone isn't yet complete
+
+Matching is done on normalized text (`\s+` → ` `, trimmed) — not ID-based.
+
+**Backend endpoint**
+- [ ] `GET /api/school-year/curriculum-completion/{teacher_id}?subject=Mathematics&grade_level=3` returns `{ completed_elos: [...], completed_scos: [...] }` `[HIGH]`
+- [ ] Omitting subject/grade_level returns completion across all subjects/grades (no filter) `[MEDIUM]`
+- [ ] Subject/grade matching is case-insensitive and strips "Grade " prefix `[MEDIUM]`
+
+**LessonPlanner integration**
+- [ ] Open LessonPlanner, pick a subject + grade where you've previously marked a lesson as taught (`status='completed'`) → open ELO dropdown → the ELO used in that taught lesson shows an emerald "Completed" badge inline with its text `[HIGH]`
+- [ ] Same test for SCOs — each individual SCO that was selected in a taught lesson gets a (smaller) badge in the SCO multi-select `[HIGH]`
+- [ ] Non-matching ELOs/SCOs render unchanged (no hiding) `[HIGH]`
+- [ ] Clicking a completed ELO/SCO still works normally (badge is display-only) `[HIGH]`
+
+**Progress Tracker integration**
+- [ ] Open the Progress Tracker (CurriculumTracker.tsx) → tick an individual SCO checkbox on a milestone → that SCO immediately gets the "Completed" badge when you next open the ELO/SCO dropdown in a generator `[HIGH]`
+- [ ] Mark a whole milestone as `completed` → the milestone's `topic_title` (ELO) AND all its checklist items (SCOs) get tagged in the generator dropdowns `[HIGH]`
+- [ ] Uncheck an SCO in the tracker → tag disappears on next fetch `[MEDIUM]`
+- [ ] Hidden milestones (`is_hidden = 1`) don't contribute to completion sets `[LOW]`
+
+**Live refresh via custom event**
+- [ ] Keep a generator open in one tab, switch to the Progress Tracker tab, toggle a milestone or checklist item, switch back to the generator → dropdown reflects the change **without a reload or reopen** (fires `window` event `curriculum-completion-changed`, hook refetches) `[HIGH]`
+- [ ] Event fires only after successful `milestoneApi.updateMilestone` (not on error) `[MEDIUM]`
+
+**Kindergarten / Multigrade / Cross-Curricular histories**
+- [ ] Saving a KindergartenPlanner / MultigradePlanner / CrossCurricularPlanner entry with ELO/SCO fields populated → those outcomes are treated as completed (any save counts since flat JSON files don't track status) `[MEDIUM]`
+
+**Matching edge cases**
+- [ ] Whitespace-only differences (extra spaces, tabs, trailing newlines) still match (normalized) `[MEDIUM]`
+- [ ] Rewording of curriculum upstream will stop matching until milestones are re-synced — known limitation, low priority to handle `[LOW]`
+
+**Not yet wired**
+- The other 6 generators (Quiz/Rubric/Worksheet/Kindergarten/Multigrade/CrossCurricular) use the same `CurriculumAlignmentFields` component but don't yet pass the completion sets. Two-line change each if/when needed.
+- Findings: ___
+
+### CC.13 End-to-end smoke test — "closed loop"
+
+This covers the full integration for the primary LessonPlanner workflow.
+
+- [ ] **Setup**: Create a Grade 3 class, schedule it in the Timetable for Mon/Wed/Fri at 9:00-10:00, configure a ClassConfig for it, add one blocking holiday in the next 2 weeks. `[HIGH]`
+- [ ] **Dashboard**: Open the dashboard → confirm the flip card shows Upcoming Quizzes on the front and a notification toast appears listing unplanned upcoming sessions `[HIGH]`
+- [ ] **Click-to-open**: Flip the card → click the first unplanned Grade 3 session → LessonPlanner opens → class is set → Subject, Grade, Duration are populated from the slot `[HIGH]`
+- [ ] **Curriculum**: Pick a strand → open the ELO dropdown → confirm that any previously-taught ELO shows the "Completed" badge `[MEDIUM]`
+- [ ] **Override**: Click "Override" on the ClassDefaultsBanner → Step 2 form re-appears with the class defaults already filled in `[MEDIUM]`
+- [ ] **Generate + Save**: Fill in Topic, advance to Step 3, click Generate, then Save `[HIGH]`
+- [ ] **Loop closes**: Go back to the dashboard → that session is no longer in the unplanned list → the count has decreased by 1 `[HIGH]`
+- [ ] **Progress Tracker update reflected**: Open Progress Tracker → tick an SCO on a relevant milestone → return to LessonPlanner → reopen the SCO dropdown → the newly-ticked SCO shows the "Completed" badge without a reload `[HIGH]`
+- Findings: ___
+
+---
+
+## Open Follow-ups (from this refactor)
+
+These are known deferrals documented for when you're ready to pick them up:
+
+1. **Drag-to-resize timetable cells** (Phase 3b) — Excel-style drag handles on slot edges. Functional need is covered by the modal Length selector; this is visual polish.
+2. **Holiday filter in `GenerateForSelector`** — the component accepts a `blockedDates` prop but none of the generators pass one yet. The backend's unplanned-upcoming endpoint already filters holidays, so this only affects generator dropdown consistency.
+3. **Propagate `useCurriculumCompletion` to the other 6 generators** — same `CurriculumAlignmentFields` component; each is a two-line change (add hook, pass props).
+4. **`AutoFilledSection` collapse in the other 6 generators** — LessonPlanner Step 2 is the reference impl; other generators' form shapes need per-case decisions about which section(s) to wrap.
+5. **`scheduled_for` persistence for Quiz / Rubric / Worksheet** — intentionally deferred because these are supplementary artifacts (assessments/resources), not the lesson itself. Revisit if teachers ask for "Quizzes Needing Preparation" or similar tracking.
+6. **ID-based outcome matching** — completion tagging is text-matched with whitespace normalization. If curriculum data is reworded upstream, old milestones won't match new text until the teacher re-syncs. Upgrading to ID-based matching would require the frontend to carry curriculum IDs on saved lesson plans.
+
+---
+
 make user manual

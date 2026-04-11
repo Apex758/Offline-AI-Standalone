@@ -177,6 +177,45 @@ async def get_timetable(teacher_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/curriculum-completion/{teacher_id}")
+async def get_curriculum_completion(
+    teacher_id: str,
+    subject: Optional[str] = None,
+    grade_level: Optional[str] = None,
+):
+    """
+    Phase 6: return the set of ELO / SCO strings this teacher has already
+    covered, so generator dropdowns can tag them as 'completed' without
+    hiding them from the picker.
+    """
+    try:
+        return school_year_service.get_curriculum_completion(
+            teacher_id,
+            subject=subject,
+            grade_level=grade_level,
+        )
+    except Exception as e:
+        logger.error(f"Failed to get curriculum completion: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/upcoming-unplanned/{teacher_id}")
+async def get_upcoming_unplanned(teacher_id: str, within_days: int = 14):
+    """
+    Phase 5: list upcoming timetable occurrences that don't yet have a linked
+    lesson plan. Skips dates covered by blocking holidays.
+
+    Query params:
+      within_days: how many days to look ahead (default 14)
+    """
+    try:
+        occurrences = school_year_service.get_upcoming_unplanned(teacher_id, within_days=within_days)
+        return {"occurrences": occurrences, "count": len(occurrences)}
+    except Exception as e:
+        logger.error(f"Failed to get upcoming unplanned: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/timetable")
 async def upsert_timetable_slot(data: TimetableSlotCreate):
     try:

@@ -79,8 +79,11 @@ import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { QUIZ_PRESETS, loadQuizLastSettings, saveQuizLastSettings } from '../data/generatorPresets';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
-import { applyClassDefaults, quizGeneratorFieldMap } from '../lib/applyClassDefaults';
+import { applyClassDefaults, listFilledLabels, quizGeneratorFieldMap } from '../lib/applyClassDefaults';
 import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
+import ClassDefaultsBanner from './ClassDefaultsBanner';
+import GenerateForSelector from './GenerateForSelector';
+import type { UpcomingOccurrence } from '../lib/upcomingSlots';
 import SmartTextArea from './SmartTextArea';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
@@ -294,7 +297,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [useCurriculum, setUseCurriculum] = useState(true);
 
   // Class config auto-fill state
-  const { activeClass, setActiveClass } = useActiveClass();
+  const { activeClass, setActiveClass, config: activeConfig, hasConfig } = useActiveClass();
   const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
   const [configClassName, setConfigClassName] = useState<string>(activeClass?.key || '');
   const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
@@ -374,6 +377,26 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Class defaults banner + Phase-4 target selector ─────────────────
+  const [overrideOpen, setOverrideOpen] = useState(false);
+  const filledLabels = React.useMemo(
+    () => listFilledLabels(activeConfig, quizGeneratorFieldMap),
+    [activeConfig]
+  );
+  const showBanner = hasConfig && filledLabels.length > 0;
+
+  const [targetOccurrence, setTargetOccurrence] = useState<UpcomingOccurrence | null>(null);
+  const targetValue = targetOccurrence ? `${targetOccurrence.slotId}::${targetOccurrence.dateISO}` : null;
+  const handlePickOccurrence = (occ: UpcomingOccurrence | null) => {
+    setTargetOccurrence(occ);
+    if (!occ) return;
+    setFormData(prev => ({
+      ...prev,
+      subject: occ.subject || prev.subject,
+      gradeLevel: occ.gradeLevel || prev.gradeLevel,
+    }));
+  };
 
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
   
@@ -1531,6 +1554,22 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 ) : (
                   /* ── Standard curriculum fields ── */
                   <>
+                    {showBanner && (
+                      <ClassDefaultsBanner
+                        classLabel={activeClass?.label || classConfigApplied || 'selected class'}
+                        filledFieldLabels={filledLabels}
+                        overrideOpen={overrideOpen}
+                        onToggleOverride={() => setOverrideOpen(v => !v)}
+                        accentColor={tabColor}
+                      />
+                    )}
+
+                    <GenerateForSelector
+                      value={targetValue}
+                      onPick={handlePickOccurrence}
+                      accentColor={tabColor}
+                    />
+
                     {/* Class picker -- auto-fills from Class Manager settings */}
                     <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
                       <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>

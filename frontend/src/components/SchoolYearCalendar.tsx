@@ -54,6 +54,7 @@ interface SchoolYearEvent {
   all_day: number;
   reminders_enabled: number;
   reminder_offsets: string;
+  blocks_classes?: number;
   created_at: string;
 }
 
@@ -67,6 +68,7 @@ interface SchoolYearCalendarProps {
 // ── Constants ──
 
 const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+  holiday: { label: 'Holiday', color: '#DC2626' },
   project: { label: 'Project', color: '#3B82F6' },
   quiz: { label: 'Quiz', color: '#F59E0B' },
   assignment: { label: 'Assignment', color: '#8B5CF6' },
@@ -196,6 +198,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     grade_level: '',
     reminders_enabled: 0,
     reminder_offsets: '[]',
+    blocks_classes: 0,
   });
 
   // Calendar file import state
@@ -471,6 +474,8 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       grade_level: '',
       reminders_enabled: 0,
       reminder_offsets: '[]',
+      // Holidays default to blocking classes; other types don't.
+      blocks_classes: type === 'holiday' ? 1 : 0,
     });
     setShowEventForm(true);
   };
@@ -487,6 +492,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       grade_level: event.grade_level || '',
       reminders_enabled: event.reminders_enabled ?? 0,
       reminder_offsets: event.reminder_offsets ?? '[]',
+      blocks_classes: event.blocks_classes ?? 0,
     });
     setShowEventForm(true);
   };
@@ -506,6 +512,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
         grade_level: eventForm.grade_level || null,
         reminders_enabled: eventForm.reminders_enabled,
         reminder_offsets: eventForm.reminder_offsets,
+        blocks_classes: eventForm.event_type === 'holiday' ? (eventForm.blocks_classes ? 1 : 0) : 0,
       };
       if (editingEvent) {
         payload.id = editingEvent.id;
@@ -1065,13 +1072,37 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                 <select
                   className="syc-form-input"
                   value={eventForm.event_type}
-                  onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
+                  onChange={(e) => {
+                    const nextType = e.target.value;
+                    setEventForm(prev => ({
+                      ...prev,
+                      event_type: nextType,
+                      // When switching to holiday, default to blocking classes.
+                      // When switching away, clear the flag.
+                      blocks_classes: nextType === 'holiday'
+                        ? (prev.event_type === 'holiday' ? prev.blocks_classes : 1)
+                        : 0,
+                    }));
+                  }}
                 >
                   {Object.entries(EVENT_TYPE_CONFIG).map(([type, cfg]) => (
                     <option key={type} value={type}>{cfg.label}</option>
                   ))}
                 </select>
               </label>
+              {eventForm.event_type === 'holiday' && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', padding: '6px 0' }}>
+                  <input
+                    type="checkbox"
+                    checked={eventForm.blocks_classes === 1}
+                    onChange={(e) => setEventForm({ ...eventForm, blocks_classes: e.target.checked ? 1 : 0 })}
+                  />
+                  <span>Block classes on this day</span>
+                  <span style={{ fontSize: '11px', opacity: 0.6, fontWeight: 'normal' }}>
+                    (timetable slots will be hidden for this date)
+                  </span>
+                </label>
+              )}
               <label className="syc-form-label">
                 Date
                 <input

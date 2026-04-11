@@ -20,8 +20,13 @@ import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import VolumeHighIcon from '@hugeicons/core-free-icons/VolumeHighIcon';
 import VolumeOffIcon from '@hugeicons/core-free-icons/VolumeOffIcon';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
-import { applyClassDefaults, lessonPlannerFieldMap } from '../lib/applyClassDefaults';
+import { applyClassDefaults, listFilledLabels, lessonPlannerFieldMap } from '../lib/applyClassDefaults';
 import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
+import ClassDefaultsBanner from './ClassDefaultsBanner';
+import AutoFilledSection from './AutoFilledSection';
+import GenerateForSelector from './GenerateForSelector';
+import type { UpcomingOccurrence } from '../lib/upcomingSlots';
+import { useCurriculumCompletion } from '../hooks/useCurriculumCompletion';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -230,9 +235,73 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
   // ── Class context (auto-fill from Class Manager) ────────────────────────
   const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
-  const { activeClass, setActiveClass } = useActiveClass();
+  const { activeClass, setActiveClass, config: activeConfig, hasConfig } = useActiveClass();
   const [selectedClassName, setSelectedClassName] = useState<string>(activeClass?.key || '');
   const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
+  const [overrideOpen, setOverrideOpen] = useState(false);
+  const filledLabels = React.useMemo(
+    () => listFilledLabels(activeConfig, lessonPlannerFieldMap),
+    [activeConfig]
+  );
+  const showBanner = hasConfig && filledLabels.length > 0;
+
+  // Phase 6: completion tags for ELO/SCO dropdowns
+  const curriculumCompletion = useCurriculumCompletion(formData.subject, formData.gradeLevel);
+
+  // Phase 4: target a specific upcoming timetable occurrence for this lesson.
+  // When set, subject/gradeLevel/duration are forced to match the slot.
+  const [targetOccurrence, setTargetOccurrence] = useState<UpcomingOccurrence | null>(null);
+  const targetValue = targetOccurrence ? `${targetOccurrence.slotId}::${targetOccurrence.dateISO}` : null;
+
+  const handlePickOccurrence = (occ: UpcomingOccurrence | null) => {
+    setTargetOccurrence(occ);
+    if (!occ) return;
+    // Project the target slot onto the form: subject, grade, duration.
+    setFormData(prev => ({
+      ...prev,
+      subject: occ.subject || prev.subject,
+      gradeLevel: occ.gradeLevel || prev.gradeLevel,
+      duration: occ.durationMinutes > 0 ? `${occ.durationMinutes} minutes` : prev.duration,
+    }));
+  };
+
+  // Phase 5: if the dashboard's "Lessons Needing Plans" widget handed us a
+  // pending target (via sessionStorage), consume it on mount. We also sync
+  // the active class if the target came from a different class, so the
+  // GenerateForSelector dropdown re-projects onto the right slot list.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('pendingLessonTarget');
+      if (!raw) return;
+      sessionStorage.removeItem('pendingLessonTarget');
+      const target = JSON.parse(raw);
+      if (!target || !target.slotId) return;
+
+      if (target.className) {
+        const sel = buildSelection(target.className, target.gradeLevel || undefined);
+        setActiveClass(sel);
+        // Kick the local class picker to hydrate form defaults
+        handleSelectClass(sel.key);
+      }
+
+      // Synthesize an UpcomingOccurrence and project it onto the form
+      handlePickOccurrence({
+        slotId: target.slotId,
+        date: new Date((target.dateISO || '') + 'T00:00:00'),
+        dateISO: target.dateISO || '',
+        dayOfWeek: target.dayOfWeek || '',
+        startTime: target.startTime || '',
+        endTime: target.endTime || '',
+        durationMinutes: target.durationMinutes || 0,
+        subject: target.subject || '',
+        gradeLevel: target.gradeLevel || '',
+        className: target.className || null,
+      });
+    } catch (e) {
+      console.error('Failed to apply pendingLessonTarget:', e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchClasses().then(setAvailableClasses).catch(() => {});
@@ -693,34 +762,44 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   };
 
   const saveLessonPlan = async () => {
-    if (!generatedPlan && !parsedLesson) {
+    if (!generatedPlan && !parsedLesson && !ohpcLesson) {
       alert('No lesson plan to save');
       return;
     }
 
     setSaveStatus('saving');
     try {
-      // Build a proper title with fallbacks
       const title = formData.topic?.trim()
         ? `${formData.subject || 'General'} - ${formData.topic} (Grade ${formData.gradeLevel || 'Unknown'})`
         : `Lesson Plan - ${formData.subject || 'General'} (Grade ${formData.gradeLevel || 'Unknown'})`;
-      
-      // Track edit count: increment if re-saving an existing plan
+
       let editCount = 1;
       if (currentPlanId) {
         const existing = lessonPlanHistories.find(h => h.id === currentPlanId);
         editCount = (existing?.edit_count ?? 1) + 1;
       }
 
-      const planData = {
+      // Phase 3: persist the structured OHPC lesson + teacher reflections as
+      // the primary payload. `generatedPlan` still carries the raw JSON
+      // stream for backwards-compatible fields; the loader prefers the
+      // structured object.
+      //
+      // Phase 5: if the teacher picked a concrete upcoming session via
+      // GenerateForSelector, link this plan to that exact slot+date so the
+      // "upcoming lessons without plans" widget can count it as planned.
+      const planData: any = {
         id: currentPlanId || `plan_${Date.now()}`,
         title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: generatedPlan,  // ✅ Save original clean text
+        generatedPlan: generatedPlan,
         parsedLesson: parsedLesson || undefined,
-        curriculumMatches: curriculumMatches, // ✅ Save related curriculum section
+        ohpcLesson: ohpcLesson || undefined,
+        reflections: reflections,
+        curriculumMatches: curriculumMatches,
         edit_count: editCount,
+        timetable_slot_id: targetOccurrence?.slotId,
+        scheduled_for: targetOccurrence?.dateISO,
       };
 
       await axios.post('http://localhost:8000/api/lesson-plan-history', planData);
@@ -739,8 +818,14 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setFormData(history.formData);
     setGeneratedPlan(history.generatedPlan);
     setParsedLesson(history.parsedLesson || null);
-    setCurriculumMatches(history.curriculumMatches || []); // ✅ Restore related curriculum
+    setCurriculumMatches(history.curriculumMatches || []);
     setCurrentPlanId(history.id);
+    // Phase 3: prefer structured OHPC payload when present. Legacy lessons
+    // (saved before the schema rollout) will leave ohpcLesson undefined and
+    // the table will render empty -- that's the wipe-history migration.
+    const anyHist = history as any;
+    setOhpcLesson(anyHist.ohpcLesson || null);
+    setReflections(anyHist.reflections || EMPTY_TEACHER_REFLECTIONS);
     setHistoryOpen(false);
   };
 
@@ -825,14 +910,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan || loading) ? (
           <>
-            {isEditing && parsedLesson ? (
-              // Show Structured Editor
-              <LessonEditor
-                lesson={parsedLesson}
-                onSave={saveLessonEdit}
-                onCancel={cancelEditing}
-              />
-            ) : loading && !streamingPlan && !generatedPlan ? (
+            {loading && !streamingPlan && !generatedPlan ? (
               <GeneratorSkeleton accentColor={tabColor} type="lesson" />
             ) : (
               // Show generated lesson plan (existing display code)
@@ -846,15 +924,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={enableEditing}
-                        disabled={!parsedLesson}
-                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
-                        title={!parsedLesson ? "Lesson format not recognized" : "Edit lesson"}
-                      >
-                        <Edit className="w-3.5 h-3.5 mr-1.5" />
-                        Edit
-                      </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
@@ -939,7 +1008,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             
             <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
               {/* Modern Header Card */}
-              {(streamingPlan || generatedPlan) && !isEditing && (
+              {(streamingPlan || generatedPlan) && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     {/* Background gradient */}
@@ -1120,6 +1189,23 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
 
+                    {showBanner && (
+                      <ClassDefaultsBanner
+                        classLabel={activeClass?.label || classContextApplied || 'selected class'}
+                        filledFieldLabels={filledLabels}
+                        overrideOpen={overrideOpen}
+                        onToggleOverride={() => setOverrideOpen(v => !v)}
+                        accentColor={tabColor}
+                      />
+                    )}
+
+                    {/* Phase 4: target a specific upcoming session from the timetable */}
+                    <GenerateForSelector
+                      value={targetValue}
+                      onPick={handlePickOccurrence}
+                      accentColor={tabColor}
+                    />
+
                     {/* Class picker — auto-fills all class-level fields from Class Manager */}
                     <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
                       <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>
@@ -1219,6 +1305,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                           accentColor={tabColor}
                           validationErrors={validationErrors}
+                          completedELOs={curriculumCompletion.completedELOs}
+                          completedSCOs={curriculumCompletion.completedSCOs}
                         />
                       </div>
 
@@ -1287,6 +1375,24 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Teaching Strategy</h3>
 
+                    {showBanner && (
+                      <ClassDefaultsBanner
+                        classLabel={activeClass?.label || classContextApplied || 'selected class'}
+                        filledFieldLabels={filledLabels}
+                        overrideOpen={overrideOpen}
+                        onToggleOverride={() => setOverrideOpen(v => !v)}
+                        accentColor={tabColor}
+                      />
+                    )}
+
+                    {showBanner && !overrideOpen && (
+                      <div className="rounded-lg border border-dashed border-theme p-6 text-center text-sm text-theme-muted">
+                        All teaching strategy fields were auto-filled from your class settings.
+                        Click <strong>Override</strong> above to adjust them for this lesson only.
+                      </div>
+                    )}
+
+                    <AutoFilledSection autoFilled={showBanner} overrideOpen={overrideOpen}>
                     <div data-tutorial="lesson-planner-activities">
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Pedagogical Strategies <span className="text-red-500">*</span>
@@ -1415,6 +1521,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         placeholder="Skills students should already have before this lesson"
                       />
                     </div>
+                    </AutoFilledSection>
                   </div>
                 )}
 

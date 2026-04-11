@@ -68,6 +68,8 @@ import TaskEditModal from './modals/TaskEditModal';
 import CalendarModal from './CalendarModal';
 import TaskListWidget from './widgets/TaskListWidget';
 import CompactCalendar from './widgets/CompactCalendar';
+import LessonsNeedingPlans, { UnplannedOccurrence } from './widgets/LessonsNeedingPlans';
+import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
 import { useUnifiedCalendarFeed } from '../hooks/useUnifiedCalendarFeed';
 import ChartCarousel from './charts/ChartCarousel';
 import CurriculumProgressWidget from './widgets/CurriculumProgressWidget';
@@ -116,6 +118,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const { earned, totalAvailable, showcase, definitions } = useAchievementContext();
   const { settings } = useSettings();
   const { notify } = useNotification();
+  const { setActiveClass } = useActiveClass();
   // State management
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
@@ -139,6 +142,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  // Phase 5: flip state for the "Upcoming Quizzes" <-> "Lessons Needing Plans" card
+  const [quizzesFlipped, setQuizzesFlipped] = useState(false);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showShowcase, setShowShowcase] = useState(settings.showTrophiesByDefault);
   const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
@@ -571,6 +576,50 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     if (onCreateTab) {
       onCreateTab(toolType);
     }
+  };
+
+  /**
+   * Phase 5/6: user clicked an unplanned upcoming session in the flip card.
+   * Routes to the right generator based on the class's grade:
+   *   - kindergarten (K) -> KindergartenPlanner
+   *   - grade range (e.g. "1-2", "K-3") -> MultigradePlanner
+   *   - everything else -> LessonPlanner
+   *
+   * Then hands off the occurrence via sessionStorage so the destination
+   * generator's mount-time consumer can auto-target + auto-fill.
+   */
+  const handleUnplannedClick = (occ: UnplannedOccurrence) => {
+    const target = {
+      slotId: occ.slot_id,
+      dateISO: occ.date,
+      dayOfWeek: occ.day_of_week,
+      startTime: occ.start_time,
+      endTime: occ.end_time,
+      durationMinutes: occ.duration_minutes,
+      subject: occ.subject,
+      gradeLevel: occ.grade_level,
+      className: occ.class_name,
+    };
+    try {
+      sessionStorage.setItem('pendingLessonTarget', JSON.stringify(target));
+    } catch {
+      // sessionStorage unavailable — proceed without persistence
+    }
+    if (occ.class_name) {
+      setActiveClass(buildSelection(occ.class_name, occ.grade_level || undefined));
+    }
+
+    // Route decision based on grade_level
+    const grade = (occ.grade_level || '').trim().toLowerCase().replace(/^grade\s*/, '');
+    let tabType: string = 'lesson-planner';
+    if (grade === 'k' || grade === 'kindergarten' || grade === 'kg') {
+      tabType = 'kindergarten-planner';
+    } else if (/[-–—]/.test(grade)) {
+      // Grade range like "1-2" or "K-3" -> multigrade
+      tabType = 'multigrade-planner';
+    }
+
+    onCreateTab?.(tabType);
   };
 
   const handleProfileSave = (name: string, image: string | null) => {
@@ -1085,7 +1134,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               onRegenerateInsights={() => onCreateTab?.('educator-insights')}
             />
 
-            {/* Upcoming Quizzes */}
+            {/* Upcoming Quizzes <-> Lessons Needing Plans flip card */}
             {(() => {
               const today = format(new Date(), 'yyyy-MM-dd');
               const upcomingQuizzes = testReminders.filter(r => r.type === 'quiz' && r.test_date >= today);
@@ -1094,26 +1143,86 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
               return hasAny ? (
                 <>
-                  {upcomingQuizzes.length > 0 && (
-                    <div className="bg-theme-surface rounded-xl border border-theme p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-semibold text-theme-heading">{t('analytics.upcomingQuizzes')}</h3>
-                      </div>
-                      <div className="space-y-2">
-                        {upcomingQuizzes.slice(0, 5).map(r => (
-                          <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-theme-secondary text-xs">
-                            <div>
-                              <p className="font-medium text-theme-label">{r.title}</p>
-                              <p className="text-theme-hint">{r.subject} - Grade {r.grade_level}</p>
-                            </div>
-                            <span className="text-theme-muted font-mono">
-                              {new Date(r.test_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                            </span>
+                  {/* Flip card: front = upcoming quizzes, back = lessons needing plans */}
+                  <div
+                    className="bg-theme-surface rounded-xl border border-theme p-4 relative"
+                    style={{ perspective: '1200px' }}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-theme-heading">
+                        {quizzesFlipped
+                          ? 'Lessons Needing Plans'
+                          : t('analytics.upcomingQuizzes')}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setQuizzesFlipped(v => !v)}
+                        className="text-[11px] px-2 py-1 rounded-md border border-theme-strong hover:bg-theme-subtle text-theme-muted"
+                        title="Flip card"
+                      >
+                        {quizzesFlipped ? 'Show quizzes' : 'Show lesson plans'}
+                      </button>
+                    </div>
+                    <div
+                      className="relative"
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        transition: 'transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                        transform: quizzesFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                        minHeight: '120px',
+                      }}
+                    >
+                      {/* Front face — Upcoming Quizzes */}
+                      <div
+                        style={{
+                          backfaceVisibility: 'hidden',
+                          WebkitBackfaceVisibility: 'hidden',
+                          position: quizzesFlipped ? 'absolute' : 'relative',
+                          inset: 0,
+                          pointerEvents: quizzesFlipped ? 'none' : 'auto',
+                        }}
+                      >
+                        {upcomingQuizzes.length > 0 ? (
+                          <div className="space-y-2">
+                            {upcomingQuizzes.slice(0, 5).map(r => (
+                              <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-theme-secondary text-xs">
+                                <div>
+                                  <p className="font-medium text-theme-label">{r.title}</p>
+                                  <p className="text-theme-hint">{r.subject} - Grade {r.grade_level}</p>
+                                </div>
+                                <span className="text-theme-muted font-mono">
+                                  {new Date(r.test_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                </span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        ) : (
+                          <p className="text-xs text-theme-muted">No upcoming quizzes scheduled.</p>
+                        )}
+                      </div>
+
+                      {/* Back face — Lessons Needing Plans */}
+                      <div
+                        style={{
+                          backfaceVisibility: 'hidden',
+                          WebkitBackfaceVisibility: 'hidden',
+                          transform: 'rotateY(180deg)',
+                          position: quizzesFlipped ? 'relative' : 'absolute',
+                          inset: 0,
+                          pointerEvents: quizzesFlipped ? 'auto' : 'none',
+                        }}
+                      >
+                        {/* LessonsNeedingPlans renders its own title/count; strip it via a plain container.
+                            We want the flip card's own header only, so we render the widget's body content directly. */}
+                        <LessonsNeedingPlans
+                          withinDays={14}
+                          maxPreview={5}
+                          onItemClick={handleUnplannedClick}
+                        />
                       </div>
                     </div>
-                  )}
+                  </div>
+
 
                   {upcomingWorksheets.length > 0 && (
                     <div className="bg-theme-surface rounded-xl border border-theme p-4">

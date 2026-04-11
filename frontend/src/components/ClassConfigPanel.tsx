@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClassConfig, fetchClassConfig, saveClassConfig } from '../lib/classConfig';
+import { useSettings } from '../contexts/SettingsContext';
+import { useTimetable, TimetableSlot } from '../contexts/TimetableContext';
+import { getSubjectsForGrade } from '../data/teacherConstants';
 
 interface Props {
   className: string;
@@ -26,6 +29,170 @@ const ASSESSMENT_FORMATS = ['Multiple choice', 'Performance-based', 'Portfolio',
 const PERFORMANCE_LEVELS = ['4-point scale', '5-point scale', 'A-F', 'Pass/Fail', 'Standards-based'];
 const DURATIONS = ['30 minutes', '45 minutes', '60 minutes', '75 minutes', '90 minutes', '120 minutes'];
 
+// ── Timetable-derived subject/duration helpers ───────────────────────────
+
+function calcMinutes(start: string, end: string): number {
+  try {
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
+  } catch {
+    return 0;
+  }
+}
+
+function normalizeGrade(g: string | undefined): string {
+  if (!g) return '';
+  return String(g).toLowerCase().replace(/^grade\s*/, '').trim();
+}
+
+/**
+ * Given a className + gradeLevel, return the list of subjects that are valid
+ * for this class. Precedence:
+ *   1. Timetable wins: if the class has scheduled slots, use those subjects
+ *      verbatim. The timetable reflects reality; onboarding was just a first-
+ *      day guess and drifts.
+ *   2. Onboarding fallback: if not scheduled yet, use the teacher's
+ *      onboarding subjects for this grade.
+ *   3. If neither is available, return an empty list.
+ */
+function deriveSubjectsForClass(
+  className: string,
+  gradeLevel: string | undefined,
+  gradeSubjects: Record<string, string[]>,
+  slots: TimetableSlot[],
+): { subjects: string[]; source: 'timetable' | 'onboarding' | 'none'; slotsForClass: TimetableSlot[] } {
+  const gradeKey = normalizeGrade(gradeLevel);
+
+  const slotsForClass = slots.filter(s =>
+    (s.class_name || '') === className &&
+    (gradeLevel ? normalizeGrade(s.grade_level) === gradeKey : true)
+  );
+  const timetableSubjects = Array.from(new Set(slotsForClass.map(s => s.subject).filter(Boolean)));
+
+  if (timetableSubjects.length > 0) {
+    return { subjects: timetableSubjects, source: 'timetable', slotsForClass };
+  }
+
+  const onboardingForGrade = gradeKey ? getSubjectsForGrade(gradeSubjects, gradeKey) : [];
+  if (onboardingForGrade.length > 0) {
+    return { subjects: onboardingForGrade, source: 'onboarding', slotsForClass: [] };
+  }
+
+  return { subjects: [], source: 'none', slotsForClass: [] };
+}
+
+interface DerivedDayDuration {
+  day: string;
+  start: string;
+  end: string;
+  minutes: number;
+  subject: string;
+}
+
+/**
+ * From the filtered slots for a class (and optionally a subject), build the
+ * per-day schedule and pick a "default" duration = most common minutes value.
+ */
+function deriveDurationsForClass(
+  slotsForClass: TimetableSlot[],
+  subject: string | undefined,
+): { perDay: DerivedDayDuration[]; defaultMinutes: number | null; totalWeeklyMinutes: number } {
+  const relevant = subject
+    ? slotsForClass.filter(s => s.subject === subject)
+    : slotsForClass;
+
+  const perDay: DerivedDayDuration[] = relevant
+    .map(s => ({
+      day: s.day_of_week,
+      start: s.start_time,
+      end: s.end_time,
+      minutes: calcMinutes(s.start_time, s.end_time),
+      subject: s.subject,
+    }))
+    .filter(d => d.minutes > 0);
+
+  const counts = new Map<number, number>();
+  for (const d of perDay) counts.set(d.minutes, (counts.get(d.minutes) || 0) + 1);
+  let defaultMinutes: number | null = null;
+  let bestCount = -1;
+  for (const [mins, n] of counts) {
+    if (n > bestCount) { bestCount = n; defaultMinutes = mins; }
+  }
+
+  const totalWeeklyMinutes = perDay.reduce((sum, d) => sum + d.minutes, 0);
+  return { perDay, defaultMinutes, totalWeeklyMinutes };
+}
+
+function minutesToDurationString(mins: number): string {
+  return `${mins} minutes`;
+}
+
+function formatWeeklyTotal(mins: number): string {
+  if (mins <= 0) return '';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m/week`;
+  if (m === 0) return `${h}h/week`;
+  return `${h}h ${m}m/week`;
+}
+
+// ── Presentational subcomponents (module-scope) ──────────────────────────
+// IMPORTANT: these MUST live outside ClassConfigPanel's render function.
+// Defining them inside the render body creates a new component type on every
+// render, causing React to unmount/remount the subtree — which kills input
+// focus and scroll position on every keystroke.
+
+const Section: React.FC<{
+  title: string;
+  desc?: string;
+  accentColor: string;
+  children: React.ReactNode;
+}> = ({ title, desc, accentColor, children }) => (
+  <div className="rounded-xl widget-glass p-5">
+    <h3
+      className="text-sm font-bold uppercase tracking-wider text-theme-heading mb-1"
+      style={{ color: accentColor }}
+    >
+      {title}
+    </h3>
+    {desc && <p className="text-xs text-theme-muted mb-4">{desc}</p>}
+    <div className="space-y-3">{children}</div>
+  </div>
+);
+
+const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <label className="block text-xs font-semibold text-theme-label mb-1">{children}</label>
+);
+
+const ChipGroup: React.FC<{
+  options: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+  accentColor: string;
+}> = ({ options, selected, onToggle, accentColor }) => (
+  <div className="flex flex-wrap gap-2">
+    {options.map(opt => {
+      const on = selected.includes(opt);
+      return (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onToggle(opt)}
+          className="px-3 py-1.5 rounded-full text-xs font-medium border transition"
+          style={
+            on
+              ? { backgroundColor: accentColor, borderColor: accentColor, color: 'white' }
+              : { borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }
+          }
+        >
+          {opt}
+        </button>
+      );
+    })}
+  </div>
+);
+
 const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor = '#f97316' }) => {
   const { t } = useTranslation();
   const [config, setConfig] = useState<ClassConfig>({});
@@ -48,6 +215,46 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
 
   const update = useCallback(<K extends keyof ClassConfig>(key: K, value: ClassConfig[K]) => {
     setConfig(prev => ({ ...prev, [key]: value }));
+    setSaved(false);
+  }, []);
+
+  // ── Timetable + onboarding derivation ──────────────────────────────
+  const { settings } = useSettings();
+  const { slots: allSlots } = useTimetable();
+  const gradeSubjectsMapping = settings.profile.gradeSubjects || {};
+
+  const { subjects: availableSubjects, source: subjectSource, slotsForClass } = useMemo(
+    () => deriveSubjectsForClass(className, gradeLevel, gradeSubjectsMapping, allSlots),
+    [className, gradeLevel, gradeSubjectsMapping, allSlots],
+  );
+
+  const { perDay, defaultMinutes, totalWeeklyMinutes } = useMemo(
+    () => deriveDurationsForClass(slotsForClass, config.subject || undefined),
+    [slotsForClass, config.subject],
+  );
+
+  // Auto-fill classPeriodDuration from the timetable on first load, if empty.
+  const durationPrefillRef = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    if (durationPrefillRef.current) return;
+    if (config.classPeriodDuration) { durationPrefillRef.current = true; return; }
+    if (defaultMinutes && defaultMinutes > 0) {
+      setConfig(prev => ({ ...prev, classPeriodDuration: minutesToDurationString(defaultMinutes) }));
+      durationPrefillRef.current = true;
+    }
+  }, [loading, defaultMinutes, config.classPeriodDuration]);
+
+  // Changing the subject cascades: wipe strand + outcomes so teachers don't
+  // end up with stale curriculum data from a different subject.
+  const handleSubjectChange = useCallback((nextSubject: string) => {
+    setConfig(prev => ({
+      ...prev,
+      subject: nextSubject || undefined,
+      strand: undefined,
+      essentialOutcomes: undefined,
+      specificOutcomes: undefined,
+    }));
     setSaved(false);
   }, []);
 
@@ -139,43 +346,8 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
     return <div className="text-theme-muted text-sm p-6">{t('classConfig.panel.messages.loading')}</div>;
   }
 
-  const Section: React.FC<{ title: string; desc?: string; children: React.ReactNode }> = ({ title, desc, children }) => (
-    <div className="rounded-xl widget-glass p-5">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-theme-heading mb-1" style={{ color: accentColor }}>
-        {title}
-      </h3>
-      {desc && <p className="text-xs text-theme-muted mb-4">{desc}</p>}
-      <div className="space-y-3">{children}</div>
-    </div>
-  );
-
-  const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <label className="block text-xs font-semibold text-theme-label mb-1">{children}</label>
-  );
-
   const inputCls = 'w-full px-3 py-2 rounded-lg border border-theme-strong bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2';
   const inputStyle = { '--tw-ring-color': accentColor } as any;
-
-  const ChipGroup: React.FC<{ options: string[]; selected: string[]; onToggle: (v: string) => void }> = ({ options, selected, onToggle }) => (
-    <div className="flex flex-wrap gap-2">
-      {options.map(opt => {
-        const on = selected.includes(opt);
-        return (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onToggle(opt)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium border transition"
-            style={on
-              ? { backgroundColor: accentColor, borderColor: accentColor, color: 'white' }
-              : { borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
-          >
-            {opt}
-          </button>
-        );
-      })}
-    </div>
-  );
 
   return (
     <div className="space-y-5 pb-24">
@@ -185,13 +357,63 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </p>
       </div>
 
-      <Section title={t('classConfig.panel.sections.curriculum')} desc={t('classConfig.panel.sections.curriculumDesc')}>
+      {/* Timetable "Meets:" strip — read-only summary of when this class meets */}
+      {perDay.length > 0 ? (
+        <div className="rounded-xl p-4 border" style={{ borderColor: accentColor, backgroundColor: `${accentColor}08` }}>
+          <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: accentColor }}>
+            Meets
+          </div>
+          <div className="flex flex-wrap gap-2 text-sm text-theme-label">
+            {perDay.map((d, i) => (
+              <span key={i} className="px-2 py-1 rounded-md border border-theme-strong">
+                {d.day} {d.start}–{d.end} <span className="text-theme-muted">({d.minutes}m)</span>
+              </span>
+            ))}
+          </div>
+          {totalWeeklyMinutes > 0 && (
+            <div className="text-xs text-theme-muted mt-2">
+              Total: {formatWeeklyTotal(totalWeeklyMinutes)}
+              {defaultMinutes ? ` • Most common period: ${defaultMinutes}m` : ''}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-xl p-4 border border-dashed text-sm text-theme-muted" style={{ borderColor: 'var(--color-border)' }}>
+          This class isn&apos;t scheduled in your timetable yet. Place it in the Timetable view to auto-derive duration and to scope the subject list.
+        </div>
+      )}
+
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.curriculum')} desc={t('classConfig.panel.sections.curriculumDesc')}>
         <div>
           <Label>{t('classConfig.panel.fields.subject')}</Label>
-          <input className={inputCls} style={inputStyle}
-            value={config.subject || ''}
-            onChange={e => update('subject', e.target.value)}
-            placeholder={t('classConfig.panel.placeholders.subject')} />
+          {availableSubjects.length > 0 ? (
+            <>
+              <select
+                className={inputCls}
+                style={inputStyle}
+                value={config.subject || ''}
+                onChange={e => handleSubjectChange(e.target.value)}
+              >
+                <option value="">— Select a subject —</option>
+                {availableSubjects.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <p className="text-[11px] text-theme-muted mt-1">
+                {subjectSource === 'timetable'
+                  ? 'Scoped to subjects you teach this class in your timetable.'
+                  : 'From your onboarding profile. Place this class in the timetable to scope it further.'}
+              </p>
+            </>
+          ) : (
+            <>
+              <input className={inputCls} style={inputStyle}
+                value={config.subject || ''}
+                onChange={e => handleSubjectChange(e.target.value)}
+                placeholder={t('classConfig.panel.placeholders.subject')} />
+              <p className="text-[11px] text-amber-600 mt-1">
+                No subjects found for this grade in your onboarding profile or timetable. You can still type one manually.
+              </p>
+            </>
+          )}
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.strand')}</Label>
@@ -214,7 +436,7 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title={t('classConfig.panel.sections.composition')}>
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.composition')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>{t('classConfig.panel.fields.studentCount')}</Label>
@@ -231,22 +453,22 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title={t('classConfig.panel.sections.learnerProfile')} desc={t('classConfig.panel.sections.learnerProfileDesc')}>
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.learnerProfile')} desc={t('classConfig.panel.sections.learnerProfileDesc')}>
         <div>
           <Label>{t('classConfig.panel.fields.learningStyles')}</Label>
-          <ChipGroup options={LEARNING_STYLES} selected={config.learningStyles || []} onToggle={v => toggleInArray('learningStyles', v)} />
+          <ChipGroup accentColor={accentColor} options={LEARNING_STYLES} selected={config.learningStyles || []} onToggle={v => toggleInArray('learningStyles', v)} />
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.learningPreferences')}</Label>
-          <ChipGroup options={LEARNING_PREFERENCES} selected={config.learningPreferences || []} onToggle={v => toggleInArray('learningPreferences', v)} />
+          <ChipGroup accentColor={accentColor} options={LEARNING_PREFERENCES} selected={config.learningPreferences || []} onToggle={v => toggleInArray('learningPreferences', v)} />
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.multipleIntelligences')}</Label>
-          <ChipGroup options={MULTIPLE_INTELLIGENCES} selected={config.multipleIntelligences || []} onToggle={v => toggleInArray('multipleIntelligences', v)} />
+          <ChipGroup accentColor={accentColor} options={MULTIPLE_INTELLIGENCES} selected={config.multipleIntelligences || []} onToggle={v => toggleInArray('multipleIntelligences', v)} />
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.pedagogicalStrategies')}</Label>
-          <ChipGroup options={PEDAGOGICAL_STRATEGIES} selected={config.pedagogicalStrategies || []} onToggle={v => toggleInArray('pedagogicalStrategies', v)} />
+          <ChipGroup accentColor={accentColor} options={PEDAGOGICAL_STRATEGIES} selected={config.pedagogicalStrategies || []} onToggle={v => toggleInArray('pedagogicalStrategies', v)} />
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.teacherNotes')}</Label>
@@ -256,7 +478,7 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title={t('classConfig.panel.sections.specialNeeds')} desc={t('classConfig.panel.sections.specialNeedsDesc')}>
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.specialNeeds')} desc={t('classConfig.panel.sections.specialNeedsDesc')}>
         <label className="flex items-center gap-2 text-sm text-theme-label">
           <input type="checkbox" checked={!!config.hasSpecialNeeds} onChange={e => update('hasSpecialNeeds', e.target.checked)} />
           {t('classConfig.panel.fields.hasSpecialNeeds')}
@@ -302,7 +524,7 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title={t('classConfig.panel.sections.readingLanguage')}>
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.readingLanguage')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>{t('classConfig.panel.fields.readingLevel')}</Label>
@@ -330,7 +552,7 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title={t('classConfig.panel.sections.assessmentPrefs')} desc={t('classConfig.panel.sections.assessmentPrefsDesc')}>
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.assessmentPrefs')} desc={t('classConfig.panel.sections.assessmentPrefsDesc')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>{t('classConfig.panel.fields.assessmentFormat')}</Label>
@@ -353,15 +575,15 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.questionTypes')}</Label>
-          <ChipGroup options={QUESTION_TYPES} selected={config.defaultQuestionTypes || []} onToggle={v => toggleInArray('defaultQuestionTypes', v)} />
+          <ChipGroup accentColor={accentColor} options={QUESTION_TYPES} selected={config.defaultQuestionTypes || []} onToggle={v => toggleInArray('defaultQuestionTypes', v)} />
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.cognitiveLevels')}</Label>
-          <ChipGroup options={COGNITIVE_LEVELS} selected={config.defaultCognitiveLevels || []} onToggle={v => toggleInArray('defaultCognitiveLevels', v)} />
+          <ChipGroup accentColor={accentColor} options={COGNITIVE_LEVELS} selected={config.defaultCognitiveLevels || []} onToggle={v => toggleInArray('defaultCognitiveLevels', v)} />
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.gradingFocus')}</Label>
-          <ChipGroup options={GRADING_FOCUS} selected={config.gradingFocusAreas || []} onToggle={v => toggleInArray('gradingFocusAreas', v)} />
+          <ChipGroup accentColor={accentColor} options={GRADING_FOCUS} selected={config.gradingFocusAreas || []} onToggle={v => toggleInArray('gradingFocusAreas', v)} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <label className="flex items-center gap-2 text-sm text-theme-label">
@@ -377,7 +599,7 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title={t('classConfig.panel.sections.materials')}>
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.materials')}>
         <div>
           <Label>{t('classConfig.panel.fields.availableMaterials')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={3}
@@ -393,15 +615,30 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title={t('classConfig.panel.sections.pacing')}>
+      <Section accentColor={accentColor} title={t('classConfig.panel.sections.pacing')}>
         <div>
           <Label>{t('classConfig.panel.fields.classDuration')}</Label>
           <select className={inputCls} style={inputStyle}
             value={config.classPeriodDuration || ''}
             onChange={e => update('classPeriodDuration', e.target.value || undefined)}>
             <option value="">—</option>
+            {/* Ensure the derived default is always available, even if it's not in the static list */}
+            {defaultMinutes && !DURATIONS.includes(minutesToDurationString(defaultMinutes)) && (
+              <option value={minutesToDurationString(defaultMinutes)}>
+                {minutesToDurationString(defaultMinutes)} (from timetable)
+              </option>
+            )}
             {DURATIONS.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
+          {defaultMinutes && (
+            <p className="text-[11px] text-theme-muted mt-1">
+              Auto-derived from timetable: <strong>{defaultMinutes} minutes</strong>
+              {perDay.length > 1 && new Set(perDay.map(d => d.minutes)).size > 1
+                ? ` (varies per day — showing most common)`
+                : ''}
+              . Override here to use a different default in generators.
+            </p>
+          )}
         </div>
         <div>
           <Label>{t('classConfig.panel.fields.additionalInstructions')}</Label>

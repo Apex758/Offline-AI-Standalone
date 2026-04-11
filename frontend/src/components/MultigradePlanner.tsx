@@ -16,8 +16,11 @@ import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import Layers01Icon from '@hugeicons/core-free-icons/Layers01Icon';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
-import { applyClassDefaults, multigradePlannerFieldMap } from '../lib/applyClassDefaults';
+import { applyClassDefaults, listFilledLabels, multigradePlannerFieldMap } from '../lib/applyClassDefaults';
 import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
+import ClassDefaultsBanner from './ClassDefaultsBanner';
+import GenerateForSelector from './GenerateForSelector';
+import type { UpcomingOccurrence } from '../lib/upcomingSlots';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -375,7 +378,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
-  const { activeClass, setActiveClass } = useActiveClass();
+  const { activeClass, setActiveClass, config: activeConfig, hasConfig } = useActiveClass();
   const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
   const [selectedClassName, setSelectedClassName] = useState<string>(activeClass?.key || '');
   const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
@@ -406,6 +409,59 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   useEffect(() => {
     if (activeClass && !classContextApplied) {
       handleSelectClass(activeClass.key);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Class defaults banner + Phase-4 target selector ─────────────────
+  const [overrideOpen, setOverrideOpen] = useState(false);
+  const filledLabels = React.useMemo(
+    () => listFilledLabels(activeConfig, multigradePlannerFieldMap),
+    [activeConfig]
+  );
+  const showBanner = hasConfig && filledLabels.length > 0;
+
+  const [targetOccurrence, setTargetOccurrence] = useState<UpcomingOccurrence | null>(null);
+  const targetValue = targetOccurrence ? `${targetOccurrence.slotId}::${targetOccurrence.dateISO}` : null;
+  const handlePickOccurrence = (occ: UpcomingOccurrence | null) => {
+    setTargetOccurrence(occ);
+    if (!occ) return;
+    setFormData(prev => ({
+      ...prev,
+      subject: occ.subject || prev.subject,
+      duration: occ.durationMinutes > 0 ? `${occ.durationMinutes} minutes` : prev.duration,
+    }));
+  };
+
+  // Phase 5: consume pendingLessonTarget handoff from the dashboard widget.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('pendingLessonTarget');
+      if (!raw) return;
+      sessionStorage.removeItem('pendingLessonTarget');
+      const target = JSON.parse(raw);
+      if (!target || !target.slotId) return;
+
+      if (target.className) {
+        const sel = buildSelection(target.className, target.gradeLevel || undefined);
+        setActiveClass(sel);
+        handleSelectClass(sel.key);
+      }
+
+      handlePickOccurrence({
+        slotId: target.slotId,
+        date: new Date((target.dateISO || '') + 'T00:00:00'),
+        dateISO: target.dateISO || '',
+        dayOfWeek: target.dayOfWeek || '',
+        startTime: target.startTime || '',
+        endTime: target.endTime || '',
+        durationMinutes: target.durationMinutes || 0,
+        subject: target.subject || '',
+        gradeLevel: target.gradeLevel || '',
+        className: target.className || null,
+      });
+    } catch (e) {
+      console.error('Failed to apply pendingLessonTarget:', e);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -680,7 +736,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         timestamp: new Date().toISOString(),
         formData: formData,
         generatedPlan: generatedPlan,  // ✅ Save raw version
-        parsedPlan: parsedPlan || undefined
+        parsedPlan: parsedPlan || undefined,
+        // Phase 5: attach to a specific upcoming slot occurrence
+        timetable_slot_id: targetOccurrence?.slotId,
+        scheduled_for: targetOccurrence?.dateISO,
       };
 
       if (!currentPlanId) {
@@ -1152,6 +1211,22 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 {displayStep === 1 && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
+
+                    {showBanner && (
+                      <ClassDefaultsBanner
+                        classLabel={activeClass?.label || classContextApplied || 'selected class'}
+                        filledFieldLabels={filledLabels}
+                        overrideOpen={overrideOpen}
+                        onToggleOverride={() => setOverrideOpen(v => !v)}
+                        accentColor={tabColor}
+                      />
+                    )}
+
+                    <GenerateForSelector
+                      value={targetValue}
+                      onPick={handlePickOccurrence}
+                      accentColor={tabColor}
+                    />
 
                     {/* Class picker -- auto-fills all class-level fields from Class Manager */}
                     <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>

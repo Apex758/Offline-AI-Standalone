@@ -784,6 +784,204 @@ def get_phase_summary(teacher_id: str, phase_key: str) -> dict | None:
 
 DAY_ORDER = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4}
 
+# Python's weekday(): Monday=0 ... Sunday=6
+_DAY_NAME_TO_WEEKDAY = {
+    'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
+    'Friday': 4, 'Saturday': 5, 'Sunday': 6,
+}
+
+
+def _data_dir() -> Path:
+    """Mirror of main.get_data_directory() — can't import without cycles."""
+    if os.name == 'nt':
+        app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
+        return Path(app_data) / 'OECS Class Coworker' / 'data'
+    return Path.home() / '.olh_ai_education' / 'data'
+
+
+def _read_lesson_history_json(filename: str) -> list[dict]:
+    """Read a flat history JSON file (kindergarten/multigrade/cross_curricular).
+
+    Returns [] on any error. Used by get_upcoming_unplanned to detect
+    lesson-like plans attached to specific timetable slot occurrences.
+    """
+    try:
+        fp = _data_dir() / filename
+        if not fp.exists():
+            return []
+        with open(fp, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _normalize_outcome_text(text: str) -> str:
+    """Normalize an ELO/SCO string for matching between curriculum data and
+    saved lesson plans. Strips whitespace and collapses internal runs. Case
+    is preserved because ELO/SCO ids are case-insensitive but prose content
+    may matter (e.g. proper nouns)."""
+    if not text:
+        return ''
+    return ' '.join(text.split()).strip()
+
+
+def _split_sco_field(raw: str) -> list[str]:
+    """LessonPlanner/etc store multiple SCOs in a single string, separated
+    either by the explicit delimiter or by plain newlines. Return the
+    individual normalized outcome strings."""
+    if not raw:
+        return []
+    DELIM = '\n---SCO---\n'
+    parts = raw.split(DELIM) if DELIM in raw else raw.split('\n')
+    return [_normalize_outcome_text(p) for p in parts if p and p.strip()]
+
+
+def get_curriculum_completion(
+    teacher_id: str,
+    subject: str | None = None,
+    grade_level: str | None = None,
+) -> dict:
+    """
+    Phase 6: return the set of ELO / SCO strings that this teacher has already
+    covered. Used by CurriculumAlignmentFields to tag entries as "completed"
+    without hiding them.
+
+    Completion sources:
+      1. lesson_plans (SQLite) with status='completed' — strict "taught" signal
+      2. kindergarten_history.json / multigrade_history.json /
+         cross_curricular_history.json — any saved entry counts (these flat
+         files don't track status)
+
+    Filters by subject/grade_level when provided. Matching is done on the
+    form_data fields `subject`, `gradeLevel`, `essentialOutcomes`,
+    `specificOutcomes` and (Kindergarten) `curriculumSubject`.
+    """
+    norm_subj = _normalize_outcome_text(subject or '').lower()
+    norm_grade = _normalize_outcome_text(grade_level or '').lower().replace('grade ', '').strip()
+
+    completed_elos: set[str] = set()
+    completed_scos: set[str] = set()
+
+    def _form_matches(form: dict) -> bool:
+        if norm_subj:
+            form_subj = _normalize_outcome_text(
+                form.get('subject') or form.get('curriculumSubject') or ''
+            ).lower()
+            if form_subj and form_subj != norm_subj:
+                return False
+        if norm_grade:
+            form_grade = _normalize_outcome_text(
+                str(form.get('gradeLevel') or form.get('gradeRange') or '')
+            ).lower().replace('grade ', '').strip()
+            if form_grade and form_grade != norm_grade:
+                return False
+        return True
+
+    def _ingest_form(form: dict) -> None:
+        if not isinstance(form, dict):
+            return
+        if not _form_matches(form):
+            return
+        elo = _normalize_outcome_text(form.get('essentialOutcomes') or '')
+        if elo:
+            completed_elos.add(elo)
+        for sco in _split_sco_field(form.get('specificOutcomes') or ''):
+            if sco:
+                completed_scos.add(sco)
+
+    # 1. lesson_plans (SQLite, taught only)
+    conn = _get_conn()
+    try:
+        try:
+            rows = conn.execute(
+                """SELECT form_data_json FROM lesson_plans
+                   WHERE teacher_id = ? AND status = 'completed'""",
+                (teacher_id,)
+            ).fetchall()
+            for r in rows:
+                try:
+                    _ingest_form(json.loads(r['form_data_json'] or '{}'))
+                except Exception:
+                    pass
+        except sqlite3.OperationalError:
+            # lesson_plans table or columns may not exist yet
+            pass
+    finally:
+        conn.close()
+
+    # 2. Flat JSON histories (any save counts)
+    for fname in (
+        'kindergarten_history.json',
+        'multigrade_history.json',
+        'cross_curricular_history.json',
+    ):
+        for entry in _read_lesson_history_json(fname):
+            _ingest_form(entry.get('formData') or {})
+
+    # 3. Milestones / Progress Tracker (milestones.db)
+    # A milestone contributes to completion in two ways:
+    #   - status='completed' -> topic_title goes to ELOs, all checklist items
+    #     go to SCOs (auto-promoted when the teacher marks the whole thing done)
+    #   - individual checklist items with checked=True go to SCOs regardless
+    #     of overall status — so ticking off an SCO in the tracker immediately
+    #     dims it in the generator dropdowns even before the parent ELO is
+    #     fully complete.
+    try:
+        mdb_path = _data_dir() / 'milestones.db'
+        if mdb_path.exists():
+            mconn = sqlite3.connect(str(mdb_path))
+            mconn.row_factory = sqlite3.Row
+            try:
+                query = (
+                    "SELECT topic_title, status, checklist_json, subject, grade "
+                    "FROM milestones WHERE teacher_id = ? AND is_hidden = 0"
+                )
+                params: list = [teacher_id]
+                if norm_subj:
+                    query += " AND LOWER(subject) = ?"
+                    params.append(norm_subj)
+                if norm_grade:
+                    # Grade stored as 'k', '1', '2'... — compare against normalized
+                    query += " AND LOWER(REPLACE(grade, 'Grade ', '')) = ?"
+                    params.append(norm_grade)
+                try:
+                    mrows = mconn.execute(query, params).fetchall()
+                except sqlite3.OperationalError:
+                    # Table might not exist yet on fresh install
+                    mrows = []
+                for mrow in mrows:
+                    title = _normalize_outcome_text(mrow['topic_title'] or '')
+                    is_done = (mrow['status'] == 'completed')
+                    if is_done and title:
+                        completed_elos.add(title)
+                    # Parse checklist JSON
+                    try:
+                        checklist = json.loads(mrow['checklist_json'] or '[]')
+                    except Exception:
+                        checklist = []
+                    if isinstance(checklist, list):
+                        for item in checklist:
+                            if not isinstance(item, dict):
+                                continue
+                            txt = _normalize_outcome_text(item.get('text') or '')
+                            if not txt:
+                                continue
+                            # Mark SCO completed if the item itself is checked
+                            # OR the parent milestone is completed.
+                            if is_done or item.get('checked'):
+                                completed_scos.add(txt)
+            finally:
+                mconn.close()
+    except Exception:
+        # Never let milestones errors break the endpoint
+        pass
+
+    return {
+        'completed_elos': sorted(completed_elos),
+        'completed_scos': sorted(completed_scos),
+    }
+
 
 def get_timetable(teacher_id: str) -> list[dict]:
     conn = _get_conn()
@@ -795,6 +993,150 @@ def get_timetable(teacher_id: str) -> list[dict]:
         result = [dict(r) for r in rows]
         result.sort(key=lambda s: (DAY_ORDER.get(s['day_of_week'], 9), s['start_time']))
         return result
+    finally:
+        conn.close()
+
+
+def get_upcoming_unplanned(
+    teacher_id: str,
+    within_days: int = 14,
+    today: datetime | None = None,
+) -> list[dict]:
+    """
+    Phase 5: list upcoming timetable occurrences that DON'T yet have a linked
+    lesson plan. Used by the "Lessons needing plans" widget.
+
+    Algorithm:
+      1. Load all timetable slots for this teacher.
+      2. Project each slot forward `within_days` days, one occurrence per week.
+      3. Load blocking holidays (event_type='holiday' AND blocks_classes=1) in
+         the range and skip those dates.
+      4. Load all lesson_plans where scheduled_for is set, build a set of
+         (timetable_slot_id, scheduled_for) pairs that are already planned.
+      5. Return occurrences NOT in that planned set, sorted by date.
+
+    Each returned dict carries enough info for the frontend to open the right
+    generator pre-targeted at that occurrence.
+    """
+    today = today or datetime.now()
+    today_only = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    horizon = today_only + timedelta(days=within_days)
+
+    conn = _get_conn()
+    try:
+        # 1. Slots
+        slot_rows = conn.execute(
+            'SELECT * FROM timetable_slots WHERE teacher_id = ?',
+            (teacher_id,)
+        ).fetchall()
+        slots = [dict(r) for r in slot_rows]
+        if not slots:
+            return []
+
+        # 2. Blocking holidays in range
+        blocked: set[str] = set()
+        try:
+            holiday_rows = conn.execute(
+                '''SELECT event_date, end_date FROM school_year_events
+                   WHERE teacher_id = ?
+                     AND event_type = 'holiday'
+                     AND blocks_classes = 1
+                     AND event_date <= ?
+                     AND (end_date IS NULL OR end_date >= ?)''',
+                (teacher_id, horizon.strftime('%Y-%m-%d'), today_only.strftime('%Y-%m-%d'))
+            ).fetchall()
+            for r in holiday_rows:
+                start_iso = r['event_date']
+                end_iso = r['end_date'] or start_iso
+                try:
+                    s = datetime.strptime(start_iso, '%Y-%m-%d')
+                    e = datetime.strptime(end_iso, '%Y-%m-%d')
+                    cur = s
+                    while cur <= e:
+                        blocked.add(cur.strftime('%Y-%m-%d'))
+                        cur += timedelta(days=1)
+                except Exception:
+                    pass
+        except sqlite3.OperationalError:
+            # blocks_classes column may not exist on very old DBs
+            pass
+
+        # 3. Already-planned (slot_id, date) pairs. A slot is considered
+        # "planned" if ANY lesson-like artifact has been attached to it:
+        #   a) lesson_plans (SQLite)                 — LessonPlanner
+        #   b) kindergarten_history.json             — KindergartenPlanner
+        #   c) multigrade_history.json               — MultigradePlanner
+        #   d) cross_curricular_history.json         — CrossCurricularPlanner
+        # Quiz/Worksheet/Rubric are NOT counted — they're supplementary
+        # artifacts, not the lesson itself.
+        planned: set[tuple[str, str]] = set()
+
+        # 3a. lesson_plans (SQLite)
+        try:
+            rows = conn.execute(
+                '''SELECT timetable_slot_id, scheduled_for FROM lesson_plans
+                   WHERE teacher_id = ?
+                     AND scheduled_for IS NOT NULL
+                     AND timetable_slot_id IS NOT NULL''',
+                (teacher_id,)
+            ).fetchall()
+            for r in rows:
+                planned.add((r['timetable_slot_id'], r['scheduled_for']))
+        except sqlite3.OperationalError:
+            # scheduled_for column might not exist yet (first run); harmless
+            pass
+
+        # 3b-d. Flat JSON histories (kindergarten / multigrade / cross_curricular)
+        for fname in (
+            'kindergarten_history.json',
+            'multigrade_history.json',
+            'cross_curricular_history.json',
+        ):
+            for h in _read_lesson_history_json(fname):
+                slot = h.get('timetable_slot_id')
+                when = h.get('scheduled_for')
+                if slot and when:
+                    planned.add((slot, when))
+
+        # 4. Project each slot weekly and collect unplanned occurrences
+        results: list[dict] = []
+        for s in slots:
+            dow_name = s.get('day_of_week') or ''
+            target_wd = _DAY_NAME_TO_WEEKDAY.get(dow_name)
+            if target_wd is None:
+                continue
+            delta = (target_wd - today_only.weekday() + 7) % 7
+            first = today_only + timedelta(days=delta)
+            cur = first
+            while cur <= horizon:
+                iso = cur.strftime('%Y-%m-%d')
+                if iso in blocked:
+                    cur += timedelta(days=7)
+                    continue
+                if (s['id'], iso) in planned:
+                    cur += timedelta(days=7)
+                    continue
+                try:
+                    sh, sm = [int(x) for x in s['start_time'].split(':')]
+                    eh, em = [int(x) for x in s['end_time'].split(':')]
+                    dur = (eh * 60 + em) - (sh * 60 + sm)
+                except Exception:
+                    dur = 0
+                results.append({
+                    'slot_id':          s['id'],
+                    'date':             iso,
+                    'day_of_week':      dow_name,
+                    'start_time':       s['start_time'],
+                    'end_time':         s['end_time'],
+                    'duration_minutes': dur,
+                    'subject':          s.get('subject') or '',
+                    'grade_level':      s.get('grade_level') or '',
+                    'class_name':       s.get('class_name'),
+                })
+                cur += timedelta(days=7)
+
+        results.sort(key=lambda r: (r['date'], r['start_time']))
+        return results
     finally:
         conn.close()
 

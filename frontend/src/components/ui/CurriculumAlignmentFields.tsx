@@ -29,7 +29,29 @@ interface CurriculumAlignmentFieldsProps {
   validationErrors?: Record<string, boolean>;
   /** Hide the built-in toggle (when the parent manages it externally) */
   hideToggle?: boolean;
+  /** Phase 6: normalized outcome strings that have already been covered in a
+   *  taught/saved lesson plan. Matching entries get a "Completed" tag. */
+  completedELOs?: Set<string>;
+  completedSCOs?: Set<string>;
 }
+
+// Normalize outcome text the same way the backend does, for tag matching.
+function normalizeOutcome(text: string): string {
+  if (!text) return '';
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+const CompletedBadge: React.FC<{ small?: boolean }> = ({ small }) => (
+  <span
+    className={`inline-flex items-center gap-0.5 font-semibold rounded ${small ? 'text-[9px] px-1 py-0' : 'text-[10px] px-1.5 py-0.5'} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 ml-1.5 shrink-0`}
+    title="You've already covered this outcome in a saved lesson"
+  >
+    <svg className={`${small ? 'w-2.5 h-2.5' : 'w-3 h-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+    </svg>
+    Completed
+  </span>
+);
 
 export default function CurriculumAlignmentFields({
   subject,
@@ -45,6 +67,8 @@ export default function CurriculumAlignmentFields({
   accentColor,
   validationErrors = {},
   hideToggle = false,
+  completedELOs,
+  completedSCOs,
 }: CurriculumAlignmentFieldsProps) {
   const { t } = useTranslation();
   // Load curriculum data for the selected grade + subject
@@ -179,18 +203,22 @@ export default function CurriculumAlignmentFields({
                     >
                       <span className="text-sm text-gray-400">{t('curriculum.selectELO')}</span>
                     </label>
-                    {elosStructured.map((elo, idx) => (
-                      <label
-                        key={idx}
-                        className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
-                        onClick={() => { onELOChange(elo.text); onSCOsChange(''); setEloDropdownOpen(false); }}
-                      >
-                        <span className="text-sm text-theme-heading">
-                          {elo.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mr-1.5">{elo.id}</span>}
-                          {elo.text}
-                        </span>
-                      </label>
-                    ))}
+                    {elosStructured.map((elo, idx) => {
+                      const isDone = completedELOs?.has(normalizeOutcome(elo.text)) ?? false;
+                      return (
+                        <label
+                          key={idx}
+                          className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
+                          onClick={() => { onELOChange(elo.text); onSCOsChange(''); setEloDropdownOpen(false); }}
+                        >
+                          <span className="text-sm text-theme-heading flex-1">
+                            {elo.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mr-1.5">{elo.id}</span>}
+                            {elo.text}
+                            {isDone && <CompletedBadge />}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -249,23 +277,27 @@ export default function CurriculumAlignmentFields({
                         {selectedSCOs.length === scosStructured.length ? 'Deselect All' : 'Select All'}
                       </button>
                     </div>
-                    {scosStructured.map((sco, idx) => (
-                      <label
-                        key={idx}
-                        className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedSCOs.includes(sco.text)}
-                          onChange={() => toggleSCO(sco.text)}
-                          className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
-                        />
-                        <span className="text-sm text-theme-heading">
-                          {sco.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mr-1.5">{sco.id}</span>}
-                          {sco.text}
-                        </span>
-                      </label>
-                    ))}
+                    {scosStructured.map((sco, idx) => {
+                      const isDone = completedSCOs?.has(normalizeOutcome(sco.text)) ?? false;
+                      return (
+                        <label
+                          key={idx}
+                          className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedSCOs.includes(sco.text)}
+                            onChange={() => toggleSCO(sco.text)}
+                            className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
+                          />
+                          <span className="text-sm text-theme-heading flex-1">
+                            {sco.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mr-1.5">{sco.id}</span>}
+                            {sco.text}
+                            {isDone && <CompletedBadge small />}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 )}
               </div>

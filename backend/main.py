@@ -2008,22 +2008,39 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 inference = resolve_inference_for_task("lesson-plan") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Load OHPC JSON schema for grammar-constrained structured output.
-                # This forces the model to emit a single JSON object matching
-                # the OHPC Lesson Plan Template regardless of which model is active.
-                try:
-                    from schemas.lesson_plan_schema import LESSON_PLAN_SCHEMA as _lp_schema
-                except Exception as _lp_imp_err:
-                    logger.warning(f"[lesson-plan] Could not load LESSON_PLAN_SCHEMA: {_lp_imp_err}")
-                    _lp_schema = None
+                # Skip on tier-1 (small) models: grammar constraints are too
+                # heavy for them and they tend to produce garbage or stall.
+                # Surfacing this as a user-visible warning is better than a
+                # silent empty table.
+                _lp_schema = None
+                if _is_tier1:
+                    logger.info("[lesson-plan] Tier-1 model detected; skipping JSON schema constraint")
+                else:
+                    try:
+                        from schemas.lesson_plan_schema import LESSON_PLAN_SCHEMA as _lp_schema_import
+                        _lp_schema = _lp_schema_import
+                    except Exception as _lp_imp_err:
+                        logger.warning(f"[lesson-plan] Could not load LESSON_PLAN_SCHEMA: {_lp_imp_err}")
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": "Lesson plan schema failed to load; output may be unstructured.",
+                            })
+                        except Exception:
+                            pass
 
                 # Stream tokens in real-time
                 _token_buf = ""
                 _last_flush = time.monotonic()
+                # max_tokens is a ceiling, not a target -- does NOT slow
+                # generation; only affects memory reservation and the worst-
+                # case truncation point. 8000 is a safety margin for fully
+                # populated OHPC JSON on verbose models.
                 async for chunk in inference.generate_stream(
                     tool_name="lesson_plan",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    max_tokens=_t1_params.get("max_tokens", 8000) if _is_tier1 else 8000,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                     cancel_event=cancel_event,

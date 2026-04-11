@@ -72,6 +72,7 @@ interface SlotFormState {
   grade_level: string;
   class_name: string;
   notes: string;
+  span: number; // number of contiguous time blocks this slot covers (1 = single, 2 = double, etc.)
 }
 
 interface CellTarget {
@@ -105,6 +106,94 @@ function generateBlockId(): string {
   return `block_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
+// ── Multi-block span helpers ──
+
+/** Find the slot that STARTS at this day+block (one per cell max). */
+function getSlotStartingAtCell(
+  slots: TimetableSlot[],
+  day: string,
+  block: TimeBlock,
+): TimetableSlot | null {
+  return slots.find(s => s.day_of_week === day && s.start_time === block.start) || null;
+}
+
+/** How many contiguous time blocks does this slot cover? */
+function getSlotSpan(slot: TimetableSlot, timeBlocks: TimeBlock[]): number {
+  const startIdx = timeBlocks.findIndex(b => b.start === slot.start_time);
+  if (startIdx < 0) return 1;
+  const endIdx = timeBlocks.findIndex(b => b.end === slot.end_time);
+  if (endIdx < 0 || endIdx < startIdx) return 1;
+  return endIdx - startIdx + 1;
+}
+
+/**
+ * True if this cell is inside (but NOT at the start of) a multi-block slot.
+ * Used to skip rendering the cell — the earlier row already rowSpan'd over it.
+ */
+function isCellCoveredByEarlierSlot(
+  slots: TimetableSlot[],
+  day: string,
+  block: TimeBlock,
+  timeBlocks: TimeBlock[],
+): boolean {
+  const thisIdx = timeBlocks.findIndex(b => b.id === block.id);
+  if (thisIdx < 0) return false;
+  return slots.some(s => {
+    if (s.day_of_week !== day) return false;
+    if (s.start_time === block.start) return false; // this IS the start cell
+    const startIdx = timeBlocks.findIndex(b => b.start === s.start_time);
+    const endIdx = timeBlocks.findIndex(b => b.end === s.end_time);
+    if (startIdx < 0 || endIdx < 0) return false;
+    return thisIdx > startIdx && thisIdx <= endIdx;
+  });
+}
+
+/**
+ * Check whether creating a new slot spanning blocks [startIdx, startIdx+span-1]
+ * on the given day would collide with any existing slot. If `ignoreSlotId` is
+ * provided, that slot is treated as if it didn't exist (for edits).
+ */
+function wouldOverlap(
+  slots: TimetableSlot[],
+  day: string,
+  startIdx: number,
+  span: number,
+  timeBlocks: TimeBlock[],
+  ignoreSlotId?: string,
+): boolean {
+  const endIdx = startIdx + span - 1;
+  for (const s of slots) {
+    if (s.day_of_week !== day) continue;
+    if (ignoreSlotId && s.id === ignoreSlotId) continue;
+    const sStart = timeBlocks.findIndex(b => b.start === s.start_time);
+    const sEnd = timeBlocks.findIndex(b => b.end === s.end_time);
+    if (sStart < 0 || sEnd < 0) continue;
+    // Ranges [startIdx, endIdx] and [sStart, sEnd] overlap if neither is entirely before the other.
+    if (startIdx <= sEnd && sStart <= endIdx) return true;
+  }
+  return false;
+}
+
+/** Pretty-print total weekly minutes as "Xh Ym/week". */
+function formatWeeklyMinutes(mins: number): string {
+  if (mins <= 0) return '0/week';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m/week`;
+  if (m === 0) return `${h}h/week`;
+  return `${h}h ${m}m/week`;
+}
+
+function slotMinutes(s: TimetableSlot): number {
+  try {
+    const [sh, sm] = s.start_time.split(':').map(Number);
+    const [eh, em] = s.end_time.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
+  } catch {
+    return 0;
+  }
+}
+
 // ── Main Component ──
 
 const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, isActive, teacherId }) => {
@@ -132,7 +221,7 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
 
   // ── Modal state ──
   const [cellTarget, setCellTarget] = useState<CellTarget | null>(null);
-  const [form, setForm] = useState<SlotFormState>({ subject: '', grade_level: '', class_name: '', notes: '' });
+  const [form, setForm] = useState<SlotFormState>({ subject: '', grade_level: '', class_name: '', notes: '', span: 1 });
   const [classes, setClasses] = useState<string[]>([]);
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -182,11 +271,9 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
       .finally(() => setLoadingClasses(false));
   }, [form.grade_level]);
 
-  // ── Lookup slot for cell ──
+  // ── Lookup slot for cell (only matches slots STARTING at this block) ──
   const getSlotForCell = useCallback((day: string, block: TimeBlock): TimetableSlot | null => {
-    return slots.find(
-      s => s.day_of_week === day && s.start_time === block.start && s.end_time === block.end
-    ) || null;
+    return getSlotStartingAtCell(slots, day, block);
   }, [slots]);
 
   // ── Open modal ──
@@ -199,16 +286,17 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
         grade_level: existing.grade_level,
         class_name: existing.class_name || '',
         notes: existing.notes || '',
+        span: getSlotSpan(existing, timeBlocks),
       });
     } else {
-      setForm({ subject: '', grade_level: '', class_name: '', notes: '' });
+      setForm({ subject: '', grade_level: '', class_name: '', notes: '', span: 1 });
     }
     setFormError(null);
-  }, [getSlotForCell]);
+  }, [getSlotForCell, timeBlocks]);
 
   const closeModal = useCallback(() => {
     setCellTarget(null);
-    setForm({ subject: '', grade_level: '', class_name: '', notes: '' });
+    setForm({ subject: '', grade_level: '', class_name: '', notes: '', span: 1 });
     setClasses([]);
     setFormError(null);
   }, []);
@@ -218,6 +306,23 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
     if (!cellTarget) return;
     if (!form.subject) { setFormError('Subject is required.'); return; }
     if (!form.grade_level) { setFormError('Grade level is required.'); return; }
+
+    // Resolve span → end_time
+    const span = Math.max(1, form.span || 1);
+    const startIdx = timeBlocks.findIndex(b => b.start === cellTarget.timeBlock.start);
+    if (startIdx < 0) { setFormError('Start time does not match any configured time block.'); return; }
+    const endIdx = startIdx + span - 1;
+    if (endIdx >= timeBlocks.length) {
+      setFormError(`Span of ${span} blocks would run past the end of the day.`);
+      return;
+    }
+    const endTime = timeBlocks[endIdx].end;
+
+    // Overlap check (ignore the slot being edited, if any)
+    if (wouldOverlap(slots, cellTarget.day, startIdx, span, timeBlocks, cellTarget.existingSlot?.id)) {
+      setFormError('That span overlaps another slot on this day. Shorten the span or move the other slot.');
+      return;
+    }
 
     setSaving(true);
     setFormError(null);
@@ -230,7 +335,7 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
         teacher_id: teacherId,
         day_of_week: cellTarget.day,
         start_time: cellTarget.timeBlock.start,
-        end_time: cellTarget.timeBlock.end,
+        end_time: endTime,
         subject: form.subject,
         grade_level: form.grade_level,
         class_name: form.class_name || null,
@@ -244,7 +349,7 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
     } finally {
       setSaving(false);
     }
-  }, [cellTarget, form, teacherId, fetchSlots, timetableCtx, closeModal]);
+  }, [cellTarget, form, teacherId, timeBlocks, slots, fetchSlots, timetableCtx, closeModal]);
 
   // ── Delete slot ──
   const handleDelete = useCallback(async () => {
@@ -443,13 +548,17 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
 
                   {/* Day cells */}
                   {DAYS.map(day => {
+                    // Skip cells already covered by an earlier multi-block slot on the same day
+                    if (isCellCoveredByEarlierSlot(slots, day, block, timeBlocks)) return null;
                     const slot = getSlotForCell(day, block);
                     const color = slot ? getSubjectColor(slot.subject) : null;
+                    const rowSpan = slot ? getSlotSpan(slot, timeBlocks) : 1;
                     return (
                       <TimetableCell
                         key={day}
                         slot={slot}
                         color={color}
+                        rowSpan={rowSpan}
                         onClick={() => openModal(day, block)}
                       />
                     );
@@ -477,6 +586,55 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
         })}
       </div>
 
+      {/* Per-class weekly summary */}
+      {(() => {
+        // Group slots by (grade, class, subject) and sum minutes.
+        const groups = new Map<string, { grade: string; className: string; subject: string; minutes: number; count: number }>();
+        for (const s of slots) {
+          const cls = s.class_name || '—';
+          const key = `${s.grade_level}::${cls}::${s.subject}`;
+          const existing = groups.get(key);
+          const mins = slotMinutes(s);
+          if (existing) {
+            existing.minutes += mins;
+            existing.count += 1;
+          } else {
+            groups.set(key, { grade: s.grade_level, className: cls, subject: s.subject, minutes: mins, count: 1 });
+          }
+        }
+        const rows = Array.from(groups.values()).sort((a, b) => {
+          if (a.grade !== b.grade) return a.grade.localeCompare(b.grade);
+          if (a.className !== b.className) return a.className.localeCompare(b.className);
+          return a.subject.localeCompare(b.subject);
+        });
+        if (rows.length === 0) return null;
+        return (
+          <div className="rounded-xl p-3 mt-1" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+              Weekly Load
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {rows.map(r => {
+                const col = getSubjectColor(r.subject);
+                return (
+                  <div
+                    key={`${r.grade}::${r.className}::${r.subject}`}
+                    className="px-3 py-1.5 rounded-lg text-xs"
+                    style={{ background: col.bg, border: `1px solid ${col.border}`, color: col.text }}
+                    title={`${r.count} session${r.count === 1 ? '' : 's'} per week`}
+                  >
+                    <span className="font-semibold">{r.grade}</span>
+                    {r.className !== '—' && <span className="opacity-80"> · {r.className}</span>}
+                    <span className="opacity-80"> · {r.subject}</span>
+                    <span className="ml-1.5 opacity-70">{formatWeeklyMinutes(r.minutes)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Slot editor modal */}
       {cellTarget && (
         <SlotModal
@@ -490,6 +648,7 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
           formError={formError}
           filteredSubjects={filteredSubjects}
           filteredGrades={filteredGrades}
+          timeBlocks={timeBlocks}
           onSave={handleSave}
           onDelete={handleDelete}
           onClose={closeModal}
@@ -504,20 +663,22 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
 interface TimetableCellProps {
   slot: TimetableSlot | null;
   color: { bg: string; text: string; border: string } | null;
+  rowSpan?: number;
   onClick: () => void;
 }
 
-const TimetableCell: React.FC<TimetableCellProps> = ({ slot, color, onClick }) => {
+const TimetableCell: React.FC<TimetableCellProps> = ({ slot, color, rowSpan = 1, onClick }) => {
   const [hovered, setHovered] = useState(false);
 
   return (
     <td
+      rowSpan={rowSpan}
       className="p-1 cursor-pointer transition-all"
       style={{
         borderRight: '1px solid var(--border-primary)',
         borderBottom: '1px solid var(--border-primary)',
         minWidth: '120px',
-        height: '60px',
+        height: rowSpan > 1 ? `${60 * rowSpan}px` : '60px',
         verticalAlign: 'top',
       }}
       onMouseEnter={() => setHovered(true)}
@@ -595,6 +756,7 @@ interface SlotModalProps {
   formError: string | null;
   filteredSubjects: string[];
   filteredGrades: string[];
+  timeBlocks: TimeBlock[];
   onSave: () => void;
   onDelete: () => void;
   onClose: () => void;
@@ -611,6 +773,7 @@ const SlotModal: React.FC<SlotModalProps> = ({
   formError,
   filteredSubjects,
   filteredGrades,
+  timeBlocks,
   onSave,
   onDelete,
   onClose,
@@ -619,6 +782,17 @@ const SlotModal: React.FC<SlotModalProps> = ({
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const isEditing = !!target.existingSlot;
+
+  // Max allowable span = blocks remaining from the start block to end of day.
+  const startIdx = timeBlocks.findIndex(b => b.start === target.timeBlock.start);
+  const maxSpan = startIdx >= 0 ? timeBlocks.length - startIdx : 1;
+  const spanOptions = Array.from({ length: Math.max(1, maxSpan) }, (_, i) => i + 1);
+
+  // Preview end-time for the currently selected span
+  const previewEndIdx = startIdx >= 0 ? startIdx + (form.span || 1) - 1 : -1;
+  const previewEnd = previewEndIdx >= 0 && previewEndIdx < timeBlocks.length
+    ? timeBlocks[previewEndIdx].end
+    : target.timeBlock.end;
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === overlayRef.current) onClose();
@@ -644,7 +818,10 @@ const SlotModal: React.FC<SlotModalProps> = ({
                 : t('timetable.addSlot', 'Add Slot')}
             </h3>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              {target.day} &bull; {formatTime(target.timeBlock.start)} - {formatTime(target.timeBlock.end)}
+              {target.day} &bull; {formatTime(target.timeBlock.start)} - {formatTime(previewEnd)}
+              {(form.span || 1) > 1 && (
+                <span className="ml-1 opacity-75">({form.span} blocks)</span>
+              )}
             </p>
           </div>
           <button
@@ -724,6 +901,28 @@ const SlotModal: React.FC<SlotModalProps> = ({
                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
               />
             )}
+          </div>
+
+          {/* Span — for double/triple periods */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+              {t('timetable.span', 'Length')}
+            </label>
+            <select
+              value={form.span || 1}
+              onChange={e => setForm(prev => ({ ...prev, span: Number(e.target.value) }))}
+              className="rounded-lg px-3 py-2 text-sm w-full"
+              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
+            >
+              {spanOptions.map(n => (
+                <option key={n} value={n}>
+                  {n} block{n === 1 ? '' : 's'}{n === 1 ? ' (single period)' : n === 2 ? ' (double period)' : ''}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] opacity-60" style={{ color: 'var(--text-muted)' }}>
+              A double period takes up two adjacent time blocks.
+            </p>
           </div>
 
           {/* Notes */}

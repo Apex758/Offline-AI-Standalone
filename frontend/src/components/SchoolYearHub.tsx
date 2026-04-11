@@ -5,14 +5,12 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
 import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
-import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getTeacherId } from '../lib/teacherId';
 
 const SchoolYearCalendar = React.lazy(() => import('./SchoolYearCalendar'));
 const CurriculumPlan = React.lazy(() => import('./CurriculumPlan'));
 const Timetable = React.lazy(() => import('./Timetable'));
-const UnifiedCalendarView = React.lazy(() => import('./UnifiedCalendarView'));
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -20,9 +18,9 @@ const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSPropertie
   return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
 };
 
-type PanelType = 'school-year' | 'curriculum-plan' | 'timetable' | 'unified';
+type PanelType = 'school-year' | 'curriculum-plan' | 'timetable';
 
-const PANELS: PanelType[] = ['school-year', 'curriculum-plan', 'timetable', 'unified'];
+const PANELS: PanelType[] = ['school-year', 'curriculum-plan', 'timetable'];
 
 interface SchoolYearHubProps {
   tabId: string;
@@ -128,8 +126,6 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
             teacherId={teacherId}
           />
         );
-      case 'unified':
-        return <UnifiedCalendarView isActive={isActive && activePanel === 'unified'} />;
       default:
         return null;
     }
@@ -150,11 +146,6 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
       label: 'Timetable',
       icon: Clock01IconData,
       color: 'rgb(79,70,229)', // indigo-600
-    },
-    'unified': {
-      label: 'Unified',
-      icon: Layers01IconData,
-      color: 'rgb(124,58,237)', // violet-600
     },
   };
 
@@ -186,7 +177,6 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
               {activePanel === 'school-year' && 'Manage your academic calendar and events'}
               {activePanel === 'curriculum-plan' && 'Assign milestones to academic phases'}
               {activePanel === 'timetable' && 'Set your weekly class schedule'}
-              {activePanel === 'unified' && 'Every time/date source synced in one view'}
             </p>
           </div>
         </div>

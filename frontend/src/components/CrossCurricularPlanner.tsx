@@ -16,8 +16,11 @@ import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import GitMergeIcon from '@hugeicons/core-free-icons/GitMergeIcon';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
-import { applyClassDefaults, crossCurricularPlannerFieldMap } from '../lib/applyClassDefaults';
+import { applyClassDefaults, listFilledLabels, crossCurricularPlannerFieldMap } from '../lib/applyClassDefaults';
 import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
+import ClassDefaultsBanner from './ClassDefaultsBanner';
+import GenerateForSelector from './GenerateForSelector';
+import type { UpcomingOccurrence } from '../lib/upcomingSlots';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -568,7 +571,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     return null;
   });
 
-  const { activeClass, setActiveClass } = useActiveClass();
+  const { activeClass, setActiveClass, config: activeConfig, hasConfig } = useActiveClass();
   const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
   const [selectedClassName, setSelectedClassName] = useState<string>(activeClass?.key || '');
   const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
@@ -602,6 +605,26 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Class defaults banner + Phase-4 target selector ─────────────────
+  const [overrideOpen, setOverrideOpen] = useState(false);
+  const filledLabels = React.useMemo(
+    () => listFilledLabels(activeConfig, crossCurricularPlannerFieldMap),
+    [activeConfig]
+  );
+  const showBanner = hasConfig && filledLabels.length > 0;
+
+  const [targetOccurrence, setTargetOccurrence] = useState<UpcomingOccurrence | null>(null);
+  const targetValue = targetOccurrence ? `${targetOccurrence.slotId}::${targetOccurrence.dateISO}` : null;
+  const handlePickOccurrence = (occ: UpcomingOccurrence | null) => {
+    setTargetOccurrence(occ);
+    if (!occ) return;
+    setFormData(prev => ({
+      ...prev,
+      gradeLevel: occ.gradeLevel || prev.gradeLevel,
+      duration: occ.durationMinutes > 0 ? `${occ.durationMinutes} minutes` : prev.duration,
+    }));
+  };
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
@@ -882,7 +905,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
         timestamp: new Date().toISOString(),
         formData: formData,
         generatedPlan: generatedPlan,  // ✅ Save original clean text
-        parsedPlan: parsedPlan || undefined
+        parsedPlan: parsedPlan || undefined,
+        // Phase 5: attach to a specific upcoming slot occurrence
+        timetable_slot_id: targetOccurrence?.slotId,
+        scheduled_for: targetOccurrence?.dateISO,
       };
 
       if (!currentPlanId) {
@@ -1339,6 +1365,22 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {/* Step 1: Basic Info */}
                 {displayStep === 1 && (
                   <div className="space-y-6">
+
+                    {showBanner && (
+                      <ClassDefaultsBanner
+                        classLabel={activeClass?.label || classContextApplied || 'selected class'}
+                        filledFieldLabels={filledLabels}
+                        overrideOpen={overrideOpen}
+                        onToggleOverride={() => setOverrideOpen(v => !v)}
+                        accentColor={tabColor}
+                      />
+                    )}
+
+                    <GenerateForSelector
+                      value={targetValue}
+                      onPick={handlePickOccurrence}
+                      accentColor={tabColor}
+                    />
 
                     {/* Class picker -- auto-fills all class-level fields from Class Manager */}
                     <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
