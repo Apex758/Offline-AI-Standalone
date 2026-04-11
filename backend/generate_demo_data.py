@@ -630,10 +630,34 @@ STUDENT_NAMES = [
 ]
 
 
+# Per-student accommodations + IEP notes (Phase 8). Keyed by (first, last)
+# so the demo shows realistic IEP-style overrides layered on top of the
+# class-level CLASS CONTEXT block in every generator prompt.
+STUDENT_ACCOMMODATIONS = {
+    ("Aaron", "Williams"): {
+        "accommodations": "Preferential seating near the front of the room; extra time on written assessments.",
+        "iep_notes": "Mild hearing loss in left ear. Benefits from clear articulation and visual cues when new vocabulary is introduced.",
+    },
+    ("Jade", "Martin"): {
+        "accommodations": "Chunked instructions with visual checklists; scheduled movement breaks every 15 minutes.",
+        "iep_notes": "Diagnosed with ADHD. Focuses best on hands-on tasks and when transitions are signalled in advance.",
+    },
+    ("Priya", "Samuel"): {
+        "accommodations": "Decodable text, reduced text density, and audio support for long passages.",
+        "iep_notes": "Dyslexia - strong oral comprehension but decoding lags one grade level behind. Prefers sans-serif fonts and wider line spacing.",
+    },
+    ("Samuel", "Victor"): {
+        "accommodations": "Sentence starters for discussion; peer support during group work; bilingual glossary allowed.",
+        "iep_notes": "ELL student from a French-Creole home. Building academic English vocabulary; comfortable speaking but cautious when writing.",
+    },
+}
+
+
 def generate_students():
     students = []
     for first, last, gender, grade in STUDENT_NAMES:
         sid = f"{first[0]}{last[0]}{random.randint(10000, 99999)}"
+        acc = STUDENT_ACCOMMODATIONS.get((first, last), {})
         students.append({
             "id": sid,
             "full_name": f"{first} {last}",
@@ -645,9 +669,180 @@ def generate_students():
             "grade_level": grade,
             "gender": gender,
             "contact_info": json.dumps({"parent": f"Parent of {first}", "phone": f"1-758-{random.randint(200,799)}-{random.randint(1000,9999)}"}),
+            "accommodations": acc.get("accommodations", ""),
+            "iep_notes": acc.get("iep_notes", ""),
             "created_at": "2025-09-01 08:30:00",
         })
     return students
+
+
+# ── Classes + class-level configurations (Phase 6/7/8) ──────────────────────
+
+def generate_classes():
+    """Return explicit rows for the `classes` table.
+
+    The demo data restore pipeline uses these to populate the classes table
+    directly so the dashboard / Class Manager shows the class_id + academic
+    year + description on first launch (no need to wait for the implicit
+    backfill to kick in).
+    """
+    return [
+        {
+            "class_id": "demo-class-grade1",
+            "class_name": "Grade 1",
+            "grade_level": "1",
+            "academic_year": "2025-2026",
+            "description": "Primary introduction cohort - emphasis on foundational literacy and numeracy through play-based learning.",
+            "created_at": "2025-09-01 08:00:00",
+            "updated_at": "2025-09-01 08:00:00",
+        },
+        {
+            "class_id": "demo-class-grade2",
+            "class_name": "Grade 2",
+            "grade_level": "2",
+            "academic_year": "2025-2026",
+            "description": "Consolidation of early literacy and numeracy; building reading fluency and addition/subtraction with regrouping.",
+            "created_at": "2025-09-01 08:00:00",
+            "updated_at": "2025-09-01 08:00:00",
+        },
+        {
+            "class_id": "demo-class-grade4",
+            "class_name": "Grade 4",
+            "grade_level": "4",
+            "academic_year": "2025-2026",
+            "description": "Intermediate cohort working toward multiplicative thinking, fractions, and extended informational reading.",
+            "created_at": "2025-09-01 08:00:00",
+            "updated_at": "2025-09-01 08:00:00",
+        },
+    ]
+
+
+def generate_class_configs():
+    """Return rows for the `class_configs` table with realistic, teacher-
+    friendly settings for each demo class. These values get surfaced in the
+    Class Settings tab of the Class Manager and are auto-injected into the
+    system prompt of every generator when the class is selected.
+    """
+    return [
+        {
+            "class_name": "Grade 1",
+            "grade_level": "1",
+            "class_id": "demo-class-grade1",
+            "config": {
+                "subject": "Multi-subject",
+                "strand": "",
+                "essentialOutcomes": "",
+                "specificOutcomes": "",
+                "studentCount": 8,
+                "studentsWithDisabilitiesCount": 1,
+                "learningStyles": ["Visual", "Kinesthetic"],
+                "learningPreferences": ["Hands-on", "Small group"],
+                "multipleIntelligences": ["Bodily-Kinesthetic", "Spatial", "Interpersonal"],
+                "pedagogicalStrategies": ["Direct instruction", "Scaffolded", "Gamified"],
+                "customLearningStyles": "Short attention spans - lessons need to alternate between quiet and active segments every 10-15 minutes.",
+                "hasSpecialNeeds": True,
+                "specialNeedsDetails": "1 student with mild hearing impairment - benefits from preferential seating near the teacher and clear articulation.",
+                "culturallyResponsiveNotes": "Caribbean / OECS context - use local examples (mango, dasheen, sea grapes) in word problems.",
+                "hasELLStudents": False,
+                "hasAdvancedLearners": False,
+                "behaviorSupportFocus": "Positive reinforcement; quiet signals for transitions.",
+                "readingLevel": "At grade",
+                "primaryLanguage": "English",
+                "bilingualProgram": "",
+                "preferredAssessmentFormat": "Performance-based",
+                "performanceLevels": "4-point scale",
+                "includePointValues": False,
+                "gradingFocusAreas": ["Content accuracy", "Organization"],
+                "defaultQuestionTypes": ["Multiple Choice", "True/False"],
+                "defaultCognitiveLevels": ["Remember", "Understand"],
+                "defaultTimeLimitPerQuestion": 90,
+                "availableMaterials": "Counting blocks, picture cards, whiteboards, chart paper, Chromebook cart (shared with Grade 2).",
+                "prerequisiteSkills": "Number recognition to 10; phonemic awareness of most consonant sounds.",
+                "classPeriodDuration": "45 minutes",
+                "additionalInstructions": "Always include a short movement break or song transition halfway through the lesson.",
+            },
+            "updated_at": "2025-09-15 14:22:00",
+        },
+        {
+            "class_name": "Grade 2",
+            "grade_level": "2",
+            "class_id": "demo-class-grade2",
+            "config": {
+                "subject": "Multi-subject",
+                "strand": "",
+                "essentialOutcomes": "",
+                "specificOutcomes": "",
+                "studentCount": 8,
+                "studentsWithDisabilitiesCount": 1,
+                "learningStyles": ["Visual", "Auditory", "Kinesthetic"],
+                "learningPreferences": ["Pair", "Small group", "Discussion-based"],
+                "multipleIntelligences": ["Linguistic", "Logical-Mathematical", "Interpersonal"],
+                "pedagogicalStrategies": ["Collaborative", "Scaffolded", "Gamified"],
+                "customLearningStyles": "Class works well in pairs; several students are emerging readers who benefit from repeated exposure to new vocabulary.",
+                "hasSpecialNeeds": True,
+                "specialNeedsDetails": "1 student with ADHD - benefits from chunked instructions, visual checklists, and scheduled movement breaks.",
+                "culturallyResponsiveNotes": "Incorporate Saint Lucian folk stories and Caribbean geography when possible.",
+                "hasELLStudents": False,
+                "hasAdvancedLearners": True,
+                "behaviorSupportFocus": "Clear visual schedule posted; timer-based work blocks.",
+                "readingLevel": "At grade",
+                "primaryLanguage": "English",
+                "bilingualProgram": "",
+                "preferredAssessmentFormat": "Mixed",
+                "performanceLevels": "4-point scale",
+                "includePointValues": True,
+                "gradingFocusAreas": ["Content accuracy", "Creativity", "Organization"],
+                "defaultQuestionTypes": ["Multiple Choice", "Short Answer", "Fill-in-the-blank"],
+                "defaultCognitiveLevels": ["Remember", "Understand", "Apply"],
+                "defaultTimeLimitPerQuestion": 120,
+                "availableMaterials": "Base-ten blocks, leveled readers, pocket chart, markers, Chromebook cart (shared with Grade 1).",
+                "prerequisiteSkills": "Addition and subtraction within 20; CVC word reading; basic sentence writing.",
+                "classPeriodDuration": "45 minutes",
+                "additionalInstructions": "Favor partner/share activities. Keep written instructions short and pair them with an icon.",
+            },
+            "updated_at": "2025-09-15 14:25:00",
+        },
+        {
+            "class_name": "Grade 4",
+            "grade_level": "4",
+            "class_id": "demo-class-grade4",
+            "config": {
+                "subject": "Multi-subject",
+                "strand": "",
+                "essentialOutcomes": "",
+                "specificOutcomes": "",
+                "studentCount": 8,
+                "studentsWithDisabilitiesCount": 1,
+                "learningStyles": ["Visual", "Reading/Writing", "Kinesthetic"],
+                "learningPreferences": ["Individual", "Small group", "Discussion-based"],
+                "multipleIntelligences": ["Linguistic", "Logical-Mathematical", "Naturalistic", "Intrapersonal"],
+                "pedagogicalStrategies": ["Differentiated", "Inquiry-based", "Collaborative"],
+                "customLearningStyles": "Mixed-ability class - pair differentiated tasks with scaffolds for lower readers and extension questions for advanced learners.",
+                "hasSpecialNeeds": True,
+                "specialNeedsDetails": "1 student with dyslexia - needs decodable / reduced-density text and audio support on long passages.",
+                "culturallyResponsiveNotes": "Integrate Caribbean history (slavery, emancipation, independence) and Saint Lucia's geography when relevant.",
+                "hasELLStudents": True,
+                "ellPercentage": 12,
+                "hasAdvancedLearners": True,
+                "behaviorSupportFocus": "Collaborative norms; restorative conversations when conflicts arise.",
+                "readingLevel": "Mixed",
+                "primaryLanguage": "English",
+                "bilingualProgram": "",
+                "preferredAssessmentFormat": "Mixed",
+                "performanceLevels": "4-point scale",
+                "includePointValues": True,
+                "gradingFocusAreas": ["Content accuracy", "Critical thinking", "Organization", "Presentation"],
+                "defaultQuestionTypes": ["Multiple Choice", "Short Answer", "Essay"],
+                "defaultCognitiveLevels": ["Understand", "Apply", "Analyze"],
+                "defaultTimeLimitPerQuestion": 150,
+                "availableMaterials": "Fraction tiles, rulers, atlases, leveled chapter books, dedicated Chromebook cart, smartboard.",
+                "prerequisiteSkills": "Multiplication facts to 10x10; paragraph writing; map-reading with a key.",
+                "classPeriodDuration": "60 minutes",
+                "additionalInstructions": "When generating text-heavy content, also supply a simplified / decodable version for the dyslexic student and a vocabulary list for the ELL student.",
+            },
+            "updated_at": "2025-09-15 14:28:00",
+        },
+    ]
 
 
 # ── Curriculum Topics (for milestones) ────────────────────────────────────────
@@ -2034,6 +2229,8 @@ def main():
 
     # Core data
     students = generate_students()
+    classes = generate_classes()
+    class_configs = generate_class_configs()
     academic_phases = generate_academic_phases()
     snapshots = generate_metric_snapshots(academic_phases)
     phase_summaries = generate_phase_summaries(academic_phases, snapshots)
@@ -2090,6 +2287,8 @@ def main():
             "achievements": achievements,
             "students": {
                 "students": students,
+                "classes": classes,
+                "class_configs": class_configs,
                 "attendance": attendance,
                 "quiz_grades": quiz_grades,
                 "worksheet_grades": worksheet_grades,
@@ -2124,7 +2323,9 @@ def main():
 
     # Print summary
     print(f"\nDemo data generated: {output_path}")
-    print(f"  Students: {len(students)}")
+    print(f"  Students: {len(students)} ({sum(1 for s in students if s.get('accommodations') or s.get('iep_notes'))} with IEP/accommodations)")
+    print(f"  Classes: {len(classes)}")
+    print(f"  Class configs: {len(class_configs)}")
     print(f"  Attendance records: {len(attendance)}")
     print(f"  Lesson plans: {len(lesson_plans)}")
     print(f"  Kindergarten plans: {len(kindergarten)}")

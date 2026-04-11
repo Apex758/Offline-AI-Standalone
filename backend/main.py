@@ -10275,10 +10275,31 @@ async def export_data(categories: str = ""):
                 all_worksheet_instances = [dict(r) for r in conn.execute('SELECT * FROM worksheet_instances').fetchall()]
                 all_worksheet_packages = [dict(r) for r in conn.execute('SELECT * FROM worksheet_packages').fetchall()]
                 all_answer_region_templates = [dict(r) for r in conn.execute('SELECT * FROM answer_region_templates').fetchall()]
+                # Phase 6/7/8: explicit classes + class_configs tables.
+                try:
+                    all_classes = [dict(r) for r in conn.execute('SELECT * FROM classes').fetchall()]
+                except Exception:
+                    all_classes = []
+                try:
+                    cfg_rows = [dict(r) for r in conn.execute('SELECT * FROM class_configs').fetchall()]
+                    # Re-hydrate the config JSON string back into a dict so the
+                    # exported backup is human-readable and diffable.
+                    for row in cfg_rows:
+                        cfg_val = row.get('config')
+                        if isinstance(cfg_val, str):
+                            try:
+                                row['config'] = json.loads(cfg_val or '{}')
+                            except Exception:
+                                row['config'] = {}
+                    all_class_configs = cfg_rows
+                except Exception:
+                    all_class_configs = []
             finally:
                 conn.close()
             result["students"] = {
                 "students": students_list,
+                "classes": all_classes,
+                "class_configs": all_class_configs,
                 "attendance": all_attendance,
                 "quiz_grades": all_quiz_grades,
                 "worksheet_grades": all_worksheet_grades,
@@ -10537,16 +10558,69 @@ async def import_data(payload: dict):
                         conn.execute(
                             '''INSERT INTO students (id, full_name, first_name, middle_name,
                                last_name, date_of_birth, class_name, grade_level, gender,
-                               contact_info, created_at)
-                               VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
+                               contact_info, accommodations, iep_notes, created_at)
+                               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',
                             (orig_id, student.get('full_name', ''), student.get('first_name', ''),
                              student.get('middle_name', ''), student.get('last_name', ''),
                              student.get('date_of_birth', ''), student.get('class_name', ''),
                              student.get('grade_level', ''), student.get('gender', ''),
                              json.dumps(student.get('contact_info', {})) if isinstance(student.get('contact_info'), dict) else student.get('contact_info', ''),
+                             student.get('accommodations', '') or '',
+                             student.get('iep_notes', '') or '',
                              student.get('created_at', ''))
                         )
                         student_count += 1
+                    except Exception:
+                        pass
+                conn.commit()
+
+                # Phase 6/7: explicit classes table rows (with stable class_id,
+                # academic_year, description). Merged on (class_name, grade_level)
+                # uniqueness; existing classes are preserved.
+                for cls_row in sub_tables.get('classes', []) or []:
+                    if not cls_row:
+                        continue
+                    try:
+                        conn.execute(
+                            '''INSERT OR IGNORE INTO classes
+                               (class_id, class_name, grade_level, academic_year,
+                                description, created_at, updated_at)
+                               VALUES (?,?,?,?,?,?,?)''',
+                            (
+                                cls_row.get('class_id') or '',
+                                cls_row.get('class_name') or '',
+                                cls_row.get('grade_level') or '',
+                                cls_row.get('academic_year') or '',
+                                cls_row.get('description') or '',
+                                cls_row.get('created_at') or '',
+                                cls_row.get('updated_at') or cls_row.get('created_at') or '',
+                            )
+                        )
+                    except Exception:
+                        pass
+
+                # Phase 1: class_configs rows. The config blob is stored as a
+                # JSON string in SQLite. Accept both raw dict and pre-serialised
+                # string values.
+                for cfg_row in sub_tables.get('class_configs', []) or []:
+                    if not cfg_row:
+                        continue
+                    cfg_payload = cfg_row.get('config', {})
+                    if isinstance(cfg_payload, (dict, list)):
+                        cfg_payload = json.dumps(cfg_payload)
+                    try:
+                        conn.execute(
+                            '''INSERT OR REPLACE INTO class_configs
+                               (class_name, grade_level, config, updated_at, class_id)
+                               VALUES (?,?,?,?,?)''',
+                            (
+                                cfg_row.get('class_name') or '',
+                                cfg_row.get('grade_level') or '',
+                                cfg_payload or '{}',
+                                cfg_row.get('updated_at') or '',
+                                cfg_row.get('class_id'),
+                            )
+                        )
                     except Exception:
                         pass
                 conn.commit()

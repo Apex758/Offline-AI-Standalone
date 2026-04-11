@@ -620,13 +620,22 @@ Phase 8 — Per-student IEP overrides + import/export + full i18n. Three capabil
 | CrossCurricularPlanner | [x] 9 fields | [x] |
 | ImageStudio | [x] reading level, language, cultural, accessibility | N/A (diffusion, prompt-suffix only) |
 
-## Still pending
+## Still pending (post-Phase 8)
 
-- **Class config import/export:** allow exporting a class config as JSON
-  and importing it into another class (teacher-to-teacher sharing).
-- **Per-student overrides:** individual accommodations (IEP-style) stored
-  on the `students` row should further augment the CLASS CONTEXT block when
-  a specific student is named in a prompt (e.g. differentiated worksheet
-  packages).
-- **i18n:** ClassConfigPanel strings are hardcoded English — wire through
-  `useTranslation()` like the rest of Class Manager.
+All major items from the original Class-Level Configuration plan are now
+shipped. Future enhancements that would build on this foundation:
+
+- **Per-student generator targeting:** currently the backend layers IEP
+  overrides for *every* student in the class, every time. A future
+  enhancement would let a teacher pick a specific student in a generator
+  and have only that student's accommodations injected (differentiated
+  single-student packages).
+- **Class config templates / library:** a shared repository of pre-built
+  class configs (e.g., "Early Reader ELL class", "Advanced Math track")
+  that teachers can apply as starting points then tweak.
+- **Config versioning:** keep a history of class config changes so a
+  teacher can see how a class's profile evolved over the year and roll
+  back if needed.
+- **CSV import for students with accommodations:** the existing bulk
+  student import should learn to read `accommodations` / `iep_notes`
+  columns when present.

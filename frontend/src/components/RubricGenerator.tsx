@@ -56,6 +56,8 @@ import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { RUBRIC_PRESETS } from '../data/generatorPresets';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
+import { applyClassDefaults, rubricGeneratorFieldMap } from '../lib/applyClassDefaults';
+import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 const ENDPOINT = '/ws/rubric';
@@ -547,8 +549,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const { matchCount, matchedHistories, sortedHistories: sortedRubricHistories } = useHistoryMatching(formData, rubricHistories);
 
   // Class config auto-fill state
+  const { activeClass, setActiveClass } = useActiveClass();
   const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
-  const [configClassName, setConfigClassName] = useState<string>('');
+  const [configClassName, setConfigClassName] = useState<string>(activeClass?.key || '');
   const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
 
   useEffect(() => {
@@ -556,38 +559,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   }, []);
 
   const applyClassConfig = (cfg: ClassConfig, label: string) => {
-    setFormData(prev => {
-      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
-        const current: any = prev[key];
-        if (Array.isArray(current)) {
-          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
-        }
-        if (typeof current === 'boolean') {
-          return (current || !!incoming) as FormData[K];
-        }
-        if (typeof current === 'string') {
-          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
-        }
-        return (current ?? incoming) as FormData[K];
-      };
-      return {
-        ...prev,
-        subject: merge('subject', cfg.subject),
-        strand: merge('strand', cfg.strand),
-        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
-        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
-        performanceLevels: merge('performanceLevels', cfg.performanceLevels),
-        includePointValues: merge('includePointValues', cfg.includePointValues),
-        focusAreas: merge('focusAreas', cfg.gradingFocusAreas),
-        specificRequirements: merge('specificRequirements', cfg.additionalInstructions),
-      };
-    });
+    setFormData(prev => applyClassDefaults(prev, cfg, rubricGeneratorFieldMap));
     setClassConfigApplied(label);
   };
 
   const handleSelectConfigClass = async (value: string) => {
     setConfigClassName(value);
-    if (!value) { setClassConfigApplied(null); return; }
+    if (!value) { setClassConfigApplied(null); setActiveClass(null); return; }
     const [gl, cls] = value.split('::');
     try {
       const cfg = await fetchClassConfig(cls, gl || undefined);
@@ -595,10 +573,19 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         setFormData(prev => ({ ...prev, gradeLevel: gl }));
       }
       applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+      setActiveClass(buildSelection(cls, gl || undefined));
     } catch (e) {
       console.error('Failed to load class config', e);
     }
   };
+
+  // On mount: hydrate from global active class if present
+  useEffect(() => {
+    if (activeClass && !classConfigApplied) {
+      handleSelectConfigClass(activeClass.key);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [generatedRubric, setGeneratedRubric] = useState<string>(() => {
     // ✅ First check savedData (for resource manager view/edit)

@@ -16,6 +16,8 @@ import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import Layers01Icon from '@hugeicons/core-free-icons/Layers01Icon';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
+import { applyClassDefaults, multigradePlannerFieldMap } from '../lib/applyClassDefaults';
+import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -373,51 +375,20 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  const { activeClass, setActiveClass } = useActiveClass();
   const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
-  const [selectedClassName, setSelectedClassName] = useState<string>('');
+  const [selectedClassName, setSelectedClassName] = useState<string>(activeClass?.key || '');
   const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
   useEffect(() => { fetchClasses().then(setAvailableClasses).catch(() => {}); }, []);
 
   const applyClassConfig = (cfg: ClassConfig, label: string) => {
-    setFormData(prev => {
-      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
-        const current: any = prev[key];
-        if (Array.isArray(current)) {
-          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
-        }
-        if (typeof current === 'boolean') {
-          return (current || !!incoming) as FormData[K];
-        }
-        if (typeof current === 'string') {
-          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
-        }
-        return (current ?? incoming) as FormData[K];
-      };
-      return {
-        ...prev,
-        subject: merge('subject', cfg.subject),
-        strand: merge('strand', cfg.strand),
-        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
-        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
-        totalStudents: merge('totalStudents', cfg.studentCount != null ? String(cfg.studentCount) : ''),
-        duration: merge('duration', cfg.classPeriodDuration),
-        pedagogicalStrategies: merge('pedagogicalStrategies', cfg.pedagogicalStrategies),
-        learningStyles: merge('learningStyles', cfg.learningStyles),
-        learningPreferences: merge('learningPreferences', cfg.learningPreferences),
-        multipleIntelligences: merge('multipleIntelligences', cfg.multipleIntelligences),
-        customLearningStyles: merge('customLearningStyles', cfg.customLearningStyles),
-        materials: merge('materials', cfg.availableMaterials),
-        prerequisiteSkills: merge('prerequisiteSkills', cfg.prerequisiteSkills),
-        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
-        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
-      };
-    });
+    setFormData(prev => applyClassDefaults(prev, cfg, multigradePlannerFieldMap));
     setClassContextApplied(label);
   };
 
   const handleSelectClass = async (value: string) => {
     setSelectedClassName(value);
-    if (!value) { setClassContextApplied(null); return; }
+    if (!value) { setClassContextApplied(null); setActiveClass(null); return; }
     const [gl, cls] = value.split('::');
     try {
       const cfg = await fetchClassConfig(cls, gl || undefined);
@@ -425,10 +396,19 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         setFormData(prev => ({ ...prev, gradeRange: gl }));
       }
       applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+      setActiveClass(buildSelection(cls, gl || undefined));
     } catch (e) {
       console.error('Failed to load class config', e);
     }
   };
+
+  // On mount: hydrate from global active class if present
+  useEffect(() => {
+    if (activeClass && !classContextApplied) {
+      handleSelectClass(activeClass.key);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Add timeout handling for stuck generations
   const [generationTimeout, setGenerationTimeout] = useState<NodeJS.Timeout | null>(null);

@@ -23,6 +23,7 @@ import { usePreload } from './hooks/usePreload';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 import { EngineStatusProvider } from './contexts/EngineStatusContext';
 import { TimetableProvider } from './contexts/TimetableContext';
+import { ActiveClassProvider } from './contexts/ActiveClassContext';
 
 const SetupWizard = lazy(() => import('./components/SetupWizard/SetupWizard'));
 function AppContent() {
@@ -111,8 +112,10 @@ function App() {
                   <TabBusyProvider>
                     <StickyNoteProvider>
                       <TimetableProvider>
-                        <AppContent />
-                        <ToastContainer />
+                        <ActiveClassProvider>
+                          <AppContent />
+                          <ToastContainer />
+                        </ActiveClassProvider>
                       </TimetableProvider>
                     </StickyNoteProvider>
                   </TabBusyProvider>

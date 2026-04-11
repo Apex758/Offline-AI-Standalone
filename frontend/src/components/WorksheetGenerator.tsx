@@ -92,6 +92,8 @@ import ImageModeSelector from './ui/ImageModeSelector';
 import type { ImageMode } from '../types';
 import { NeuroSegment } from './ui/NeuroSegment';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
+import { applyClassDefaults, worksheetGeneratorFieldMap } from '../lib/applyClassDefaults';
+import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
 
 
 // Curriculum types removed — now using curriculumLoader directly
@@ -253,8 +255,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   });
 
   // Class config auto-fill state
+  const { activeClass, setActiveClass } = useActiveClass();
   const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
-  const [configClassName, setConfigClassName] = useState<string>('');
+  const [configClassName, setConfigClassName] = useState<string>(activeClass?.key || '');
   const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
 
   useEffect(() => {
@@ -262,35 +265,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   }, []);
 
   const applyClassConfig = (cfg: ClassConfig, label: string) => {
-    setFormData(prev => {
-      const merge = <K extends keyof WorksheetFormData>(key: K, incoming: any): WorksheetFormData[K] => {
-        const current: any = prev[key];
-        if (typeof current === 'string') {
-          return ((current && current.trim() !== '') ? current : (incoming || '')) as WorksheetFormData[K];
-        }
-        return (current ?? incoming) as WorksheetFormData[K];
-      };
-      return {
-        ...prev,
-        subject: merge('subject', cfg.subject),
-        strand: merge('strand', cfg.strand),
-        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
-        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
-        studentCount: merge('studentCount', cfg.studentCount != null ? String(cfg.studentCount) : ''),
-        learningStyles: merge('learningStyles', cfg.learningStyles),
-        materials: merge('materials', cfg.availableMaterials),
-        prerequisiteSkills: merge('prerequisiteSkills', cfg.prerequisiteSkills),
-        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
-        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
-        additionalInstructions: merge('additionalInstructions', cfg.additionalInstructions),
-      };
-    });
+    setFormData(prev => applyClassDefaults(prev, cfg, worksheetGeneratorFieldMap));
     setClassConfigApplied(label);
   };
 
   const handleSelectConfigClass = async (value: string) => {
     setConfigClassName(value);
-    if (!value) { setClassConfigApplied(null); return; }
+    if (!value) { setClassConfigApplied(null); setActiveClass(null); return; }
     const [gl, cls] = value.split('::');
     try {
       const cfg = await fetchClassConfig(cls, gl || undefined);
@@ -298,10 +279,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         setFormData(prev => ({ ...prev, gradeLevel: gl }));
       }
       applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+      setActiveClass(buildSelection(cls, gl || undefined));
     } catch (e) {
       console.error('Failed to load class config', e);
     }
   };
+
+  // On mount: hydrate from global active class if present
+  useEffect(() => {
+    if (activeClass && !classConfigApplied) {
+      handleSelectConfigClass(activeClass.key);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [formData, setFormData] = useState<WorksheetFormData>(() => {
     const validStyles = ['cartoon_3d', 'line_art_bw', 'illustrated_painting', 'realistic'];

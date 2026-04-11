@@ -14,6 +14,8 @@ import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import Baby01Icon from '@hugeicons/core-free-icons/Baby01Icon';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
+import { applyClassDefaults, kindergartenPlannerFieldMap } from '../lib/applyClassDefaults';
+import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -471,57 +473,37 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
 
+  const { activeClass, setActiveClass } = useActiveClass();
   const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
-  const [selectedClassName, setSelectedClassName] = useState<string>('');
+  const [selectedClassName, setSelectedClassName] = useState<string>(activeClass?.key || '');
   const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
   useEffect(() => { fetchClasses().then(setAvailableClasses).catch(() => {}); }, []);
 
   const applyClassConfig = (cfg: ClassConfig, label: string) => {
-    setFormData(prev => {
-      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
-        const current: any = prev[key];
-        if (Array.isArray(current)) {
-          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
-        }
-        if (typeof current === 'boolean') {
-          return (current || !!incoming) as FormData[K];
-        }
-        if (typeof current === 'string') {
-          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
-        }
-        return (current ?? incoming) as FormData[K];
-      };
-      return {
-        ...prev,
-        curriculumSubject: merge('curriculumSubject', cfg.subject),
-        strand: merge('strand', cfg.strand),
-        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
-        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
-        students: merge('students', cfg.studentCount != null ? String(cfg.studentCount) : ''),
-        duration: merge('duration', cfg.classPeriodDuration),
-        additionalRequirements: merge('additionalRequirements', cfg.additionalInstructions),
-        learningStyles: merge('learningStyles', cfg.learningStyles),
-        pedagogicalStrategies: merge('pedagogicalStrategies', cfg.pedagogicalStrategies),
-        materials: merge('materials', cfg.availableMaterials),
-        prerequisiteSkills: merge('prerequisiteSkills', cfg.prerequisiteSkills),
-        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
-        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
-      };
-    });
+    setFormData(prev => applyClassDefaults(prev, cfg, kindergartenPlannerFieldMap));
     setClassContextApplied(label);
   };
 
   const handleSelectClass = async (value: string) => {
     setSelectedClassName(value);
-    if (!value) { setClassContextApplied(null); return; }
+    if (!value) { setClassContextApplied(null); setActiveClass(null); return; }
     const [gl, cls] = value.split('::');
     try {
       const cfg = await fetchClassConfig(cls, gl || undefined);
       applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+      setActiveClass(buildSelection(cls, gl || undefined));
     } catch (e) {
       console.error('Failed to load class config', e);
     }
   };
+
+  // On mount: hydrate from global active class if present
+  useEffect(() => {
+    if (activeClass && !classContextApplied) {
+      handleSelectClass(activeClass.key);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // (Removed manual refs for initialization tracking)
 

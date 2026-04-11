@@ -79,6 +79,8 @@ import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { QUIZ_PRESETS, loadQuizLastSettings, saveQuizLastSettings } from '../data/generatorPresets';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
+import { applyClassDefaults, quizGeneratorFieldMap } from '../lib/applyClassDefaults';
+import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
 import SmartTextArea from './SmartTextArea';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
@@ -292,8 +294,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [useCurriculum, setUseCurriculum] = useState(true);
 
   // Class config auto-fill state
+  const { activeClass, setActiveClass } = useActiveClass();
   const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
-  const [configClassName, setConfigClassName] = useState<string>('');
+  const [configClassName, setConfigClassName] = useState<string>(activeClass?.key || '');
   const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
 
   useEffect(() => {
@@ -344,38 +347,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const { matchCount, matchedHistories, sortedHistories: sortedQuizHistories } = useHistoryMatching(formData, quizHistories);
 
   const applyClassConfig = (cfg: ClassConfig, label: string) => {
-    setFormData(prev => {
-      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
-        const current: any = prev[key];
-        if (Array.isArray(current)) {
-          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
-        }
-        if (typeof current === 'string') {
-          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
-        }
-        return (current ?? incoming) as FormData[K];
-      };
-      return {
-        ...prev,
-        subject: merge('subject', cfg.subject),
-        strand: merge('strand', cfg.strand),
-        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
-        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
-        questionTypes: merge('questionTypes', cfg.defaultQuestionTypes),
-        cognitiveLevels: merge('cognitiveLevels', cfg.defaultCognitiveLevels),
-        timeLimitPerQuestion: merge('timeLimitPerQuestion', cfg.defaultTimeLimitPerQuestion != null ? String(cfg.defaultTimeLimitPerQuestion) : ''),
-        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
-        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
-        additionalInstructions: merge('additionalInstructions', cfg.additionalInstructions),
-        preferredAssessmentFormat: merge('preferredAssessmentFormat', cfg.preferredAssessmentFormat),
-      };
-    });
+    setFormData(prev => applyClassDefaults(prev, cfg, quizGeneratorFieldMap));
     setClassConfigApplied(label);
   };
 
   const handleSelectConfigClass = async (value: string) => {
     setConfigClassName(value);
-    if (!value) { setClassConfigApplied(null); return; }
+    if (!value) { setClassConfigApplied(null); setActiveClass(null); return; }
     const [gl, cls] = value.split('::');
     try {
       const cfg = await fetchClassConfig(cls, gl || undefined);
@@ -383,10 +361,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setFormData(prev => ({ ...prev, gradeLevel: gl }));
       }
       applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+      setActiveClass(buildSelection(cls, gl || undefined));
     } catch (e) {
       console.error('Failed to load class config', e);
     }
   };
+
+  // On mount: if a global active class already exists, hydrate from it
+  useEffect(() => {
+    if (activeClass && !classConfigApplied) {
+      handleSelectConfigClass(activeClass.key);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
   

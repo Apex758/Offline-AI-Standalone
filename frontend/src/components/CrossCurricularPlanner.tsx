@@ -16,6 +16,8 @@ import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import GitMergeIcon from '@hugeicons/core-free-icons/GitMergeIcon';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
+import { applyClassDefaults, crossCurricularPlannerFieldMap } from '../lib/applyClassDefaults';
+import { useActiveClass, buildSelection } from '../contexts/ActiveClassContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -566,45 +568,20 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     return null;
   });
 
+  const { activeClass, setActiveClass } = useActiveClass();
   const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
-  const [selectedClassName, setSelectedClassName] = useState<string>('');
+  const [selectedClassName, setSelectedClassName] = useState<string>(activeClass?.key || '');
   const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
   useEffect(() => { fetchClasses().then(setAvailableClasses).catch(() => {}); }, []);
 
   const applyClassConfig = (cfg: ClassConfig, label: string) => {
-    setFormData(prev => {
-      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
-        const current: any = prev[key];
-        if (Array.isArray(current)) {
-          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
-        }
-        if (typeof current === 'boolean') {
-          return (current || !!incoming) as FormData[K];
-        }
-        if (typeof current === 'string') {
-          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
-        }
-        return (current ?? incoming) as FormData[K];
-      };
-      return {
-        ...prev,
-        strand: merge('strand', cfg.strand),
-        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
-        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
-        duration: merge('duration', cfg.classPeriodDuration),
-        learningStyles: merge('learningStyles', cfg.learningStyles),
-        learningPreferences: merge('learningPreferences', cfg.learningPreferences),
-        multipleIntelligences: merge('multipleIntelligences', cfg.multipleIntelligences),
-        customLearningStyles: merge('customLearningStyles', cfg.customLearningStyles),
-        materials: merge('materials', cfg.availableMaterials),
-      };
-    });
+    setFormData(prev => applyClassDefaults(prev, cfg, crossCurricularPlannerFieldMap));
     setClassContextApplied(label);
   };
 
   const handleSelectClass = async (value: string) => {
     setSelectedClassName(value);
-    if (!value) { setClassContextApplied(null); return; }
+    if (!value) { setClassContextApplied(null); setActiveClass(null); return; }
     const [gl, cls] = value.split('::');
     try {
       const cfg = await fetchClassConfig(cls, gl || undefined);
@@ -612,10 +589,19 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
         setFormData(prev => ({ ...prev, gradeLevel: gl }));
       }
       applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+      setActiveClass(buildSelection(cls, gl || undefined));
     } catch (e) {
       console.error('Failed to load class config', e);
     }
   };
+
+  // On mount: hydrate from global active class if present
+  useEffect(() => {
+    if (activeClass && !classContextApplied) {
+      handleSelectClass(activeClass.key);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
