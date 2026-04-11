@@ -36,8 +36,43 @@ interface Props {
   accentColor: string;
   editable?: boolean;
   isStreaming?: boolean;
+  /**
+   * JSON path of the field currently being typed by the model, e.g.
+   * ["general_objective"] or ["ksv", "knowledge", 2]. null when no
+   * field is actively being typed (between fields, or after stream end).
+   */
+  inProgressPath?: (string | number)[] | null;
+  /** Partial text currently being typed into the in-progress field. */
+  inProgressValue?: string | null;
   onChange?: (next: Partial<OhpcLessonPlan>) => void;
   onReflectionsChange?: (next: TeacherReflections) => void;
+}
+
+// ---------------------------------------------------------------------------
+// Path matching helpers — used to detect which field the AI is currently
+// typing so we can show live text + caret + shimmer on just that cell.
+// ---------------------------------------------------------------------------
+
+function pathStartsWith(
+  path: readonly (string | number)[] | null | undefined,
+  prefix: readonly (string | number)[]
+): boolean {
+  if (!path || path.length < prefix.length) return false;
+  for (let i = 0; i < prefix.length; i++) {
+    if (path[i] !== prefix[i]) return false;
+  }
+  return true;
+}
+
+function pathEquals(
+  a: readonly (string | number)[] | null | undefined,
+  b: readonly (string | number)[]
+): boolean {
+  if (!a || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -50,11 +85,76 @@ export default function OhpcLessonTable({
   accentColor,
   editable = false,
   isStreaming = false,
+  inProgressPath,
+  inProgressValue,
   onChange,
   onReflectionsChange,
 }: Props) {
   const l: Partial<OhpcLessonPlan> = lesson || {};
   const reflect = reflections || EMPTY_TEACHER_REFLECTIONS;
+
+  // ---- Streaming field helpers --------------------------------------------
+  // A scalar string path is "active" when it exactly matches the parser's
+  // reported in-progress path. An array-of-strings path is "active" at an
+  // index when inProgressPath is [...prefix, idx]. We wrap the existing
+  // InlineText / BulletList calls with thin helpers so the rest of the
+  // render tree stays readable.
+
+  const streamingStringField = (path: readonly (string | number)[]) => {
+    if (!isStreaming || !inProgressPath || inProgressValue == null) return null;
+    return pathEquals(inProgressPath, path) ? inProgressValue : null;
+  };
+
+  const streamingBulletItem = (listPath: readonly (string | number)[]) => {
+    if (!isStreaming || !inProgressPath || inProgressValue == null) return null;
+    // Active when inProgressPath = [...listPath, <number>]
+    if (
+      inProgressPath.length === listPath.length + 1 &&
+      pathStartsWith(inProgressPath, listPath) &&
+      typeof inProgressPath[listPath.length] === "number"
+    ) {
+      return {
+        index: inProgressPath[listPath.length] as number,
+        value: inProgressValue,
+      };
+    }
+    return null;
+  };
+
+  // LiveScalarCell — wraps an InlineText call so that when its path is the
+  // active streaming path, we render the partial text + caret + shimmer in
+  // place of the committed (empty) value.
+  const LiveScalarCell: React.FC<{
+    path: readonly (string | number)[];
+    value: string;
+    placeholder: string;
+    multiline?: boolean;
+    onChange: (v: string) => void;
+    className?: string;
+  }> = ({ path, value, placeholder, multiline, onChange: onFieldChange, className }) => {
+    const streaming = streamingStringField(path);
+    if (streaming !== null) {
+      return (
+        <span className={`ohpc-active-field ${className || ""}`}>
+          <span className="whitespace-pre-wrap">{streaming}</span>
+          <span
+            className="inline-block w-[2px] h-[0.9em] ml-[1px] align-middle animate-pulse"
+            style={{ backgroundColor: accentColor }}
+          />
+        </span>
+      );
+    }
+    return (
+      <InlineText
+        value={value}
+        placeholder={placeholder}
+        editable={editable}
+        multiline={multiline}
+        onChange={onFieldChange}
+        className={className}
+      />
+    );
+  };
 
   const patch = useCallback(
     (update: Partial<OhpcLessonPlan>) => {
@@ -145,16 +245,22 @@ export default function OhpcLessonTable({
             0%, 100% { box-shadow: 0 0 0 2px ${accentColor}33, 0 0 24px ${accentColor}22; }
             50%      { box-shadow: 0 0 0 2px ${accentColor}66, 0 0 32px ${accentColor}44; }
           }
-          .ohpc-streaming td:empty::before,
-          .ohpc-streaming td:has(> .text-theme-muted.italic)::after {
-            content: '';
-          }
-          .ohpc-streaming .ohpc-cell-filling {
-            background: linear-gradient(90deg, ${accentColor}11 0%, ${accentColor}22 50%, ${accentColor}11 100%);
+          /* Per-field shimmer — highlights just the cell currently being typed */
+          .ohpc-active-field {
+            display: inline-block;
+            padding: 0 0.25rem;
+            border-radius: 4px;
+            background: linear-gradient(
+              90deg,
+              ${accentColor}11 0%,
+              ${accentColor}33 50%,
+              ${accentColor}11 100%
+            );
             background-size: 200% 100%;
-            animation: ohpcShimmer 1.4s linear infinite;
+            animation: ohpcActiveShimmer 1.4s linear infinite;
+            box-shadow: 0 0 0 1px ${accentColor}55;
           }
-          @keyframes ohpcShimmer {
+          @keyframes ohpcActiveShimmer {
             0%   { background-position: 200% 0; }
             100% { background-position: -200% 0; }
           }
@@ -196,28 +302,28 @@ export default function OhpcLessonTable({
           <tr>
             <LabelCell accent={accentColor} label="Subject:" />
             <ValueCell>
-              <InlineText
+              <LiveScalarCell
+                path={["subject"]}
                 value={l.subject || ""}
                 placeholder="(subject)"
-                editable={editable}
                 onChange={(v) => patch({ subject: v })}
               />
             </ValueCell>
             <LabelCell accent={accentColor} label="Grade:" />
             <ValueCell>
-              <InlineText
+              <LiveScalarCell
+                path={["grade"]}
                 value={l.grade || ""}
                 placeholder="(grade)"
-                editable={editable}
                 onChange={(v) => patch({ grade: v })}
               />
             </ValueCell>
             <LabelCell accent={accentColor} label="Duration of Lesson:" />
             <ValueCell>
-              <InlineText
+              <LiveScalarCell
+                path={["duration"]}
                 value={l.duration || ""}
                 placeholder="(duration)"
-                editable={editable}
                 onChange={(v) => patch({ duration: v })}
               />
             </ValueCell>
@@ -225,19 +331,19 @@ export default function OhpcLessonTable({
           <tr>
             <LabelCell accent={accentColor} label="Strand:" />
             <ValueCell>
-              <InlineText
+              <LiveScalarCell
+                path={["strand"]}
                 value={l.strand || ""}
                 placeholder="(strand)"
-                editable={editable}
                 onChange={(v) => patch({ strand: v })}
               />
             </ValueCell>
             <LabelCell accent={accentColor} label="Essential Learning Outcome:" />
             <td colSpan={3} style={{ border: tableBorder, padding: "0.5rem 0.75rem" }}>
-              <InlineText
+              <LiveScalarCell
+                path={["essential_learning_outcome"]}
                 value={l.essential_learning_outcome || ""}
                 placeholder="(ELO)"
-                editable={editable}
                 multiline
                 onChange={(v) => patch({ essential_learning_outcome: v })}
               />
@@ -251,10 +357,10 @@ export default function OhpcLessonTable({
               <div className="font-semibold mb-1" style={{ color: headerText }}>
                 General Objective of the Lesson:
               </div>
-              <InlineText
+              <LiveScalarCell
+                path={["general_objective"]}
                 value={l.general_objective || ""}
                 placeholder="(general objective)"
-                editable={editable}
                 multiline
                 onChange={(v) => patch({ general_objective: v })}
               />
@@ -274,14 +380,15 @@ export default function OhpcLessonTable({
                 accentColor={accentColor}
                 placeholder="(specific outcomes)"
                 onChange={(next) => patch({ specific_curriculum_outcomes: next })}
+                streamingItem={streamingBulletItem(["specific_curriculum_outcomes"])}
               />
               {(l.focus_question || editable) && (
                 <div className="mt-2 text-xs italic">
                   Focus question:{" "}
-                  <InlineText
+                  <LiveScalarCell
+                    path={["focus_question"]}
                     value={l.focus_question || ""}
                     placeholder="(optional focus question)"
-                    editable={editable}
                     onChange={(v) => patch({ focus_question: v })}
                   />
                 </div>
@@ -302,6 +409,7 @@ export default function OhpcLessonTable({
                 accentColor={accentColor}
                 placeholder="(knowledge)"
                 onChange={(next) => patchKsv({ knowledge: next })}
+                streamingItem={streamingBulletItem(["ksv", "knowledge"])}
               />
             </KsvCell>
             <KsvCell>
@@ -311,6 +419,7 @@ export default function OhpcLessonTable({
                 accentColor={accentColor}
                 placeholder="(skills)"
                 onChange={(next) => patchKsv({ skills: next })}
+                streamingItem={streamingBulletItem(["ksv", "skills"])}
               />
             </KsvCell>
             <KsvCell>
@@ -320,6 +429,7 @@ export default function OhpcLessonTable({
                 accentColor={accentColor}
                 placeholder="(values)"
                 onChange={(next) => patchKsv({ values: next })}
+                streamingItem={streamingBulletItem(["ksv", "values"])}
               />
             </KsvCell>
           </tr>
@@ -396,6 +506,7 @@ export default function OhpcLessonTable({
                         accentColor={accentColor}
                         placeholder="(teacher actions)"
                         onChange={(next) => patchComponent(key, { teacher_actions: next })}
+                        streamingItem={streamingBulletItem([key, "teacher_actions"])}
                       />
                     </div>
                     <div>
@@ -408,6 +519,7 @@ export default function OhpcLessonTable({
                         accentColor={accentColor}
                         placeholder="(student actions)"
                         onChange={(next) => patchComponent(key, { student_actions: next })}
+                        streamingItem={streamingBulletItem([key, "student_actions"])}
                       />
                     </div>
                     {((comp?.talking_points?.length ?? 0) > 0 || editable) && (
@@ -421,6 +533,7 @@ export default function OhpcLessonTable({
                           accentColor={accentColor}
                           placeholder="(talking points)"
                           onChange={(next) => patchComponent(key, { talking_points: next })}
+                          streamingItem={streamingBulletItem([key, "talking_points"])}
                         />
                       </div>
                     )}
@@ -456,10 +569,10 @@ export default function OhpcLessonTable({
                   <span>{l.assessment?.strategy || "(strategy)"}</span>
                 )}
               </div>
-              <InlineText
+              <LiveScalarCell
+                path={["assessment", "description"]}
                 value={l.assessment?.description || ""}
                 placeholder="(assessment description)"
-                editable={editable}
                 multiline
                 onChange={(v) => patchAssessment({ description: v })}
                 className="block mb-2"
@@ -473,6 +586,7 @@ export default function OhpcLessonTable({
                 accentColor={accentColor}
                 placeholder="(success criteria)"
                 onChange={(next) => patchAssessment({ success_criteria: next })}
+                streamingItem={streamingBulletItem(["assessment", "success_criteria"])}
               />
             </td>
           </tr>
@@ -493,6 +607,7 @@ export default function OhpcLessonTable({
                   accentColor={accentColor}
                   placeholder="(support strategies)"
                   onChange={(next) => patchDifferentiation({ support: next })}
+                  streamingItem={streamingBulletItem(["differentiation", "support"])}
                 />
               </div>
               <div className="mb-2">
@@ -505,6 +620,7 @@ export default function OhpcLessonTable({
                   accentColor={accentColor}
                   placeholder="(extension strategies)"
                   onChange={(next) => patchDifferentiation({ extension: next })}
+                  streamingItem={streamingBulletItem(["differentiation", "extension"])}
                 />
               </div>
               {((l.differentiation?.accommodations?.length ?? 0) > 0 || editable) && (
@@ -518,6 +634,7 @@ export default function OhpcLessonTable({
                     accentColor={accentColor}
                     placeholder="(accommodations)"
                     onChange={(next) => patchDifferentiation({ accommodations: next })}
+                    streamingItem={streamingBulletItem(["differentiation", "accommodations"])}
                   />
                 </div>
               )}
@@ -536,6 +653,7 @@ export default function OhpcLessonTable({
                 accentColor={accentColor}
                 placeholder="(cross-curricular links)"
                 onChange={(next) => patch({ subject_integration: next })}
+                streamingItem={streamingBulletItem(["subject_integration"])}
               />
             </td>
           </tr>
@@ -552,6 +670,7 @@ export default function OhpcLessonTable({
                 accentColor={accentColor}
                 placeholder="(classroom materials)"
                 onChange={(next) => patch({ resources: next })}
+                streamingItem={streamingBulletItem(["resources"])}
               />
             </td>
           </tr>

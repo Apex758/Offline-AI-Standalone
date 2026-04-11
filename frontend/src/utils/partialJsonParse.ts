@@ -10,12 +10,45 @@
  * always a PREFIX of a valid JSON object -- we just need to make each
  * prefix self-consistent so React can render progressively.
  *
+ * Also exposes `parsePartialJsonWithProgress` which additionally returns
+ * the JSON path and partial text of the value currently being typed, so
+ * the UI can show text flowing into a specific field live (instead of
+ * waiting for the field to commit before anything appears).
+ *
  * NOT a general-purpose JSON recovery tool. Edge cases (escapes mid-string,
  * unicode surrogates, numbers mid-stream) are handled conservatively.
  */
 
+export interface PartialJsonProgress<T = unknown> {
+  /** Repaired+parsed committed state (fields already closed). */
+  data: Partial<T> | null;
+  /**
+   * JSON path to the value currently being typed (e.g.
+   * `["general_objective"]` or `["ksv", "knowledge", 2]`).
+   * null if no string value is currently open.
+   */
+  inProgressPath: (string | number)[] | null;
+  /**
+   * Partial text content of the value currently being typed, with JSON
+   * escape sequences resolved. Empty string if a new string just opened.
+   * null if no string value is currently open.
+   */
+  inProgressValue: string | null;
+}
+
 export function parsePartialJson<T = unknown>(raw: string): Partial<T> | null {
-  if (!raw) return null;
+  return parsePartialJsonWithProgress<T>(raw).data;
+}
+
+export function parsePartialJsonWithProgress<T = unknown>(
+  raw: string
+): PartialJsonProgress<T> {
+  const empty: PartialJsonProgress<T> = {
+    data: null,
+    inProgressPath: null,
+    inProgressValue: null,
+  };
+  if (!raw) return empty;
 
   // Strip any leading/trailing whitespace and an accidental markdown fence.
   let s = raw.trim();
@@ -28,22 +61,203 @@ export function parsePartialJson<T = unknown>(raw: string): Partial<T> | null {
 
   // Find the first opening brace; anything before is noise.
   const firstBrace = s.indexOf("{");
-  if (firstBrace === -1) return null;
+  if (firstBrace === -1) return empty;
   s = s.slice(firstBrace);
+
+  // Extract progress info (path + partial string content currently open).
+  const progress = extractProgress(s);
 
   // Fast path: already valid.
   try {
-    return JSON.parse(s) as Partial<T>;
+    const data = JSON.parse(s) as Partial<T>;
+    return {
+      data,
+      inProgressPath: progress.path,
+      inProgressValue: progress.value,
+    };
   } catch {
     /* fall through to repair */
   }
 
   const repaired = repairJson(s);
-  if (!repaired) return null;
+  if (!repaired) {
+    return {
+      data: null,
+      inProgressPath: progress.path,
+      inProgressValue: progress.value,
+    };
+  }
   try {
-    return JSON.parse(repaired) as Partial<T>;
+    const data = JSON.parse(repaired) as Partial<T>;
+    return {
+      data,
+      inProgressPath: progress.path,
+      inProgressValue: progress.value,
+    };
   } catch {
-    return null;
+    return {
+      data: null,
+      inProgressPath: progress.path,
+      inProgressValue: progress.value,
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Progress extraction — walks the raw prefix and reports whether there's a
+// string currently open and where it lives in the JSON tree.
+// ---------------------------------------------------------------------------
+
+interface ProgressResult {
+  path: (string | number)[] | null;
+  value: string | null;
+}
+
+interface Frame {
+  kind: "obj" | "arr";
+  currentKey: string | null; // for obj: most recently closed key (active value being typed)
+  currentIdx: number; // for arr: index of the current element
+}
+
+function extractProgress(s: string): ProgressResult {
+  const path: (string | number)[] = [];
+  const stack: Frame[] = [];
+  let inString = false;
+  let escape = false;
+  let stringStart = -1;
+  let stringIsKey = false;
+  let afterColon = false;
+
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+
+    if (inString) {
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (c === "\\") {
+        escape = true;
+        continue;
+      }
+      if (c === '"') {
+        inString = false;
+        // Closing a string.
+        if (stringIsKey) {
+          // Remember the key we just closed — it becomes the currentKey on the top frame.
+          const top = stack[stack.length - 1];
+          if (top && top.kind === "obj") {
+            const keyText = s.slice(stringStart + 1, i);
+            top.currentKey = safeDecodeString(keyText);
+          }
+        }
+        stringStart = -1;
+        stringIsKey = false;
+      }
+      continue;
+    }
+
+    if (c === '"') {
+      inString = true;
+      stringStart = i;
+      const top = stack[stack.length - 1];
+      stringIsKey = !!(top && top.kind === "obj" && !afterColon);
+      afterColon = false;
+      continue;
+    }
+
+    if (c === "{") {
+      // Pushing a new object as the value of the current key/index.
+      pushPathForValue(path, stack);
+      stack.push({ kind: "obj", currentKey: null, currentIdx: 0 });
+      afterColon = false;
+      continue;
+    }
+
+    if (c === "[") {
+      pushPathForValue(path, stack);
+      stack.push({ kind: "arr", currentKey: null, currentIdx: 0 });
+      afterColon = false;
+      continue;
+    }
+
+    if (c === "}" || c === "]") {
+      stack.pop();
+      if (path.length > 0) path.pop();
+      afterColon = false;
+      continue;
+    }
+
+    if (c === ":") {
+      afterColon = true;
+      continue;
+    }
+
+    if (c === ",") {
+      const top = stack[stack.length - 1];
+      if (top && top.kind === "arr") {
+        top.currentIdx += 1;
+      } else if (top && top.kind === "obj") {
+        top.currentKey = null;
+      }
+      afterColon = false;
+      continue;
+    }
+    // numbers / true / false / null literals — not tracked as in-progress values
+    // (they commit atomically and are less useful for per-character feedback).
+  }
+
+  // If we ended inside a string value, report it.
+  if (inString && !stringIsKey && stringStart !== -1) {
+    const top = stack[stack.length - 1];
+    const partialPath = [...path];
+    if (top) {
+      if (top.kind === "obj" && top.currentKey != null) {
+        partialPath.push(top.currentKey);
+      } else if (top.kind === "arr") {
+        partialPath.push(top.currentIdx);
+      }
+    }
+    const rawPartial = s.slice(stringStart + 1);
+    const value = safeDecodeString(rawPartial);
+    return { path: partialPath, value };
+  }
+
+  return { path: null, value: null };
+}
+
+/**
+ * When we encounter `{` or `[` that will become a value, push the
+ * current key/index onto `path` so nested values are addressable.
+ * Root-level objects/arrays do not push anything.
+ */
+function pushPathForValue(
+  path: (string | number)[],
+  stack: Frame[]
+): void {
+  const top = stack[stack.length - 1];
+  if (!top) return; // root container
+  if (top.kind === "obj" && top.currentKey != null) {
+    path.push(top.currentKey);
+  } else if (top.kind === "arr") {
+    path.push(top.currentIdx);
+  }
+}
+
+/**
+ * Decode a partial JSON string (without the closing quote) into displayable
+ * text, resolving escape sequences where possible and dropping dangling
+ * unterminated escapes.
+ */
+function safeDecodeString(raw: string): string {
+  // Drop trailing unterminated escape sequences before trying to parse.
+  let trimmed = raw.replace(/\\u[0-9a-fA-F]{0,3}$/, "");
+  if (trimmed.endsWith("\\")) trimmed = trimmed.slice(0, -1);
+  try {
+    return JSON.parse(`"${trimmed}"`);
+  } catch {
+    // Strip any backslashes and return as-is; better than nothing.
+    return trimmed.replace(/\\/g, "");
   }
 }
 

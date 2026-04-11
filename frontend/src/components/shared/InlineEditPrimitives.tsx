@@ -75,12 +75,20 @@ export function BulletList({
   accentColor,
   placeholder,
   onChange,
+  streamingItem,
 }: {
   items: string[] | undefined;
   editable: boolean;
   accentColor: string;
   placeholder: string;
   onChange: (next: string[]) => void;
+  /**
+   * When set, renders an additional "live" bullet at the given index with
+   * the given in-progress text + caret + shimmer. This is used during
+   * AI streaming so users see the next item being typed even before it
+   * is committed to the underlying array.
+   */
+  streamingItem?: { index: number; value: string } | null;
 }) {
   const list = items || [];
   const updateAt = (idx: number, v: string) => {
@@ -94,7 +102,10 @@ export function BulletList({
   };
   const addItem = () => onChange([...list, ""]);
 
-  if (list.length === 0 && !editable) {
+  const hasStreamingTrailer =
+    !!streamingItem && streamingItem.index >= list.length;
+
+  if (list.length === 0 && !editable && !hasStreamingTrailer) {
     return <span className="text-theme-muted italic">{placeholder}</span>;
   }
   return (
@@ -124,6 +135,21 @@ export function BulletList({
           )}
         </li>
       ))}
+      {hasStreamingTrailer && streamingItem && (
+        <li key={`streaming-${streamingItem.index}`} className="flex items-start gap-2 ohpc-active-field">
+          <span
+            className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
+            style={{ backgroundColor: accentColor }}
+          />
+          <span className="flex-1 text-sm leading-relaxed whitespace-pre-wrap">
+            {streamingItem.value}
+            <span
+              className="inline-block w-[2px] h-[0.9em] ml-[1px] align-middle animate-pulse"
+              style={{ backgroundColor: accentColor }}
+            />
+          </span>
+        </li>
+      )}
       {editable && (
         <li>
           <button

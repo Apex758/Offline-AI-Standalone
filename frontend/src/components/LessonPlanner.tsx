@@ -374,7 +374,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   // --- OHPC structured lesson plan ---------------------------------------
   // Parse the incoming JSON stream (grammar-constrained by the backend) into
   // a Partial<OhpcLessonPlan> that fills progressively as tokens arrive.
-  const { lesson: ohpcStreamLesson } = useStreamingLessonJson({
+  const {
+    lesson: ohpcStreamLesson,
+    inProgressPath: ohpcInProgressPath,
+    inProgressValue: ohpcInProgressValue,
+  } = useStreamingLessonJson({
     rawText: streamingPlan || generatedPlan,
     isStreaming: !!(loading && streamingPlan),
   });
@@ -1105,6 +1109,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     accentColor={tabColor}
                     editable={!loading}
                     isStreaming={!!(loading && streamingPlan)}
+                    inProgressPath={ohpcInProgressPath}
+                    inProgressValue={ohpcInProgressValue}
                     onChange={setOhpcLesson}
                     onReflectionsChange={setReflections}
                   />

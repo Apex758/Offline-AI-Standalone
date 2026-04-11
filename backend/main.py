@@ -2032,6 +2032,12 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 # Stream tokens in real-time
                 _token_buf = ""
                 _last_flush = time.monotonic()
+                # [DIAG] stream instrumentation
+                _diag_t0 = time.monotonic()
+                _diag_token_count = 0
+                _diag_flush_count = 0
+                _diag_last_token_t = _diag_t0
+                logger.info("[DIAG lesson-plan] stream_start")
                 # max_tokens is a ceiling, not a target -- does NOT slow
                 # generation; only affects memory reservation and the worst-
                 # case truncation point. 8000 is a safety margin for fully
@@ -2081,7 +2087,25 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     if chunk.get("token"):
                         _token_buf += chunk["token"]
                         _now = time.monotonic()
+                        # [DIAG] token arrival
+                        _diag_token_count += 1
+                        _diag_gap_ms = int((_now - _diag_last_token_t) * 1000)
+                        _diag_elapsed_ms = int((_now - _diag_t0) * 1000)
+                        if _diag_gap_ms >= 200:
+                            logger.info(
+                                f"[DIAG lesson-plan] SLOW_TOKEN t=+{_diag_elapsed_ms}ms "
+                                f"gap_since_prev={_diag_gap_ms}ms token_n={_diag_token_count} "
+                                f"buf_len={len(_token_buf)}"
+                            )
+                        _diag_last_token_t = _now
                         if (_now - _last_flush) >= 0.030 or '\n' in chunk["token"]:
+                            _diag_flush_count += 1
+                            _diag_reason = "newline" if '\n' in chunk["token"] else "timer"
+                            logger.info(
+                                f"[DIAG lesson-plan] FLUSH t=+{_diag_elapsed_ms}ms "
+                                f"buf_len={len(_token_buf)} reason={_diag_reason} "
+                                f"flushes={_diag_flush_count} tokens={_diag_token_count}"
+                            )
                             try:
                                 await websocket.send_json({"type": "token", "content": _token_buf})
                                 await asyncio.sleep(0)
@@ -2190,6 +2214,12 @@ async def quiz_websocket(websocket: WebSocket):
                 # Stream tokens as they are generated
                 _token_buf = ""
                 _last_flush = time.monotonic()
+                # [DIAG] stream instrumentation
+                _diag_t0 = time.monotonic()
+                _diag_token_count = 0
+                _diag_flush_count = 0
+                _diag_last_token_t = _diag_t0
+                logger.info("[DIAG quiz] stream_start")
                 async for chunk in inference.generate_stream(
                     tool_name="quiz",
                     input_data=prompt,
@@ -2234,7 +2264,25 @@ async def quiz_websocket(websocket: WebSocket):
                     if chunk.get("token"):
                         _token_buf += chunk["token"]
                         _now = time.monotonic()
+                        # [DIAG] token arrival
+                        _diag_token_count += 1
+                        _diag_gap_ms = int((_now - _diag_last_token_t) * 1000)
+                        _diag_elapsed_ms = int((_now - _diag_t0) * 1000)
+                        if _diag_gap_ms >= 200:
+                            logger.info(
+                                f"[DIAG quiz] SLOW_TOKEN t=+{_diag_elapsed_ms}ms "
+                                f"gap_since_prev={_diag_gap_ms}ms token_n={_diag_token_count} "
+                                f"buf_len={len(_token_buf)}"
+                            )
+                        _diag_last_token_t = _now
                         if (_now - _last_flush) >= 0.030 or '\n' in chunk["token"]:
+                            _diag_flush_count += 1
+                            _diag_reason = "newline" if '\n' in chunk["token"] else "timer"
+                            logger.info(
+                                f"[DIAG quiz] FLUSH t=+{_diag_elapsed_ms}ms "
+                                f"buf_len={len(_token_buf)} reason={_diag_reason} "
+                                f"flushes={_diag_flush_count} tokens={_diag_token_count}"
+                            )
                             try:
                                 await websocket.send_json({"type": "token", "content": _token_buf})
                                 await asyncio.sleep(0)

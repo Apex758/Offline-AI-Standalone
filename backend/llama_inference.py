@@ -57,13 +57,57 @@ def detect_gpu() -> dict:
             logger.debug(f"nvidia-smi check failed: {e}")
 
     # No GPU found — CPU fallback
+    # n_batch=1024 is better for CPU prompt processing throughput on modern
+    # multi-core chips. The cost is a small bump in peak memory during the
+    # prompt phase; during generation the working set is the same.
     logger.info("🖥️ No GPU detected, using CPU-only mode")
     return {
         "n_gpu_layers": 0,
-        "n_batch": 512,
+        "n_batch": 1024,
         "gpu_name": None,
         "vram_mb": 0,
     }
+
+def _should_use_mlock(model_path: str) -> bool:
+    """Decide whether to pin the model in RAM via use_mlock.
+
+    Returns True only when the system has enough free memory to hold the
+    model plus reasonable headroom. On constrained systems we fall back to
+    mmap-only so the app still loads. The decision is made at runtime per
+    machine — no hardcoded assumptions about the host.
+    """
+    try:
+        model_size_bytes = os.path.getsize(model_path)
+    except Exception:
+        return False
+
+    try:
+        import psutil
+        vm = psutil.virtual_memory()
+        # Require the model to fit within ~60% of available RAM, leaving
+        # room for the KV cache, OS, and the rest of the app. This is a
+        # conservative safety margin — if the system is already tight on
+        # memory we'd rather let mmap handle paging than fail the load.
+        required = int(model_size_bytes * 1.6)
+        if vm.available >= required:
+            logger.info(
+                "[llama] use_mlock enabled (model=%d MB, available=%d MB)",
+                model_size_bytes // (1024 * 1024),
+                vm.available // (1024 * 1024),
+            )
+            return True
+        logger.info(
+            "[llama] use_mlock disabled — not enough free RAM "
+            "(model=%d MB, available=%d MB, required=%d MB)",
+            model_size_bytes // (1024 * 1024),
+            vm.available // (1024 * 1024),
+            required // (1024 * 1024),
+        )
+        return False
+    except Exception as e:
+        logger.debug("[llama] mlock RAM check failed (%s); defaulting to False", e)
+        return False
+
 
 class SilenceOutput:
     """Suppress llama.cpp console noise."""
@@ -87,10 +131,68 @@ class SilenceOutput:
 class LlamaInference:
     """
     TRUE REAL-TIME STREAMING - Tokens appear AS they're generated!
-    
+
     Key: Use a queue to get tokens from llama-cpp thread immediately.
     """
-    
+
+    # ------------------------------------------------------------------
+    # Compiled-grammar cache
+    #
+    # LlamaGrammar.from_json_schema() is expensive — it builds a GBNF
+    # state machine that can take hundreds of ms on complex schemas.
+    # Without caching, we rebuild the same grammar on every single
+    # schema-constrained request, which on CPU accounts for a measurable
+    # chunk of the per-request overhead.
+    #
+    # Keyed by a stable hash of the schema JSON so two different schemas
+    # never collide. CPython dict operations are atomic under the GIL,
+    # so no lock is needed for simple get/set. If two requests race to
+    # compile the same schema the worst case is a redundant compile on
+    # the loser — never a correctness issue.
+    # ------------------------------------------------------------------
+    _grammar_cache: Dict[str, "LlamaGrammar"] = {}
+
+    @classmethod
+    def _get_cached_grammar(cls, json_schema: Any) -> "Optional[LlamaGrammar]":
+        """Return a compiled LlamaGrammar for the given JSON schema.
+
+        On first use for a given schema, compiles and caches. On subsequent
+        calls, returns the cached instance immediately. Returns None on
+        compilation failure so callers can degrade gracefully.
+        """
+        try:
+            import json as _json
+            # sort_keys ensures equivalent schemas map to the same cache key
+            # regardless of dict insertion order.
+            key = _json.dumps(json_schema, sort_keys=True, default=str)
+        except Exception:
+            # If the schema isn't JSON-serializable at all, we can't cache it.
+            try:
+                return LlamaGrammar.from_json_schema(
+                    _json.dumps(json_schema), verbose=False
+                )
+            except Exception:
+                return None
+
+        cached = cls._grammar_cache.get(key)
+        if cached is not None:
+            return cached
+
+        try:
+            import json as _json
+            compiled = LlamaGrammar.from_json_schema(
+                _json.dumps(json_schema), verbose=False
+            )
+            cls._grammar_cache[key] = compiled
+            logger.info(
+                "[llama] Compiled new grammar (cache_size=%d)",
+                len(cls._grammar_cache),
+            )
+            return compiled
+        except Exception as exc:
+            logger.warning("[llama] Grammar compilation failed: %s", exc)
+            return None
+
     # Model family detection and config
     MODEL_FAMILIES = {
         "qwen3": {
@@ -234,8 +336,13 @@ class LlamaInference:
                     chat_handler = None
 
             n_threads = _optimal_thread_count()
+            # use_mlock pins the model in RAM to prevent Windows/Linux from
+            # paging it to disk under memory pressure. Only enable when the
+            # OS has enough free memory to hold the model; otherwise the
+            # allocation fails and we fall back to mmap-only.
+            _want_mlock = _should_use_mlock(model_path)
             with SilenceOutput():
-                self.model = Llama(
+                _llama_kwargs = dict(
                     model_path=model_path,
                     n_ctx=n_ctx,
                     verbose=False,
@@ -243,8 +350,24 @@ class LlamaInference:
                     n_batch=self.gpu_info["n_batch"],
                     n_gpu_layers=self.gpu_info["n_gpu_layers"],
                     use_mmap=True,
-                    **({"chat_handler": chat_handler} if chat_handler else {}),
+                    use_mlock=_want_mlock,
                 )
+                if chat_handler is not None:
+                    _llama_kwargs["chat_handler"] = chat_handler
+                try:
+                    self.model = Llama(**_llama_kwargs)
+                except Exception as _mlock_err:
+                    # If mlock allocation fails (rare — happens on low-RAM
+                    # systems), retry without it so the model still loads.
+                    if _want_mlock and "mlock" in str(_mlock_err).lower():
+                        logger.warning(
+                            "[llama] use_mlock=True failed (%s); retrying with use_mlock=False",
+                            _mlock_err,
+                        )
+                        _llama_kwargs["use_mlock"] = False
+                        self.model = Llama(**_llama_kwargs)
+                    else:
+                        raise
             self.n_ctx = n_ctx
             self.is_loaded = True
             gpu_status = f"GPU: {self.gpu_info['gpu_name']}" if self.gpu_info["gpu_name"] else "CPU-only"
@@ -542,19 +665,19 @@ class LlamaInference:
                 except Exception as te:
                     logger.warning(f"Token count check failed: {te}")
 
-            # Build grammar from JSON schema if provided (for structured output)
+            # Build grammar from JSON schema if provided (for structured output).
+            # Uses the class-level cache to skip repeat compilation overhead
+            # on every request — same schema compiles once per process lifetime.
             _grammar = None
             _response_format = None
             if json_schema:
                 try:
-                    import json as _json
                     if use_chat:
                         _response_format = {"type": "json_object", "schema": json_schema}
                     else:
-                        _grammar = LlamaGrammar.from_json_schema(
-                            _json.dumps(json_schema), verbose=False
-                        )
-                    logger.info(f"[stream] JSON schema enforcement enabled for {tool_name}")
+                        _grammar = self._get_cached_grammar(json_schema)
+                    if _grammar is not None or _response_format is not None:
+                        logger.info(f"[stream] JSON schema enforcement enabled for {tool_name}")
                 except Exception as _ge:
                     logger.warning(f"[stream] Failed to compile JSON schema grammar: {_ge}")
 

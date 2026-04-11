@@ -60,6 +60,14 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ✅ Debounce re-renders to avoid render storm
   const updateTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
+  // [DIAG] streaming instrumentation — per connection timing
+  const diagRef = useRef<Map<string, {
+    t0: number;
+    lastMsgT: number;
+    msgCount: number;
+    renderCount: number;
+  }>>(new Map());
+
   const scheduleUpdate = useCallback((key: string) => {
     // Clear existing timer
     const existingTimer = updateTimersRef.current.get(key);
@@ -71,6 +79,17 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const timer = setTimeout(() => {
       const conn = connectionsRef.current.get(key);
       if (conn) {
+        // [DIAG] render flush
+        const diag = diagRef.current.get(key);
+        if (diag) {
+          diag.renderCount++;
+          const elapsed = Math.round(performance.now() - diag.t0);
+          console.log(
+            `[DIAG WS ${key}] RENDER_FLUSH t=+${elapsed}ms ` +
+            `render_n=${diag.renderCount} msgs=${diag.msgCount} ` +
+            `content_len=${conn.streamingContent.length}`
+          );
+        }
         conn.listeners.forEach(listener => listener());
       }
       updateTimersRef.current.delete(key);
@@ -110,6 +129,29 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (!conn) return;
 
         if (data.type === 'token') {
+          // [DIAG] token message arrival
+          const now = performance.now();
+          let diag = diagRef.current.get(key);
+          if (!diag) {
+            diag = { t0: now, lastMsgT: now, msgCount: 0, renderCount: 0 };
+            diagRef.current.set(key, diag);
+          }
+          diag.msgCount++;
+          const gapMs = Math.round(now - diag.lastMsgT);
+          const elapsedMs = Math.round(now - diag.t0);
+          if (gapMs >= 200) {
+            console.log(
+              `[DIAG WS ${key}] SLOW_MSG t=+${elapsedMs}ms gap_since_prev=${gapMs}ms ` +
+              `msg_n=${diag.msgCount} payload_len=${data.content?.length ?? 0}`
+            );
+          } else if (diag.msgCount <= 5 || diag.msgCount % 20 === 0) {
+            console.log(
+              `[DIAG WS ${key}] MSG t=+${elapsedMs}ms gap=${gapMs}ms ` +
+              `msg_n=${diag.msgCount} payload_len=${data.content?.length ?? 0}`
+            );
+          }
+          diag.lastMsgT = now;
+
           // ✅ Accumulate content immediately (no delay)
           conn.streamingContent += data.content;
           conn.isStreaming = true;
@@ -117,6 +159,16 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           // ✅ Schedule batched update instead of immediate forceUpdate
           scheduleUpdate(key);
         } else if (data.type === 'done' || data.type === 'cancelled') {
+          // [DIAG] stream finished — print summary and clear
+          const diag = diagRef.current.get(key);
+          if (diag) {
+            const total = Math.round(performance.now() - diag.t0);
+            console.log(
+              `[DIAG WS ${key}] DONE total=${total}ms msgs=${diag.msgCount} ` +
+              `renders=${diag.renderCount} final_len=${conn.streamingContent.length}`
+            );
+            diagRef.current.delete(key);
+          }
           conn.isStreaming = false;
           // ✅ Force immediate update on completion
           const existingTimer = updateTimersRef.current.get(key);
