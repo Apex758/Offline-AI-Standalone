@@ -583,27 +583,50 @@ they have no visible form field.
 
 ## Status
 
-Phase 1 — class table, Class Manager UI, auto-fill in all 4 generators — **shipped.**
-Phase 2 — backend `CLASS CONTEXT` prompt injection for all 4 generators — **shipped.**
+Phase 1 — class table, Class Manager UI, auto-fill in Lesson/Quiz/Worksheet/Rubric generators — **shipped.**
+Phase 2 — backend `CLASS CONTEXT` prompt injection for Lesson/Quiz/Worksheet/Rubric — **shipped.**
+Phase 3 — extend coverage to `KindergartenPlanner`, `MultigradePlanner`, `CrossCurricularPlanner` (backend WS endpoints updated to extract `form_data` and append `build_class_context_block`; frontend class picker + `formDataWithClass` payload merge added to all three) — **shipped.**
+Phase 4 — `ImageStudio` integration: class picker UI above the prompt field, `buildClassImageHint()` helper that distills the class config into image-relevant hints (age/reading level, primary language for text overlays, cultural context, accessibility cues, ELL visual clarity), appended inside `buildStyledPrompt()` so every generation path (generator, worksheet images, retries) picks it up automatically — **shipped.**
+Phase 5 — visible override fields added to `WorksheetGenerator`, `QuizGenerator`, `KindergartenPlanner` so teachers can tweak class-level attributes per-generation without touching the Class Manager. `applyClassConfig()` in each file now merges the new fields too, preserving the non-destructive rule (existing user values win over class defaults) — **shipped.**
+Phase 6 — dedicated `classes` table with stable `class_id` (UUID) introduced. `init_db` auto-backfills from existing `DISTINCT (class_name, grade_level)` pairs in `students` so no data is lost. `class_configs` now has a nullable `class_id` column for future migration. `list_classes()` reads from the `classes` table and returns `class_id`, `academic_year`, `description`, and `student_count` alongside the existing `class_name` / `grade_level` shape. New CRUD helpers (`get_class`, `create_class`, `update_class`, `delete_class`) cascade renames to the `students` and `class_configs` tables. New REST endpoints added — `GET/POST /api/classes`, `GET/PUT/DELETE /api/classes/{class_id}` — with specific `/api/classes/config*` routes declared before the `{class_id}` param routes so FastAPI path matching works correctly. All existing `class_name`-based lookups still work; no breaking change to generators — **shipped.**
+Phase 7 — Class Manager UI for explicit class lifecycle. `ClassManagement.tsx` now fetches from `/api/classes` alongside `/api/students` (new `allClasses` state) and merges empty classes into the sidebar tree so a newly-created class shows up even with zero students. A "+ Class" button lives in the sidebar header next to the existing "Add Student" button. The class view hero gained "Rename" and "Delete Class" buttons. Three new modals (Create / Rename / Delete) wrap the corresponding `POST`, `PUT`, `DELETE /api/classes/{id}` calls. Renames cascade on the backend so student rows and class configs follow. Deleting a class unassigns its students (student rows preserved) and shows a warning with the student count. Create and Rename modals expose `academic_year` and `description` fields so teachers can attach year tags and notes to each class — **shipped.**
+
+Phase 8 — Per-student IEP overrides + import/export + full i18n. Three capabilities landed at once:
+
+1. **Per-student accommodations (IEP overrides).** New nullable columns `accommodations` and `iep_notes` on the `students` table. `create_student` / `update_student` now persist them. New helper `student_service.get_student_accommodations_for_class(class_name, grade_level)` returns a list of students who have any non-empty accommodation. `build_class_context_block()` was extended to append a "STUDENT-SPECIFIC ACCOMMODATIONS" section listing each student's accommodations and IEP notes, layered on top of the class-level CLASS CONTEXT. This means every generator (all 8) now receives per-student context automatically when those students belong to the selected class. New fields surfaced in the student Add/Edit form in Class Manager, grouped under "Individual accommodations".
+
+2. **Class config import/export.** `ClassConfigPanel` gained **Export JSON** and **Import JSON** buttons. Export downloads a JSON file with a `_meta` block (exported-at timestamp, source class, source grade, format version) + the raw `config` payload. Import accepts either the wrapped `{ _meta, config }` shape or a raw `ClassConfig` object, loads it into the panel (non-destructive — the user reviews and hits Save), and shows a confirmation notice including the source class when present. Hidden `<input type="file">` + `FileReader`, no extra dependencies.
+
+3. **Full i18n for Phase 6/7/8 UI.** New `classConfig` namespace added to `en.json`, `es.json`, and `fr.json` covering 73+ strings: ClassConfigPanel (8 sections, 28 field labels, 5 placeholders, 4 button labels, loading/saved/imported messages, apply-policy banner), all three class modals (New / Rename / Delete), sidebar "+ Class" button, class view hero Rename/Delete buttons, and the new student form Accommodations / IEP notes fields. The Delete Class modal uses i18next plurals (`studentWarning_one` / `studentWarning_other`) for the student count warning. Chip-group option values (learning styles, cognitive levels, etc.) were intentionally kept in English because they're persisted values in the backend — translating display without a mapping layer would corrupt data. Spanish and French translations done inline — **shipped.**
+
+### Phase 5 field expansion details
+
+| Generator | Fields added | Section label |
+|---|---|---|
+| WorksheetGenerator | learningStyles, materials, prerequisiteSkills, specialNeeds, specialNeedsDetails, additionalInstructions | "Differentiation & Accommodations" |
+| QuizGenerator | specialNeeds, specialNeedsDetails, additionalInstructions, preferredAssessmentFormat | "Accommodations & Format" |
+| KindergartenPlanner | learningStyles, pedagogicalStrategies, materials, prerequisiteSkills, specialNeeds, specialNeedsDetails | "Class Context & Accommodations" |
+
+### Generators covered (8 / 8)
+
+| Generator | Direct auto-fill | Backend CLASS CONTEXT |
+|---|---|---|
+| LessonPlanner | [x] 16 fields | [x] |
+| QuizGenerator | [x] 11 fields (Phase 5: +4 override fields) | [x] |
+| WorksheetGenerator | [x] 11 fields (Phase 5: +6 override fields) | [x] |
+| RubricGenerator | [x] 8 fields | [x] |
+| KindergartenPlanner | [x] 13 fields (Phase 5: +6 override fields) | [x] |
+| MultigradePlanner | [x] 15 fields | [x] |
+| CrossCurricularPlanner | [x] 9 fields | [x] |
+| ImageStudio | [x] reading level, language, cultural, accessibility | N/A (diffusion, prompt-suffix only) |
 
 ## Still pending
 
-- **Form-field expansion (Phase 3):** add visible fields to WorksheetGenerator
-  and QuizGenerator for learning styles, materials, prerequisites, and
-  accommodations so teachers can override the class-level values per
-  generation (currently only overridable through the Class Manager).
-- **Migrations:** `list_classes()` still derives classes from the `students`
-  table via `DISTINCT`. A dedicated `classes` table with a stable
-  `class_id` is needed when we start attaching schedules / timetables /
-  seating charts to classes.
 - **Class config import/export:** allow exporting a class config as JSON
   and importing it into another class (teacher-to-teacher sharing).
 - **Per-student overrides:** individual accommodations (IEP-style) stored
   on the `students` row should further augment the CLASS CONTEXT block when
   a specific student is named in a prompt (e.g. differentiated worksheet
   packages).
-- **Image Studio + other generators:** the same class picker pattern should
-  be added to `ImageStudio`, `ReportCardGenerator`, and any future
-  generator. The `useClassContext` hook is already available for this.
 - **i18n:** ClassConfigPanel strings are hardcoded English — wire through
   `useTranslation()` like the rest of Class Manager.

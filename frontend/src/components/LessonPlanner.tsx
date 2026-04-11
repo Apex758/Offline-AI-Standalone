@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -50,6 +49,10 @@ import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import LessonEditor from './LessonEditor';
 import { ParsedLesson, parseLessonFromAI, lessonToDisplayText } from '../types/lesson';
+import OhpcLessonTable from './lesson/OhpcLessonTable';
+import { useStreamingLessonJson } from '../hooks/useStreamingLessonJson';
+import type { OhpcLessonPlan, TeacherReflections } from '../types/ohpcLesson';
+import { EMPTY_TEACHER_REFLECTIONS } from '../types/ohpcLesson';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import StepProgressBar from './ui/StepProgressBar';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -132,131 +135,6 @@ interface FormData {
   additionalInstructions: string;
   // selectedCurriculum removed
 }
-
-const formatLessonText = (text: string, accentColor: string) => {
-  if (!text) return null;
-
-  // Clean the text first
-  let cleanText = text;
-  if (cleanText.includes("To change it, set a different value via -sys PROMPT")) {
-    cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
-  }
-
-  const lines = cleanText.split('\n');
-  const elements: JSX.Element[] = [];
-  let currentIndex = 0;
-  let detailsCollected: string[] = [];
-
-  lines.forEach((line, idx) => {
-    const trimmed = line.trim();
-    
-    if (!trimmed) {
-      elements.push(<div key={`space-${currentIndex++}`} className="h-3"></div>);
-      return;
-    }
-
-    // Collect the basic details for grid layout
-    if (trimmed.match(/^\*\*(Grade Level|Subject|Strand|Topic|Duration|Date):/)) {
-      detailsCollected.push(trimmed);
-      
-      // When we have all 6 details, render them in a grid
-      if (detailsCollected.length === 6) {
-        elements.push(
-          <div key={`details-grid-${currentIndex++}`} className="grid grid-cols-3 gap-4 mb-6 bg-theme-secondary p-4 rounded-lg">
-            {detailsCollected.map((detail, i) => {
-              const [label, value] = detail.replace(/\*\*/g, '').split(': ');
-              return (
-                <div key={i} className="text-sm">
-                  <span className="font-semibold text-theme-muted">{label}:</span>
-                  <span className="ml-2 text-theme-heading">{value}</span>
-                </div>
-              );
-            })}
-          </div>
-        );
-        detailsCollected = []; // Reset
-      }
-      return;
-    }
-
-    // Skip main lesson title
-    if (trimmed.match(/^\*\*Lesson Plan:/)) {
-      return;
-    }
-
-    // Section headings (surrounded by **)
-    if (trimmed.match(/^\*\*(.+)\*\*$/)) {
-      const title = trimmed.replace(/\*\*/g, '');
-      elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2" style={{ color: `${accentColor}dd`, borderBottom: `2px solid ${accentColor}33` }}>
-          {title}
-        </h2>
-      );
-      return;
-    }
-
-    // Field labels (start with ** but don't end with **)
-    if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
-      const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
-      elements.push(
-        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-2" style={{ color: `${accentColor}cc` }}>
-          {title}:
-        </h3>
-      );
-      return;
-    }
-
-    // Bullet points with + (nested)
-    if (trimmed.match(/^\s*\+\s+/)) {
-      const content = trimmed.replace(/^\s*\+\s+/, '');
-      elements.push(
-        <div key={`nested-${currentIndex++}`} className="ml-8 mb-2 flex items-start">
-          <span className="mr-2 mt-1.5 text-xs" style={{ color: `${accentColor}66` }}>▸</span>
-          <span className="text-theme-muted leading-relaxed text-sm">{content}</span>
-        </div>
-      );
-      return;
-    }
-
-    // Regular bullet points
-    if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
-      const content = trimmed.replace(/^\s*\*\s+/, '');
-      elements.push(
-        <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start">
-          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
-          <span className="text-theme-label leading-relaxed">{content}</span>
-        </div>
-      );
-      return;
-    }
-
-    // Numbered items
-    if (trimmed.match(/^\d+\./)) {
-      const number = trimmed.match(/^\d+\./)?.[0] || '';
-      const content = trimmed.replace(/^\d+\.\s*/, '');
-      elements.push(
-        <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start">
-          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
-            {number}
-          </span>
-          <span className="text-theme-label leading-relaxed pt-1">{content}</span>
-        </div>
-      );
-      return;
-    }
-
-    // Regular paragraphs
-    if (trimmed.length > 0) {
-      elements.push(
-        <p key={`p-${currentIndex++}`} className="text-theme-label leading-relaxed mb-3">
-          {trimmed}
-        </p>
-      );
-    }
-  });
-
-  return elements;
-};
 
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   // Per-tab localStorage key
@@ -445,12 +323,24 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     return 1;
   });
 
-  const streamingContent = useStreamingRenderer({
-    text: streamingPlan || generatedPlan,
+  // --- OHPC structured lesson plan ---------------------------------------
+  // Parse the incoming JSON stream (grammar-constrained by the backend) into
+  // a Partial<OhpcLessonPlan> that fills progressively as tokens arrive.
+  const { lesson: ohpcStreamLesson } = useStreamingLessonJson({
+    rawText: streamingPlan || generatedPlan,
     isStreaming: !!(loading && streamingPlan),
-    fullFormatter: () => formatLessonText(streamingPlan || generatedPlan, tabColor),
-    accentColor: tabColor,
   });
+  // Local editable copy (edits made by the teacher after generation).
+  const [ohpcLesson, setOhpcLesson] = useState<Partial<OhpcLessonPlan> | null>(null);
+  // Teacher's Reflections (never AI-generated; teacher fills post-lesson).
+  const [reflections, setReflections] = useState<TeacherReflections>(EMPTY_TEACHER_REFLECTIONS);
+
+  // While streaming, mirror parsed JSON into local state so edits on finished
+  // fields aren't stomped. Once streaming ends, the last parsed object wins.
+  useEffect(() => {
+    if (!ohpcStreamLesson) return;
+    setOhpcLesson((prev) => ({ ...(prev || {}), ...ohpcStreamLesson }));
+  }, [ohpcStreamLesson]);
 
   // ✅ ADDED: Restore state from localStorage when switching tabs
   useEffect(() => {
@@ -466,6 +356,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         setCurrentPlanId(parsed.currentPlanId || null);
         setIsEditing(parsed.isEditing || false);
         setCurriculumReferences(parsed.curriculumReferences || []);
+        setOhpcLesson(parsed.ohpcLesson || null);
+        setReflections(parsed.reflections || EMPTY_TEACHER_REFLECTIONS);
         // localLoadingMap intentionally NOT restored — runtime-only state
         setStep(parsed.step || 1);  // ✅ RESTORE STEP STATE
         console.log('[LessonPlanner] State restored from localStorage for tab:', tabId);
@@ -522,11 +414,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       currentPlanId,
       isEditing,
       curriculumReferences,
+      ohpcLesson,
+      reflections,
       // localLoadingMap intentionally NOT persisted — runtime-only state
       step  // ✅ SAVE STEP STATE
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [tabId, formData, generatedPlan, parsedLesson, currentPlanId, isEditing, curriculumReferences, step]);
+  }, [tabId, formData, generatedPlan, parsedLesson, currentPlanId, isEditing, curriculumReferences, ohpcLesson, reflections, step]);
 
   // Try to parse lesson when generated (for restored/loaded lessons)
   useEffect(() => {
@@ -1019,6 +913,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           formData: formData,
                           accentColor: tabColor,
                           curriculumReferences: parsedLesson?.curriculumReferences || [],
+                          ohpcLesson: ohpcLesson || undefined,
+                          reflections,
                           // Add rawHtml for PDF export
                           rawHtml: (() => {
                             // Try to get the lesson plan area HTML
@@ -1051,6 +947,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           clearStreaming(tabId, ENDPOINT);
                           setParsedLesson(null);
                           setIsEditing(false);
+                          setOhpcLesson(null);
+                          setReflections(EMPTY_TEACHER_REFLECTIONS);
                         }}
                         className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
@@ -1151,23 +1049,25 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                   </div>
                 )}
 
-                {/* Formatted content */}
-                {/* Add an id for HTML export */}
-                <div id="lesson-plan-html-export" className="prose prose-lg max-w-none">
-                  <div className="space-y-1">
-                    {streamingContent}
-                    {loading && streamingPlan && (
-                      <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                      </span>
-                    )}
-                  </div>
+                {/* Structured OHPC lesson plan (progressive render from JSON stream) */}
+                <div className="max-w-none">
+                  <OhpcLessonTable
+                    lesson={ohpcLesson}
+                    reflections={reflections}
+                    accentColor={tabColor}
+                    editable={!loading}
+                    isStreaming={!!(loading && streamingPlan)}
+                    onChange={setOhpcLesson}
+                    onReflectionsChange={setReflections}
+                  />
                   {/* Curriculum References */}
                   {(parsedLesson?.curriculumReferences || curriculumMatches.length > 0) && (
-                    <CurriculumReferences
-                      references={parsedLesson?.curriculumReferences || curriculumMatches}
-                      onOpenCurriculum={handleOpenCurriculum}
-                    />
+                    <div className="mt-6">
+                      <CurriculumReferences
+                        references={parsedLesson?.curriculumReferences || curriculumMatches}
+                        onOpenCurriculum={handleOpenCurriculum}
+                      />
+                    </div>
                   )}
                 </div>
                   

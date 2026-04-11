@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ClassConfig, fetchClassConfig, saveClassConfig } from '../lib/classConfig';
 
 interface Props {
@@ -26,11 +27,14 @@ const PERFORMANCE_LEVELS = ['4-point scale', '5-point scale', 'A-F', 'Pass/Fail'
 const DURATIONS = ['30 minutes', '45 minutes', '60 minutes', '75 minutes', '90 minutes', '120 minutes'];
 
 const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor = '#f97316' }) => {
+  const { t } = useTranslation();
   const [config, setConfig] = useState<ClassConfig>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [importNotice, setImportNotice] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,8 +74,69 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
     }
   }, [className, gradeLevel, config]);
 
+  const handleExport = useCallback(() => {
+    const payload = {
+      _meta: {
+        exportedAt: new Date().toISOString(),
+        sourceClass: className,
+        sourceGrade: gradeLevel || null,
+        formatVersion: 1,
+      },
+      config,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safeName = (className || 'class').replace(/[^a-z0-9_-]+/gi, '_');
+    const safeGrade = gradeLevel ? `_grade${gradeLevel}` : '';
+    a.download = `class-config_${safeName}${safeGrade}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [className, gradeLevel, config]);
+
+  const handleImportClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleImportFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-importing the same file
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || '{}'));
+        // Accept either a raw ClassConfig or the wrapped { config, _meta } shape.
+        const incoming: ClassConfig = parsed && typeof parsed === 'object'
+          ? (parsed.config && typeof parsed.config === 'object' ? parsed.config : parsed)
+          : {};
+        if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
+          throw new Error('File does not contain a valid class config object');
+        }
+        setConfig(incoming);
+        setSaved(false);
+        const sourceClass = parsed?._meta?.sourceClass;
+        const sourceGrade = parsed?._meta?.sourceGrade;
+        if (sourceClass) {
+          const sourceLabel = sourceGrade ? `${sourceClass} (Grade ${sourceGrade})` : sourceClass;
+          setImportNotice(t('classConfig.panel.messages.importedFrom', { source: sourceLabel }));
+        } else {
+          setImportNotice(t('classConfig.panel.messages.importedGeneric'));
+        }
+        setTimeout(() => setImportNotice(null), 6000);
+      } catch (err: any) {
+        setError(err?.message || 'Invalid JSON file');
+      }
+    };
+    reader.onerror = () => setError('Failed to read file');
+    reader.readAsText(file);
+  }, [t]);
+
   if (loading) {
-    return <div className="text-theme-muted text-sm p-6">Loading class settings...</div>;
+    return <div className="text-theme-muted text-sm p-6">{t('classConfig.panel.messages.loading')}</div>;
   }
 
   const Section: React.FC<{ title: string; desc?: string; children: React.ReactNode }> = ({ title, desc, children }) => (
@@ -116,50 +181,49 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
     <div className="space-y-5 pb-24">
       <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: accentColor, backgroundColor: `${accentColor}10` }}>
         <p className="text-sm text-theme-label">
-          These settings apply to every generator (Lesson Planner, Quiz, Worksheet, Rubric) for this class.
-          Set them once here so you don't have to re-enter them for every generation.
+          {t('classConfig.panel.messages.applyPolicy')}
         </p>
       </div>
 
-      <Section title="Curriculum" desc="Subject and learning outcomes this class is working toward">
+      <Section title={t('classConfig.panel.sections.curriculum')} desc={t('classConfig.panel.sections.curriculumDesc')}>
         <div>
-          <Label>Subject</Label>
+          <Label>{t('classConfig.panel.fields.subject')}</Label>
           <input className={inputCls} style={inputStyle}
             value={config.subject || ''}
             onChange={e => update('subject', e.target.value)}
-            placeholder="e.g., Mathematics, Language Arts" />
+            placeholder={t('classConfig.panel.placeholders.subject')} />
         </div>
         <div>
-          <Label>Curriculum strand</Label>
+          <Label>{t('classConfig.panel.fields.strand')}</Label>
           <input className={inputCls} style={inputStyle}
             value={config.strand || ''}
             onChange={e => update('strand', e.target.value)}
-            placeholder="e.g., Number Operations, Reading Comprehension" />
+            placeholder={t('classConfig.panel.placeholders.strand')} />
         </div>
         <div>
-          <Label>Essential outcomes</Label>
+          <Label>{t('classConfig.panel.fields.essentialOutcomes')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={3}
             value={config.essentialOutcomes || ''}
             onChange={e => update('essentialOutcomes', e.target.value)} />
         </div>
         <div>
-          <Label>Specific outcomes</Label>
+          <Label>{t('classConfig.panel.fields.specificOutcomes')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={3}
             value={config.specificOutcomes || ''}
             onChange={e => update('specificOutcomes', e.target.value)} />
         </div>
       </Section>
 
-      <Section title="Class composition">
+      <Section title={t('classConfig.panel.sections.composition')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Expected student count</Label>
+            <Label>{t('classConfig.panel.fields.studentCount')}</Label>
             <input type="number" min={0} className={inputCls} style={inputStyle}
               value={config.studentCount ?? ''}
               onChange={e => update('studentCount', e.target.value ? Number(e.target.value) : undefined)} />
           </div>
           <div>
-            <Label>Students with disabilities / IEPs</Label>
+            <Label>{t('classConfig.panel.fields.studentsWithDisabilities')}</Label>
             <input type="number" min={0} className={inputCls} style={inputStyle}
               value={config.studentsWithDisabilitiesCount ?? ''}
               onChange={e => update('studentsWithDisabilitiesCount', e.target.value ? Number(e.target.value) : undefined)} />
@@ -167,47 +231,47 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title="Learner profile" desc="How this class learns best">
+      <Section title={t('classConfig.panel.sections.learnerProfile')} desc={t('classConfig.panel.sections.learnerProfileDesc')}>
         <div>
-          <Label>Learning styles</Label>
+          <Label>{t('classConfig.panel.fields.learningStyles')}</Label>
           <ChipGroup options={LEARNING_STYLES} selected={config.learningStyles || []} onToggle={v => toggleInArray('learningStyles', v)} />
         </div>
         <div>
-          <Label>Learning preferences</Label>
+          <Label>{t('classConfig.panel.fields.learningPreferences')}</Label>
           <ChipGroup options={LEARNING_PREFERENCES} selected={config.learningPreferences || []} onToggle={v => toggleInArray('learningPreferences', v)} />
         </div>
         <div>
-          <Label>Multiple intelligences</Label>
+          <Label>{t('classConfig.panel.fields.multipleIntelligences')}</Label>
           <ChipGroup options={MULTIPLE_INTELLIGENCES} selected={config.multipleIntelligences || []} onToggle={v => toggleInArray('multipleIntelligences', v)} />
         </div>
         <div>
-          <Label>Pedagogical strategies</Label>
+          <Label>{t('classConfig.panel.fields.pedagogicalStrategies')}</Label>
           <ChipGroup options={PEDAGOGICAL_STRATEGIES} selected={config.pedagogicalStrategies || []} onToggle={v => toggleInArray('pedagogicalStrategies', v)} />
         </div>
         <div>
-          <Label>Teacher notes on learning approach</Label>
+          <Label>{t('classConfig.panel.fields.teacherNotes')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={2}
             value={config.customLearningStyles || ''}
             onChange={e => update('customLearningStyles', e.target.value)} />
         </div>
       </Section>
 
-      <Section title="Special needs & accommodations" desc="Applied to every generation for this class">
+      <Section title={t('classConfig.panel.sections.specialNeeds')} desc={t('classConfig.panel.sections.specialNeedsDesc')}>
         <label className="flex items-center gap-2 text-sm text-theme-label">
           <input type="checkbox" checked={!!config.hasSpecialNeeds} onChange={e => update('hasSpecialNeeds', e.target.checked)} />
-          Class includes students with special needs
+          {t('classConfig.panel.fields.hasSpecialNeeds')}
         </label>
         {config.hasSpecialNeeds && (
           <div>
-            <Label>Accommodation details</Label>
+            <Label>{t('classConfig.panel.fields.accommodationDetails')}</Label>
             <textarea className={inputCls} style={inputStyle} rows={3}
               value={config.specialNeedsDetails || ''}
               onChange={e => update('specialNeedsDetails', e.target.value)}
-              placeholder="e.g., 2 students with dyslexia — needs larger fonts and decodable text" />
+              placeholder={t('classConfig.panel.placeholders.accommodationDetails')} />
           </div>
         )}
         <div>
-          <Label>Culturally responsive teaching notes</Label>
+          <Label>{t('classConfig.panel.fields.culturallyResponsive')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={2}
             value={config.culturallyResponsiveNotes || ''}
             onChange={e => update('culturallyResponsiveNotes', e.target.value)} />
@@ -215,33 +279,33 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         <div className="grid grid-cols-2 gap-3">
           <label className="flex items-center gap-2 text-sm text-theme-label">
             <input type="checkbox" checked={!!config.hasELLStudents} onChange={e => update('hasELLStudents', e.target.checked)} />
-            ELL / ESL students present
+            {t('classConfig.panel.fields.ellStudents')}
           </label>
           <label className="flex items-center gap-2 text-sm text-theme-label">
             <input type="checkbox" checked={!!config.hasAdvancedLearners} onChange={e => update('hasAdvancedLearners', e.target.checked)} />
-            Advanced / gifted learners present
+            {t('classConfig.panel.fields.advancedLearners')}
           </label>
         </div>
         {config.hasELLStudents && (
           <div>
-            <Label>ELL students (%)</Label>
+            <Label>{t('classConfig.panel.fields.ellPercentage')}</Label>
             <input type="number" min={0} max={100} className={inputCls} style={inputStyle}
               value={config.ellPercentage ?? ''}
               onChange={e => update('ellPercentage', e.target.value ? Number(e.target.value) : undefined)} />
           </div>
         )}
         <div>
-          <Label>Behavior support focus</Label>
+          <Label>{t('classConfig.panel.fields.behaviorSupport')}</Label>
           <input className={inputCls} style={inputStyle}
             value={config.behaviorSupportFocus || ''}
             onChange={e => update('behaviorSupportFocus', e.target.value)} />
         </div>
       </Section>
 
-      <Section title="Reading & language">
+      <Section title={t('classConfig.panel.sections.readingLanguage')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Reading level</Label>
+            <Label>{t('classConfig.panel.fields.readingLevel')}</Label>
             <select className={inputCls} style={inputStyle}
               value={config.readingLevel || ''}
               onChange={e => update('readingLevel', e.target.value || undefined)}>
@@ -250,26 +314,26 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
             </select>
           </div>
           <div>
-            <Label>Primary language of instruction</Label>
+            <Label>{t('classConfig.panel.fields.primaryLanguage')}</Label>
             <input className={inputCls} style={inputStyle}
               value={config.primaryLanguage || ''}
               onChange={e => update('primaryLanguage', e.target.value)}
-              placeholder="e.g., English" />
+              placeholder={t('classConfig.panel.placeholders.primaryLanguage')} />
           </div>
         </div>
         <div>
-          <Label>Bilingual program</Label>
+          <Label>{t('classConfig.panel.fields.bilingualProgram')}</Label>
           <input className={inputCls} style={inputStyle}
             value={config.bilingualProgram || ''}
             onChange={e => update('bilingualProgram', e.target.value)}
-            placeholder="e.g., Transitional, Two-Way Immersion" />
+            placeholder={t('classConfig.panel.placeholders.bilingualProgram')} />
         </div>
       </Section>
 
-      <Section title="Assessment preferences" desc="Used by Quiz Generator and Rubric Generator">
+      <Section title={t('classConfig.panel.sections.assessmentPrefs')} desc={t('classConfig.panel.sections.assessmentPrefsDesc')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Preferred assessment format</Label>
+            <Label>{t('classConfig.panel.fields.assessmentFormat')}</Label>
             <select className={inputCls} style={inputStyle}
               value={config.preferredAssessmentFormat || ''}
               onChange={e => update('preferredAssessmentFormat', e.target.value || undefined)}>
@@ -278,7 +342,7 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
             </select>
           </div>
           <div>
-            <Label>Performance levels (rubrics)</Label>
+            <Label>{t('classConfig.panel.fields.performanceLevels')}</Label>
             <select className={inputCls} style={inputStyle}
               value={config.performanceLevels || ''}
               onChange={e => update('performanceLevels', e.target.value || undefined)}>
@@ -288,24 +352,24 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
           </div>
         </div>
         <div>
-          <Label>Default question types (quizzes)</Label>
+          <Label>{t('classConfig.panel.fields.questionTypes')}</Label>
           <ChipGroup options={QUESTION_TYPES} selected={config.defaultQuestionTypes || []} onToggle={v => toggleInArray('defaultQuestionTypes', v)} />
         </div>
         <div>
-          <Label>Default cognitive levels (Bloom's)</Label>
+          <Label>{t('classConfig.panel.fields.cognitiveLevels')}</Label>
           <ChipGroup options={COGNITIVE_LEVELS} selected={config.defaultCognitiveLevels || []} onToggle={v => toggleInArray('defaultCognitiveLevels', v)} />
         </div>
         <div>
-          <Label>Rubric focus areas</Label>
+          <Label>{t('classConfig.panel.fields.gradingFocus')}</Label>
           <ChipGroup options={GRADING_FOCUS} selected={config.gradingFocusAreas || []} onToggle={v => toggleInArray('gradingFocusAreas', v)} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <label className="flex items-center gap-2 text-sm text-theme-label">
             <input type="checkbox" checked={!!config.includePointValues} onChange={e => update('includePointValues', e.target.checked)} />
-            Include point values in rubrics
+            {t('classConfig.panel.fields.includePointValues')}
           </label>
           <div>
-            <Label>Default time per question (sec)</Label>
+            <Label>{t('classConfig.panel.fields.timePerQuestion')}</Label>
             <input type="number" min={0} className={inputCls} style={inputStyle}
               value={config.defaultTimeLimitPerQuestion ?? ''}
               onChange={e => update('defaultTimeLimitPerQuestion', e.target.value ? Number(e.target.value) : undefined)} />
@@ -313,25 +377,25 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
         </div>
       </Section>
 
-      <Section title="Materials & resources">
+      <Section title={t('classConfig.panel.sections.materials')}>
         <div>
-          <Label>Available materials / classroom resources</Label>
+          <Label>{t('classConfig.panel.fields.availableMaterials')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={3}
             value={config.availableMaterials || ''}
             onChange={e => update('availableMaterials', e.target.value)}
-            placeholder="e.g., Chromebooks 1:1, manipulatives, smartboard" />
+            placeholder={t('classConfig.panel.placeholders.availableMaterials')} />
         </div>
         <div>
-          <Label>Prerequisite skills (what the class already knows)</Label>
+          <Label>{t('classConfig.panel.fields.prerequisiteSkills')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={3}
             value={config.prerequisiteSkills || ''}
             onChange={e => update('prerequisiteSkills', e.target.value)} />
         </div>
       </Section>
 
-      <Section title="Pacing & general">
+      <Section title={t('classConfig.panel.sections.pacing')}>
         <div>
-          <Label>Class period duration</Label>
+          <Label>{t('classConfig.panel.fields.classDuration')}</Label>
           <select className={inputCls} style={inputStyle}
             value={config.classPeriodDuration || ''}
             onChange={e => update('classPeriodDuration', e.target.value || undefined)}>
@@ -340,28 +404,57 @@ const ClassConfigPanel: React.FC<Props> = ({ className, gradeLevel, accentColor 
           </select>
         </div>
         <div>
-          <Label>Additional instructions / class-wide policies</Label>
+          <Label>{t('classConfig.panel.fields.additionalInstructions')}</Label>
           <textarea className={inputCls} style={inputStyle} rows={2}
             value={config.additionalInstructions || ''}
             onChange={e => update('additionalInstructions', e.target.value)}
-            placeholder="e.g., No calculators; emphasize showing work" />
+            placeholder={t('classConfig.panel.placeholders.additionalInstructions')} />
         </div>
       </Section>
 
       {error && (
         <div className="rounded-lg p-3 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
       )}
+      {importNotice && (
+        <div className="rounded-lg p-3 border text-sm" style={{ borderColor: accentColor, backgroundColor: `${accentColor}10`, color: accentColor }}>
+          {importNotice}
+        </div>
+      )}
 
-      <div className="sticky bottom-0 -mx-6 px-6 py-4 bg-theme-bg/95 backdrop-blur border-t border-theme flex items-center gap-3">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={handleImportFile}
+      />
+
+      <div className="sticky bottom-0 -mx-6 px-6 py-4 bg-theme-bg/95 backdrop-blur border-t border-theme flex items-center gap-3 flex-wrap">
         <button
           onClick={handleSave}
           disabled={saving}
           className="px-5 py-2 rounded-lg text-white text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: accentColor }}
         >
-          {saving ? 'Saving...' : 'Save class settings'}
+          {saving ? t('classConfig.panel.buttons.saving') : t('classConfig.panel.buttons.save')}
         </button>
-        {saved && <span className="text-emerald-600 text-sm font-medium">Saved</span>}
+        <button
+          onClick={handleExport}
+          className="px-4 py-2 rounded-lg border text-sm font-semibold transition hover:bg-theme-hover"
+          style={{ borderColor: accentColor, color: accentColor }}
+          title="Download this class configuration as a JSON file"
+        >
+          {t('classConfig.panel.buttons.export')}
+        </button>
+        <button
+          onClick={handleImportClick}
+          className="px-4 py-2 rounded-lg border text-sm font-semibold transition hover:bg-theme-hover"
+          style={{ borderColor: accentColor, color: accentColor }}
+          title="Load a class configuration from a JSON file"
+        >
+          {t('classConfig.panel.buttons.import')}
+        </button>
+        {saved && <span className="text-emerald-600 text-sm font-medium">{t('classConfig.panel.buttons.saved')}</span>}
       </div>
     </div>
   );

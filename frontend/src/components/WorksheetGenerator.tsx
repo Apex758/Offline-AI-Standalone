@@ -135,12 +135,18 @@ interface WorksheetFormData {
   selectedTemplate: string;
   worksheetTitle: string;
   imageMode: ImageMode;
-  /** @deprecated use imageMode instead — kept for migration only */
+  /** @deprecated use imageMode instead -- kept for migration only */
   includeImages?: boolean;
   imageStyle: string;
   imagePlacement: string;
   essentialOutcomes: string;
   specificOutcomes: string;
+  learningStyles: string[];
+  materials: string;
+  prerequisiteSkills: string;
+  specialNeeds: boolean;
+  specialNeedsDetails: string;
+  additionalInstructions: string;
 }
 
 interface WorksheetTemplate {
@@ -237,7 +243,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     imageStyle: 'cartoon_3d',
     imagePlacement: 'large-centered',
     essentialOutcomes: '',
-    specificOutcomes: ''
+    specificOutcomes: '',
+    learningStyles: [],
+    materials: '',
+    prerequisiteSkills: '',
+    specialNeeds: false,
+    specialNeedsDetails: '',
+    additionalInstructions: '',
   });
 
   // Class config auto-fill state
@@ -265,6 +277,12 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
         specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
         studentCount: merge('studentCount', cfg.studentCount != null ? String(cfg.studentCount) : ''),
+        learningStyles: merge('learningStyles', cfg.learningStyles),
+        materials: merge('materials', cfg.availableMaterials),
+        prerequisiteSkills: merge('prerequisiteSkills', cfg.prerequisiteSkills),
+        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
+        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
+        additionalInstructions: merge('additionalInstructions', cfg.additionalInstructions),
       };
     });
     setClassConfigApplied(label);
@@ -2035,6 +2053,106 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Differentiation & Accommodations */}
+        <div className="border-t border-theme">
+          <div className="p-6">
+            <div className="max-w-4xl mx-auto space-y-5">
+              <h3 className="text-base font-semibold text-theme-heading">Differentiation &amp; Accommodations</h3>
+
+              {/* Learning Styles */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">Learning Styles</label>
+                <div className="grid grid-cols-4 gap-2 p-2 rounded-lg">
+                  {['Visual', 'Auditory', 'Reading/Writing', 'Kinesthetic'].map(style => (
+                    <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.learningStyles.includes(style)}
+                        onChange={() => {
+                          const next = formData.learningStyles.includes(style)
+                            ? formData.learningStyles.filter(s => s !== style)
+                            : [...formData.learningStyles, style];
+                          handleInputChange('learningStyles', next);
+                        }}
+                        className="w-4 h-4 rounded focus:ring-2"
+                        style={{ accentColor: worksheetTabColor, '--tw-ring-color': worksheetTabColor } as React.CSSProperties}
+                      />
+                      <span className="text-sm text-theme-label">{style}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">Available Materials</label>
+                <SmartTextArea
+                  value={formData.materials}
+                  onChange={(val) => handleInputChange('materials', val)}
+                  rows={2}
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': worksheetTabColor } as React.CSSProperties}
+                  placeholder="Available materials for this worksheet"
+                />
+              </div>
+
+              {/* Prerequisite Skills */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">Prerequisite Skills</label>
+                <SmartTextArea
+                  value={formData.prerequisiteSkills}
+                  onChange={(val) => handleInputChange('prerequisiteSkills', val)}
+                  rows={2}
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': worksheetTabColor } as React.CSSProperties}
+                  placeholder="Skills students should already have before this worksheet"
+                />
+              </div>
+
+              {/* Special Needs */}
+              <div>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.specialNeeds}
+                    onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
+                    className="w-4 h-4 rounded focus:ring-2"
+                    style={{ accentColor: worksheetTabColor, '--tw-ring-color': worksheetTabColor } as React.CSSProperties}
+                  />
+                  <span className="text-sm font-medium text-theme-label">Students with Special Needs</span>
+                </label>
+              </div>
+
+              {formData.specialNeeds && (
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">Special Needs Details</label>
+                  <SmartTextArea
+                    value={formData.specialNeedsDetails}
+                    onChange={(val) => handleInputChange('specialNeedsDetails', val)}
+                    rows={2}
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': worksheetTabColor } as React.CSSProperties}
+                    placeholder="Describe specific accommodations or modifications needed"
+                  />
+                </div>
+              )}
+
+              {/* Additional Instructions */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">Additional Instructions</label>
+                <SmartTextArea
+                  value={formData.additionalInstructions}
+                  onChange={(val) => handleInputChange('additionalInstructions', val)}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': worksheetTabColor } as React.CSSProperties}
+                  placeholder="Any additional context or specific requirements for this worksheet"
+                />
+              </div>
             </div>
           </div>
         </div>

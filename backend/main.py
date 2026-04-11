@@ -492,12 +492,18 @@ class SmartSearchRequest(BaseModel):
     query: str
 
 class StudentCreate(BaseModel):
+    model_config = {"extra": "allow"}
     full_name: str
     date_of_birth: Optional[str] = None
     class_name: Optional[str] = None
     grade_level: Optional[str] = None
     gender: Optional[str] = None
     contact_info: Optional[str] = None
+    accommodations: Optional[str] = None
+    iep_notes: Optional[str] = None
+    first_name: Optional[str] = None
+    middle_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 class QuizGradeCreate(BaseModel):
     student_id: str
@@ -812,16 +818,40 @@ def build_class_context_block(form_data: dict) -> str:
     add("Class period duration", cfg.get("classPeriodDuration"))
     add("Class-wide instructions / policies", cfg.get("additionalInstructions"))
 
-    if not lines:
-        return ""
+    block = ""
+    if lines:
+        header = (
+            f"\n\nCLASS CONTEXT (Class {class_name}"
+            f"{', Grade ' + grade_level if grade_level else ''}):\n"
+            "Apply every item below to the content you generate. Differentiate, "
+            "scaffold, and accommodate accordingly.\n"
+        )
+        block = header + "\n".join(lines)
 
-    header = (
-        f"\n\nCLASS CONTEXT (Class {class_name}"
-        f"{', Grade ' + grade_level if grade_level else ''}):\n"
-        "Apply every item below to the content you generate. Differentiate, "
-        "scaffold, and accommodate accordingly.\n"
-    )
-    return header + "\n".join(lines)
+    # Phase 8: layer per-student IEP overrides on top of the class context.
+    try:
+        student_accs = student_service.get_student_accommodations_for_class(
+            class_name, grade_level or None
+        )
+    except Exception:
+        student_accs = []
+    if student_accs:
+        sub_lines: list[str] = []
+        for sa in student_accs:
+            parts: list[str] = [f"- {sa['name']}:"]
+            if sa.get('accommodations'):
+                parts.append(f"accommodations = {sa['accommodations']}")
+            if sa.get('iep_notes'):
+                parts.append(f"IEP notes = {sa['iep_notes']}")
+            sub_lines.append(" ".join(parts))
+        student_header = (
+            "\n\nSTUDENT-SPECIFIC ACCOMMODATIONS:\n"
+            "When the content could be assigned to or shared with these "
+            "specific students, also respect their individual accommodations.\n"
+        )
+        block += student_header + "\n".join(sub_lines)
+
+    return block
 
 
 # ============================================================================
@@ -1977,6 +2007,15 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("lesson-plan") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
+                # Load OHPC JSON schema for grammar-constrained structured output.
+                # This forces the model to emit a single JSON object matching
+                # the OHPC Lesson Plan Template regardless of which model is active.
+                try:
+                    from schemas.lesson_plan_schema import LESSON_PLAN_SCHEMA as _lp_schema
+                except Exception as _lp_imp_err:
+                    logger.warning(f"[lesson-plan] Could not load LESSON_PLAN_SCHEMA: {_lp_imp_err}")
+                    _lp_schema = None
+
                 # Stream tokens in real-time
                 _token_buf = ""
                 _last_flush = time.monotonic()
@@ -1988,6 +2027,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                     cancel_event=cancel_event,
+                    json_schema=_lp_schema,
                 ):
                     if job_id in cancelled_job_ids or cancel_event.is_set():
                         if _token_buf:
@@ -6302,6 +6342,19 @@ async def remove_student(student_id: str):
 async def get_classes(grade_level: str | None = None):
     return student_service.list_classes(grade_level=grade_level)
 
+@app.post("/api/classes")
+async def create_class_endpoint(payload: dict):
+    if not (payload or {}).get("class_name"):
+        raise HTTPException(status_code=400, detail="class_name is required")
+    try:
+        return student_service.create_class(payload)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# NOTE: specific /api/classes/config routes MUST be declared before the
+# generic /api/classes/{class_id} routes so FastAPI doesn't route "config"
+# into the class_id path param.
+
 @app.get("/api/classes/config")
 async def get_class_config_endpoint(class_name: str, grade_level: str | None = None):
     return {
@@ -6323,6 +6376,27 @@ async def put_class_config_endpoint(payload: dict):
 async def delete_class_config_endpoint(class_name: str, grade_level: str | None = None):
     ok = student_service.delete_class_config(class_name, grade_level)
     return {"success": ok}
+
+@app.get("/api/classes/{class_id}")
+async def get_class_by_id(class_id: str):
+    cls = student_service.get_class(class_id)
+    if not cls:
+        raise HTTPException(status_code=404, detail="Class not found")
+    return cls
+
+@app.put("/api/classes/{class_id}")
+async def update_class_endpoint(class_id: str, payload: dict):
+    cls = student_service.update_class(class_id, payload or {})
+    if not cls:
+        raise HTTPException(status_code=404, detail="Class not found")
+    return cls
+
+@app.delete("/api/classes/{class_id}")
+async def delete_class_endpoint(class_id: str, reassign_to: str | None = None):
+    ok = student_service.delete_class(class_id, reassign_students_to=reassign_to)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Class not found")
+    return {"success": True}
 
 @app.post("/api/quiz-grades")
 async def add_quiz_grade(grade: QuizGradeCreate):

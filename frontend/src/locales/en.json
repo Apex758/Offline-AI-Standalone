@@ -1626,5 +1626,131 @@
         "description": "This is your main workspace where your active tool or split view will appear. You are all set to create amazing teaching resources!"
       }
     }
+  },
+  "classConfig": {
+    "panel": {
+      "sections": {
+        "curriculum": "Curriculum",
+        "curriculumDesc": "Subject and learning outcomes this class is working toward",
+        "composition": "Class composition",
+        "learnerProfile": "Learner profile",
+        "learnerProfileDesc": "How this class learns best",
+        "specialNeeds": "Special needs & accommodations",
+        "specialNeedsDesc": "Applied to every generation for this class",
+        "readingLanguage": "Reading & language",
+        "assessmentPrefs": "Assessment preferences",
+        "assessmentPrefsDesc": "Used by Quiz Generator and Rubric Generator",
+        "materials": "Materials & resources",
+        "pacing": "Pacing & general"
+      },
+      "fields": {
+        "subject": "Subject",
+        "strand": "Curriculum strand",
+        "essentialOutcomes": "Essential outcomes",
+        "specificOutcomes": "Specific outcomes",
+        "studentCount": "Expected student count",
+        "studentsWithDisabilities": "Students with disabilities / IEPs",
+        "learningStyles": "Learning styles",
+        "learningPreferences": "Learning preferences",
+        "multipleIntelligences": "Multiple intelligences",
+        "pedagogicalStrategies": "Pedagogical strategies",
+        "teacherNotes": "Teacher notes on learning approach",
+        "hasSpecialNeeds": "Class includes students with special needs",
+        "accommodationDetails": "Accommodation details",
+        "culturallyResponsive": "Culturally responsive teaching notes",
+        "ellStudents": "ELL / ESL students present",
+        "advancedLearners": "Advanced / gifted learners present",
+        "ellPercentage": "ELL students (%)",
+        "behaviorSupport": "Behavior support focus",
+        "readingLevel": "Reading level",
+        "primaryLanguage": "Primary language of instruction",
+        "bilingualProgram": "Bilingual program",
+        "assessmentFormat": "Preferred assessment format",
+        "performanceLevels": "Performance levels (rubrics)",
+        "questionTypes": "Default question types (quizzes)",
+        "cognitiveLevels": "Default cognitive levels (Bloom's)",
+        "gradingFocus": "Rubric focus areas",
+        "includePointValues": "Include point values in rubrics",
+        "timePerQuestion": "Default time per question (sec)",
+        "availableMaterials": "Available materials / classroom resources",
+        "prerequisiteSkills": "Prerequisite skills (what the class already knows)",
+        "classDuration": "Class period duration",
+        "additionalInstructions": "Additional instructions / class-wide policies"
+      },
+      "placeholders": {
+        "subject": "e.g., Mathematics, Language Arts",
+        "strand": "e.g., Number Operations, Reading Comprehension",
+        "accommodationDetails": "e.g., 2 students with dyslexia — needs larger fonts and decodable text",
+        "primaryLanguage": "e.g., English",
+        "bilingualProgram": "e.g., Transitional, Two-Way Immersion",
+        "availableMaterials": "e.g., Chromebooks 1:1, manipulatives, smartboard",
+        "additionalInstructions": "e.g., No calculators; emphasize showing work"
+      },
+      "buttons": {
+        "save": "Save class settings",
+        "saving": "Saving...",
+        "export": "Export JSON",
+        "import": "Import JSON",
+        "saved": "Saved"
+      },
+      "messages": {
+        "loading": "Loading class settings...",
+        "applyPolicy": "These settings apply to every generator (Lesson Planner, Quiz, Worksheet, Rubric) for this class. Set them once here so you don't have to re-enter them for every generation.",
+        "importedFrom": "Loaded class config from {{source}}. Review the fields, then click Save class settings.",
+        "importedGeneric": "Loaded class config. Review the fields, then click Save class settings."
+      }
+    },
+    "newClass": {
+      "title": "Create new class",
+      "className": "Class name",
+      "classNameRequired": "Class name *",
+      "gradeLevel": "Grade level",
+      "academicYear": "Academic year",
+      "description": "Description",
+      "create": "Create class",
+      "creating": "Creating...",
+      "placeholderName": "e.g., 3A, Blue Room",
+      "placeholderYear": "e.g., 2025-2026",
+      "placeholderDesc": "Optional notes about this class",
+      "selectGrade": "— Select grade —"
+    },
+    "rename": {
+      "title": "Rename class",
+      "warning": "Renaming cascades to every student and class-level setting in this class. Existing data follows the class.",
+      "className": "Class name",
+      "gradeLevel": "Grade level",
+      "academicYear": "Academic year",
+      "description": "Description",
+      "save": "Save rename",
+      "saving": "Saving...",
+      "selectGrade": "— Select grade —"
+    },
+    "deleteClass": {
+      "title": "Delete class?",
+      "body": "This will permanently delete Class {{className}}{{grade}} and its class-level settings. Student records are preserved but will be unassigned from this class.",
+      "studentWarning_one": "{{count}} student will be unassigned.",
+      "studentWarning_other": "{{count}} students will be unassigned.",
+      "confirm": "Delete class",
+      "deleting": "Deleting..."
+    },
+    "sidebar": {
+      "newClass": "Class",
+      "newClassTitle": "New class"
+    },
+    "classView": {
+      "rename": "Rename",
+      "renameTitle": "Rename this class",
+      "delete": "Delete Class",
+      "deleteTitle": "Delete this class"
+    },
+    "studentForm": {
+      "individualAccommodations": "Individual accommodations",
+      "accommodations": "Accommodations",
+      "accommodationsHelp": "Applied to every generation involving this student",
+      "accommodationsPlaceholder": "e.g., extra time on tests; larger fonts; preferential seating",
+      "iepNotes": "IEP / learning profile notes",
+      "iepNotesHelp": "Specific learning needs or goals for AI-generated content",
+      "iepNotesPlaceholder": "e.g., dyslexia - prefers decodable text; strong visual learner; working on phonemic awareness"
+    }
   }
 }

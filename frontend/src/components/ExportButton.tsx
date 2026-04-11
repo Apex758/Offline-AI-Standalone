@@ -21,6 +21,7 @@ import axios from 'axios';
 import { generateQuizHTML, prepareQuizForExport } from '../utils/quizHtmlRenderer';
 import { prepareWorksheetForExport } from '../utils/worksheetHtmlRenderer';
 import { prepareLessonForExport } from '../utils/lessonHtmlRenderer';
+import { prepareOhpcLessonForExport } from '../utils/ohpcLessonHtmlRenderer';
 import { prepareRubricForExport } from '../utils/rubricHtmlRenderer';
 import { prepareMultigradeForExport } from '../utils/multigradeHtmlRenderer';
 import { prepareKindergartenForExport } from '../utils/kindergartenHtmlRenderer';
@@ -126,13 +127,26 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
           : 'Worksheet';
       } else if (dataType === 'plan') {
-        // Handle lesson plan export
-        exportData = prepareLessonForExport(
-          data.content,
-          data.formData,
-          data.accentColor,
-          data.curriculumReferences // ✅ ADD THIS
-        );
+        // Handle lesson plan export.
+        // New path: structured OHPC lesson plan (Phase 3) -- use the OHPC
+        // renderer when a structured lesson object is provided.
+        // Legacy path: markdown content -- fall back to the old renderer.
+        if (data.ohpcLesson) {
+          exportData = prepareOhpcLessonForExport(
+            data.ohpcLesson,
+            data.reflections,
+            data.formData,
+            data.accentColor,
+            data.curriculumReferences
+          );
+        } else {
+          exportData = prepareLessonForExport(
+            data.content,
+            data.formData,
+            data.accentColor,
+            data.curriculumReferences
+          );
+        }
         title = data.formData.topic
           ? `${data.formData.topic} - Grade ${data.formData.gradeLevel}`
           : 'Lesson Plan';

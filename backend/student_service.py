@@ -68,6 +68,12 @@ def init_db():
                 conn.execute(f'ALTER TABLE students ADD COLUMN {col} TEXT')
             except Exception:
                 pass
+        # Phase 8: per-student accommodations (IEP notes, learning differences)
+        for col, col_type in (('accommodations', 'TEXT'), ('iep_notes', 'TEXT')):
+            try:
+                conn.execute(f'ALTER TABLE students ADD COLUMN {col} {col_type}')
+            except Exception:
+                pass
         conn.execute('''
             CREATE TABLE IF NOT EXISTS attendance (
                 id               TEXT PRIMARY KEY,
@@ -209,6 +215,63 @@ def init_db():
                 PRIMARY KEY (class_name, grade_level)
             )
         ''')
+        # ── Classes table ──────────────────────────────────────────────
+        # Stable identity for a class. Backfilled on startup from existing
+        # DISTINCT (class_name, grade_level) pairs in the students table so
+        # no data is lost. Individual students still carry class_name /
+        # grade_level for backward compatibility; this table provides a
+        # stable class_id that timetables / seating charts / schedules
+        # can attach to without worrying about class renames.
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS classes (
+                class_id      TEXT PRIMARY KEY,
+                class_name    TEXT NOT NULL,
+                grade_level   TEXT NOT NULL DEFAULT '',
+                academic_year TEXT DEFAULT '',
+                description   TEXT DEFAULT '',
+                created_at    TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at    TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (class_name, grade_level)
+            )
+        ''')
+        # Add nullable class_id column to class_configs for future migration
+        # (existing rows continue to work via the (class_name, grade_level)
+        # PK; new code can key on class_id directly).
+        try:
+            conn.execute('ALTER TABLE class_configs ADD COLUMN class_id TEXT')
+        except Exception:
+            pass  # column already exists
+        # Backfill classes table from existing students
+        existing = conn.execute(
+            'SELECT DISTINCT class_name, COALESCE(grade_level, "") AS grade_level '
+            'FROM students WHERE class_name IS NOT NULL AND class_name != ""'
+        ).fetchall()
+        for row in existing:
+            cls = row['class_name']
+            gl = row['grade_level'] or ''
+            already = conn.execute(
+                'SELECT 1 FROM classes WHERE class_name = ? AND grade_level = ?',
+                (cls, gl)
+            ).fetchone()
+            if not already:
+                conn.execute(
+                    'INSERT INTO classes (class_id, class_name, grade_level) VALUES (?, ?, ?)',
+                    (str(uuid.uuid4()), cls, gl)
+                )
+        # Backfill class_id on existing class_configs rows where missing
+        cfg_rows = conn.execute(
+            'SELECT class_name, grade_level FROM class_configs WHERE class_id IS NULL OR class_id = ""'
+        ).fetchall()
+        for r in cfg_rows:
+            match = conn.execute(
+                'SELECT class_id FROM classes WHERE class_name = ? AND grade_level = ?',
+                (r['class_name'], r['grade_level'] or '')
+            ).fetchone()
+            if match:
+                conn.execute(
+                    'UPDATE class_configs SET class_id = ? WHERE class_name = ? AND grade_level = ?',
+                    (match['class_id'], r['class_name'], r['grade_level'] or '')
+                )
         conn.execute('''
             CREATE TABLE IF NOT EXISTS answer_region_templates (
                 id              TEXT PRIMARY KEY,
@@ -311,8 +374,9 @@ def create_student(data: dict) -> dict:
         conn.execute(
             '''INSERT INTO students
                (id, full_name, first_name, middle_name, last_name,
-                date_of_birth, class_name, grade_level, gender, contact_info)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                date_of_birth, class_name, grade_level, gender, contact_info,
+                accommodations, iep_notes)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
             (
                 student_id, full_name, first_name, middle_name, last_name,
                 data.get('date_of_birth'),
@@ -320,6 +384,8 @@ def create_student(data: dict) -> dict:
                 data.get('grade_level'),
                 data.get('gender'),
                 data.get('contact_info'),
+                data.get('accommodations') or '',
+                data.get('iep_notes') or '',
             )
         )
         conn.commit()
@@ -341,7 +407,8 @@ def update_student(student_id: str, data: dict) -> dict | None:
         conn.execute(
             '''UPDATE students
                SET full_name=?, first_name=?, middle_name=?, last_name=?,
-                   date_of_birth=?, class_name=?, grade_level=?, gender=?, contact_info=?
+                   date_of_birth=?, class_name=?, grade_level=?, gender=?, contact_info=?,
+                   accommodations=?, iep_notes=?
                WHERE id=?''',
             (
                 full_name, first_name, middle_name, last_name,
@@ -350,11 +417,51 @@ def update_student(student_id: str, data: dict) -> dict | None:
                 data.get('grade_level'),
                 data.get('gender'),
                 data.get('contact_info'),
+                data.get('accommodations') or '',
+                data.get('iep_notes') or '',
                 student_id,
             )
         )
         conn.commit()
         return get_student(student_id)
+    finally:
+        conn.close()
+
+
+def get_student_accommodations_for_class(class_name: str, grade_level: str | None = None) -> list[dict]:
+    """Return a list of {name, accommodations, iep_notes} for every student
+    in the given class who has at least one non-empty accommodation field.
+    Used by the backend prompt builder to layer per-student IEP context on
+    top of the class-level CLASS CONTEXT block.
+    """
+    if not class_name:
+        return []
+    conn = _get_conn()
+    try:
+        if grade_level:
+            rows = conn.execute(
+                'SELECT full_name, accommodations, iep_notes FROM students '
+                'WHERE class_name = ? AND COALESCE(grade_level, "") = ? '
+                'ORDER BY full_name',
+                (class_name, grade_level)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                'SELECT full_name, accommodations, iep_notes FROM students '
+                'WHERE class_name = ? ORDER BY full_name',
+                (class_name,)
+            ).fetchall()
+        result = []
+        for r in rows:
+            accs = (r['accommodations'] or '').strip()
+            iep = (r['iep_notes'] or '').strip()
+            if accs or iep:
+                result.append({
+                    'name': r['full_name'],
+                    'accommodations': accs,
+                    'iep_notes': iep,
+                })
+        return result
     finally:
         conn.close()
 
@@ -369,18 +476,43 @@ def delete_student(student_id: str):
 
 
 def list_classes(grade_level: str | None = None) -> list[dict]:
+    """Return all known classes. Reads from the `classes` table (stable
+    identity) and joins in student counts and stored config. Still includes
+    any class that only exists in the students table (legacy rows) for
+    backward compatibility.
+    """
     conn = _get_conn()
     try:
+        # Ensure any class_name present in students but not yet in classes
+        # gets a class_id (handles classes added after init_db ran).
+        student_pairs = conn.execute(
+            'SELECT DISTINCT class_name, COALESCE(grade_level, "") AS grade_level '
+            'FROM students WHERE class_name IS NOT NULL AND class_name != ""'
+        ).fetchall()
+        for row in student_pairs:
+            exists = conn.execute(
+                'SELECT 1 FROM classes WHERE class_name = ? AND grade_level = ?',
+                (row['class_name'], row['grade_level'])
+            ).fetchone()
+            if not exists:
+                conn.execute(
+                    'INSERT INTO classes (class_id, class_name, grade_level) VALUES (?, ?, ?)',
+                    (str(uuid.uuid4()), row['class_name'], row['grade_level'])
+                )
+        conn.commit()
+
         if grade_level:
             rows = conn.execute(
-                'SELECT DISTINCT class_name, grade_level FROM students WHERE class_name IS NOT NULL AND grade_level = ? ORDER BY class_name',
+                'SELECT class_id, class_name, grade_level, academic_year, description '
+                'FROM classes WHERE grade_level = ? ORDER BY class_name',
                 (grade_level,)
             ).fetchall()
         else:
             rows = conn.execute(
-                'SELECT DISTINCT class_name, grade_level FROM students WHERE class_name IS NOT NULL ORDER BY grade_level, class_name'
+                'SELECT class_id, class_name, grade_level, academic_year, description '
+                'FROM classes ORDER BY grade_level, class_name'
             ).fetchall()
-        # Merge in stored class_configs so callers get the config alongside
+
         cfg_rows = conn.execute('SELECT class_name, grade_level, config FROM class_configs').fetchall()
         cfg_map: dict[tuple[str, str], dict] = {}
         for r in cfg_rows:
@@ -388,23 +520,187 @@ def list_classes(grade_level: str | None = None) -> list[dict]:
                 cfg_map[(r['class_name'], r['grade_level'] or '')] = json.loads(r['config'] or '{}')
             except Exception:
                 cfg_map[(r['class_name'], r['grade_level'] or '')] = {}
+
         result = []
         for r in rows:
             cls = r['class_name']
             gl = r['grade_level'] or ''
             cfg = cfg_map.get((cls, gl), {})
-            # Count students for this class
             count_row = conn.execute(
                 'SELECT COUNT(*) AS c FROM students WHERE class_name = ? AND COALESCE(grade_level, "") = ?',
                 (cls, gl)
             ).fetchone()
             result.append({
+                'class_id': r['class_id'],
                 'class_name': cls,
                 'grade_level': r['grade_level'],
+                'academic_year': r['academic_year'] or '',
+                'description': r['description'] or '',
                 'student_count': int(count_row['c']) if count_row else 0,
                 'config': cfg,
             })
         return result
+    finally:
+        conn.close()
+
+
+def get_class(class_id: str) -> dict | None:
+    """Fetch a single class by stable class_id."""
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT class_id, class_name, grade_level, academic_year, description, created_at, updated_at '
+            'FROM classes WHERE class_id = ?',
+            (class_id,)
+        ).fetchone()
+        if not row:
+            return None
+        count_row = conn.execute(
+            'SELECT COUNT(*) AS c FROM students WHERE class_name = ? AND COALESCE(grade_level, "") = ?',
+            (row['class_name'], row['grade_level'] or '')
+        ).fetchone()
+        cfg_row = conn.execute(
+            'SELECT config FROM class_configs WHERE class_name = ? AND grade_level = ?',
+            (row['class_name'], row['grade_level'] or '')
+        ).fetchone()
+        try:
+            config = json.loads(cfg_row['config']) if cfg_row else {}
+        except Exception:
+            config = {}
+        return {
+            'class_id': row['class_id'],
+            'class_name': row['class_name'],
+            'grade_level': row['grade_level'],
+            'academic_year': row['academic_year'] or '',
+            'description': row['description'] or '',
+            'student_count': int(count_row['c']) if count_row else 0,
+            'config': config,
+            'created_at': row['created_at'],
+            'updated_at': row['updated_at'],
+        }
+    finally:
+        conn.close()
+
+
+def create_class(data: dict) -> dict:
+    """Create a new class row. Required: class_name. Optional: grade_level,
+    academic_year, description. Returns the created class.
+    """
+    class_name = (data.get('class_name') or '').strip()
+    if not class_name:
+        raise ValueError('class_name is required')
+    grade_level = (data.get('grade_level') or '').strip()
+    academic_year = (data.get('academic_year') or '').strip()
+    description = (data.get('description') or '').strip()
+    conn = _get_conn()
+    try:
+        existing = conn.execute(
+            'SELECT class_id FROM classes WHERE class_name = ? AND grade_level = ?',
+            (class_name, grade_level)
+        ).fetchone()
+        if existing:
+            return get_class(existing['class_id']) or {}
+        class_id = str(uuid.uuid4())
+        conn.execute(
+            '''INSERT INTO classes (class_id, class_name, grade_level, academic_year, description)
+               VALUES (?, ?, ?, ?, ?)''',
+            (class_id, class_name, grade_level, academic_year, description)
+        )
+        conn.commit()
+        return get_class(class_id) or {}
+    finally:
+        conn.close()
+
+
+def update_class(class_id: str, data: dict) -> dict | None:
+    """Update a class. Supports renaming class_name / grade_level — will
+    cascade the rename to the students table and to class_configs so
+    existing data follows the class.
+    """
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT class_name, grade_level FROM classes WHERE class_id = ?',
+            (class_id,)
+        ).fetchone()
+        if not row:
+            return None
+        old_name = row['class_name']
+        old_grade = row['grade_level'] or ''
+        new_name = (data.get('class_name') or old_name).strip()
+        new_grade = (data.get('grade_level') or old_grade).strip()
+        academic_year = data.get('academic_year', None)
+        description = data.get('description', None)
+
+        sets = ['class_name = ?', 'grade_level = ?', 'updated_at = CURRENT_TIMESTAMP']
+        params: list = [new_name, new_grade]
+        if academic_year is not None:
+            sets.append('academic_year = ?')
+            params.append((academic_year or '').strip())
+        if description is not None:
+            sets.append('description = ?')
+            params.append((description or '').strip())
+        params.append(class_id)
+        conn.execute(f'UPDATE classes SET {", ".join(sets)} WHERE class_id = ?', params)
+
+        # Cascade rename to students + class_configs if name or grade changed
+        if new_name != old_name or new_grade != old_grade:
+            conn.execute(
+                'UPDATE students SET class_name = ?, grade_level = ? '
+                'WHERE class_name = ? AND COALESCE(grade_level, "") = ?',
+                (new_name, new_grade, old_name, old_grade)
+            )
+            conn.execute(
+                'UPDATE class_configs SET class_name = ?, grade_level = ? '
+                'WHERE class_name = ? AND grade_level = ?',
+                (new_name, new_grade, old_name, old_grade)
+            )
+        conn.commit()
+        return get_class(class_id)
+    finally:
+        conn.close()
+
+
+def delete_class(class_id: str, reassign_students_to: str | None = None) -> bool:
+    """Delete a class row. Students are NOT deleted — their class_name is
+    either nulled (default) or reassigned to another class_id.
+    """
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT class_name, grade_level FROM classes WHERE class_id = ?',
+            (class_id,)
+        ).fetchone()
+        if not row:
+            return False
+        old_name = row['class_name']
+        old_grade = row['grade_level'] or ''
+
+        if reassign_students_to:
+            target = conn.execute(
+                'SELECT class_name, grade_level FROM classes WHERE class_id = ?',
+                (reassign_students_to,)
+            ).fetchone()
+            if target:
+                conn.execute(
+                    'UPDATE students SET class_name = ?, grade_level = ? '
+                    'WHERE class_name = ? AND COALESCE(grade_level, "") = ?',
+                    (target['class_name'], target['grade_level'] or '', old_name, old_grade)
+                )
+            else:
+                conn.execute(
+                    'UPDATE students SET class_name = NULL WHERE class_name = ? AND COALESCE(grade_level, "") = ?',
+                    (old_name, old_grade)
+                )
+        else:
+            conn.execute(
+                'UPDATE students SET class_name = NULL WHERE class_name = ? AND COALESCE(grade_level, "") = ?',
+                (old_name, old_grade)
+            )
+        conn.execute('DELETE FROM class_configs WHERE class_name = ? AND grade_level = ?', (old_name, old_grade))
+        conn.execute('DELETE FROM classes WHERE class_id = ?', (class_id,))
+        conn.commit()
+        return True
     finally:
         conn.close()
 

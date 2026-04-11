@@ -102,6 +102,12 @@ interface FormData {
   strand: string;
   essentialOutcomes: string;
   specificOutcomes: string;
+  learningStyles: string[];
+  pedagogicalStrategies: string[];
+  materials: string;
+  prerequisiteSkills: string;
+  specialNeeds: boolean;
+  specialNeedsDetails: string;
 }
 
 const formatKindergartenText = (text: string, accentColor: string) => {
@@ -494,6 +500,12 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         students: merge('students', cfg.studentCount != null ? String(cfg.studentCount) : ''),
         duration: merge('duration', cfg.classPeriodDuration),
         additionalRequirements: merge('additionalRequirements', cfg.additionalInstructions),
+        learningStyles: merge('learningStyles', cfg.learningStyles),
+        pedagogicalStrategies: merge('pedagogicalStrategies', cfg.pedagogicalStrategies),
+        materials: merge('materials', cfg.availableMaterials),
+        prerequisiteSkills: merge('prerequisiteSkills', cfg.prerequisiteSkills),
+        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
+        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
       };
     });
     setClassContextApplied(label);
@@ -531,7 +543,13 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     curriculumSubject: '',
     strand: '',
     essentialOutcomes: '',
-    specificOutcomes: ''
+    specificOutcomes: '',
+    learningStyles: [],
+    pedagogicalStrategies: [],
+    materials: '',
+    prerequisiteSkills: '',
+    specialNeeds: false,
+    specialNeedsDetails: '',
   });
 
   const [formData, setFormData] = useState<FormData>(() => {
@@ -1510,6 +1528,113 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   />
+                </div>
+
+                {/* Class Context & Accommodations */}
+                <div className="border border-theme rounded-xl p-4 space-y-5">
+                  <h3 className="text-sm font-semibold text-theme-heading">Class Context &amp; Accommodations</h3>
+
+                  {/* Learning Styles */}
+                  <div>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Learning Styles</label>
+                    <div className="grid grid-cols-2 gap-2 p-2 rounded-lg">
+                      {['Visual', 'Auditory', 'Reading/Writing', 'Kinesthetic'].map(style => (
+                        <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.learningStyles.includes(style)}
+                            onChange={() => {
+                              const next = formData.learningStyles.includes(style)
+                                ? formData.learningStyles.filter(s => s !== style)
+                                : [...formData.learningStyles, style];
+                              handleInputChange('learningStyles', next);
+                            }}
+                            className="w-4 h-4 rounded focus:ring-2"
+                            style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
+                          />
+                          <span className="text-sm text-theme-label">{style}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pedagogical Strategies */}
+                  <div>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Pedagogical Strategies</label>
+                    <div className="grid grid-cols-2 gap-2 p-2 rounded-lg">
+                      {['Direct instruction', 'Inquiry-based', 'Play-based', 'Differentiated', 'Collaborative', 'Scaffolded', 'Gamified'].map(strategy => (
+                        <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.pedagogicalStrategies.includes(strategy)}
+                            onChange={() => {
+                              const next = formData.pedagogicalStrategies.includes(strategy)
+                                ? formData.pedagogicalStrategies.filter(s => s !== strategy)
+                                : [...formData.pedagogicalStrategies, strategy];
+                              handleInputChange('pedagogicalStrategies', next);
+                            }}
+                            className="w-4 h-4 rounded focus:ring-2"
+                            style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
+                          />
+                          <span className="text-sm text-theme-label">{strategy}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Materials */}
+                  <div>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Available Materials</label>
+                    <SmartTextArea
+                      value={formData.materials}
+                      onChange={(val) => handleInputChange('materials', val)}
+                      rows={2}
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                      placeholder="Materials available for this lesson"
+                    />
+                  </div>
+
+                  {/* Prerequisite Skills */}
+                  <div>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Prerequisite Skills</label>
+                    <SmartTextArea
+                      value={formData.prerequisiteSkills}
+                      onChange={(val) => handleInputChange('prerequisiteSkills', val)}
+                      rows={2}
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                      placeholder="Skills students should already have"
+                    />
+                  </div>
+
+                  {/* Special Needs */}
+                  <div>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.specialNeeds}
+                        onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
+                        className="w-4 h-4 rounded focus:ring-2"
+                        style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
+                      />
+                      <span className="text-sm font-medium text-theme-label">Students with Special Needs</span>
+                    </label>
+                  </div>
+
+                  {formData.specialNeeds && (
+                    <div>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Special Needs Details</label>
+                      <SmartTextArea
+                        value={formData.specialNeedsDetails}
+                        onChange={(val) => handleInputChange('specialNeedsDetails', val)}
+                        rows={2}
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        placeholder="Describe specific accommodations or modifications needed"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div data-tutorial="kinder-planner-assessment">

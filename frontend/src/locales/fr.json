@@ -1625,5 +1625,131 @@
         "description": "Ceci est votre espace de travail principal ou votre outil actif ou votre vue fractionnee apparaitra. Vous etes pret a creer d'incroyables ressources pedagogiques!"
       }
     }
+  },
+  "classConfig": {
+    "panel": {
+      "sections": {
+        "curriculum": "Programme",
+        "curriculumDesc": "Matiere et resultats d'apprentissage vises par cette classe",
+        "composition": "Composition de la classe",
+        "learnerProfile": "Profil des apprenants",
+        "learnerProfileDesc": "Comment cette classe apprend le mieux",
+        "specialNeeds": "Besoins speciaux et amenagements",
+        "specialNeedsDesc": "Applique a chaque generation pour cette classe",
+        "readingLanguage": "Lecture et langue",
+        "assessmentPrefs": "Preferences d'evaluation",
+        "assessmentPrefsDesc": "Utilise par le Generateur de quiz et les Rubriques",
+        "materials": "Materiels et ressources",
+        "pacing": "Rythme et general"
+      },
+      "fields": {
+        "subject": "Matiere",
+        "strand": "Domaine du programme",
+        "essentialOutcomes": "Resultats essentiels",
+        "specificOutcomes": "Resultats specifiques",
+        "studentCount": "Nombre d'eleves prevu",
+        "studentsWithDisabilities": "Eleves avec handicaps / IEP",
+        "learningStyles": "Styles d'apprentissage",
+        "learningPreferences": "Preferences d'apprentissage",
+        "multipleIntelligences": "Intelligences multiples",
+        "pedagogicalStrategies": "Strategies pedagogiques",
+        "teacherNotes": "Notes de l'enseignant sur l'approche pedagogique",
+        "hasSpecialNeeds": "La classe inclut des eleves a besoins particuliers",
+        "accommodationDetails": "Details des amenagements",
+        "culturallyResponsive": "Notes sur l'enseignement culturellement adapte",
+        "ellStudents": "Eleves ELL / FLS presents",
+        "advancedLearners": "Eleves avances / doues presents",
+        "ellPercentage": "Eleves ELL (%)",
+        "behaviorSupport": "Soutien comportemental",
+        "readingLevel": "Niveau de lecture",
+        "primaryLanguage": "Langue principale d'enseignement",
+        "bilingualProgram": "Programme bilingue",
+        "assessmentFormat": "Format d'evaluation prefere",
+        "performanceLevels": "Niveaux de performance (rubriques)",
+        "questionTypes": "Types de questions par defaut (quiz)",
+        "cognitiveLevels": "Niveaux cognitifs par defaut (Bloom)",
+        "gradingFocus": "Domaines d'evaluation des rubriques",
+        "includePointValues": "Inclure les valeurs en points dans les rubriques",
+        "timePerQuestion": "Temps par defaut par question (sec)",
+        "availableMaterials": "Materiels disponibles / ressources de classe",
+        "prerequisiteSkills": "Competences prealables (ce que la classe sait deja)",
+        "classDuration": "Duree de la periode de cours",
+        "additionalInstructions": "Instructions supplementaires / regles de classe"
+      },
+      "placeholders": {
+        "subject": "Ex. Mathematiques, Francais",
+        "strand": "Ex. Operations numeriques, Comprehension de lecture",
+        "accommodationDetails": "Ex. 2 eleves dyslexiques - besoin de grandes polices et texte decodable",
+        "primaryLanguage": "Ex. Francais",
+        "bilingualProgram": "Ex. Transitoire, Immersion bilaterale",
+        "availableMaterials": "Ex. Chromebooks 1:1, materiel de manipulation, tableau interactif",
+        "additionalInstructions": "Ex. Pas de calculatrices; insister sur la demonstration du raisonnement"
+      },
+      "buttons": {
+        "save": "Enregistrer les parametres de classe",
+        "saving": "Enregistrement...",
+        "export": "Exporter JSON",
+        "import": "Importer JSON",
+        "saved": "Enregistre"
+      },
+      "messages": {
+        "loading": "Chargement des parametres de classe...",
+        "applyPolicy": "Ces parametres s'appliquent a tous les generateurs (Planificateur, Quiz, Fiche, Rubrique) pour cette classe. Configurez-les une fois ici pour ne pas avoir a les ressaisir a chaque generation.",
+        "importedFrom": "Configuration de classe chargee depuis {{source}}. Verifiez les champs puis cliquez sur Enregistrer les parametres de classe.",
+        "importedGeneric": "Configuration de classe chargee. Verifiez les champs puis cliquez sur Enregistrer les parametres de classe."
+      }
+    },
+    "newClass": {
+      "title": "Creer une nouvelle classe",
+      "className": "Nom de la classe",
+      "classNameRequired": "Nom de la classe *",
+      "gradeLevel": "Niveau",
+      "academicYear": "Annee scolaire",
+      "description": "Description",
+      "create": "Creer la classe",
+      "creating": "Creation...",
+      "placeholderName": "Ex. 3A, Salle Bleue",
+      "placeholderYear": "Ex. 2025-2026",
+      "placeholderDesc": "Notes facultatives sur cette classe",
+      "selectGrade": "-- Choisir un niveau --"
+    },
+    "rename": {
+      "title": "Renommer la classe",
+      "warning": "Le renommage se repercute sur tous les eleves et parametres de niveau de classe. Les donnees existantes suivent la classe.",
+      "className": "Nom de la classe",
+      "gradeLevel": "Niveau",
+      "academicYear": "Annee scolaire",
+      "description": "Description",
+      "save": "Enregistrer le nouveau nom",
+      "saving": "Enregistrement...",
+      "selectGrade": "-- Choisir un niveau --"
+    },
+    "deleteClass": {
+      "title": "Supprimer la classe ?",
+      "body": "Cela supprimera definitivement la Classe {{className}}{{grade}} et ses parametres. Les dossiers des eleves sont conserves mais seront desaffectes de cette classe.",
+      "studentWarning_one": "{{count}} eleve sera desaffecte.",
+      "studentWarning_other": "{{count}} eleves seront desaffectes.",
+      "confirm": "Supprimer la classe",
+      "deleting": "Suppression..."
+    },
+    "sidebar": {
+      "newClass": "Classe",
+      "newClassTitle": "Nouvelle classe"
+    },
+    "classView": {
+      "rename": "Renommer",
+      "renameTitle": "Renommer cette classe",
+      "delete": "Supprimer la classe",
+      "deleteTitle": "Supprimer cette classe"
+    },
+    "studentForm": {
+      "individualAccommodations": "Amenagements individuels",
+      "accommodations": "Amenagements",
+      "accommodationsHelp": "Applique a chaque generation impliquant cet eleve",
+      "accommodationsPlaceholder": "Ex. temps supplementaire; grandes polices; placement preferentiel",
+      "iepNotes": "Notes IEP / profil d'apprentissage",
+      "iepNotesHelp": "Besoins ou objectifs specifiques pour le contenu genere par IA",
+      "iepNotesPlaceholder": "Ex. dyslexie - prefere le texte decodable; apprenant visuel; travaille la conscience phonemique"
+    }
   }
 }

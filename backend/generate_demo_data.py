@@ -960,6 +960,8 @@ def generate_lesson_plans():
 
             plan_date = random_date_in_range(start, end)
             ts = unique_ts(plan_date)
+            student_count = str(random.randint(20, 30))
+            duration = str(random.choice([45, 60, 90]))
             plans.append({
                 "id": f"plan_{ts}",
                 "title": f"{subject} - {topic} (Grade {grade})",
@@ -971,8 +973,8 @@ def generate_lesson_plans():
                     "strand": {"Mathematics": "number-operations", "Science": "living-things", "Language Arts": "reading", "Social Studies": "community"}.get(subject, "general"),
                     "essentialOutcomes": f"Students will understand key concepts of {topic}",
                     "specificOutcomes": f"Students will be able to demonstrate understanding of {topic} through practice activities",
-                    "studentCount": str(random.randint(20, 30)),
-                    "duration": str(random.choice([45, 60, 90])),
+                    "studentCount": student_count,
+                    "duration": duration,
                     "pedagogicalStrategies": random.sample(["differentiated-instruction", "hands-on", "cooperative-learning", "inquiry-based"], 2),
                     "learningStyles": random.sample(["visual", "kinesthetic", "auditory"], 2),
                     "learningPreferences": [],
@@ -984,7 +986,7 @@ def generate_lesson_plans():
                     "specialNeedsDetails": "",
                     "additionalInstructions": "",
                 },
-                "generatedPlan": f"# {topic}\n\n## Objective\nStudents will learn about {topic}.\n\n## Introduction (10 min)\nReview prior knowledge and introduce new concepts.\n\n## Development (30 min)\nGuided practice with examples and activities.\n\n## Closure (10 min)\nReview key points and assign practice work.",
+                "generatedPlan": llm_lesson_plan(subject, grade, topic, duration, student_count),
                 "parsedLesson": None,
                 "curriculumMatches": None,
                 "edit_count": random.randint(0, 3),
@@ -1029,7 +1031,7 @@ def generate_kindergarten_plans():
                     "essentialOutcomes": f"Children will explore {topic_name}",
                     "specificOutcomes": f"Children will demonstrate understanding of {topic_name}",
                 },
-                "generatedPlan": f"# {topic_name}\n\nCircle Time (10 min)\nIntroduce the topic with a song.\n\nExploration (20 min)\nHands-on activity.\n\nWrap Up (15 min)\nReview and share.",
+                "generatedPlan": llm_kindergarten_plan(topic_name, subj, strand, "3-4"),
                 "parsedPlan": None,
             })
     return plans
@@ -1072,7 +1074,7 @@ def generate_multigrade_plans():
                 "essentialOutcomes": f"Students will explore {topic}",
                 "specificOutcomes": f"Students will demonstrate grade-appropriate understanding",
             },
-            "generatedPlan": f"# {topic} (Multigrade)\n\nShared introduction followed by tiered group work.",
+            "generatedPlan": llm_multigrade_plan(subject, topic, "1-2"),
             "parsedPlan": None,
         })
     return plans
@@ -1126,16 +1128,23 @@ def generate_cross_curricular_plans():
                 "essentialOutcomes": "Integrated understanding",
                 "specificOutcomes": "Cross-disciplinary application",
             },
-            "generatedPlan": "# Math & Science Integration\n\nIntegrated lesson combining mathematical and scientific concepts.",
+            "generatedPlan": llm_cross_curricular_plan(
+                grade,
+                "Mathematics",
+                "Science",
+                "Mathematics and science are interconnected",
+                f"Exploring Connections - Grade {grade}",
+            ),
             "parsedPlan": None,
         })
     return plans
 
 
 def generate_quizzes():
-    """Generate quizzes - heavy during midterm phases."""
+    """Generate quizzes - heavy during midterm phases. Returns (quizzes, quiz_refs, answer_keys)."""
     quizzes = []
     quiz_refs = []  # Track for grades
+    answer_keys = []
     topic_idx = {k: 0 for k in QUIZ_TOPICS}
 
     for key, label, semester, order, start, end in PHASES:
@@ -1160,6 +1169,8 @@ def generate_quizzes():
             ts = unique_ts(quiz_date)
             num_q = random.choice([8, 10, 12, 15])
             quiz_id = f"quiz_{ts}"
+            quiz_md, parsed_quiz, key_questions = llm_quiz(subject, grade, topic, num_q)
+            actual_total = len(parsed_quiz.get("questions", [])) or num_q
             quizzes.append({
                 "id": quiz_id,
                 "title": f"{subject} - {topic} (Grade {grade})",
@@ -1171,29 +1182,40 @@ def generate_quizzes():
                     "questionTypes": ["multiple-choice", "short-answer"],
                     "cognitiveLevels": ["knowledge", "comprehension", "application"],
                     "timeLimitPerQuestion": "2",
-                    "numberOfQuestions": str(num_q),
+                    "numberOfQuestions": str(actual_total),
                     "strand": {"Mathematics": "number-operations", "Science": "living-things", "Language Arts": "reading", "Social Studies": "community"}.get(subject, "general"),
                     "essentialOutcomes": f"Assess {topic}",
                     "specificOutcomes": f"Evaluate understanding of {topic}",
                 },
-                "generatedQuiz": f"# {topic}\n\n1. Question 1\n2. Question 2\n...",
-                "parsedQuiz": None,
+                "generatedQuiz": quiz_md,
+                "parsedQuiz": parsed_quiz,
             })
             quiz_refs.append({
                 "id": quiz_id,
                 "date": quiz_date,
                 "subject": subject,
                 "grade": grade,
-                "total": num_q,
+                "total": actual_total,
                 "title": topic,
             })
-    return quizzes, quiz_refs
+            answer_keys.append({
+                "id": uid(),
+                "quiz_id": quiz_id,
+                "title": f"{subject} - {topic} (Grade {grade})",
+                "subject": subject,
+                "grade_level": grade,
+                "total_questions": actual_total,
+                "questions": json.dumps(key_questions),
+                "created_at": iso(quiz_date, 15, 0),
+            })
+    return quizzes, quiz_refs, answer_keys
 
 
 def generate_worksheets():
-    """Generate worksheets distributed across teaching phases."""
+    """Generate worksheets distributed across teaching phases. Returns (worksheets, ws_refs, answer_keys)."""
     worksheets = []
     ws_refs = []
+    answer_keys = []
     topic_idx = {k: 0 for k in WORKSHEET_TOPICS}
 
     for key, label, semester, order, start, end in PHASES:
@@ -1211,6 +1233,8 @@ def generate_worksheets():
             ts = unique_ts(ws_date)
             num_q = random.choice([6, 8, 10])
             ws_id = f"worksheet_{ts}"
+            ws_md, parsed_ws, key_questions = llm_worksheet(subject, grade, topic, num_q)
+            actual_total = len(parsed_ws.get("questions", [])) or num_q
             worksheets.append({
                 "id": ws_id,
                 "title": f"{subject} - {topic} (Grade {grade})",
@@ -1221,7 +1245,7 @@ def generate_worksheets():
                     "strand": {"Mathematics": "number-operations", "Science": "living-things", "Language Arts": "reading", "Social Studies": "community"}.get(subject, "general"),
                     "topic": topic,
                     "studentCount": "25",
-                    "questionCount": str(num_q),
+                    "questionCount": str(actual_total),
                     "questionType": "mixed",
                     "selectedTemplate": "standard",
                     "worksheetTitle": topic,
@@ -1231,18 +1255,28 @@ def generate_worksheets():
                     "essentialOutcomes": f"Practice {topic}",
                     "specificOutcomes": f"Reinforce understanding of {topic}",
                 },
-                "generatedWorksheet": f"# {topic}\n\nName: ___________\nDate: ___________\n\n1. ...\n2. ...",
-                "parsedWorksheet": None,
+                "generatedWorksheet": ws_md,
+                "parsedWorksheet": parsed_ws,
             })
             ws_refs.append({
                 "id": ws_id,
                 "date": ws_date,
                 "subject": subject,
                 "grade": grade,
-                "total": num_q,
+                "total": actual_total,
                 "title": topic,
             })
-    return worksheets, ws_refs
+            answer_keys.append({
+                "id": uid(),
+                "worksheet_id": ws_id,
+                "title": f"{subject} - {topic} (Grade {grade})",
+                "subject": subject,
+                "grade_level": grade,
+                "total_questions": actual_total,
+                "questions": json.dumps(key_questions),
+                "created_at": iso(ws_date, 15, 0),
+            })
+    return worksheets, ws_refs, answer_keys
 
 
 def generate_rubrics():
@@ -1274,7 +1308,7 @@ def generate_rubrics():
                 "includePointValues": True,
                 "focusAreas": ["content-knowledge", "critical-thinking"],
             },
-            "generatedRubric": f"# {term} Assessment Rubric\n\n| Criteria | Excellent (4) | Good (3) | Fair (2) | Needs Improvement (1) |",
+            "generatedRubric": llm_rubric(subject, grade, f"{term} Project"),
             "parsedRubric": None,
         })
     return rubrics
@@ -1848,6 +1882,9 @@ def generate_presentations():
     ]
     for pdate, title, grade in terms:
         ts = unique_ts(pdate)
+        subject = random.choice(SUBJECTS)
+        num_slides = random.randint(8, 15)
+        pres_md, slides = llm_presentation(title, subject, grade, num_slides)
         presentations.append({
             "id": f"presentation_{ts}",
             "title": title,
@@ -1855,10 +1892,11 @@ def generate_presentations():
             "formData": {
                 "topic": title,
                 "gradeLevel": grade,
-                "subject": random.choice(SUBJECTS),
-                "slideCount": str(random.randint(8, 15)),
+                "subject": subject,
+                "slideCount": str(len(slides) or num_slides),
             },
-            "generatedPresentation": f"# {title}\n\nSlide 1: Introduction\nSlide 2: Overview\n...",
+            "generatedPresentation": pres_md,
+            "slides": slides,
         })
     return presentations
 
@@ -1886,10 +1924,7 @@ def generate_storybooks():
             },
             "parsedBook": {
                 "title": title,
-                "pages": [
-                    {"pageNumber": i + 1, "text": f"Page {i + 1} of {title}.", "characterName": "Main Character"}
-                    for i in range(5)
-                ],
+                "pages": llm_storybook_pages(title, subject, grade, desc, 5),
             },
             "hasImages": False,
             "hasAudio": False,
@@ -1960,6 +1995,41 @@ def generate_settings():
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    global LLM_CLIENT
+
+    parser = argparse.ArgumentParser(
+        description="Generate comprehensive demo data for OECS Class Coworker. "
+                    "Supply --openrouter-key + --openrouter-model to LLM-generate "
+                    "all lesson/quiz/worksheet/rubric/presentation/storybook content; "
+                    "otherwise the script runs fully offline with short stub content."
+    )
+    parser.add_argument("--openrouter-key", default=os.environ.get("OPENROUTER_API_KEY"),
+                        help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
+    parser.add_argument("--openrouter-model", default=os.environ.get("OPENROUTER_MODEL"),
+                        help="OpenRouter model slug, e.g. 'anthropic/claude-3.5-sonnet' or 'openai/gpt-4o-mini'")
+    parser.add_argument("--cache-dir",
+                        default=os.path.join(os.path.dirname(__file__), "demo_llm_cache"),
+                        help="Directory for on-disk LLM response cache (default: backend/demo_llm_cache)")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Random seed for reproducible demo output (default: 42)")
+    parser.add_argument("--output", default=None,
+                        help="Output JSON path (default: <repo>/demo_year_data.json)")
+    args = parser.parse_args()
+
+    random.seed(args.seed)
+
+    if args.openrouter_key and args.openrouter_model:
+        LLM_CLIENT = LLMClient(
+            api_key=args.openrouter_key,
+            model=args.openrouter_model,
+            cache_dir=args.cache_dir,
+        )
+        print(f"[LLM] OpenRouter enabled: model={args.openrouter_model}")
+        print(f"[LLM] Cache dir: {args.cache_dir}")
+    else:
+        print("[LLM] OpenRouter not configured -- using static stub content.")
+        print("      Pass --openrouter-key and --openrouter-model to generate full content.")
+
     print("Generating comprehensive demo data...")
 
     # Core data
@@ -1972,8 +2042,8 @@ def main():
     kindergarten = generate_kindergarten_plans()
     multigrade = generate_multigrade_plans()
     cross_curricular = generate_cross_curricular_plans()
-    quizzes, quiz_refs = generate_quizzes()
-    worksheets, ws_refs = generate_worksheets()
+    quizzes, quiz_refs, quiz_answer_keys = generate_quizzes()
+    worksheets, ws_refs, worksheet_answer_keys = generate_worksheets()
     rubrics = generate_rubrics()
 
     attendance = generate_attendance(students)
@@ -2023,8 +2093,8 @@ def main():
                 "attendance": attendance,
                 "quiz_grades": quiz_grades,
                 "worksheet_grades": worksheet_grades,
-                "quiz_answer_keys": [],
-                "worksheet_answer_keys": [],
+                "quiz_answer_keys": quiz_answer_keys,
+                "worksheet_answer_keys": worksheet_answer_keys,
                 "quiz_instances": [],
                 "worksheet_instances": [],
                 "worksheet_packages": [],
@@ -2046,7 +2116,9 @@ def main():
     }
 
     # Write output
-    output_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "demo_year_data.json")
+    output_path = args.output or os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "demo_year_data.json"
+    )
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(backup, f, indent=2, ensure_ascii=True)
 
@@ -2076,7 +2148,25 @@ def main():
     print(f"  Storybooks: {len(storybooks['metadata'])}")
     print(f"  Images: {len(images)}")
     print(f"  Sticky notes: {len(sticky_notes['notes'])}")
+    print(f"  Quiz answer keys: {len(quiz_answer_keys)}")
+    print(f"  Worksheet answer keys: {len(worksheet_answer_keys)}")
+
+    if LLM_CLIENT is not None:
+        print()
+        print("[LLM] Stats:")
+        print(f"  API calls:  {LLM_CLIENT.calls}")
+        print(f"  Cache hits: {LLM_CLIENT.cache_hits}")
+        print(f"  Errors:     {LLM_CLIENT.errors}")
 
 
 if __name__ == "__main__":
     main()
+
+
+# Example usage:
+#
+# cd backend
+# .\venv\Scripts\Activate
+# python generate_demo_data.py \
+#   --openrouter-key sk-or-v1-xxxx \
+#   --openrouter-model anthropic/claude-3.5-sonnet

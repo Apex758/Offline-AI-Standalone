@@ -79,6 +79,8 @@ interface Student {
   grade_level?: string;
   gender?: string;
   contact_info?: string;
+  accommodations?: string;
+  iep_notes?: string;
   created_at?: string;
   quiz_grades?: QuizGrade[];
   worksheet_grades?: WorksheetGrade[];
@@ -115,11 +117,14 @@ interface StudentFormData {
   grade_level: string;
   gender: string;
   contact_info: string;
+  accommodations: string;
+  iep_notes: string;
 }
 
 const EMPTY_FORM: StudentFormData = {
   first_name: '', middle_name: '', last_name: '',
   date_of_birth: '', class_name: '', grade_level: '', gender: '', contact_info: '',
+  accommodations: '', iep_notes: '',
 };
 
 const GRADE_LEVELS = ['K', '1', '2', '3', '4', '5', '6'];
@@ -216,6 +221,117 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
+  // ── Class CRUD (Phase 6 UI) ──────────────────────────────────────────────
+  interface ClassRow { class_id: string; class_name: string; grade_level: string; student_count: number; academic_year?: string; description?: string; }
+  const [allClasses, setAllClasses] = useState<ClassRow[]>([]);
+  const [showNewClassModal, setShowNewClassModal] = useState(false);
+  const [newClassName, setNewClassName] = useState('');
+  const [newClassGrade, setNewClassGrade] = useState('');
+  const [newClassYear, setNewClassYear] = useState('');
+  const [newClassDesc, setNewClassDesc] = useState('');
+  const [newClassSaving, setNewClassSaving] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<ClassRow | null>(null);
+  const [renameClassName, setRenameClassName] = useState('');
+  const [renameClassGrade, setRenameClassGrade] = useState('');
+  const [renameClassYear, setRenameClassYear] = useState('');
+  const [renameClassDesc, setRenameClassDesc] = useState('');
+  const [renameSaving, setRenameSaving] = useState(false);
+  const [deleteClassTarget, setDeleteClassTarget] = useState<{ class_id: string; class_name: string; grade_level: string; student_count: number } | null>(null);
+  const [deleteClassSaving, setDeleteClassSaving] = useState(false);
+
+  const fetchClassesList = async () => {
+    try {
+      const r = await axios.get(`${API_BASE}/api/classes`);
+      setAllClasses(r.data || []);
+    } catch {
+      /* non-fatal */
+    }
+  };
+
+  const findClassRow = (grade: string, cls: string): ClassRow | undefined =>
+    allClasses.find(c => (c.grade_level || '') === (grade === '—' ? '' : grade) && c.class_name === cls);
+
+  const handleCreateClass = async () => {
+    const name = newClassName.trim();
+    if (!name) return;
+    setNewClassSaving(true);
+    try {
+      await axios.post(`${API_BASE}/api/classes`, {
+        class_name: name,
+        grade_level: newClassGrade.trim(),
+        academic_year: newClassYear.trim(),
+        description: newClassDesc.trim(),
+      });
+      await fetchClassesList();
+      await fetchStudents();
+      setShowNewClassModal(false);
+      setNewClassName('');
+      setNewClassGrade('');
+      setNewClassYear('');
+      setNewClassDesc('');
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'Failed to create class');
+    } finally {
+      setNewClassSaving(false);
+    }
+  };
+
+  const openRenameClass = (grade: string, cls: string) => {
+    const row = findClassRow(grade, cls);
+    if (!row) return;
+    setRenameTarget(row);
+    setRenameClassName(row.class_name);
+    setRenameClassGrade(row.grade_level || '');
+    setRenameClassYear(row.academic_year || '');
+    setRenameClassDesc(row.description || '');
+  };
+
+  const handleRenameClass = async () => {
+    if (!renameTarget) return;
+    const name = renameClassName.trim();
+    if (!name) return;
+    setRenameSaving(true);
+    try {
+      await axios.put(`${API_BASE}/api/classes/${renameTarget.class_id}`, {
+        class_name: name,
+        grade_level: renameClassGrade.trim(),
+        academic_year: renameClassYear.trim(),
+        description: renameClassDesc.trim(),
+      });
+      await fetchClassesList();
+      await fetchStudents();
+      // Follow the renamed class in the right pane
+      setRightView({ type: 'class', grade: renameClassGrade.trim() || '—', cls: name });
+      setRenameTarget(null);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'Failed to rename class');
+    } finally {
+      setRenameSaving(false);
+    }
+  };
+
+  const openDeleteClass = (grade: string, cls: string) => {
+    const row = findClassRow(grade, cls);
+    if (!row) return;
+    setDeleteClassTarget(row);
+  };
+
+  const handleDeleteClass = async () => {
+    if (!deleteClassTarget) return;
+    setDeleteClassSaving(true);
+    try {
+      await axios.delete(`${API_BASE}/api/classes/${deleteClassTarget.class_id}`);
+      await fetchClassesList();
+      await fetchStudents();
+      setRightView({ type: 'empty' });
+      setDeleteClassTarget(null);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'Failed to delete class');
+    } finally {
+      setDeleteClassSaving(false);
+    }
+  };
+
   // ── Data ──────────────────────────────────────────────────────────────────
 
   const fetchStudents = async () => {
@@ -224,6 +340,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
     try {
       const r = await axios.get(`${API_BASE}/api/students`);
       setStudents(r.data);
+      fetchClassesList();
     } catch {
       setError('Failed to load students.');
     } finally {
@@ -359,6 +476,14 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       if (!gradeMap.get(g)!.has(c)) gradeMap.get(g)!.set(c, []);
       gradeMap.get(g)!.get(c)!.push(s);
     }
+    // Merge in empty classes that exist in the classes table but have no
+    // students yet (Phase 6 — explicit class creation)
+    for (const row of allClasses) {
+      const g = row.grade_level || '—';
+      const c = row.class_name;
+      if (!gradeMap.has(g)) gradeMap.set(g, new Map());
+      if (!gradeMap.get(g)!.has(c)) gradeMap.get(g)!.set(c, []);
+    }
     const order = (g: string) => g === 'K' ? -1 : g === '—' ? 999 : Number(g);
     return [...gradeMap.entries()]
       .sort((a, b) => order(a[0]) - order(b[0]))
@@ -371,7 +496,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
             students: studs.sort((a, b) => a.full_name.localeCompare(b.full_name)),
           })),
       }));
-  }, [students]);
+  }, [students, allClasses]);
 
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
@@ -435,6 +560,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       grade_level: student.grade_level ?? '',
       gender: student.gender ?? '',
       contact_info: student.contact_info ?? '',
+      accommodations: (student as any).accommodations ?? '',
+      iep_notes: (student as any).iep_notes ?? '',
     });
     setEditingId(student.id);
     setRightView({ type: 'add' });
@@ -879,15 +1006,25 @@ ${tabScript}
             </div>
             <span className="font-bold text-sm text-theme-heading">{t('classManagement.classes')}</span>
           </div>
-          <button
-            onClick={() => openAdd()}
-            title={t('classManagement.addStudent')}
-            data-tutorial="class-add-student"
-            className="w-6 h-6 rounded-md flex items-center justify-center text-white transition hover:opacity-80"
-            style={{ backgroundColor: accentColor }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => { setNewClassName(''); setNewClassGrade(''); setShowNewClassModal(true); }}
+              title={t('classConfig.sidebar.newClassTitle')}
+              className="h-6 px-2 rounded-md flex items-center gap-1 text-[10px] font-semibold border transition hover:bg-theme-hover"
+              style={{ borderColor: accentColor, color: accentColor }}
+            >
+              <Plus className="w-3 h-3" /> {t('classConfig.sidebar.newClass')}
+            </button>
+            <button
+              onClick={() => openAdd()}
+              title={t('classManagement.addStudent')}
+              data-tutorial="class-add-student"
+              className="w-6 h-6 rounded-md flex items-center justify-center text-white transition hover:opacity-80"
+              style={{ backgroundColor: accentColor }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -1224,6 +1361,20 @@ ${tabScript}
                 {generatingBulkReport ? 'Generating...' : `Generate All Report Cards (${cs.length})`}
               </button>
             )}
+            <button
+              onClick={() => openRenameClass(grade, cls)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition"
+              title={t('classConfig.classView.renameTitle')}
+            >
+              <Edit className="w-4 h-4" /> {t('classConfig.classView.rename')}
+            </button>
+            <button
+              onClick={() => openDeleteClass(grade, cls)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/30 hover:bg-red-500/50 text-white text-sm font-medium transition"
+              title={t('classConfig.classView.deleteTitle')}
+            >
+              <Trash2 className="w-4 h-4" /> {t('classConfig.classView.delete')}
+            </button>
           </div>
         </div>
 
@@ -1848,6 +1999,44 @@ ${tabScript}
               style={{ '--tw-ring-color': accentColor } as any} />
           </div>
 
+          {/* Phase 8: per-student accommodations (flows into LLM prompts) */}
+          <div className="pt-3 border-t border-theme/50">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-theme-hint mb-2">
+              {t('classConfig.studentForm.individualAccommodations')}
+            </p>
+            <label className="block text-sm font-medium text-theme-label mb-1.5">
+              {t('classConfig.studentForm.accommodations')}
+              <span className="block text-[10px] font-normal text-theme-muted">
+                {t('classConfig.studentForm.accommodationsHelp')}
+              </span>
+            </label>
+            <textarea
+              value={form.accommodations}
+              onChange={e => setForm(f => ({ ...f, accommodations: e.target.value }))}
+              rows={2}
+              placeholder={t('classConfig.studentForm.accommodationsPlaceholder')}
+              className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label text-sm focus:outline-none focus:ring-2"
+              style={{ '--tw-ring-color': accentColor } as any}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-theme-label mb-1.5">
+              {t('classConfig.studentForm.iepNotes')}
+              <span className="block text-[10px] font-normal text-theme-muted">
+                {t('classConfig.studentForm.iepNotesHelp')}
+              </span>
+            </label>
+            <textarea
+              value={form.iep_notes}
+              onChange={e => setForm(f => ({ ...f, iep_notes: e.target.value }))}
+              rows={3}
+              placeholder={t('classConfig.studentForm.iepNotesPlaceholder')}
+              className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label text-sm focus:outline-none focus:ring-2"
+              style={{ '--tw-ring-color': accentColor } as any}
+            />
+          </div>
+
           <button onClick={handleSave} disabled={!form.first_name.trim() || formSaving}
             className="w-full py-3 rounded-xl text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: accentColor }}>
@@ -1941,6 +2130,191 @@ ${tabScript}
             <div className="flex gap-3">
               <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm">{t('common.cancel')}</button>
               <button onClick={() => handleDelete(confirmDelete!)} className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium">{t('common.delete')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Class modal */}
+      {showNewClassModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="rounded-2xl p-6 max-w-md w-full widget-glass">
+            <h3 className="font-semibold text-theme-heading mb-4 text-lg">{t('classConfig.newClass.title')}</h3>
+            <div className="space-y-3 mb-6">
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.newClass.classNameRequired')}</label>
+                <input
+                  autoFocus
+                  type="text"
+                  value={newClassName}
+                  onChange={e => setNewClassName(e.target.value)}
+                  placeholder={t('classConfig.newClass.placeholderName')}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.newClass.gradeLevel')}</label>
+                <select
+                  value={newClassGrade}
+                  onChange={e => setNewClassGrade(e.target.value)}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                >
+                  <option value="">{t('classConfig.newClass.selectGrade')}</option>
+                  {GRADE_LEVELS.map(g => <option key={g} value={g}>{gradeLabel(g)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.newClass.academicYear')}</label>
+                <input
+                  type="text"
+                  value={newClassYear}
+                  onChange={e => setNewClassYear(e.target.value)}
+                  placeholder={t('classConfig.newClass.placeholderYear')}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.newClass.description')}</label>
+                <textarea
+                  value={newClassDesc}
+                  onChange={e => setNewClassDesc(e.target.value)}
+                  rows={2}
+                  placeholder={t('classConfig.newClass.placeholderDesc')}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowNewClassModal(false)}
+                disabled={newClassSaving}
+                className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleCreateClass}
+                disabled={newClassSaving || !newClassName.trim()}
+                className="flex-1 px-4 py-2 rounded-xl text-white transition text-sm font-medium disabled:opacity-50"
+                style={{ backgroundColor: accentColor }}
+              >
+                {newClassSaving ? t('classConfig.newClass.creating') : t('classConfig.newClass.create')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rename Class modal */}
+      {renameTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="rounded-2xl p-6 max-w-md w-full widget-glass">
+            <h3 className="font-semibold text-theme-heading mb-2 text-lg">{t('classConfig.rename.title')}</h3>
+            <p className="text-xs text-theme-muted mb-4">
+              {t('classConfig.rename.warning')}
+            </p>
+            <div className="space-y-3 mb-6">
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.rename.className')}</label>
+                <input
+                  autoFocus
+                  type="text"
+                  value={renameClassName}
+                  onChange={e => setRenameClassName(e.target.value)}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.rename.gradeLevel')}</label>
+                <select
+                  value={renameClassGrade}
+                  onChange={e => setRenameClassGrade(e.target.value)}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                >
+                  <option value="">{t('classConfig.rename.selectGrade')}</option>
+                  {GRADE_LEVELS.map(g => <option key={g} value={g}>{gradeLabel(g)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.rename.academicYear')}</label>
+                <input
+                  type="text"
+                  value={renameClassYear}
+                  onChange={e => setRenameClassYear(e.target.value)}
+                  placeholder={t('classConfig.newClass.placeholderYear')}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-theme-label mb-1">{t('classConfig.rename.description')}</label>
+                <textarea
+                  value={renameClassDesc}
+                  onChange={e => setRenameClassDesc(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': accentColor } as any}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setRenameTarget(null)}
+                disabled={renameSaving}
+                className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleRenameClass}
+                disabled={renameSaving || !renameClassName.trim()}
+                className="flex-1 px-4 py-2 rounded-xl text-white transition text-sm font-medium disabled:opacity-50"
+                style={{ backgroundColor: accentColor }}
+              >
+                {renameSaving ? t('classConfig.rename.saving') : t('classConfig.rename.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Class modal */}
+      {deleteClassTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="rounded-2xl p-6 max-w-md w-full widget-glass">
+            <h3 className="font-semibold text-theme-heading mb-2 text-lg">{t('classConfig.deleteClass.title')}</h3>
+            <p className="text-sm text-theme-muted mb-4">
+              {t('classConfig.deleteClass.body', {
+                className: deleteClassTarget.class_name,
+                grade: deleteClassTarget.grade_level ? ` (Grade ${deleteClassTarget.grade_level})` : '',
+              })}
+              {deleteClassTarget.student_count > 0 && (
+                <span className="block mt-2 text-amber-600 dark:text-amber-400 font-medium">
+                  {t('classConfig.deleteClass.studentWarning', { count: deleteClassTarget.student_count })}
+                </span>
+              )}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteClassTarget(null)}
+                disabled={deleteClassSaving}
+                className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleDeleteClass}
+                disabled={deleteClassSaving}
+                className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium disabled:opacity-50"
+              >
+                {deleteClassSaving ? t('classConfig.deleteClass.deleting') : t('classConfig.deleteClass.confirm')}
+              </button>
             </div>
           </div>
         </div>

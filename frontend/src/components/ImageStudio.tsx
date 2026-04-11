@@ -60,6 +60,7 @@ const RefreshCw: React.FC<{ className?: string; style?: React.CSSProperties }> =
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
+import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 import { useNotification } from '../contexts/NotificationContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTabProcessing } from '../contexts/TabBusyContext';
@@ -926,6 +927,65 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // ========================================
   // Build styled prompt with style suffix
   // ========================================
+  // ── Class context (Phase 4: auto-differentiate image prompts) ─────────
+  const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
+  const [selectedClassName, setSelectedClassName] = useState<string>('');
+  const [classConfig, setClassConfig] = useState<ClassConfig>({});
+  const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchClasses().then(setAvailableClasses).catch(() => {});
+  }, []);
+
+  const handleSelectClass = async (value: string) => {
+    setSelectedClassName(value);
+    if (!value) {
+      setClassConfig({});
+      setClassContextApplied(null);
+      return;
+    }
+    const [gl, cls] = value.split('::');
+    try {
+      const cfg = await fetchClassConfig(cls, gl || undefined);
+      setClassConfig(cfg || {});
+      setClassContextApplied(`Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+    } catch (e) {
+      console.error('Failed to load class config', e);
+    }
+  };
+
+  // Build a short, image-generation-friendly suffix from the class config.
+  // Only the fields that actually influence the *image* (age/grade
+  // appropriateness, cultural context, language overlays on signs/text, and
+  // reading level for visual complexity) are included. Other class fields
+  // would just confuse a diffusion model.
+  const buildClassImageHint = (cfg: ClassConfig): string => {
+    if (!cfg || Object.keys(cfg).length === 0) return '';
+    const parts: string[] = [];
+    const gradeHint = cfg.readingLevel || '';
+    if (gradeHint) {
+      parts.push(`age-appropriate for ${gradeHint} reading level`);
+    }
+    if (cfg.primaryLanguage) {
+      parts.push(`any text or labels in ${cfg.primaryLanguage}`);
+    }
+    if (cfg.culturallyResponsiveNotes) {
+      parts.push(`culturally inclusive (${cfg.culturallyResponsiveNotes.trim()})`);
+    }
+    if (cfg.hasSpecialNeeds && cfg.specialNeedsDetails) {
+      // Only pass accommodations that make sense for imagery
+      const details = cfg.specialNeedsDetails.toLowerCase();
+      if (details.includes('visual') || details.includes('low vision') || details.includes('color')) {
+        parts.push('high contrast and clear outlines for accessibility');
+      }
+    }
+    if (cfg.hasELLStudents) {
+      parts.push('visually self-explanatory (suitable for ELL students)');
+    }
+    if (parts.length === 0) return '';
+    return `, ${parts.join(', ')}`;
+  };
+
   const buildStyledPrompt = (basePrompt: string, styleId: string): string => {
     const profile = styleProfiles[styleId];
     
@@ -934,8 +994,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       return basePrompt;
     }
     
-    // Combine base prompt with style suffix
-    const finalPrompt = basePrompt.trim() + profile.base_prompt_suffix;
+    // Combine base prompt with style suffix + class-context hint
+    const classHint = buildClassImageHint(classConfig);
+    const finalPrompt = basePrompt.trim() + profile.base_prompt_suffix + classHint;
     
     console.log('📝 Built styled prompt:', {
       base: basePrompt,
@@ -2346,6 +2407,35 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     {styleProfiles[selectedStyle] && (
                       <p className="text-xs text-theme-hint mt-2">
                         {styleProfiles[selectedStyle].description}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Class picker — auto-differentiates image prompts */}
+                  <div className="rounded-xl p-4 border border-dashed border-blue-400 bg-blue-50/30 dark:bg-blue-500/10">
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-blue-600 dark:text-blue-400">
+                      Class (optional — auto-adjusts for reading level, language, accessibility)
+                    </label>
+                    <select
+                      value={selectedClassName}
+                      onChange={(e) => handleSelectClass(e.target.value)}
+                      className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">— Select a class (optional) —</option>
+                      {availableClasses.map(c => {
+                        const key = `${c.grade_level || ''}::${c.class_name}`;
+                        const hasCfg = c.config && Object.keys(c.config).length > 0;
+                        return (
+                          <option key={key} value={key}>
+                            {c.grade_level ? `Grade ${c.grade_level} — ` : ''}Class {c.class_name}
+                            {hasCfg ? '  [configured]' : '  [no settings]'}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {classContextApplied && (
+                      <p className="text-xs mt-2 text-theme-muted">
+                        Images will be tuned for <strong>{classContextApplied}</strong>.
                       </p>
                     )}
                   </div>

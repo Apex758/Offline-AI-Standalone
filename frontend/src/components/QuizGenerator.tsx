@@ -79,6 +79,7 @@ import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { QUIZ_PRESETS, loadQuizLastSettings, saveQuizLastSettings } from '../data/generatorPresets';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
+import SmartTextArea from './SmartTextArea';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface QuizGeneratorProps {
@@ -137,6 +138,10 @@ interface FormData {
   strand: string;
   essentialOutcomes: string;
   specificOutcomes: string;
+  specialNeeds: boolean;
+  specialNeedsDetails: string;
+  additionalInstructions: string;
+  preferredAssessmentFormat: string;
 }
 
 const formatQuizText = (text: string, accentColor: string) => {
@@ -320,6 +325,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       strand: '',
       essentialOutcomes: '',
       specificOutcomes: '',
+      specialNeeds: false,
+      specialNeedsDetails: '',
+      additionalInstructions: '',
+      preferredAssessmentFormat: '',
     };
   };
 
@@ -355,6 +364,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         questionTypes: merge('questionTypes', cfg.defaultQuestionTypes),
         cognitiveLevels: merge('cognitiveLevels', cfg.defaultCognitiveLevels),
         timeLimitPerQuestion: merge('timeLimitPerQuestion', cfg.defaultTimeLimitPerQuestion != null ? String(cfg.defaultTimeLimitPerQuestion) : ''),
+        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
+        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
+        additionalInstructions: merge('additionalInstructions', cfg.additionalInstructions),
+        preferredAssessmentFormat: merge('preferredAssessmentFormat', cfg.preferredAssessmentFormat),
       };
     });
     setClassConfigApplied(label);
@@ -1806,6 +1819,70 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   />
                 </div>
 
+              </div>
+            </div>
+
+            {/* Accommodations & Format */}
+            <div className="border-t border-theme p-6">
+              <div className="max-w-3xl mx-auto space-y-5">
+                <h3 className="text-base font-semibold text-theme-heading">Accommodations &amp; Format</h3>
+
+                {/* Assessment Format */}
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">Preferred Assessment Format</label>
+                  <select
+                    value={formData.preferredAssessmentFormat}
+                    onChange={(e) => handleInputChange('preferredAssessmentFormat', e.target.value)}
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                  >
+                    <option value="">-- Select format --</option>
+                    {['Multiple choice', 'Performance-based', 'Portfolio', 'Project', 'Oral', 'Mixed'].map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Special Needs */}
+                <div>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.specialNeeds}
+                      onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
+                      className="w-4 h-4 rounded focus:ring-2"
+                      style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
+                    />
+                    <span className="text-sm font-medium text-theme-label">Students with Special Needs</span>
+                  </label>
+                </div>
+
+                {formData.specialNeeds && (
+                  <div>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Special Needs Details</label>
+                    <SmartTextArea
+                      value={formData.specialNeedsDetails}
+                      onChange={(val) => handleInputChange('specialNeedsDetails', val)}
+                      rows={2}
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                      placeholder="Describe specific accommodations or modifications needed"
+                    />
+                  </div>
+                )}
+
+                {/* Additional Instructions */}
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">Additional Instructions</label>
+                  <SmartTextArea
+                    value={formData.additionalInstructions}
+                    onChange={(val) => handleInputChange('additionalInstructions', val)}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                    placeholder="Any additional context or specific requirements for this quiz"
+                  />
+                </div>
               </div>
             </div>
 

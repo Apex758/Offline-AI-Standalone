@@ -1625,5 +1625,131 @@
         "description": "Este es su espacio de trabajo principal donde aparecera su herramienta activa o vista dividida. Esta listo para crear increibles recursos de ensenanza!"
       }
     }
+  },
+  "classConfig": {
+    "panel": {
+      "sections": {
+        "curriculum": "Plan de estudios",
+        "curriculumDesc": "Materia y resultados de aprendizaje de esta clase",
+        "composition": "Composicion del grupo",
+        "learnerProfile": "Perfil del grupo",
+        "learnerProfileDesc": "Como aprende mejor esta clase",
+        "specialNeeds": "Necesidades especiales y adaptaciones",
+        "specialNeedsDesc": "Aplicado a cada generacion para esta clase",
+        "readingLanguage": "Lectura e idioma",
+        "assessmentPrefs": "Preferencias de evaluacion",
+        "assessmentPrefsDesc": "Usado por el Generador de pruebas y Rubricas",
+        "materials": "Materiales y recursos",
+        "pacing": "Ritmo y configuracion general"
+      },
+      "fields": {
+        "subject": "Materia",
+        "strand": "Area del plan de estudios",
+        "essentialOutcomes": "Resultados esenciales",
+        "specificOutcomes": "Resultados especificos",
+        "studentCount": "Numero esperado de alumnos",
+        "studentsWithDisabilities": "Alumnos con discapacidades / IEP",
+        "learningStyles": "Estilos de aprendizaje",
+        "learningPreferences": "Preferencias de aprendizaje",
+        "multipleIntelligences": "Inteligencias multiples",
+        "pedagogicalStrategies": "Estrategias pedagogicas",
+        "teacherNotes": "Notas del maestro sobre el enfoque de aprendizaje",
+        "hasSpecialNeeds": "La clase incluye alumnos con necesidades especiales",
+        "accommodationDetails": "Detalles de las adaptaciones",
+        "culturallyResponsive": "Notas sobre ensenanza culturalmente receptiva",
+        "ellStudents": "Alumnos ELL / ESL presentes",
+        "advancedLearners": "Alumnos avanzados / superdotados presentes",
+        "ellPercentage": "Porcentaje de alumnos ELL (%)",
+        "behaviorSupport": "Enfoque de apoyo conductual",
+        "readingLevel": "Nivel de lectura",
+        "primaryLanguage": "Idioma principal de instruccion",
+        "bilingualProgram": "Programa bilingue",
+        "assessmentFormat": "Formato de evaluacion preferido",
+        "performanceLevels": "Niveles de desempeno (rubricas)",
+        "questionTypes": "Tipos de preguntas predeterminados (pruebas)",
+        "cognitiveLevels": "Niveles cognitivos predeterminados (Bloom)",
+        "gradingFocus": "Areas de enfoque para rubricas",
+        "includePointValues": "Incluir valores en puntos en las rubricas",
+        "timePerQuestion": "Tiempo predeterminado por pregunta (seg)",
+        "availableMaterials": "Materiales disponibles / recursos del aula",
+        "prerequisiteSkills": "Conocimientos previos del grupo",
+        "classDuration": "Duracion del periodo de clase",
+        "additionalInstructions": "Instrucciones adicionales / politicas de la clase"
+      },
+      "placeholders": {
+        "subject": "Ej., Matematicas, Lengua",
+        "strand": "Ej., Operaciones numericas, Comprension lectora",
+        "accommodationDetails": "Ej., 2 alumnos con dislexia — necesitan fuentes grandes y texto decodificable",
+        "primaryLanguage": "Ej., Espanol",
+        "bilingualProgram": "Ej., Transicional, Inmersion bidireccional",
+        "availableMaterials": "Ej., Chromebooks 1:1, manipulativos, pizarra interactiva",
+        "additionalInstructions": "Ej., Sin calculadoras; enfatizar mostrar el proceso"
+      },
+      "buttons": {
+        "save": "Guardar configuracion de clase",
+        "saving": "Guardando...",
+        "export": "Exportar JSON",
+        "import": "Importar JSON",
+        "saved": "Guardado"
+      },
+      "messages": {
+        "loading": "Cargando configuracion de clase...",
+        "applyPolicy": "Estos ajustes se aplican a todos los generadores (Planificador, Prueba, Hoja de trabajo, Rubrica) para esta clase. Configurelos una vez aqui para no tener que repetirlos en cada generacion.",
+        "importedFrom": "Configuracion de clase cargada desde {{source}}. Revise los campos y luego haga clic en Guardar configuracion de clase.",
+        "importedGeneric": "Configuracion de clase cargada. Revise los campos y luego haga clic en Guardar configuracion de clase."
+      }
+    },
+    "newClass": {
+      "title": "Crear nueva clase",
+      "className": "Nombre de la clase",
+      "classNameRequired": "Nombre de la clase *",
+      "gradeLevel": "Nivel de grado",
+      "academicYear": "Ano academico",
+      "description": "Descripcion",
+      "create": "Crear clase",
+      "creating": "Creando...",
+      "placeholderName": "Ej., 3A, Salon Azul",
+      "placeholderYear": "Ej., 2025-2026",
+      "placeholderDesc": "Notas opcionales sobre esta clase",
+      "selectGrade": "-- Seleccionar grado --"
+    },
+    "rename": {
+      "title": "Cambiar nombre de la clase",
+      "warning": "El cambio de nombre se aplica a todos los alumnos y configuraciones de nivel de clase. Los datos existentes siguen a la clase.",
+      "className": "Nombre de la clase",
+      "gradeLevel": "Nivel de grado",
+      "academicYear": "Ano academico",
+      "description": "Descripcion",
+      "save": "Guardar nuevo nombre",
+      "saving": "Guardando...",
+      "selectGrade": "-- Seleccionar grado --"
+    },
+    "deleteClass": {
+      "title": "Eliminar clase?",
+      "body": "Esto eliminara permanentemente la Clase {{className}}{{grade}} y su configuracion. Los registros de los alumnos se conservan pero se desasignaran de esta clase.",
+      "studentWarning_one": "{{count}} alumno sera desasignado.",
+      "studentWarning_other": "{{count}} alumnos seran desasignados.",
+      "confirm": "Eliminar clase",
+      "deleting": "Eliminando..."
+    },
+    "sidebar": {
+      "newClass": "Clase",
+      "newClassTitle": "Nueva clase"
+    },
+    "classView": {
+      "rename": "Cambiar nombre",
+      "renameTitle": "Cambiar nombre de esta clase",
+      "delete": "Eliminar clase",
+      "deleteTitle": "Eliminar esta clase"
+    },
+    "studentForm": {
+      "individualAccommodations": "Adaptaciones individuales",
+      "accommodations": "Adaptaciones",
+      "accommodationsHelp": "Aplicado a cada generacion que involucre a este alumno",
+      "accommodationsPlaceholder": "Ej., tiempo extra en examenes; fuentes mas grandes; ubicacion preferencial",
+      "iepNotes": "Notas IEP / perfil de aprendizaje",
+      "iepNotesHelp": "Necesidades o metas de aprendizaje especificas para contenido generado por IA",
+      "iepNotesPlaceholder": "Ej., dislexia - prefiere texto decodificable; aprendiz visual; trabajando en conciencia fonemica"
+    }
   }
 }
