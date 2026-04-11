@@ -354,6 +354,311 @@ async def export_to_pdf_async(data, title: str = "Export") -> bytes:
     return await asyncio.get_running_loop().run_in_executor(None, lambda: export_to_pdf(data, title))
 
 
+# ---------------------------------------------------------------------------
+# Lesson-plan DOCX builder (Phase 2 of WYSIWYG lock-in)
+#
+# Mirrors frontend/src/utils/lessonExportSpec.ts. Keep these constants in sync
+# if the frontend spec changes. The page margin and table column widths are
+# also embedded in the generated HTML (@page rule + <colgroup>), so the PDF
+# pipeline (WeasyPrint) and the DOCX pipeline produce matching output.
+# ---------------------------------------------------------------------------
+LESSON_PAGE_MARGIN_MM = 10.0
+LESSON_BODY_PT = 11
+LESSON_SMALL_PT = 9
+LESSON_MICRO_PT = 8
+LESSON_H1_PT = 18
+
+
+def _set_cell_shading(cell, hex_color: str) -> None:
+    """Apply solid background shading to a python-docx table cell."""
+    tcPr = cell._tc.get_or_add_tcPr()
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:val'), 'clear')
+    shd.set(qn('w:color'), 'auto')
+    shd.set(qn('w:fill'), hex_color.lstrip('#').upper())
+    tcPr.append(shd)
+
+
+def _extract_bg_hex(style: str):
+    """Pull a background colour out of an inline style attribute.
+
+    Accepts #RRGGBB and #RRGGBBAA (alpha is dropped because Word shading is
+    opaque). Returns None if no usable colour is found.
+    """
+    if not style:
+        return None
+    m = re.search(r'background\s*:\s*([^;]+)', style)
+    if not m:
+        return None
+    val = m.group(1).strip()
+    h = re.match(r'#([0-9a-fA-F]{6})(?:[0-9a-fA-F]{2})?', val)
+    if h:
+        return h.group(1)
+    return None
+
+
+def _parse_colgroup_widths(table_tag) -> list:
+    """Read explicit percentage widths from a <colgroup>/<col> block."""
+    cg = table_tag.find('colgroup')
+    if not cg:
+        return []
+    widths = []
+    for col in cg.find_all('col'):
+        s = col.get('style', '') or ''
+        m = re.search(r'width\s*:\s*([\d.]+)%', s)
+        if m:
+            widths.append(float(m.group(1)))
+    return widths
+
+
+def _render_cell_content(cell, source_tag, default_pt: int,
+                         body_color: tuple, accent: tuple) -> None:
+    """Walk a BeautifulSoup cell and emit paragraphs into a docx cell.
+
+    Strips the empty paragraph that python-docx auto-creates so the cell
+    starts clean. Recognises:
+      - <ul>/<li>            -> bulleted lines (ASCII '-' bullet)
+      - small bold <div>     -> uppercase label rendered in accent colour
+      - italic <div>         -> italic line
+      - plain text/divs      -> body paragraphs
+    """
+    # Drop the default empty paragraph
+    if cell.paragraphs and not cell.paragraphs[0].runs:
+        p0 = cell.paragraphs[0]._element
+        p0.getparent().remove(p0)
+
+    def add_paragraph(text, bold=False, italic=False, size_pt=default_pt,
+                      color=body_color, bullet=False):
+        text = (text or '').strip()
+        if not text:
+            return
+        p = cell.add_paragraph()
+        p.paragraph_format.space_after = Pt(2)
+        if bullet:
+            lead = p.add_run('-  ')
+            lead.font.size = Pt(size_pt)
+            lead.font.color.rgb = RGBColor(*color)
+        run = p.add_run(text)
+        run.font.size = Pt(size_pt)
+        run.font.bold = bold
+        run.font.italic = italic
+        run.font.color.rgb = RGBColor(*color)
+
+    def style_flags(style: str):
+        small = 'font-size:10px' in style or 'font-size:11px' in style
+        is_label = ('font-weight:700' in style and 'text-transform:uppercase' in style)
+        is_bold = 'font-weight:700' in style or 'font-weight:600' in style
+        is_italic = 'font-style:italic' in style
+        return small, is_label, is_bold, is_italic
+
+    def walk(node):
+        for child in node.children:
+            name = getattr(child, 'name', None)
+            # NavigableString (raw text)
+            if name is None:
+                text = str(child).strip()
+                if text:
+                    add_paragraph(text)
+                continue
+            if name == 'br':
+                continue
+            if name == 'ul':
+                for li in child.find_all('li', recursive=False):
+                    add_paragraph(li.get_text(' ', strip=True), bullet=True)
+                continue
+            if name == 'span':
+                text = child.get_text(' ', strip=True)
+                if text:
+                    add_paragraph(text)
+                continue
+            if name == 'div':
+                style = child.get('style', '') or ''
+                small, is_label, is_bold, is_italic = style_flags(style)
+                has_block_kids = any(
+                    getattr(c, 'name', None) in ('ul', 'div')
+                    for c in child.children
+                )
+                if has_block_kids:
+                    # Emit any direct (non-block) text first, then recurse.
+                    direct_text = ' '.join(
+                        str(c).strip() for c in child.children
+                        if getattr(c, 'name', None) not in ('ul', 'div') and str(c).strip()
+                    )
+                    if direct_text:
+                        snippet = BeautifulSoup(direct_text, 'html.parser').get_text(' ', strip=True)
+                        if snippet:
+                            add_paragraph(
+                                snippet,
+                                bold=is_bold,
+                                italic=is_italic,
+                                size_pt=LESSON_SMALL_PT if small else default_pt,
+                                color=accent if is_label else body_color,
+                            )
+                    walk(child)
+                else:
+                    text = child.get_text(' ', strip=True)
+                    add_paragraph(
+                        text,
+                        bold=is_bold,
+                        italic=is_italic,
+                        size_pt=LESSON_SMALL_PT if small else default_pt,
+                        color=accent if is_label else body_color,
+                    )
+                continue
+            # Fallback: any other tag, take its text
+            text = child.get_text(' ', strip=True) if hasattr(child, 'get_text') else str(child)
+            if text:
+                add_paragraph(text)
+
+    walk(source_tag)
+
+    # Guarantee the cell has at least one paragraph (Word requires it)
+    if not cell.paragraphs:
+        cell.add_paragraph()
+
+
+def _build_one_lesson_table(table_tag, doc, accent, body_color, usable_in: float) -> None:
+    """Convert one <table> in the lesson HTML into a real Word table.
+
+    Honours <colgroup> percentage widths and rowspan/colspan via cell merging.
+    """
+    pct_widths = _parse_colgroup_widths(table_tag)
+    if not pct_widths:
+        first_row = table_tag.find('tr')
+        ncols = (
+            sum(int(c.get('colspan', 1)) for c in first_row.find_all(['td', 'th']))
+            if first_row else 1
+        )
+        pct_widths = [100.0 / ncols] * ncols
+    ncols = len(pct_widths)
+
+    rows = []
+    thead = table_tag.find('thead')
+    if thead:
+        rows.extend(thead.find_all('tr'))
+    tbody = table_tag.find('tbody')
+    if tbody:
+        rows.extend(tbody.find_all('tr'))
+    if not rows:
+        rows = table_tag.find_all('tr')
+    if not rows:
+        return
+
+    table = doc.add_table(rows=len(rows), cols=ncols)
+    table.autofit = False
+    table.allow_autofit = False
+    add_table_borders(table)
+
+    # Lock per-column widths from the colgroup
+    for i, pct in enumerate(pct_widths):
+        col_in = usable_in * (pct / 100.0)
+        table.columns[i].width = Inches(col_in)
+        for row in table.rows:
+            row.cells[i].width = Inches(col_in)
+
+    for r_idx, tr in enumerate(rows):
+        col_idx = 0
+        for src_cell in tr.find_all(['td', 'th'], recursive=False):
+            if col_idx >= ncols:
+                break
+            colspan = int(src_cell.get('colspan', 1))
+            target = table.cell(r_idx, col_idx)
+            if colspan > 1:
+                end = min(col_idx + colspan - 1, ncols - 1)
+                target = target.merge(table.cell(r_idx, end))
+
+            style = src_cell.get('style', '') or ''
+            bg = _extract_bg_hex(style)
+            if bg:
+                _set_cell_shading(target, bg)
+
+            _render_cell_content(target, src_cell, LESSON_BODY_PT, body_color, accent)
+
+            # Header cells / explicitly bold cells: force bold on every run
+            is_header = (
+                src_cell.name == 'th'
+                or 'font-weight:700' in style
+                or 'font-weight:600' in style
+            )
+            if is_header:
+                for p in target.paragraphs:
+                    for r in p.runs:
+                        r.font.bold = True
+
+            col_idx += colspan
+
+
+def _build_lesson_plan_docx(root_div, doc, rgb: tuple) -> None:
+    """Top-level builder for the lesson-plan DOCX export.
+
+    Sets narrow page margins (matching the PDF @page rule), renders the title,
+    then walks each <table> child of the lesson root and rebuilds it as a real
+    Word table with locked column widths.
+    """
+    section = doc.sections[0]
+    margin_cm = LESSON_PAGE_MARGIN_MM / 10.0
+    section.top_margin = Cm(margin_cm)
+    section.bottom_margin = Cm(margin_cm)
+    section.left_margin = Cm(margin_cm)
+    section.right_margin = Cm(margin_cm)
+
+    body_color = (34, 34, 34)
+    accent = rgb
+
+    # A4 width (21cm) minus left+right margins, in inches
+    usable_cm = 21.0 - 2 * margin_cm
+    usable_in = usable_cm / 2.54
+
+    h1 = root_div.find('h1')
+    if h1:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(6)
+        run = p.add_run(h1.get_text(strip=True))
+        run.font.size = Pt(LESSON_H1_PT)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(*accent)
+
+    # Walk children in document order so tables and post-table notes interleave
+    for child in root_div.find_all(recursive=False):
+        if child.name == 'table':
+            _build_one_lesson_table(child, doc, accent, body_color, usable_in)
+            doc.add_paragraph()  # spacer between tables
+        elif child.name == 'div':
+            # Curriculum references / footer-style blocks: render as flat text
+            text = child.get_text(' ', strip=True)
+            if text:
+                p = doc.add_paragraph(text)
+                for r in p.runs:
+                    r.font.size = Pt(LESSON_SMALL_PT)
+                    r.font.color.rgb = RGBColor(*body_color)
+        elif child.name == 'h1':
+            continue  # already handled
+
+
+def _attach_export_footer(doc, form_data: dict, rgb: tuple) -> None:
+    """Shared footer (generated-on text + OECS logo) for all DOCX exports."""
+    import os
+    footer = doc.sections[0].footer
+    footer_p = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
+    footer_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+    text_run = footer_p.add_run(f"Generated on {form_data.get('date', 'N/A')}")
+    text_run.font.size = Pt(9)
+    text_run.font.color.rgb = RGBColor(156, 163, 175)
+
+    logo_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build', 'OECS.png'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'public', 'OECS.png'),
+    ]
+    for logo_path in logo_paths:
+        if os.path.isfile(logo_path):
+            footer_p.add_run("    ")
+            logo_run = footer_p.add_run()
+            logo_run.add_picture(logo_path, height=Pt(30))
+            break
+
+
 def export_to_docx_from_html(html: str, accent_color: str, form_data: dict) -> bytes:
     """
     Convert HTML to DOCX while preserving formatting.
@@ -362,6 +667,16 @@ def export_to_docx_from_html(html: str, accent_color: str, form_data: dict) -> b
     doc = Document()
     soup = BeautifulSoup(html, 'html.parser')
     rgb = hex_to_rgb(accent_color)
+
+    # NEW: lesson-plan exports use a dedicated table-preserving builder so the
+    # DOCX honours the same locked column widths and font sizes as the PDF.
+    lesson_root = soup.find('div', id='lesson-plan-html-export')
+    if lesson_root is not None:
+        _build_lesson_plan_docx(lesson_root, doc, rgb)
+        _attach_export_footer(doc, form_data, rgb)
+        buf = io.BytesIO()
+        doc.save(buf)
+        return buf.getvalue()
     
     # Parse header section (gradient banner)
     # Find the header div by looking for the subject badge

@@ -27,7 +27,10 @@ try:
 except Exception:
     pass
 
-from cpu_info import optimal_thread_count as _optimal_thread_count
+from cpu_info import (
+    optimal_thread_count as _optimal_thread_count,
+    optimal_batch_thread_count as _optimal_batch_thread_count,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -336,43 +339,133 @@ class LlamaInference:
                     chat_handler = None
 
             n_threads = _optimal_thread_count()
+            # Token gen uses P-cores only on hybrid chips; prefill uses all
+            # physical cores because prompt eval is throughput-bound and
+            # E-cores contribute without hurting per-token latency.
+            n_threads_batch = _optimal_batch_thread_count()
             # use_mlock pins the model in RAM to prevent Windows/Linux from
             # paging it to disk under memory pressure. Only enable when the
             # OS has enough free memory to hold the model; otherwise the
             # allocation fails and we fall back to mmap-only.
             _want_mlock = _should_use_mlock(model_path)
+            _n_batch = self.gpu_info["n_batch"]
             with SilenceOutput():
                 _llama_kwargs = dict(
                     model_path=model_path,
                     n_ctx=n_ctx,
                     verbose=False,
                     n_threads=n_threads,
-                    n_batch=self.gpu_info["n_batch"],
+                    n_threads_batch=n_threads_batch,
+                    n_batch=_n_batch,
+                    # n_ubatch equal to n_batch removes an internal prefill
+                    # micro-batch split, improving SIMD utilization on CPU.
+                    n_ubatch=_n_batch,
                     n_gpu_layers=self.gpu_info["n_gpu_layers"],
                     use_mmap=True,
                     use_mlock=_want_mlock,
+                    # Flash Attention cuts attention memory bandwidth ~30%;
+                    # works on any AVX2 x86-64 CPU (2013+). Required for
+                    # quantized V-cache (type_v="q8_0") in current llama.cpp.
+                    flash_attn=True,
+                    # q8_0 KV cache halves KV memory with negligible quality
+                    # loss (<0.1 perplexity delta; grammar-constrained output
+                    # filters any marginal logit wobble anyway). Meaningful
+                    # RAM relief on 8GB distribution targets.
+                    type_k="q8_0",
+                    type_v="q8_0",
                 )
                 if chat_handler is not None:
                     _llama_kwargs["chat_handler"] = chat_handler
+
+                def _try_load(kwargs):
+                    return Llama(**kwargs)
+
+                # Layered fallback: each new kwarg below may be unsupported
+                # on an older llama-cpp-python version shipped to a distro
+                # target. If loading fails with a kwarg-related error, drop
+                # the most recent additions and retry — model still loads,
+                # just without that specific optimization.
+                _OPTIONAL_KWARGS = (
+                    "type_k", "type_v",      # q8_0 KV cache
+                    "flash_attn",            # flash attention
+                    "n_ubatch",              # prefill micro-batch
+                    "n_threads_batch",       # split thread pools
+                )
                 try:
-                    self.model = Llama(**_llama_kwargs)
-                except Exception as _mlock_err:
-                    # If mlock allocation fails (rare — happens on low-RAM
-                    # systems), retry without it so the model still loads.
-                    if _want_mlock and "mlock" in str(_mlock_err).lower():
+                    self.model = _try_load(_llama_kwargs)
+                except TypeError as _kw_err:
+                    # llama-cpp-python raises TypeError on unknown kwargs.
+                    msg = str(_kw_err)
+                    dropped = []
+                    _retry = dict(_llama_kwargs)
+                    for _k in _OPTIONAL_KWARGS:
+                        if _k in msg or _k in _retry:
+                            _retry.pop(_k, None)
+                            dropped.append(_k)
+                    if dropped:
                         logger.warning(
-                            "[llama] use_mlock=True failed (%s); retrying with use_mlock=False",
-                            _mlock_err,
+                            "[llama] kwargs unsupported (%s); retrying without: %s",
+                            _kw_err, ", ".join(dropped),
                         )
-                        _llama_kwargs["use_mlock"] = False
-                        self.model = Llama(**_llama_kwargs)
+                        try:
+                            self.model = _try_load(_retry)
+                        except Exception as _mlock_err:
+                            if _want_mlock and "mlock" in str(_mlock_err).lower():
+                                logger.warning(
+                                    "[llama] use_mlock=True failed (%s); retrying with use_mlock=False",
+                                    _mlock_err,
+                                )
+                                _retry["use_mlock"] = False
+                                self.model = _try_load(_retry)
+                            else:
+                                raise
                     else:
                         raise
+                except Exception as _load_err:
+                    # Non-TypeError load failure — most commonly mlock on a
+                    # low-RAM machine. Retry without mlock, keeping the rest
+                    # of the optimizations.
+                    if _want_mlock and "mlock" in str(_load_err).lower():
+                        logger.warning(
+                            "[llama] use_mlock=True failed (%s); retrying with use_mlock=False",
+                            _load_err,
+                        )
+                        _llama_kwargs["use_mlock"] = False
+                        try:
+                            self.model = _try_load(_llama_kwargs)
+                        except TypeError as _kw_err2:
+                            # Optimizations unsupported on this version too.
+                            _retry = dict(_llama_kwargs)
+                            for _k in _OPTIONAL_KWARGS:
+                                _retry.pop(_k, None)
+                            logger.warning(
+                                "[llama] retrying without optimization kwargs: %s",
+                                _kw_err2,
+                            )
+                            self.model = _try_load(_retry)
+                    else:
+                        # Could be q8_0 KV not supported without flash_attn on
+                        # a patched-out build, or flash_attn unavailable on a
+                        # pre-AVX2 CPU. Progressive drop of optional kwargs.
+                        _retry = dict(_llama_kwargs)
+                        dropped_any = False
+                        for _k in _OPTIONAL_KWARGS:
+                            if _k in _retry:
+                                _retry.pop(_k)
+                                dropped_any = True
+                        if dropped_any:
+                            logger.warning(
+                                "[llama] load failed (%s); retrying without optional optimizations",
+                                _load_err,
+                            )
+                            self.model = _try_load(_retry)
+                        else:
+                            raise
             self.n_ctx = n_ctx
             self.is_loaded = True
             gpu_status = f"GPU: {self.gpu_info['gpu_name']}" if self.gpu_info["gpu_name"] else "CPU-only"
             vision_status = " + Vision" if self.has_vision else ""
-            logger.info(f"✅ Local model loaded ({gpu_status}{vision_status}, threads={n_threads}): {model_path}")
+            logger.info(f"✅ Local model loaded ({gpu_status}{vision_status}, gen_threads={n_threads}, batch_threads={n_threads_batch}): {model_path}")
         except Exception as e:
             logger.error(f"❌ Failed to load model: {e}")
             raise

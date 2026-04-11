@@ -2005,7 +2005,15 @@ async def websocket_lesson_plan(websocket: WebSocket):
 
                 # ✅ FIX: Use inference factory instead of process pool
                 from inference_factory import get_inference_instance, resolve_inference_for_task
-                inference = resolve_inference_for_task("lesson-plan") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+                # Always route lesson plans through the singleton, regardless
+                # of generation_mode. llama-cpp-python auto-reuses the KV
+                # cache via longest-prefix matching between sequential calls
+                # on the same instance — which saves ~1500-2000 tokens of
+                # redundant system-prompt prefill on every 2nd+ generation.
+                # Creating a fresh instance (the "simultaneous" path) throws
+                # that cache away. For single-user desktop usage, sequential
+                # cache reuse is always the bigger win than parallel isolation.
+                inference = resolve_inference_for_task("lesson-plan")
 
                 # Load OHPC JSON schema for grammar-constrained structured output.
                 # Skip on tier-1 (small) models: grammar constraints are too
@@ -2032,15 +2040,17 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 # Stream tokens in real-time
                 _token_buf = ""
                 _last_flush = time.monotonic()
-                # max_tokens is a ceiling, not a target -- does NOT slow
-                # generation; only affects memory reservation and the worst-
-                # case truncation point. 8000 is a safety margin for fully
-                # populated OHPC JSON on verbose models.
+                # max_tokens is a ceiling, not a target -- it does NOT slow
+                # generation, only bounds memory reservation and truncation.
+                # A typical completed OHPC plan is 2-3k tokens; 6144 gives
+                # comfortable headroom for verbose models while cutting KV
+                # preallocation vs the old 8000, which matters on 8GB
+                # distribution targets.
                 async for chunk in inference.generate_stream(
                     tool_name="lesson_plan",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=_t1_params.get("max_tokens", 8000) if _is_tier1 else 8000,
+                    max_tokens=_t1_params.get("max_tokens", 6144) if _is_tier1 else 6144,
                     temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7,
                     repeat_penalty=_t1_params.get("repeat_penalty", 1.1) if _is_tier1 else 1.1,
                     cancel_event=cancel_event,
@@ -3013,7 +3023,14 @@ async def presentation_websocket(websocket: WebSocket):
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
 
                 from inference_factory import get_inference_instance, resolve_inference_for_task
-                inference = resolve_inference_for_task("presentation") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+                # Always route through the singleton regardless of
+                # generation_mode. llama-cpp-python auto-reuses the KV cache
+                # via longest-prefix matching between sequential calls on
+                # the same instance — the system prompt (same every time)
+                # gets prefilled once and reused on every subsequent
+                # generation, saving hundreds of ms. Creating a fresh
+                # instance per call throws that cache away.
+                inference = resolve_inference_for_task("presentation")
 
                 # Structured output: enforce JSON schema for slide generation
                 from schemas.presentation_schema import PRESENTATION_JSON_SCHEMA
@@ -3196,7 +3213,12 @@ async def storybook_websocket(websocket: WebSocket):
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
 
                 from inference_factory import get_inference_instance, resolve_inference_for_task
-                inference = resolve_inference_for_task("storybook") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+                # Always route through the singleton for KV prefix reuse
+                # across sequential generations. Storybook especially
+                # benefits in two-pass mode where the Pass 2 (JSON) system
+                # prompt is identical every call — that prefill is now free
+                # on the 2nd+ story in the same session.
+                inference = resolve_inference_for_task("storybook")
 
                 if two_pass and narrative_prompt and structure_prompt_template:
                     # ── Two-pass generation ──────────────────────────────────

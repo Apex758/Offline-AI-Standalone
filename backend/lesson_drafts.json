@@ -52,28 +52,6 @@
     "curriculumMatches": []
   },
   {
-    "id": "draft_rubric-generator-1775933292161_1775933343425",
-    "title": "Matheyh - 1",
-    "timestamp": "2026-04-11T18:49:03.425Z",
-    "plannerType": "rubric",
-    "formData": {
-      "assignmentTitle": "",
-      "assignmentType": "",
-      "subject": "Matheyh",
-      "gradeLevel": "1",
-      "strand": "",
-      "essentialOutcomes": "",
-      "specificOutcomes": "",
-      "learningObjectives": "",
-      "specificRequirements": "",
-      "performanceLevels": "4",
-      "includePointValues": false,
-      "focusAreas": []
-    },
-    "step": 1,
-    "curriculumMatches": []
-  },
-  {
     "id": "draft_quiz-generator-1775933292694_1775933343429",
     "title": "Science - 2",
     "timestamp": "2026-04-11T18:49:03.429Z",

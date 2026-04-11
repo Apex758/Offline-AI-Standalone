@@ -100,8 +100,49 @@ ipex_optimize = optimize_model
 # Shared thread-count helper (used by llama_inference + ocr_service)
 # ---------------------------------------------------------------------------
 
-# Cache the detected value so we don't pay the Windows API cost on every call.
+# Cache the detected values so we don't pay the Windows API cost on every call.
 _cached_thread_count: Optional[int] = None
+_cached_batch_thread_count: Optional[int] = None
+
+
+def optimal_batch_thread_count() -> int:
+    """Return optimal thread count for llama.cpp PROMPT EVALUATION (prefill).
+
+    This is distinct from `optimal_thread_count()` which governs token
+    generation. Key asymmetry:
+
+      - Token generation is latency-bound per token; on Intel hybrid chips
+        (P+E cores), E-core "stragglers" slow every forward pass because
+        each layer waits for the slowest thread. So we cap at P-core count.
+
+      - Prompt evaluation is throughput-bound: one large matmul per layer,
+        where E-cores contribute useful work without hurting per-token
+        latency. So prefill benefits from using ALL physical cores (P+E).
+
+    Result: on a 4P+8E hybrid (e.g. i7-1260P), token gen uses 4 threads but
+    prefill should use ~11 (physical - 1 = 12 - 1). This can cut prompt-
+    evaluation time meaningfully on hybrid chips while leaving token gen
+    untouched.
+
+    On homogeneous CPUs this returns the same value as `optimal_thread_count()`.
+    """
+    global _cached_batch_thread_count
+    if _cached_batch_thread_count is not None:
+        return _cached_batch_thread_count
+
+    try:
+        import psutil
+        physical = psutil.cpu_count(logical=False) or os.cpu_count() or 4
+    except Exception:
+        physical = os.cpu_count() or 4
+
+    batch_threads = max(2, (physical or 4) - 1)
+    _cached_batch_thread_count = batch_threads
+    logger.info(
+        "[cpu_info] optimal_batch_thread_count=%d (physical-1, used for prompt eval)",
+        batch_threads,
+    )
+    return batch_threads
 
 
 def optimal_thread_count() -> int:
