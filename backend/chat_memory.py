@@ -29,6 +29,32 @@ def _estimate_tokens(text: str) -> int:
     return max(1, int(len(text) / 3.5))
 
 
+def _try_parse_summary_json(raw: str) -> Optional[Dict]:
+    """Parse the expanded summary JSON. Tolerates code fences and leading prose."""
+    if not raw:
+        return None
+    text = raw.strip()
+    # Strip ``` fences if present
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.lower().startswith("json"):
+            text = text[4:]
+        text = text.strip()
+    # Find the first '{' and last '}' to recover from leading/trailing prose
+    start = text.find("{")
+    end = text.rfind("}")
+    if start == -1 or end == -1 or end < start:
+        return None
+    candidate = text[start:end + 1]
+    try:
+        parsed = json.loads(candidate)
+    except (json.JSONDecodeError, ValueError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    return parsed
+
+
 def _get_db_path() -> Path:
     """Get the SQLite database path in the app data directory."""
     import os
@@ -289,10 +315,21 @@ class ChatMemory:
 
         return "\n".join(lines)
 
-    async def maybe_update_summary(self, chat_id: str, prompt_format: str = "llama"):
+    async def maybe_update_summary(
+        self,
+        chat_id: str,
+        prompt_format: str = "llama",
+        teacher_id: Optional[str] = None,
+        memory_enabled: bool = True,
+    ):
         """
         Check if summary needs updating and regenerate if so.
         Called as a fire-and-forget background task after assistant responds.
+
+        When `memory_enabled` is True (Feature 6), the same LLM call also
+        extracts key facts about the teacher and saves them to the long-term
+        memory store. When False, falls back to summary-only mode (privacy
+        kill-switch).
         """
         if not self.needs_summary_update(chat_id):
             return
@@ -317,12 +354,50 @@ class ChatMemory:
             else:
                 summary_instruction = ""
 
-            system_text = (
-                "You are a conversation summarizer. Write a concise 2-4 sentence summary.\n"
-                "Capture: (1) decisions made, (2) specific advice given, (3) action items mentioned.\n"
-                "Drop pleasantries and filler. Write in third person. Return ONLY the summary."
-            )
-            user_text = summary_instruction + f"Conversation:\n{conversation_text[:3000]}\n\nWrite a concise summary:"
+            # Feature 6: load top-10 existing memories for contradiction detection
+            existing_memories = []
+            if memory_enabled and teacher_id:
+                try:
+                    from teacher_memory import get_teacher_memory
+                    existing_memories = get_teacher_memory().get_recent_facts(teacher_id, n=10)
+                except Exception as e:
+                    logger.warning(f"Could not load existing memories: {e}")
+
+            if memory_enabled:
+                # Expanded prompt: summary + fact extraction + contradiction check
+                if existing_memories:
+                    mem_lines = "\n".join(
+                        f"  [{m['id']}] {m['fact']}" for m in existing_memories
+                    )
+                else:
+                    mem_lines = "  (none yet)"
+
+                system_text = (
+                    "You are a conversation analyzer for a teacher coaching app. Do THREE things:\n"
+                    "1. Write a concise 2-4 sentence SUMMARY of this conversation (decisions made, "
+                    "advice given, action items). Third person, no filler.\n"
+                    "2. Extract 1-3 KEY FACTS about the teacher that would be useful to remember "
+                    "for future conversations (preferences, struggles, teaching style, classroom "
+                    "context). Only specific, actionable facts. If nothing notable, return [].\n"
+                    "3. Check if any new facts CONTRADICT or UPDATE an existing memory listed below. "
+                    "If so, mark the old memory's id for replacement. If nothing contradicts, return [].\n\n"
+                    "Output STRICT JSON only, no prose, no markdown fences:\n"
+                    '{"summary": "...", "new_facts": ["fact 1"], '
+                    '"replace": [{"old_id": "...", "new_fact": "..."}]}'
+                )
+                user_text = (
+                    summary_instruction
+                    + f"EXISTING MEMORIES:\n{mem_lines}\n\n"
+                    + f"CONVERSATION:\n{conversation_text[:3000]}\n\n"
+                    + "Return the JSON now:"
+                )
+            else:
+                system_text = (
+                    "You are a conversation summarizer. Write a concise 2-4 sentence summary.\n"
+                    "Capture: (1) decisions made, (2) specific advice given, (3) action items mentioned.\n"
+                    "Drop pleasantries and filler. Write in third person. Return ONLY the summary."
+                )
+                user_text = summary_instruction + f"Conversation:\n{conversation_text[:3000]}\n\nWrite a concise summary:"
 
             # Build format-aware prompt
             fmt = (prompt_format or "llama").lower()
@@ -344,19 +419,55 @@ class ChatMemory:
                     "<|start_header_id|>assistant<|end_header_id|>\n\n"
                 )
 
+            # Memory mode needs more tokens to fit the JSON structure
             result = await inference.generate(
                 tool_name="conversation_summary",
                 input_data="summarize",
                 prompt_template=prompt,
-                max_tokens=200,
+                max_tokens=400 if memory_enabled else 200,
                 temperature=0.3,
             )
 
             if result["metadata"]["status"] == "success" and result.get("result"):
-                summary = result["result"].strip()
-                if len(summary) > 10:  # Sanity check
-                    self._save_summary(chat_id, summary, current_count)
+                raw = result["result"].strip()
+                summary_text = ""
+                new_facts: List[str] = []
+                replacements: List[Dict] = []
+
+                if memory_enabled:
+                    # Try to parse JSON; on failure fall back to raw as summary
+                    parsed = _try_parse_summary_json(raw)
+                    if parsed is not None:
+                        summary_text = (parsed.get("summary") or "").strip()
+                        new_facts = [str(x) for x in (parsed.get("new_facts") or []) if x]
+                        replacements = [r for r in (parsed.get("replace") or []) if isinstance(r, dict)]
+                    else:
+                        logger.info(f"Summary JSON parse failed for {chat_id}; using raw text as summary")
+                        summary_text = raw
+                else:
+                    summary_text = raw
+
+                if len(summary_text) > 10:
+                    self._save_summary(chat_id, summary_text, current_count)
                     logger.info(f"Updated summary for chat {chat_id} (at {current_count} messages)")
+
+                # Persist extracted facts (Feature 6)
+                if memory_enabled and teacher_id and (new_facts or replacements):
+                    try:
+                        from teacher_memory import get_teacher_memory
+                        added = get_teacher_memory().save_facts(
+                            teacher_id=teacher_id,
+                            facts=new_facts,
+                            source_chat_id=chat_id,
+                            replacements=replacements,
+                            source='chat',
+                        )
+                        logger.info(
+                            f"[teacher_memory] +{added} facts, "
+                            f"{len(replacements)} replacements for {teacher_id}"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Saving teacher memory facts failed: {e}")
 
         except Exception as e:
             logger.warning(f"Summary generation failed for {chat_id}: {e}")

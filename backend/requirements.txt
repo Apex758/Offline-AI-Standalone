@@ -14,6 +14,9 @@ apscheduler>=3.10.0
 # --- LLMs ---
 llama-cpp-python>=0.2.0
 
+# --- Long-term teacher memory (Feature 6: TF-IDF recall over stored facts) ---
+scikit-learn>=1.3.0
+
 # --- OCR (HunyuanOCR) ---
 torch>=2.1.0
 accelerate>=0.24.0

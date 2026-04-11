@@ -542,6 +542,32 @@ async def delete_chat_history(chat_id: str):
         logger.error(f"Error deleting chat history: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete chat history")
 
+
+# ── Feature 6: Long-term teacher memory (privacy controls) ──────────────────
+
+@app.delete("/api/teacher-memory/all")
+async def delete_teacher_memory_all(teacher_id: str = "default_teacher"):
+    """Privacy kill-switch: wipe every long-term memory for a teacher."""
+    try:
+        from teacher_memory import get_teacher_memory
+        n = get_teacher_memory().delete_all(teacher_id)
+        return {"success": True, "deleted": n, "teacher_id": teacher_id}
+    except Exception as e:
+        logger.error(f"Error wiping teacher memory: {e}")
+        raise HTTPException(status_code=500, detail="Failed to wipe teacher memory")
+
+
+@app.get("/api/teacher-memory/list")
+async def list_teacher_memory(teacher_id: str = "default_teacher"):
+    """List all stored long-term memories for a teacher (debug / future UI)."""
+    try:
+        from teacher_memory import get_teacher_memory
+        facts = get_teacher_memory()._get_all_facts(teacher_id)
+        return {"teacher_id": teacher_id, "count": len(facts), "memories": facts}
+    except Exception as e:
+        logger.error(f"Error listing teacher memory: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list teacher memory")
+
 # ============================================================================
 # Shared Prompt Builder — model-aware formatting
 # ============================================================================
@@ -1030,6 +1056,11 @@ async def websocket_chat(websocket: WebSocket):
             context_files = message_data.get("context_files", None) or message_data.get("contextFiles", None)
             # Configurable coworker name (AI persona name set by user in Settings)
             coworker_name = (message_data.get("coworker_name") or "Coworker").strip() or "Coworker"
+            # Feature 6: long-term teacher memory (privacy kill-switch + per-teacher recall)
+            teacher_id = message_data.get("teacher_id", "default_teacher")
+            memory_enabled = bool(message_data.get("memory_enabled", True))
+            # Feature 6 #5 / Feature 7 hook: feature-context tag (default 'chat')
+            feature_context = message_data.get("feature_context", "chat")
 
             if not user_message:
                 continue
@@ -1047,6 +1078,25 @@ async def websocket_chat(websocket: WebSocket):
             # Use custom system prompt if provided, otherwise use default
             base_system_prompt = custom_system_prompt if custom_system_prompt else default_system_prompt
 
+            # Feature 6: recall long-term teacher memories (before budgeting so the
+            # recalled block size counts against the budget reservation).
+            recall_block = ""
+            if memory_enabled:
+                try:
+                    from teacher_memory import get_teacher_memory
+                    _tm = get_teacher_memory()
+                    _recalled = _tm.recall(
+                        teacher_id=teacher_id,
+                        query=user_message,
+                        feature_context=feature_context,
+                    )
+                    if _recalled:
+                        recall_block = _tm.format_block(_recalled)
+                        print(f"[ws/chat] teacher_memory: recalled {len(_recalled)} fact(s) "
+                              f"for teacher={teacher_id}")
+                except Exception as e:
+                    print(f"[ws/chat] teacher_memory recall failed: {e}")
+
             # Build context from SQLite (Tier 1 sliding window + Tier 2 summary)
             history = []
             summary_block = ""
@@ -1062,7 +1112,12 @@ async def websocket_chat(websocket: WebSocket):
                     from chat_memory import _estimate_tokens as _est_tokens
                     from config import CONTEXT_BUDGET
                     _tier_budget = CONTEXT_BUDGET.get(_tier_info["tier"], 1500)
-                    _reserved = _est_tokens(base_system_prompt) + _est_tokens(user_message)
+                    # Reserve room for system prompt + user message + F6 recall block
+                    _reserved = (
+                        _est_tokens(base_system_prompt)
+                        + _est_tokens(user_message)
+                        + _est_tokens(recall_block)
+                    )
                     summary_block, history = memory.build_context_budgeted(
                         chat_id,
                         token_budget=_tier_budget,
@@ -1077,8 +1132,8 @@ async def websocket_chat(websocket: WebSocket):
                 # Use conversation history sent from the client (for AI assistant panel)
                 history = client_history[-8:]  # Cap at last 8 messages to avoid context overflow
 
-            # Inject summary into system prompt if available
-            system_prompt = base_system_prompt + summary_block
+            # Inject summary + long-term memory recall into system prompt
+            system_prompt = base_system_prompt + summary_block + recall_block
 
             # Inject teacher profile context (grade/subject awareness)
             if profile_context:
@@ -1325,7 +1380,12 @@ async def websocket_chat(websocket: WebSocket):
                         if chat_id:
                             try:
                                 memory = get_chat_memory()
-                                asyncio.create_task(memory.maybe_update_summary(chat_id, prompt_format=prompt_fmt))
+                                asyncio.create_task(memory.maybe_update_summary(
+                                    chat_id,
+                                    prompt_format=prompt_fmt,
+                                    teacher_id=teacher_id,
+                                    memory_enabled=memory_enabled,
+                                ))
                             except Exception as e:
                                 logger.warning(f"Summary trigger failed: {e}")
 

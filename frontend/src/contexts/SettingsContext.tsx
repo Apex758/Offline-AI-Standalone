@@ -123,6 +123,8 @@ export interface Settings {
   fileAccessEnabled: boolean;
   // Thinking mode (for Qwen2.5/Qwen3 models)
   thinkingEnabled: boolean;
+  // Feature 6: long-term teacher memory (cross-conversation recall)
+  memoryEnabled: boolean;
   // Feature discovery
   discoveredFeatures: string[];
   // Nudge system
@@ -236,6 +238,8 @@ export const DEFAULT_SETTINGS: Settings = {
   fileAccessEnabled: false,
   // Thinking mode
   thinkingEnabled: false,
+  // Feature 6: long-term teacher memory (default ON, teacher can disable)
+  memoryEnabled: true,
   // Feature discovery
   discoveredFeatures: [],
   // Nudge system

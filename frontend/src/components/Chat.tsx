@@ -933,6 +933,10 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       chat_id: currentChatId,
       thinking_enabled: settings.thinkingEnabled && supportsThinking,
       coworker_name: coworkerName,
+      // Feature 6: long-term memory routing
+      teacher_id: settings.profile.displayName?.trim() || 'default_teacher',
+      memory_enabled: settings.memoryEnabled !== false,
+      feature_context: 'chat',
       ...(profileContext ? {
         profile_context: profileContext,
         profile_grades: getTeacherGrades(mapping),

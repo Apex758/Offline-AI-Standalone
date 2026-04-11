@@ -2581,6 +2581,59 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   </Card>
                 )}
 
+                {/* Personalization (Feature 6: Long-term teacher memory) */}
+                <Card data-search-section="personalization">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="w-4.5 h-4.5 text-blue-500">🧠</span>
+                      Personalization
+                    </CardTitle>
+                    <CardDescription>
+                      Coworker can remember key facts about you across conversations to give more personalized responses. Stored locally only, never sent off your device.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div className="pr-4">
+                        <p className="text-sm font-medium text-theme-heading">Long-term memory</p>
+                        <p className="text-xs text-theme-hint mt-0.5">
+                          When enabled, Coworker extracts a few key facts from your conversations (preferences, struggles, teaching context) and recalls them in future chats.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => updateSettings({ memoryEnabled: !settings.memoryEnabled })}
+                        className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                          settings.memoryEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                        } cursor-pointer`}
+                        aria-label="Toggle long-term memory"
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                          settings.memoryEnabled ? 'translate-x-5' : ''
+                        }`} />
+                      </button>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-theme-strong">
+                      <button
+                        onClick={async () => {
+                          if (!confirm('This will permanently delete every long-term memory Coworker has stored about you. Continue?')) return;
+                          try {
+                            const teacherId = settings.profile.displayName?.trim() || 'default_teacher';
+                            const res = await fetch(`http://127.0.0.1:8000/api/teacher-memory/all?teacher_id=${encodeURIComponent(teacherId)}`, { method: 'DELETE' });
+                            const data = await res.json();
+                            alert(`Deleted ${data.deleted ?? 0} stored memories.`);
+                          } catch (e) {
+                            alert('Failed to clear memories. See console for details.');
+                            console.error('[Settings] clear memory failed', e);
+                          }
+                        }}
+                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 underline"
+                      >
+                        Forget everything Coworker remembers about me
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Diffusion Model */}
                 <Card data-search-section="diffusion-model">
                   <CardHeader>
