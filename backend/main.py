@@ -1061,6 +1061,9 @@ async def websocket_chat(websocket: WebSocket):
             memory_enabled = bool(message_data.get("memory_enabled", True))
             # Feature 6 #5 / Feature 7 hook: feature-context tag (default 'chat')
             feature_context = message_data.get("feature_context", "chat")
+            # Feature 7: static profile snapshot (allowlist filtered server-side)
+            profile_snapshot = message_data.get("profile_snapshot") or {}
+            grade_hint = message_data.get("grade_hint")
 
             if not user_message:
                 continue
@@ -1078,6 +1081,21 @@ async def websocket_chat(websocket: WebSocket):
             # Use custom system prompt if provided, otherwise use default
             base_system_prompt = custom_system_prompt if custom_system_prompt else default_system_prompt
 
+            # Feature 7: build the static profile block (allowlist enforced server-side)
+            profile_block = ""
+            try:
+                from profile_context import build_block as _build_profile_block
+                profile_block, _profile_tokens = _build_profile_block(
+                    profile_snapshot,
+                    feature_context=feature_context,
+                    grade_hint=grade_hint,
+                )
+                if profile_block:
+                    print(f"[ws/chat] profile_context: injected {_profile_tokens} tokens "
+                          f"(feature={feature_context})")
+            except Exception as e:
+                print(f"[ws/chat] profile_context build failed: {e}")
+
             # Feature 6: recall long-term teacher memories (before budgeting so the
             # recalled block size counts against the budget reservation).
             recall_block = ""
@@ -1090,6 +1108,20 @@ async def websocket_chat(websocket: WebSocket):
                         query=user_message,
                         feature_context=feature_context,
                     )
+                    # Feature 7 #6: stamp conflicts_with on the fly using the F7 snapshot.
+                    # Static profile is the truth source; we don't persist this flag.
+                    if _recalled and profile_snapshot:
+                        try:
+                            from profile_context import detect_conflicts as _detect_conflicts
+                            _conflicts = _detect_conflicts(profile_snapshot, _recalled)
+                            if _conflicts:
+                                for f in _recalled:
+                                    if f.get("id") in _conflicts:
+                                        f["conflicts_with"] = _conflicts[f["id"]]
+                                print(f"[ws/chat] profile vs memory conflicts: {len(_conflicts)}")
+                        except Exception as e:
+                            print(f"[ws/chat] conflict detection failed: {e}")
+
                     if _recalled:
                         recall_block = _tm.format_block(_recalled)
                         print(f"[ws/chat] teacher_memory: recalled {len(_recalled)} fact(s) "
@@ -1112,10 +1144,11 @@ async def websocket_chat(websocket: WebSocket):
                     from chat_memory import _estimate_tokens as _est_tokens
                     from config import CONTEXT_BUDGET
                     _tier_budget = CONTEXT_BUDGET.get(_tier_info["tier"], 1500)
-                    # Reserve room for system prompt + user message + F6 recall block
+                    # Reserve room for system prompt + user message + F7 profile + F6 recall
                     _reserved = (
                         _est_tokens(base_system_prompt)
                         + _est_tokens(user_message)
+                        + _est_tokens(profile_block)
                         + _est_tokens(recall_block)
                     )
                     summary_block, history = memory.build_context_budgeted(
@@ -1132,8 +1165,10 @@ async def websocket_chat(websocket: WebSocket):
                 # Use conversation history sent from the client (for AI assistant panel)
                 history = client_history[-8:]  # Cap at last 8 messages to avoid context overflow
 
-            # Inject summary + long-term memory recall into system prompt
-            system_prompt = base_system_prompt + summary_block + recall_block
+            # Assemble final system prompt: base + F7 profile + summary + F6 recall.
+            # F7 (static profile) goes first so the model sees the ground truth before
+            # the conversation summary or any dynamic memory recall.
+            system_prompt = base_system_prompt + profile_block + summary_block + recall_block
 
             # Inject teacher profile context (grade/subject awareness)
             if profile_context:
@@ -1380,11 +1415,21 @@ async def websocket_chat(websocket: WebSocket):
                         if chat_id:
                             try:
                                 memory = get_chat_memory()
+                                # F7: hand the LLM a 'do not re-extract' list derived from the profile
+                                _known_facts = []
+                                if profile_snapshot:
+                                    try:
+                                        from profile_context import list_known_facts
+                                        _known_facts = list_known_facts(profile_snapshot)
+                                    except Exception:
+                                        pass
                                 asyncio.create_task(memory.maybe_update_summary(
                                     chat_id,
                                     prompt_format=prompt_fmt,
                                     teacher_id=teacher_id,
                                     memory_enabled=memory_enabled,
+                                    feature_context=feature_context,
+                                    known_facts=_known_facts,
                                 ))
                             except Exception as e:
                                 logger.warning(f"Summary trigger failed: {e}")

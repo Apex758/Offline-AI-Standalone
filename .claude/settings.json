@@ -331,7 +331,8 @@
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(dir /s /b \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\src\\\\components\\\\ui\\\\MaterialsSelector.tsx\")",
       "Bash(find /c/Users/LG/Desktop/Projects/\"Offline AI Standalone\"/backend -name \"*.py\" -exec grep -l \"presentation\" {} \\\\;)",
-      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('tailwind:', p.dependencies?.tailwindcss||p.devDependencies?.tailwindcss\\);\")"
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('tailwind:', p.dependencies?.tailwindcss||p.devDependencies?.tailwindcss\\);\")",
+      "Bash(find \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend\\\\src\" -name \"*.ts*\" -exec grep -l \"achievements-viewed-ids\\\\|VIEWED_KEY\" {} \\\\;)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

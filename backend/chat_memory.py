@@ -321,6 +321,8 @@ class ChatMemory:
         prompt_format: str = "llama",
         teacher_id: Optional[str] = None,
         memory_enabled: bool = True,
+        feature_context: Optional[str] = None,
+        known_facts: Optional[List[str]] = None,
     ):
         """
         Check if summary needs updating and regenerate if so.
@@ -378,15 +380,25 @@ class ChatMemory:
                     "advice given, action items). Third person, no filler.\n"
                     "2. Extract 1-3 KEY FACTS about the teacher that would be useful to remember "
                     "for future conversations (preferences, struggles, teaching style, classroom "
-                    "context). Only specific, actionable facts. If nothing notable, return [].\n"
+                    "context). Only specific, actionable facts. Do NOT re-extract facts already "
+                    "listed in the KNOWN PROFILE block (those are already on file). If nothing "
+                    "new and notable, return [].\n"
                     "3. Check if any new facts CONTRADICT or UPDATE an existing memory listed below. "
                     "If so, mark the old memory's id for replacement. If nothing contradicts, return [].\n\n"
                     "Output STRICT JSON only, no prose, no markdown fences:\n"
                     '{"summary": "...", "new_facts": ["fact 1"], '
                     '"replace": [{"old_id": "...", "new_fact": "..."}]}'
                 )
+                known_block = ""
+                if known_facts:
+                    known_block = (
+                        "KNOWN PROFILE (already on file -- do NOT re-extract these):\n"
+                        + "\n".join(f"  - {f}" for f in known_facts)
+                        + "\n\n"
+                    )
                 user_text = (
                     summary_instruction
+                    + known_block
                     + f"EXISTING MEMORIES:\n{mem_lines}\n\n"
                     + f"CONVERSATION:\n{conversation_text[:3000]}\n\n"
                     + "Return the JSON now:"
@@ -461,6 +473,7 @@ class ChatMemory:
                             source_chat_id=chat_id,
                             replacements=replacements,
                             source='chat',
+                            contexts=feature_context,  # Tag with active feature for F6 #5 bonus
                         )
                         logger.info(
                             f"[teacher_memory] +{added} facts, "

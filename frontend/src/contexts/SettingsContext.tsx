@@ -170,6 +170,8 @@ export interface SettingsContextValue {
   // Workflow progression
   trackToolVisit: (toolType: string) => void;
   dismissProgression: (toolType: string) => void;
+  // Feature 7: allowlisted profile snapshot for inference payloads (defense in depth)
+  getProfileSnapshot: () => Record<string, any>;
 }
 
 // Default Settings (hex colors matching Settings.tsx defaults)
@@ -733,6 +735,37 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     });
   }, []);
 
+  // Feature 7: returns ONLY the allowlisted profile fields. Defense in depth —
+  // the backend re-applies the same allowlist via profile_context._sanitize(),
+  // so even if a caller bypasses this helper, denylisted fields can't reach
+  // the model. Keep this list in sync with backend/profile_context.PROFILE_ALLOWLIST.
+  const getProfileSnapshot = useCallback((): Record<string, any> => {
+    const snapshot: Record<string, any> = {};
+    if (settings.profile?.displayName) {
+      snapshot.profile = snapshot.profile || {};
+      snapshot.profile.displayName = settings.profile.displayName;
+    }
+    if (settings.profile?.coworkerName) {
+      snapshot.profile = snapshot.profile || {};
+      snapshot.profile.coworkerName = settings.profile.coworkerName;
+    }
+    if (settings.profile?.gradeSubjects && Object.keys(settings.profile.gradeSubjects).length > 0) {
+      snapshot.profile = snapshot.profile || {};
+      snapshot.profile.gradeSubjects = settings.profile.gradeSubjects;
+    }
+    if (settings.profile?.filterContentByProfile !== undefined) {
+      snapshot.profile = snapshot.profile || {};
+      snapshot.profile.filterContentByProfile = settings.profile.filterContentByProfile;
+    }
+    if (settings.language) {
+      snapshot.language = settings.language;
+    }
+    if (settings.tutorials?.enabledModules && settings.tutorials.enabledModules.length > 0) {
+      snapshot.tutorials = { enabledModules: settings.tutorials.enabledModules };
+    }
+    return snapshot;
+  }, [settings.profile, settings.language, settings.tutorials?.enabledModules]);
+
   const value: SettingsContextValue = useMemo(() => ({
     settings,
     updateSettings,
@@ -755,11 +788,12 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     toggleToolChild,
     trackToolVisit,
     dismissProgression,
+    getProfileSnapshot,
   }), [settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted,
     resetTutorials, setWelcomeSeen, isSidebarItemEnabled, markFeatureDiscovered,
     isFeatureDiscovered, hasCompletedSetup, completeSetup, resetSetup, dismissNudge,
     shouldShowNudge, isModuleEnabled, toggleModule, isToolChildEnabled, toggleToolChild,
-    trackToolVisit, dismissProgression]);
+    trackToolVisit, dismissProgression, getProfileSnapshot]);
 
   return (
     <SettingsContext.Provider value={value}>

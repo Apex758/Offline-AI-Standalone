@@ -247,7 +247,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // Files panel state
   const [filesTab, setFilesTab] = useState<FilesTab>('on-pc');
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings, getProfileSnapshot } = useSettings();
   const { hasVision, supportsThinking } = useCapabilities();
   const triggerCheck = useAchievementTrigger();
   const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
@@ -937,6 +937,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       teacher_id: settings.profile.displayName?.trim() || 'default_teacher',
       memory_enabled: settings.memoryEnabled !== false,
       feature_context: 'chat',
+      // Feature 7: allowlist-filtered profile snapshot for static personalization
+      profile_snapshot: getProfileSnapshot(),
       ...(profileContext ? {
         profile_context: profileContext,
         profile_grades: getTeacherGrades(mapping),
