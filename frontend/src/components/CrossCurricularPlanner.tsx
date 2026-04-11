@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useReducer } from 'react';
 import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -44,6 +44,8 @@ import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import AIDisclaimer from './AIDisclaimer';
 import CrossCurricularTable from './crossCurricular/CrossCurricularTable';
+import { GeneratorShell } from './shared/GeneratorShell';
+import { StreamingTextView } from './shared/StreamingTextView';
 import type { ParsedCrossCurricularPlan } from '../types/crossCurricular';
 import axios from 'axios';
 import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilder';
@@ -838,10 +840,11 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // Subscribe to streaming updates for re-renders
+  // Subscribe to streaming updates — listener MUST force a re-render.
+  const [, forceStreamRerender] = useReducer((x: number) => x + 1, 0);
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
-      // This triggers re-render when streaming updates
+      forceStreamRerender();
     });
     return unsubscribe;
   }, [tabId, subscribe]);
@@ -1256,23 +1259,23 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
                   <div className="max-w-none">
                     {parsedPlan && !loading ? (
-                      <CrossCurricularTable
-                        plan={parsedPlan}
-                        accentColor={tabColor}
-                        editable
-                        onChange={handleCrossCurricularInlineChange}
-                      />
+                      <GeneratorShell accentColor={tabColor}>
+                        <CrossCurricularTable
+                          plan={parsedPlan}
+                          accentColor={tabColor}
+                          editable
+                          onChange={handleCrossCurricularInlineChange}
+                        />
+                      </GeneratorShell>
                     ) : (
-                      <div className="prose prose-lg max-w-none">
-                        <div className="space-y-1 rounded-xl p-6 widget-glass">
-                          {streamingContent}
-                          {loading && streamingPlan && (
-                            <span className="inline-flex items-center ml-1">
-                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      <GeneratorShell accentColor={tabColor} isStreaming={!!(loading && streamingPlan)}>
+                        <StreamingTextView
+                          text={streamingPlan || generatedPlan}
+                          isStreaming={!!(loading && streamingPlan)}
+                          accentColor={tabColor}
+                          renderFormatted={() => streamingContent}
+                        />
+                      </GeneratorShell>
                     )}
                   </div>
 

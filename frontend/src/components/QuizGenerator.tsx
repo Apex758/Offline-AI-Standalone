@@ -57,6 +57,8 @@ import ClassPackExportButton from './ClassPackExportButton';
 import ScanTemplatePreview from './ScanTemplatePreview';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizTable from './quiz/QuizTable';
+import { GeneratorShell } from './shared/GeneratorShell';
+import { StreamingTextView } from './shared/StreamingTextView';
 import QuizGrader from './QuizGrader';
 import ScheduleTestModal from './ScheduleTestModal';
 import axios from 'axios';
@@ -1208,23 +1210,25 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           }}
                         />
                       ) : displayParsedQuiz && !loading ? (
-                        <QuizTable
-                          quiz={displayParsedQuiz}
-                          accentColor={tabColor}
-                          editable={!viewingStudent}
-                          effectiveVersion={effectiveVersion as 'teacher' | 'student'}
-                          onChange={viewingStudent ? undefined : handleQuizInlineChange}
-                        />
+                        <GeneratorShell accentColor={tabColor}>
+                          <QuizTable
+                            quiz={displayParsedQuiz}
+                            accentColor={tabColor}
+                            editable={!viewingStudent}
+                            effectiveVersion={effectiveVersion as 'teacher' | 'student'}
+                            onChange={viewingStudent ? undefined : handleQuizInlineChange}
+                          />
+                        </GeneratorShell>
                       ) : (
-                        // Fallback to text rendering for streaming or non-parsed content
-                        <>
-                          {streamingContent}
-                          {loading && streamingQuiz && (
-                            <span className="inline-flex items-center ml-1">
-                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                            </span>
-                          )}
-                        </>
+                        // Streaming view — clean serif typography + live caret.
+                        <GeneratorShell accentColor={tabColor} isStreaming={!!(loading && streamingQuiz)}>
+                          <StreamingTextView
+                            text={streamingQuiz || generatedQuiz}
+                            isStreaming={!!(loading && streamingQuiz)}
+                            accentColor={tabColor}
+                            renderFormatted={() => streamingContent}
+                          />
+                        </GeneratorShell>
                       )}
                     </div>
                   </div>

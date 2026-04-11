@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useReducer } from 'react';
 import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -39,6 +39,8 @@ const Baby: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import KindergartenTable from './kindergarten/KindergartenTable';
+import { GeneratorShell } from './shared/GeneratorShell';
+import { StreamingTextView } from './shared/StreamingTextView';
 import type { ParsedKindergartenPlan } from '../types/kindergarten';
 import axios from 'axios';
 import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
@@ -753,10 +755,12 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // ✅ Subscribe to streaming updates for re-renders
+  // ✅ Subscribe to streaming updates — listener MUST force a re-render
+  // or per-token streaming will be invisible (see feedback memory).
+  const [, forceStreamRerender] = useReducer((x: number) => x + 1, 0);
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
-      // This triggers re-render when streaming updates
+      forceStreamRerender();
     });
     return unsubscribe;
   }, [tabId, subscribe]);
@@ -1220,23 +1224,23 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
                   <div className="max-w-none">
                     {parsedPlan && !loading ? (
-                      <KindergartenTable
-                        plan={parsedPlan}
-                        accentColor={tabColor}
-                        editable
-                        onChange={handleKindergartenInlineChange}
-                      />
+                      <GeneratorShell accentColor={tabColor}>
+                        <KindergartenTable
+                          plan={parsedPlan}
+                          accentColor={tabColor}
+                          editable
+                          onChange={handleKindergartenInlineChange}
+                        />
+                      </GeneratorShell>
                     ) : (
-                      <div className="prose prose-lg max-w-none">
-                        <div className="space-y-1 rounded-xl p-6 widget-glass">
-                          {streamingContent}
-                          {loading && streamingPlan && (
-                            <span className="inline-flex items-center ml-1">
-                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      <GeneratorShell accentColor={tabColor} isStreaming={!!(loading && streamingPlan)}>
+                        <StreamingTextView
+                          text={streamingPlan || generatedPlan}
+                          isStreaming={!!(loading && streamingPlan)}
+                          accentColor={tabColor}
+                          renderFormatted={() => streamingContent}
+                        />
+                      </GeneratorShell>
                     )}
                   </div>
 

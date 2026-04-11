@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -68,6 +68,8 @@ import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
 import ScanTemplatePreview from './ScanTemplatePreview';
 import WorksheetTable from './worksheet/WorksheetTable';
+import { GeneratorShell } from './shared/GeneratorShell';
+import { StreamingTextView } from './shared/StreamingTextView';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import axios from 'axios';
@@ -219,7 +221,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const { t } = useTranslation();
   const triggerCheck = useAchievementTrigger();
   const { hasDiffusion, hasVision } = useCapabilities();
-  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   // Curriculum data is loaded per grade+subject via CurriculumAlignmentFields
   const { settings } = useSettings();
@@ -614,6 +616,15 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   useEffect(() => {
     getConnection(tabId || '', ENDPOINT);
   }, [tabId]);
+
+  // Subscribe to streaming updates — listener MUST force a re-render.
+  const [, forceStreamRerender] = useReducer((x: number) => x + 1, 0);
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId || '', ENDPOINT, () => {
+      forceStreamRerender();
+    });
+    return unsubscribe;
+  }, [tabId, subscribe]);
 
 
   useEffect(() => {
@@ -2280,24 +2291,33 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     }}
                   />
                 </div>
-              ) : parsedWorksheet ? (
+              ) : parsedWorksheet && !loading ? (
                 <div className="p-6">
-                  <WorksheetTable
-                    worksheet={parsedWorksheet}
-                    accentColor={accentColor || '#3b82f6'}
-                    editable
-                    viewMode={viewMode}
-                    onChange={(updated) => {
-                      setParsedWorksheet(updated);
-                      setGeneratedWorksheet(worksheetToDisplayText(updated));
-                    }}
-                  />
+                  <GeneratorShell accentColor={accentColor || '#3b82f6'}>
+                    <WorksheetTable
+                      worksheet={parsedWorksheet}
+                      accentColor={accentColor || '#3b82f6'}
+                      editable
+                      viewMode={viewMode}
+                      onChange={(updated) => {
+                        setParsedWorksheet(updated);
+                        setGeneratedWorksheet(worksheetToDisplayText(updated));
+                      }}
+                    />
+                  </GeneratorShell>
                 </div>
               ) : (
-                <div className="p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-theme-heading">
-                    {generatedWorksheet || streamingWorksheet}
-                  </pre>
+                <div className="p-6">
+                  <GeneratorShell
+                    accentColor={accentColor || '#3b82f6'}
+                    isStreaming={!!(loading && streamingWorksheet)}
+                  >
+                    <StreamingTextView
+                      text={streamingWorksheet || generatedWorksheet}
+                      isStreaming={!!(loading && streamingWorksheet)}
+                      accentColor={accentColor || '#3b82f6'}
+                    />
+                  </GeneratorShell>
                 </div>
               )}
             </div>

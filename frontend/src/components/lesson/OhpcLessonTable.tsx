@@ -29,6 +29,7 @@ import {
   EMPTY_TEACHER_REFLECTIONS,
 } from "../../types/ohpcLesson";
 import { InlineText, BulletList, useSmoothReveal } from "../shared/InlineEditPrimitives";
+import { GeneratorShell } from "../shared/GeneratorShell";
 
 interface Props {
   lesson: Partial<OhpcLessonPlan> | null;
@@ -246,78 +247,11 @@ export default function OhpcLessonTable({
   const headerText = `${accentColor}dd`;
 
   return (
-    <div
+    <GeneratorShell
       id="lesson-plan-html-export"
-      className={`space-y-6 text-theme-primary relative transition-all ${isStreaming ? "ohpc-streaming" : ""}`}
-      style={{
-        fontFamily: "Georgia, 'Times New Roman', serif",
-        ...(isStreaming
-          ? {
-              padding: "16px",
-              borderRadius: "12px",
-              boxShadow: `0 0 0 2px ${accentColor}33, 0 0 24px ${accentColor}22`,
-              animation: "ohpcPulse 1.8s ease-in-out infinite",
-            }
-          : {}),
-      }}
+      accentColor={accentColor}
+      isStreaming={isStreaming}
     >
-      {/* Keyframes for streaming pulse (scoped inline via <style>) */}
-      {isStreaming && (
-        <style>{`
-          @keyframes ohpcPulse {
-            0%, 100% { box-shadow: 0 0 0 2px ${accentColor}33, 0 0 24px ${accentColor}22; }
-            50%      { box-shadow: 0 0 0 2px ${accentColor}66, 0 0 32px ${accentColor}44; }
-          }
-          /* Per-field shimmer — highlights just the cell currently being typed */
-          .ohpc-active-field {
-            display: inline-block;
-            padding: 0 0.25rem;
-            border-radius: 4px;
-            background: linear-gradient(
-              90deg,
-              ${accentColor}11 0%,
-              ${accentColor}33 50%,
-              ${accentColor}11 100%
-            );
-            background-size: 200% 100%;
-            animation: ohpcActiveShimmer 1.4s linear infinite;
-            box-shadow: 0 0 0 1px ${accentColor}55;
-          }
-          @keyframes ohpcActiveShimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-          }
-          /* Skeleton shimmer — placeholders for empty cells that haven't
-             been reached yet. Subtler than active-field so many can share
-             the screen without being noisy. */
-          .ohpc-skeleton {
-            display: inline-block;
-            height: 0.9em;
-            min-width: 40%;
-            max-width: 80%;
-            border-radius: 4px;
-            background: linear-gradient(
-              90deg,
-              ${accentColor}0a 0%,
-              ${accentColor}1f 50%,
-              ${accentColor}0a 100%
-            );
-            background-size: 200% 100%;
-            animation: ohpcSkeletonShimmer 2.1s linear infinite;
-            vertical-align: middle;
-          }
-          .ohpc-skeleton-wide { min-width: 60%; max-width: 95%; }
-          .ohpc-skeleton-bullet {
-            display: block;
-            height: 0.85em;
-            margin: 0.35rem 0;
-          }
-          @keyframes ohpcSkeletonShimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-          }
-        `}</style>
-      )}
 
       {/* Streaming banner */}
       {isStreaming && (
@@ -792,7 +726,7 @@ export default function OhpcLessonTable({
           </span>
         </div>
       )}
-    </div>
+    </GeneratorShell>
   );
 }
 

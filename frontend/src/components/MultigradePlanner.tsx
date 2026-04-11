@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useReducer } from 'react';
 import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -44,6 +44,8 @@ import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import AIDisclaimer from './AIDisclaimer';
 import MultigradeTable from './multigrade/MultigradeTable';
+import { GeneratorShell } from './shared/GeneratorShell';
+import { StreamingTextView } from './shared/StreamingTextView';
 import axios from 'axios';
 import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
 import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../types/multigrade'; 
@@ -668,10 +670,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // Subscribe to streaming updates for re-renders
+  // Subscribe to streaming updates — listener MUST force a re-render.
+  const [, forceStreamRerender] = useReducer((x: number) => x + 1, 0);
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
-      // This triggers re-render when streaming updates
+      forceStreamRerender();
     });
     return unsubscribe;
   }, [tabId, subscribe]);
@@ -1097,23 +1100,23 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                   <div className="max-w-none">
                     {parsedPlan && !loading ? (
-                      <MultigradeTable
-                        plan={parsedPlan}
-                        accentColor={tabColor}
-                        editable
-                        onChange={handleMultigradeInlineChange}
-                      />
+                      <GeneratorShell accentColor={tabColor}>
+                        <MultigradeTable
+                          plan={parsedPlan}
+                          accentColor={tabColor}
+                          editable
+                          onChange={handleMultigradeInlineChange}
+                        />
+                      </GeneratorShell>
                     ) : (
-                      <div className="prose prose-lg max-w-none">
-                        <div className="space-y-1 rounded-xl p-6 widget-glass">
-                          {streamingContent}
-                          {loading && streamingPlan && (
-                            <span className="inline-flex items-center ml-1">
-                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      <GeneratorShell accentColor={tabColor} isStreaming={!!(loading && streamingPlan)}>
+                        <StreamingTextView
+                          text={streamingPlan || generatedPlan}
+                          isStreaming={!!(loading && streamingPlan)}
+                          accentColor={tabColor}
+                          renderFormatted={() => streamingContent}
+                        />
+                      </GeneratorShell>
                     )}
                   </div>
 
