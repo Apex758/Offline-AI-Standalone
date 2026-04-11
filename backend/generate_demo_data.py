@@ -15,9 +15,437 @@ import json
 import uuid
 import random
 import os
+import argparse
+import hashlib
+import urllib.request
+import urllib.error
 from datetime import datetime, timedelta, date
 
-random.seed(42)  # Reproducible output
+random.seed(42)  # Reproducible output (overridable via --seed)
+
+# ── LLM (OpenRouter) Integration ──────────────────────────────────────────────
+# Optional. If --openrouter-key and --openrouter-model are supplied, all
+# content fields (lesson plans, quizzes, worksheets, rubrics, presentations,
+# storybooks, etc.) are generated via OpenRouter. Otherwise the script falls
+# back to short static stubs so it still runs fully offline.
+#
+# Every LLM response is cached on disk keyed by sha256(model+system+user) so
+# re-runs never re-spend tokens. Delete the cache dir to force regeneration.
+
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+SYSTEM_TEACHER = (
+    "You are a veteran OECS Eastern Caribbean primary-school teacher and "
+    "curriculum designer. Produce high-quality, grade-appropriate classroom "
+    "content. Reference Saint Lucia / Eastern Caribbean context naturally "
+    "where relevant. Use plain ASCII only (no emoji or unicode symbols)."
+)
+
+
+class LLMClient:
+    """OpenRouter chat client with on-disk JSON cache keyed by prompt hash."""
+
+    def __init__(self, api_key, model, cache_dir, timeout=180):
+        self.api_key = api_key
+        self.model = model
+        self.cache_dir = cache_dir
+        self.timeout = timeout
+        self.calls = 0
+        self.cache_hits = 0
+        self.errors = 0
+        os.makedirs(cache_dir, exist_ok=True)
+
+    def _cache_path(self, system, user, temperature, max_tokens):
+        h = hashlib.sha256()
+        h.update((self.model or "").encode("utf-8"))
+        h.update(b"\x00")
+        h.update((system or "").encode("utf-8"))
+        h.update(b"\x00")
+        h.update((user or "").encode("utf-8"))
+        h.update(b"\x00")
+        h.update(f"{temperature}|{max_tokens}".encode("utf-8"))
+        return os.path.join(self.cache_dir, h.hexdigest() + ".json")
+
+    def chat(self, user, system=None, temperature=0.7, max_tokens=2000):
+        path = self._cache_path(system, user, temperature, max_tokens)
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    payload = json.load(f)
+                self.cache_hits += 1
+                return payload.get("content", "")
+            except Exception:
+                pass  # Re-fetch on corrupt cache
+
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": user})
+
+        body = json.dumps({
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            OPENROUTER_URL,
+            data=body,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://github.com/oecs/class-coworker",
+                "X-Title": "OECS Class Coworker Demo Generator",
+            },
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                pass
+            self.errors += 1
+            raise RuntimeError(f"OpenRouter HTTP {e.code}: {err_body[:400]}")
+        except Exception as e:
+            self.errors += 1
+            raise RuntimeError(f"OpenRouter call failed: {e}")
+
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError):
+            self.errors += 1
+            raise RuntimeError(
+                f"Unexpected OpenRouter response shape: {json.dumps(data)[:400]}"
+            )
+
+        self.calls += 1
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({
+                    "model": self.model,
+                    "system": system,
+                    "user": user,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                    "content": content,
+                }, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"  [WARN] Could not write LLM cache {path}: {e}")
+        return content
+
+    def chat_json(self, user, system=None, temperature=0.3, max_tokens=2500):
+        raw = self.chat(user, system=system, temperature=temperature, max_tokens=max_tokens)
+        return _extract_json(raw)
+
+
+def _extract_json(text):
+    """Pull the first JSON object/array from an LLM response, tolerating code fences."""
+    if not text:
+        return None
+    s = text.strip()
+    # Strip ``` fences
+    if s.startswith("```"):
+        parts = s.split("```")
+        if len(parts) >= 2:
+            inner = parts[1]
+            lower = inner.lstrip().lower()
+            if lower.startswith("json"):
+                inner = inner.split("\n", 1)[1] if "\n" in inner else ""
+            s = inner.strip()
+    # Find first { or [
+    start = None
+    for i, ch in enumerate(s):
+        if ch in "{[":
+            start = i
+            break
+    if start is None:
+        return None
+    # Shrink from the end until json.loads succeeds
+    end = len(s)
+    while end > start:
+        try:
+            return json.loads(s[start:end])
+        except Exception:
+            end -= 1
+    return None
+
+
+LLM_CLIENT = None  # Set in main() from CLI args
+
+
+def _llm_or(default, prompt, system=SYSTEM_TEACHER, max_tokens=1800, temperature=0.7):
+    if LLM_CLIENT is None:
+        return default
+    try:
+        out = LLM_CLIENT.chat(prompt, system=system, temperature=temperature, max_tokens=max_tokens)
+        return out.strip() if out else default
+    except Exception as e:
+        print(f"  [WARN] LLM text call failed, using stub: {e}")
+        return default
+
+
+def _llm_json_or(default, prompt, system=SYSTEM_TEACHER, max_tokens=2500, temperature=0.3):
+    if LLM_CLIENT is None:
+        return default
+    try:
+        out = LLM_CLIENT.chat_json(prompt, system=system, temperature=temperature, max_tokens=max_tokens)
+        return out if out is not None else default
+    except Exception as e:
+        print(f"  [WARN] LLM JSON call failed, using stub: {e}")
+        return default
+
+
+def llm_lesson_plan(subject, grade, topic, duration, student_count):
+    default = (
+        f"# {topic}\n\n## Objective\nStudents will learn about {topic}.\n\n"
+        f"## Introduction (10 min)\nReview prior knowledge and introduce new concepts.\n\n"
+        f"## Development (30 min)\nGuided practice with examples and activities.\n\n"
+        f"## Closure (10 min)\nReview key points and assign practice work."
+    )
+    prompt = (
+        f"Write a complete {duration}-minute lesson plan for Grade {grade} "
+        f"{subject} on the topic '{topic}'. Class size: {student_count} students.\n\n"
+        "Include these markdown sections with clear headers and time estimates:\n"
+        "- Title\n- Learning Objectives (2-4 bullets)\n- Materials\n"
+        "- Prior Knowledge\n- Introduction\n- Development / Guided Practice "
+        "(concrete activity descriptions)\n- Independent Practice\n"
+        "- Formative Assessment\n- Closure\n- Differentiation (support + extension)\n"
+        "- Homework\n\nNo generic filler. Be specific and classroom-ready."
+    )
+    return _llm_or(default, prompt)
+
+
+def llm_kindergarten_plan(topic, subject, strand, age_group):
+    default = (
+        f"# {topic}\n\nCircle Time (10 min)\nIntroduce the topic with a song.\n\n"
+        f"Exploration (20 min)\nHands-on activity.\n\nWrap Up (15 min)\nReview and share."
+    )
+    prompt = (
+        f"Write a 45-minute early-childhood lesson plan for age group {age_group} "
+        f"on the topic '{topic}' ({subject} / {strand}). Include: Welcome Song, "
+        "Circle Time, Story, Hands-on Exploration, Creative Activity, Movement "
+        "Break, Closure. Warm age-appropriate language. Markdown with time estimates."
+    )
+    return _llm_or(default, prompt)
+
+
+def llm_multigrade_plan(subject, topic, grade_range):
+    default = f"# {topic} (Multigrade)\n\nShared introduction followed by tiered group work."
+    prompt = (
+        f"Write a 60-minute multigrade lesson plan for Grades {grade_range} "
+        f"{subject} on '{topic}'. Include: Shared Introduction, Tiered Objectives "
+        "(per grade), Group A activities, Group B activities, Differentiation "
+        "notes, Rotation plan, Assessment, Closure. Markdown format."
+    )
+    return _llm_or(default, prompt)
+
+
+def llm_cross_curricular_plan(grade, primary, supporting, big_idea, title):
+    default = f"# {title}\n\n{big_idea}"
+    prompt = (
+        f"Write a 90-minute cross-curricular lesson plan for Grade {grade} titled "
+        f"'{title}', integrating {primary} (primary) with {supporting} "
+        f"(supporting). Big idea: {big_idea}. Include: Learning Objectives, "
+        "Materials, Hook / Introduction, Integrated Core Activities, Student "
+        "Roles, Assessment, Reflection Prompts, Differentiation. Markdown."
+    )
+    return _llm_or(default, prompt)
+
+
+def llm_quiz(subject, grade, topic, num_questions):
+    """Return (markdown, parsed_dict, answer_key_list)."""
+    default_md = f"# {topic}\n\n" + "\n".join(f"{i}. Question {i}" for i in range(1, num_questions + 1))
+    default_parsed = {
+        "title": topic,
+        "questions": [
+            {"number": i, "text": f"Question {i}", "type": "short-answer", "points": 1}
+            for i in range(1, num_questions + 1)
+        ],
+    }
+    default_key = [{"number": i, "answer": "Answer", "points": 1} for i in range(1, num_questions + 1)]
+
+    if LLM_CLIENT is None:
+        return default_md, default_parsed, default_key
+
+    prompt = (
+        f"Create a {num_questions}-question quiz for Grade {grade} {subject} "
+        f"on '{topic}'. Return ONLY valid JSON (no prose, no markdown fence) "
+        "matching this shape exactly:\n"
+        "{\n"
+        '  "title": "...",\n'
+        '  "instructions": "...",\n'
+        '  "questions": [\n'
+        '    {"number": 1, "text": "...", "type": "multiple-choice", '
+        '"options": ["A","B","C","D"], "correct_answer": "A", "points": 1},\n'
+        '    {"number": 2, "text": "...", "type": "short-answer", '
+        '"correct_answer": "...", "points": 1}\n'
+        "  ]\n"
+        "}\n"
+        "Mix multiple-choice and short-answer. Age-appropriate wording. ASCII only."
+    )
+    data = _llm_json_or(None, prompt, max_tokens=3500)
+    if not isinstance(data, dict) or "questions" not in data or not data["questions"]:
+        return default_md, default_parsed, default_key
+
+    qs = data["questions"]
+    md_lines = [f"# {data.get('title', topic)}", ""]
+    if data.get("instructions"):
+        md_lines.append(f"_{data['instructions']}_")
+        md_lines.append("")
+    for q in qs:
+        n = q.get("number", "?")
+        md_lines.append(f"{n}. {q.get('text', '')}")
+        if q.get("type") == "multiple-choice" and q.get("options"):
+            for idx, opt in enumerate(q["options"]):
+                letter = chr(ord("A") + idx)
+                md_lines.append(f"   {letter}) {opt}")
+        md_lines.append("")
+
+    key_list = [
+        {
+            "number": q.get("number", i + 1),
+            "answer": q.get("correct_answer", ""),
+            "points": q.get("points", 1),
+        }
+        for i, q in enumerate(qs)
+    ]
+    return "\n".join(md_lines), data, key_list
+
+
+def llm_worksheet(subject, grade, topic, num_questions):
+    default_md = (
+        f"# {topic}\n\nName: ___________\nDate: ___________\n\n"
+        + "\n".join(f"{i}. " for i in range(1, num_questions + 1))
+    )
+    default_parsed = {
+        "title": topic,
+        "questions": [
+            {"number": i, "text": f"Question {i}", "points": 1}
+            for i in range(1, num_questions + 1)
+        ],
+    }
+    default_key = [{"number": i, "answer": "Answer", "points": 1} for i in range(1, num_questions + 1)]
+
+    if LLM_CLIENT is None:
+        return default_md, default_parsed, default_key
+
+    prompt = (
+        f"Create a {num_questions}-question practice worksheet for Grade {grade} "
+        f"{subject} on '{topic}'. Return ONLY JSON:\n"
+        "{\n"
+        '  "title": "...",\n'
+        '  "instructions": "...",\n'
+        '  "questions": [\n'
+        '    {"number": 1, "text": "...", "answer": "...", "points": 1}\n'
+        "  ]\n"
+        "}\n"
+        "Mix computation, word problems, and concept application. ASCII only."
+    )
+    data = _llm_json_or(None, prompt, max_tokens=3500)
+    if not isinstance(data, dict) or "questions" not in data or not data["questions"]:
+        return default_md, default_parsed, default_key
+
+    qs = data["questions"]
+    md_lines = [f"# {data.get('title', topic)}", "", "Name: ___________   Date: ___________", ""]
+    if data.get("instructions"):
+        md_lines.append(f"_{data['instructions']}_")
+        md_lines.append("")
+    for q in qs:
+        md_lines.append(f"{q.get('number', '?')}. {q.get('text', '')}")
+    key_list = [
+        {
+            "number": q.get("number", i + 1),
+            "answer": q.get("answer", ""),
+            "points": q.get("points", 1),
+        }
+        for i, q in enumerate(qs)
+    ]
+    return "\n".join(md_lines), data, key_list
+
+
+def llm_rubric(subject, grade, assignment_title):
+    default = f"# {assignment_title}\n\n| Criteria | Excellent (4) | Good (3) | Fair (2) | Needs Improvement (1) |"
+    prompt = (
+        f"Create a 4-level performance rubric for a Grade {grade} {subject} "
+        f"project titled '{assignment_title}'. Include 4-6 criteria rows covering "
+        "content knowledge, critical thinking, presentation, and effort. Return a "
+        "single markdown table with columns: Criteria | Excellent (4) | Good (3) "
+        "| Fair (2) | Needs Improvement (1). Concrete descriptors in each cell."
+    )
+    return _llm_or(default, prompt)
+
+
+def llm_presentation(title, subject, grade, num_slides):
+    default_md = f"# {title}\n\nSlide 1: Introduction\nSlide 2: Overview\n..."
+    default_slides = [
+        {"slideNumber": i + 1, "title": f"Slide {i + 1}", "bullets": [], "notes": ""}
+        for i in range(num_slides)
+    ]
+    if LLM_CLIENT is None:
+        return default_md, default_slides
+
+    prompt = (
+        f"Create a {num_slides}-slide educational presentation titled '{title}' "
+        f"for Grade {grade} {subject}. Return ONLY JSON:\n"
+        "{\n"
+        '  "title": "...",\n'
+        '  "slides": [\n'
+        '    {"slideNumber": 1, "title": "...", "bullets": ["...","..."], "notes": "..."}\n'
+        "  ]\n"
+        "}"
+    )
+    data = _llm_json_or(None, prompt, max_tokens=3000)
+    if not isinstance(data, dict) or "slides" not in data or not data["slides"]:
+        return default_md, default_slides
+
+    slides = data["slides"]
+    md_lines = [f"# {data.get('title', title)}", ""]
+    for s in slides:
+        md_lines.append(f"## Slide {s.get('slideNumber', '?')}: {s.get('title', '')}")
+        for b in (s.get("bullets") or []):
+            md_lines.append(f"- {b}")
+        md_lines.append("")
+    return "\n".join(md_lines), slides
+
+
+def llm_storybook_pages(title, subject, grade, description, num_pages):
+    default_pages = [
+        {"pageNumber": i + 1, "text": f"Page {i + 1} of {title}.", "characterName": "Main Character"}
+        for i in range(num_pages)
+    ]
+    if LLM_CLIENT is None:
+        return default_pages
+
+    prompt = (
+        f"Write a {num_pages}-page educational storybook for Grade {grade} "
+        f"({subject}) titled '{title}'. Description: {description}. "
+        "Set in the Eastern Caribbean. Return ONLY JSON:\n"
+        "{\n"
+        '  "title": "...",\n'
+        '  "pages": [\n'
+        '    {"pageNumber": 1, "text": "3-5 sentence page narrative", "characterName": "..."}\n'
+        "  ]\n"
+        "}\n"
+        "Keep page text under 80 words. ASCII only."
+    )
+    data = _llm_json_or(None, prompt, max_tokens=3000)
+    if not isinstance(data, dict) or "pages" not in data or not data["pages"]:
+        return default_pages
+
+    out = []
+    for i, p in enumerate(data["pages"]):
+        out.append({
+            "pageNumber": p.get("pageNumber", i + 1),
+            "text": p.get("text", ""),
+            "characterName": p.get("characterName", "Main Character"),
+        })
+    return out
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 

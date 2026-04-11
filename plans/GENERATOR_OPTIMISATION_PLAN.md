@@ -254,11 +254,35 @@ export const DURATION_CHIPS = [30, 40, 45, 60, 80]
 
 ## Implementation Order
 
-1. `generatorPresets.ts` and `DurationPicker.tsx` — foundational shared pieces, no risk
-2. Duration chips in all planners
-3. Quiz presets + persist last-used settings
-4. Rubric assignment-type presets
-5. Teaching style preset / remember-last for LessonPlanner Step 2
-6. Import Lesson Plan into RubricGenerator
-7. "Send to Quiz/Rubric" buttons on LessonPlanner output
-8. Collapse rarely-used fields
+1. [x] `generatorPresets.ts` and `DurationPicker.tsx` — foundational shared pieces, no risk  *(done 2026-04-11)*
+2. [x] Duration chips in all planners — LessonPlanner, KindergartenPlanner, MultigradePlanner, CrossCurricularPlanner  *(done 2026-04-11)*
+3. [x] Quiz presets + persist last-used settings  *(done 2026-04-11)*
+4. [x] Rubric assignment-type presets  *(done 2026-04-11)*
+5. [ ] Teaching style preset / remember-last for LessonPlanner Step 2
+6. [ ] Import Lesson Plan into RubricGenerator
+7. [ ] "Send to Quiz/Rubric" buttons on LessonPlanner output
+8. [ ] Collapse rarely-used fields
+
+---
+
+## Implementation Notes (2026-04-11)
+
+- `generatorPresets.ts` lives at `frontend/src/data/generatorPresets.ts` and
+  exports `DURATION_CHIPS`, `QUIZ_PRESETS`, `RUBRIC_PRESETS`, plus
+  `loadQuizLastSettings()` / `saveQuizLastSettings()` helpers backed by
+  `localStorage` key `quiz_last_settings`.
+- `DurationPicker` (`frontend/src/components/ui/DurationPicker.tsx`) is a
+  controlled `value: string` / `onChange` component to match each planner's
+  existing form-state shape; no migration of `FormData` types was needed.
+- CrossCurricularPlanner previously accepted freeform strings like
+  `"60 minutes, 2 class periods"`. It now stores a number via DurationPicker;
+  the prompt builder already treats duration as a plain string so this is
+  compatible, but if teachers have a strong need for freeform durations
+  there, revisit by allowing DurationPicker's "Other" field to accept text.
+- QuizGenerator's preset chips are above the question-count field in Step 1
+  and mark themselves "active" (accent-filled) when the current form values
+  exactly match a preset — so teachers can see at a glance that they've
+  drifted.
+- RubricGenerator auto-fill fires on every `assignmentType` change, which
+  will overwrite manual `focusAreas` tweaks if the teacher changes type
+  mid-edit. This matches the spec ("soft defaults") but is worth watching.

@@ -29,6 +29,7 @@ export interface ImageGenerationRequest {
   initImage?: string;   // base64 data URI for img2img
   strength?: number;    // 0.0-1.0, controls how much the init image is changed
   signal?: AbortSignal; // optional abort signal for cancellation
+  jobId?: string;       // optional job id, enables backend cancel via /api/cancel/{jobId}
 }
 
 export interface BatchImageGenerationRequest {
@@ -200,7 +201,8 @@ export const imageApi = {
           height: request.height || 512,
           numInferenceSteps: steps,
           ...(request.initImage && { initImage: request.initImage }),
-          ...(request.strength !== undefined && { strength: request.strength })
+          ...(request.strength !== undefined && { strength: request.strength }),
+          ...(request.jobId && { jobId: request.jobId }),
         },
         request.signal ? { signal: request.signal } : undefined
       );

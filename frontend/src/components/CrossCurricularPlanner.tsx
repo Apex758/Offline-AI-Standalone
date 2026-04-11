@@ -15,6 +15,7 @@ import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import GitMergeIcon from '@hugeicons/core-free-icons/GitMergeIcon';
+import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -55,6 +56,7 @@ import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import { MaterialsSelector } from './ui/MaterialsSelector';
+import DurationPicker from './ui/DurationPicker';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -564,6 +566,57 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     return null;
   });
 
+  const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
+  const [selectedClassName, setSelectedClassName] = useState<string>('');
+  const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
+  useEffect(() => { fetchClasses().then(setAvailableClasses).catch(() => {}); }, []);
+
+  const applyClassConfig = (cfg: ClassConfig, label: string) => {
+    setFormData(prev => {
+      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
+        const current: any = prev[key];
+        if (Array.isArray(current)) {
+          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
+        }
+        if (typeof current === 'boolean') {
+          return (current || !!incoming) as FormData[K];
+        }
+        if (typeof current === 'string') {
+          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
+        }
+        return (current ?? incoming) as FormData[K];
+      };
+      return {
+        ...prev,
+        strand: merge('strand', cfg.strand),
+        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
+        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
+        duration: merge('duration', cfg.classPeriodDuration),
+        learningStyles: merge('learningStyles', cfg.learningStyles),
+        learningPreferences: merge('learningPreferences', cfg.learningPreferences),
+        multipleIntelligences: merge('multipleIntelligences', cfg.multipleIntelligences),
+        customLearningStyles: merge('customLearningStyles', cfg.customLearningStyles),
+        materials: merge('materials', cfg.availableMaterials),
+      };
+    });
+    setClassContextApplied(label);
+  };
+
+  const handleSelectClass = async (value: string) => {
+    setSelectedClassName(value);
+    if (!value) { setClassContextApplied(null); return; }
+    const [gl, cls] = value.split('::');
+    try {
+      const cfg = await fetchClassConfig(cls, gl || undefined);
+      if (gl && !formData.gradeLevel) {
+        setFormData(prev => ({ ...prev, gradeLevel: gl }));
+      }
+      applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+    } catch (e) {
+      console.error('Failed to load class config', e);
+    }
+  };
+
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
     lessonTitle: '',
@@ -1014,6 +1067,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
     const prompt = buildCrossCurricularPrompt(mappedData, settings.language);
 
+    const [pickedGrade, pickedClass] = (selectedClassName || '').split('::');
+    const formDataWithClass = {
+      ...formData,
+      className: pickedClass || (formData as any).className || '',
+      gradeLevel: formData.gradeLevel || pickedGrade || '',
+    };
+
     if (queueEnabled) {
       enqueue({
         label: `Cross-Curricular Plan - ${formData.bigIdea || formData.primarySubject}`,
@@ -1022,6 +1082,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
         endpoint: ENDPOINT,
         prompt,
         generationMode: settings.generationMode,
+        extraMessageData: { formData: formDataWithClass },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -1038,6 +1099,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     try {
       ws.send(JSON.stringify({
         prompt,
+        formData: formDataWithClass,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
@@ -1291,6 +1353,39 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {/* Step 1: Basic Info */}
                 {displayStep === 1 && (
                   <div className="space-y-6">
+
+                    {/* Class picker -- auto-fills all class-level fields from Class Manager */}
+                    <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>
+                        Class (auto-fills from Class Manager settings)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={selectedClassName}
+                          onChange={(e) => handleSelectClass(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-sm"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        >
+                          <option value="">-- Select a class (optional) --</option>
+                          {availableClasses.map(c => {
+                            const key = `${c.grade_level || ''}::${c.class_name}`;
+                            const hasCfg = c.config && Object.keys(c.config).length > 0;
+                            return (
+                              <option key={key} value={key}>
+                                {c.grade_level ? `Grade ${c.grade_level} -- ` : ''}Class {c.class_name}
+                                {hasCfg ? '  [configured]' : '  [no settings]'}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                      {classContextApplied && (
+                        <p className="text-xs mt-2 text-theme-muted">
+                          Auto-filled from <strong>{classContextApplied}</strong>. You can still override any field below.
+                        </p>
+                      )}
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Lesson Title <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span></label>
                       <SmartInput value={formData.lessonTitle} onChange={(val) => handleInputChange('lessonTitle', val)}
@@ -1317,10 +1412,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Duration *</label>
-                      <SmartInput value={formData.duration} onChange={(val) => handleInputChange('duration', val)}
-                        data-validation-error={validationErrors.duration ? 'true' : undefined}
-                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.duration ? 'validation-error' : ''}`}
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="e.g., 60 minutes, 2 class periods" />
+                      <DurationPicker
+                        value={formData.duration}
+                        onChange={(val) => handleInputChange('duration', val)}
+                        accentColor={tabColor}
+                        hasError={validationErrors.duration}
+                        placeholder="e.g., 60"
+                      />
                     </div>
                     <div data-tutorial="cross-curricular-planner-theme">
                       <label className="block text-sm font-medium text-theme-label mb-2">Big Idea / Driving Concept *</label>

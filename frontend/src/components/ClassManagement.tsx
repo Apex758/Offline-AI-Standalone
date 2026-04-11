@@ -64,6 +64,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { getTeacherSubjects } from '../data/teacherConstants';
 import SmartInput from './SmartInput';
+import ClassConfigPanel from './ClassConfigPanel';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -207,7 +208,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   const [attendanceSaving, setAttendanceSaving] = useState(false);
   const [attendanceDirty, setAttendanceDirty] = useState(false);
   const [attendanceSaved, setAttendanceSaved] = useState(false);
-  const [classViewTab, setClassViewTab] = useState<'students' | 'attendance'>('students');
+  const [classViewTab, setClassViewTab] = useState<'students' | 'attendance' | 'settings'>('students');
 
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -1251,6 +1252,17 @@ ${tabScript}
             >
               <ClipboardCheck className="w-4 h-4" /> Attendance & Engagement
             </button>
+            <button
+              onClick={() => setClassViewTab('settings')}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                classViewTab === 'settings'
+                  ? 'border-current text-theme-heading'
+                  : 'border-transparent text-theme-muted hover:text-theme-label'
+              }`}
+              style={classViewTab === 'settings' ? { color: accentColor } : {}}
+            >
+              <BookOpen className="w-4 h-4" /> Class Settings
+            </button>
           </div>
         </div>
 
@@ -1430,6 +1442,11 @@ ${tabScript}
                 </>
               )}
             </div>
+          )}
+
+          {/* ── Class Settings Tab ── */}
+          {classViewTab === 'settings' && (
+            <ClassConfigPanel className={cls} gradeLevel={grade} accentColor={accentColor} />
           )}
         </div>
       </div>

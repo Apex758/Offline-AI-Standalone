@@ -13,6 +13,7 @@ import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import Baby01Icon from '@hugeicons/core-free-icons/Baby01Icon';
+import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -48,6 +49,7 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import DurationPicker from './ui/DurationPicker';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
@@ -462,6 +464,52 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
+
+  const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
+  const [selectedClassName, setSelectedClassName] = useState<string>('');
+  const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
+  useEffect(() => { fetchClasses().then(setAvailableClasses).catch(() => {}); }, []);
+
+  const applyClassConfig = (cfg: ClassConfig, label: string) => {
+    setFormData(prev => {
+      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
+        const current: any = prev[key];
+        if (Array.isArray(current)) {
+          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
+        }
+        if (typeof current === 'boolean') {
+          return (current || !!incoming) as FormData[K];
+        }
+        if (typeof current === 'string') {
+          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
+        }
+        return (current ?? incoming) as FormData[K];
+      };
+      return {
+        ...prev,
+        curriculumSubject: merge('curriculumSubject', cfg.subject),
+        strand: merge('strand', cfg.strand),
+        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
+        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
+        students: merge('students', cfg.studentCount != null ? String(cfg.studentCount) : ''),
+        duration: merge('duration', cfg.classPeriodDuration),
+        additionalRequirements: merge('additionalRequirements', cfg.additionalInstructions),
+      };
+    });
+    setClassContextApplied(label);
+  };
+
+  const handleSelectClass = async (value: string) => {
+    setSelectedClassName(value);
+    if (!value) { setClassContextApplied(null); return; }
+    const [gl, cls] = value.split('::');
+    try {
+      const cfg = await fetchClassConfig(cls, gl || undefined);
+      applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+    } catch (e) {
+      console.error('Failed to load class config', e);
+    }
+  };
 
   // (Removed manual refs for initialization tracking)
 
@@ -921,6 +969,13 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
     const prompt = buildKindergartenPrompt(mappedData, settings.language);
 
+    const [pickedGrade, pickedClass] = (selectedClassName || '').split('::');
+    const formDataWithClass = {
+      ...formData,
+      className: pickedClass || (formData as any).className || '',
+      gradeLevel: (formData as any).gradeLevel || pickedGrade || '',
+    };
+
     if (queueEnabled) {
       enqueue({
         label: `Kindergarten Plan - ${formData.lessonTopic || 'Untitled'}`,
@@ -929,6 +984,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         endpoint: ENDPOINT,
         prompt,
         generationMode: settings.generationMode,
+        extraMessageData: { formData: formDataWithClass },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -945,6 +1001,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     try {
       ws.send(JSON.stringify({
         prompt,
+        formData: formDataWithClass,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
@@ -1198,6 +1255,39 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
+
+                {/* Class picker -- auto-fills all class-level fields from Class Manager */}
+                <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>
+                    Class (auto-fills from Class Manager settings)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={selectedClassName}
+                      onChange={(e) => handleSelectClass(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-sm"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                    >
+                      <option value="">-- Select a class (optional) --</option>
+                      {availableClasses.map(c => {
+                        const key = `${c.grade_level || ''}::${c.class_name}`;
+                        const hasCfg = c.config && Object.keys(c.config).length > 0;
+                        return (
+                          <option key={key} value={key}>
+                            {c.grade_level ? `Grade ${c.grade_level} -- ` : ''}Class {c.class_name}
+                            {hasCfg ? '  [configured]' : '  [no settings]'}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  {classContextApplied && (
+                    <p className="text-xs mt-2 text-theme-muted">
+                      Auto-filled from <strong>{classContextApplied}</strong>. You can still override any field below.
+                    </p>
+                  )}
+                </div>
+
                 <div data-tutorial="kinder-planner-theme">
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     {t('forms.topic')} <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
@@ -1401,14 +1491,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     {t('forms.duration')} <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
+                  <DurationPicker
                     value={formData.duration}
-                    onChange={(e) => handleInputChange('duration', e.target.value)}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                    min="15"
-                    max="480"
+                    onChange={(val) => handleInputChange('duration', val)}
+                    accentColor={tabColor}
                     placeholder="15 minutes to 8 hours"
                   />
                 </div>

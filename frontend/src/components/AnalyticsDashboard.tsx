@@ -68,6 +68,7 @@ import TaskEditModal from './modals/TaskEditModal';
 import CalendarModal from './CalendarModal';
 import TaskListWidget from './widgets/TaskListWidget';
 import CompactCalendar from './widgets/CompactCalendar';
+import { useUnifiedCalendarFeed } from '../hooks/useUnifiedCalendarFeed';
 import ChartCarousel from './charts/ChartCarousel';
 import CurriculumProgressWidget from './widgets/CurriculumProgressWidget';
 import MostUsedTools from './widgets/MostUsedTools';
@@ -92,6 +93,14 @@ interface AnalyticsDashboardProps {
   tabColors?: { [key: string]: string };
   isActive?: boolean;
 }
+
+// Phase 5: small wrapper that pulls from /api/calendar/unified and threads
+// the result into CompactCalendar as a 4th data dict. Kept inside this file
+// so AnalyticsDashboard remains the single integration point.
+const CompactCalendarWithUnifiedFeed: React.FC<React.ComponentProps<typeof CompactCalendar>> = (props) => {
+  const { eventsByDate } = useUnifiedCalendarFeed(props.selectedDate);
+  return <CompactCalendar {...props} unifiedEventsByDate={eventsByDate} />;
+};
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   tabId,
@@ -1063,8 +1072,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
           {/* Right Column - 2/5 */}
           <div className="col-span-2 space-y-6" data-tutorial="analytics-widgets-section">
-            {/* Compact Calendar */}
-            <CompactCalendar
+            {/* Compact Calendar (Phase 5: also pulls from /api/calendar/unified) */}
+            <CompactCalendarWithUnifiedFeed
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
               activityByDate={activityByDate}

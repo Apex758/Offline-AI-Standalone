@@ -83,6 +83,8 @@ interface CompactCalendarProps {
   tasksByDate?: { [date: string]: any[] };
   milestonesByDate?: { [date: string]: any[] };
   activityByDate?: { [date: string]: number };
+  // Phase 5: unified calendar feed (lesson_plan, school_year, holiday, timetable, ...)
+  unifiedEventsByDate?: { [date: string]: any[] };
   onDateSelect: (date: Date) => void;
   selectedDate: Date;
   onExpandClick: () => void;
@@ -99,6 +101,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
   tasksByDate = {},
   milestonesByDate = {},
   activityByDate = {},
+  unifiedEventsByDate = {},
   onDateSelect,
   selectedDate,
   onExpandClick,
@@ -187,6 +190,8 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
       resourceCount: resourcesByDate[dateKey]?.length || 0,
       taskCount: tasksByDate[dateKey]?.length || 0,
       milestoneCount: milestonesByDate[dateKey]?.length || 0,
+      // Phase 5: unified feed (lesson_plan, school_year, holiday, timetable, scheduled_task, daily_plan)
+      unifiedCount: unifiedEventsByDate[dateKey]?.length || 0,
     };
   };
 
@@ -286,11 +291,11 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
             </div>
             <div className="cc-days-grid">
               {monthDays.map((day, idx) => {
-                const { resourceCount, taskCount, milestoneCount } = getActivityIndicator(day);
+                const { resourceCount, taskCount, milestoneCount, unifiedCount } = getActivityIndicator(day);
                 const isSelected = isSameDay(day, selectedDate);
                 const isTodayDate = isToday(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
-                const hasActivity = resourceCount > 0 || taskCount > 0 || milestoneCount > 0;
+                const hasActivity = resourceCount > 0 || taskCount > 0 || milestoneCount > 0 || unifiedCount > 0;
                 return (
                   <button
                     key={idx}
@@ -304,6 +309,13 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
                         {resourceCount > 0 && <div className={`cc-dot ${isSelected ? 'cc-dot-selected' : 'cc-dot-resource'}`} />}
                         {taskCount > 0 && <div className={`cc-dot ${isSelected ? 'cc-dot-selected' : 'cc-dot-task'}`} />}
                         {milestoneCount > 0 && <div className={`cc-dot ${isSelected ? 'cc-dot-selected' : 'cc-dot-milestone'}`} />}
+                        {unifiedCount > 0 && (
+                          <div
+                            className={`cc-dot ${isSelected ? 'cc-dot-selected' : ''}`}
+                            style={!isSelected ? { background: '#7c3aed' } : undefined}
+                            title={`${unifiedCount} synced calendar event${unifiedCount !== 1 ? 's' : ''}`}
+                          />
+                        )}
                       </div>
                     )}
                   </button>

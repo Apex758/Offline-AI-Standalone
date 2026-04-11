@@ -423,3 +423,187 @@ Use this to track execution. Check off each step as it is completed and smoke-te
 - [ ] Slim `main.py` down to ~150 lines
 - [ ] Full regression test
 - [ ] Merge to main
+
+---
+
+## Related Frontend Refactors
+
+This plan covers the backend `main.py` split. Parallel frontend refactor work
+is tracked in `plans/GENERATOR_OPTIMISATION_PLAN.md`. Recently completed from
+that plan (2026-04-11):
+
+- [x] New data module `frontend/src/data/generatorPresets.ts` — single source of
+      truth for quiz presets, rubric presets, duration chips, and last-used
+      quiz settings persistence (localStorage).
+- [x] New shared component `frontend/src/components/ui/DurationPicker.tsx` —
+      one-click chip row (30/40/45/60/80) with free-text fallback.
+- [x] DurationPicker wired into `LessonPlanner`, `KindergartenPlanner`,
+      `MultigradePlanner`, and `CrossCurricularPlanner` (replaced free-typed
+      number inputs).
+- [x] `QuizGenerator` — added Quick Preset chip row (Quick Check / Full Test /
+      Mixed Assessment / Short Answer Only) and persists last-used
+      `questionTypes` / `cognitiveLevels` / `numberOfQuestions` /
+      `timeLimitPerQuestion` to localStorage after each successful generation.
+      `getDefaultFormData()` now hydrates new tabs from those saved values.
+- [x] `RubricGenerator` — selecting an assignment type (Essay, Presentation,
+      Project, Lab Report, Group Work, Creative Writing, Portfolio) now
+      auto-fills `focusAreas` and `performanceLevels` with sensible soft
+      defaults. Teacher can still tweak afterwards.
+
+Still pending in the generator plan (not started):
+- Import Lesson Plan into RubricGenerator (mirroring QuizGenerator's
+  `lockedLessonPlan`).
+- Teaching Style preset / persist Step 2 defaults in `LessonPlanner`.
+- "Send to Quiz / Send to Rubric" buttons on the lesson plan output.
+- Collapsing rarely-used fields into advanced-options accordions.
+
+---
+
+# Class-Level Configuration System
+
+**Goal:** Eliminate repetitive re-entry of class-wide settings (subject,
+learning styles, special needs, reading level, assessment prefs, etc.) across
+every generator. Configure a class once in the Class Manager; every generator
+auto-fills and the backend also injects a "CLASS CONTEXT" block into the LLM
+system prompt so hidden fields still reach the model.
+
+## Architecture
+
+```
+Class Manager (UI)
+  -> ClassConfigPanel.tsx  (8 sections, 33 fields)
+     -> PUT /api/classes/config        { class_name, grade_level, config }
+        -> student_service.save_class_config
+           -> class_configs table (SQLite, JSON blob per class+grade)
+
+Generator (UI)
+  -> Class picker dropdown (top of form)
+     -> GET /api/classes/config?class_name=X&grade_level=Y
+        -> student_service.get_class_config
+     -> applyClassConfig() merges into local formData (non-destructive)
+  -> On generate, sends { formData: { ...formData, className, gradeLevel } }
+     -> WS /ws/{lesson-plan|quiz|worksheet|rubric}
+        -> build_class_context_block(form_data)
+           -> looks up stored config, appends block to system_prompt
+```
+
+## Backend surface
+
+**New table** — `backend/student_service.py`:
+```
+CREATE TABLE class_configs (
+    class_name   TEXT NOT NULL,
+    grade_level  TEXT NOT NULL DEFAULT '',
+    config       TEXT NOT NULL DEFAULT '{}',   -- JSON
+    updated_at   TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (class_name, grade_level)
+)
+```
+
+**New functions** — `backend/student_service.py`:
+- `get_class_config(class_name, grade_level=None) -> dict`
+- `save_class_config(class_name, grade_level, config) -> dict`
+- `delete_class_config(class_name, grade_level=None) -> bool`
+- `list_classes(...)` — now merges `config` and `student_count` into each row.
+
+**New endpoints** — `backend/main.py`:
+- `GET    /api/classes/config?class_name=&grade_level=`
+- `PUT    /api/classes/config`  body: `{ class_name, grade_level, config }`
+- `DELETE /api/classes/config?class_name=&grade_level=`
+
+**New helper** — `backend/main.py`:
+- `build_class_context_block(form_data) -> str` — reads `className` +
+  `gradeLevel` from `form_data`, looks up stored config, and returns a
+  fully-formatted "CLASS CONTEXT" block listing 30+ class-level attributes.
+  Returns empty string when no class is selected or no config is stored.
+
+**Injection points** — appended to `system_prompt` right before
+`build_prompt(system_prompt, prompt)`:
+- `@app.websocket("/ws/lesson-plan")`
+- `@app.websocket("/ws/quiz")`
+- `@app.websocket("/ws/rubric")`
+- `@app.websocket("/ws/worksheet")`
+
+## Frontend surface
+
+**New lib** — `frontend/src/lib/classConfig.ts`:
+- `ClassConfig` interface (33 optional fields covering curriculum,
+  composition, learner profile, special needs, reading/language, assessment,
+  materials, pacing, policies).
+- `ClassSummary` (class_name, grade_level, student_count, config).
+- `fetchClasses()`, `fetchClassConfig()`, `saveClassConfig()`.
+- `mergeClassConfig()` helper — overrides only win when non-empty.
+
+**New hook** — `frontend/src/hooks/useClassContext.ts`:
+- `useClassContext(className, gradeLevel)` — reusable loader for any future
+  generator that needs to pull class config.
+
+**New component** — `frontend/src/components/ClassConfigPanel.tsx`:
+- 8 sections (Curriculum, Composition, Learner profile, Special needs,
+  Reading & language, Assessment preferences, Materials, Pacing & general).
+- Chip-based multi-select UIs, autosave button with saved-indicator.
+- Lives inside the Class Manager's existing class view as a third tab.
+
+**ClassManagement.tsx changes:**
+- Added `'settings'` to the `classViewTab` union.
+- Added a "Class Settings" tab button next to Students / Attendance.
+- Renders `<ClassConfigPanel className={cls} gradeLevel={grade} />` when
+  the settings tab is active.
+
+**Generator wiring (all 4):**
+Each generator has:
+1. `availableClasses` / picker state vars (names differ per file to avoid
+   collisions — e.g. `configClassName` in Quiz/Worksheet/Rubric,
+   `selectedClassName` in LessonPlanner).
+2. A `fetchClasses()` effect populating the dropdown.
+3. An `applyClassConfig(cfg, label)` merger that never overwrites
+   already-populated fields (preserves per-generation overrides).
+4. A `handleSelectClass(value)` that splits the `"${grade}::${class}"` key,
+   sets `gradeLevel` if empty, and applies config.
+5. A dashed-border class picker UI at the top of the form, with
+   "[configured]" / "[no settings]" hints and an "Auto-filled from X"
+   confirmation message.
+6. Outgoing payload merges `className` and `gradeLevel` into `formData`
+   before the WS `send` / queue enqueue call, so the backend can look up
+   the full config and build its `CLASS CONTEXT` block.
+
+## Fields wired per generator
+
+| Generator | Direct field auto-fills |
+|---|---|
+| LessonPlanner | subject, strand, outcomes, studentCount, duration, pedagogicalStrategies, learningStyles, learningPreferences, multipleIntelligences, customLearningStyles, materials, prerequisiteSkills, specialNeeds, specialNeedsDetails, additionalInstructions (16 fields) |
+| QuizGenerator | subject, strand, outcomes, defaultQuestionTypes, defaultCognitiveLevels, defaultTimeLimitPerQuestion (7 fields) |
+| WorksheetGenerator | subject, strand, outcomes, studentCount (5 fields — form lacks learning-style / materials / special-needs fields) |
+| RubricGenerator | subject, strand, outcomes, performanceLevels, includePointValues, focusAreas, specificRequirements (8 fields) |
+
+All other class config fields (ELL%, cultural notes, behavior support,
+bilingual program, reading level, preferred assessment format, etc.) still
+reach the LLM via the backend-injected `CLASS CONTEXT` block even though
+they have no visible form field.
+
+## Status
+
+Phase 1 — class table, Class Manager UI, auto-fill in all 4 generators — **shipped.**
+Phase 2 — backend `CLASS CONTEXT` prompt injection for all 4 generators — **shipped.**
+
+## Still pending
+
+- **Form-field expansion (Phase 3):** add visible fields to WorksheetGenerator
+  and QuizGenerator for learning styles, materials, prerequisites, and
+  accommodations so teachers can override the class-level values per
+  generation (currently only overridable through the Class Manager).
+- **Migrations:** `list_classes()` still derives classes from the `students`
+  table via `DISTINCT`. A dedicated `classes` table with a stable
+  `class_id` is needed when we start attaching schedules / timetables /
+  seating charts to classes.
+- **Class config import/export:** allow exporting a class config as JSON
+  and importing it into another class (teacher-to-teacher sharing).
+- **Per-student overrides:** individual accommodations (IEP-style) stored
+  on the `students` row should further augment the CLASS CONTEXT block when
+  a specific student is named in a prompt (e.g. differentiated worksheet
+  packages).
+- **Image Studio + other generators:** the same class picker pattern should
+  be added to `ImageStudio`, `ReportCardGenerator`, and any future
+  generator. The `useClassContext` hook is already available for this.
+- **i18n:** ClassConfigPanel strings are hardcoded English — wire through
+  `useTranslation()` like the rest of Class Manager.

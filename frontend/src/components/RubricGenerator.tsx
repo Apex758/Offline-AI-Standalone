@@ -54,6 +54,8 @@ import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
+import { RUBRIC_PRESETS } from '../data/generatorPresets';
+import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 const ENDPOINT = '/ws/rubric';
@@ -544,6 +546,60 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
   const { matchCount, matchedHistories, sortedHistories: sortedRubricHistories } = useHistoryMatching(formData, rubricHistories);
 
+  // Class config auto-fill state
+  const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
+  const [configClassName, setConfigClassName] = useState<string>('');
+  const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchClasses().then(setConfigAvailableClasses).catch(() => {});
+  }, []);
+
+  const applyClassConfig = (cfg: ClassConfig, label: string) => {
+    setFormData(prev => {
+      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
+        const current: any = prev[key];
+        if (Array.isArray(current)) {
+          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
+        }
+        if (typeof current === 'boolean') {
+          return (current || !!incoming) as FormData[K];
+        }
+        if (typeof current === 'string') {
+          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
+        }
+        return (current ?? incoming) as FormData[K];
+      };
+      return {
+        ...prev,
+        subject: merge('subject', cfg.subject),
+        strand: merge('strand', cfg.strand),
+        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
+        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
+        performanceLevels: merge('performanceLevels', cfg.performanceLevels),
+        includePointValues: merge('includePointValues', cfg.includePointValues),
+        focusAreas: merge('focusAreas', cfg.gradingFocusAreas),
+        specificRequirements: merge('specificRequirements', cfg.additionalInstructions),
+      };
+    });
+    setClassConfigApplied(label);
+  };
+
+  const handleSelectConfigClass = async (value: string) => {
+    setConfigClassName(value);
+    if (!value) { setClassConfigApplied(null); return; }
+    const [gl, cls] = value.split('::');
+    try {
+      const cfg = await fetchClassConfig(cls, gl || undefined);
+      if (gl && !formData.gradeLevel) {
+        setFormData(prev => ({ ...prev, gradeLevel: gl }));
+      }
+      applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+    } catch (e) {
+      console.error('Failed to load class config', e);
+    }
+  };
+
   const [generatedRubric, setGeneratedRubric] = useState<string>(() => {
     // ✅ First check savedData (for resource manager view/edit)
     if (savedData?.generatedRubric && typeof savedData.generatedRubric === 'string') {
@@ -867,6 +923,14 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
     const prompt = buildRubricPrompt(formData, settings.language);
 
+    // Include selected className so backend can inject class context
+    const [pickedGrade, pickedClass] = (configClassName || '').split('::');
+    const formDataWithClass = {
+      ...formData,
+      className: pickedClass || (formData as any).className || '',
+      gradeLevel: formData.gradeLevel || pickedGrade || '',
+    };
+
     if (queueEnabled) {
       enqueue({
         label: `Rubric - ${formData.assignmentTitle || formData.subject}`,
@@ -875,7 +939,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         endpoint: ENDPOINT,
         prompt,
         generationMode: settings.generationMode,
-        extraMessageData: { formData },
+        extraMessageData: { formData: formDataWithClass },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -892,7 +956,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     try {
       ws.send(JSON.stringify({
         prompt,
-        formData,
+        formData: formDataWithClass,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
@@ -1135,6 +1199,38 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
+                {/* Class picker -- auto-fills from Class Manager settings */}
+                <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>
+                    Class (auto-fills from Class Manager settings)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={configClassName}
+                      onChange={(e) => handleSelectConfigClass(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-sm"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                    >
+                      <option value="">-- Select a class (optional) --</option>
+                      {configAvailableClasses.map(c => {
+                        const key = `${c.grade_level || ''}::${c.class_name}`;
+                        const hasCfg = c.config && Object.keys(c.config).length > 0;
+                        return (
+                          <option key={key} value={key}>
+                            {c.grade_level ? `Grade ${c.grade_level} -- ` : ''}Class {c.class_name}
+                            {hasCfg ? '  [configured]' : '  [no settings]'}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  {classConfigApplied && (
+                    <p className="text-xs mt-2 text-theme-muted">
+                      Auto-filled from <strong>{classConfigApplied}</strong>. You can still override any field below.
+                    </p>
+                  )}
+                </div>
+
                 <div data-tutorial="rubric-generator-assignment">
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Assignment Title <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
@@ -1155,7 +1251,22 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </label>
                   <select
                     value={formData.assignmentType}
-                    onChange={(e) => handleInputChange('assignmentType', e.target.value)}
+                    onChange={(e) => {
+                      const nextType = e.target.value;
+                      const preset = RUBRIC_PRESETS[nextType];
+                      if (preset) {
+                        // Auto-fill soft defaults for focusAreas + performanceLevels.
+                        // Teacher can still tweak either after selection.
+                        setFormData(prev => ({
+                          ...prev,
+                          assignmentType: nextType,
+                          focusAreas: [...preset.focusAreas],
+                          performanceLevels: preset.performanceLevels,
+                        }));
+                      } else {
+                        handleInputChange('assignmentType', nextType);
+                      }
+                    }}
                     data-validation-error={validationErrors.assignmentType ? 'true' : undefined}
                     className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.assignmentType ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1163,6 +1274,11 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     <option value="">Select type</option>
                     {assignmentTypes.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
+                  {formData.assignmentType && RUBRIC_PRESETS[formData.assignmentType] && (
+                    <p className="text-xs text-theme-hint mt-1">
+                      Focus areas and performance levels auto-filled — tweak below if needed.
+                    </p>
+                  )}
                 </div>
 
                 <div data-tutorial="rubric-generator-grade">

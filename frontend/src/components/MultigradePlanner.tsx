@@ -15,6 +15,7 @@ import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import Layers01Icon from '@hugeicons/core-free-icons/Layers01Icon';
+import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -55,6 +56,7 @@ import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import { MaterialsSelector } from './ui/MaterialsSelector';
+import DurationPicker from './ui/DurationPicker';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -370,6 +372,63 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     return null;
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
+
+  const [availableClasses, setAvailableClasses] = useState<ClassSummary[]>([]);
+  const [selectedClassName, setSelectedClassName] = useState<string>('');
+  const [classContextApplied, setClassContextApplied] = useState<string | null>(null);
+  useEffect(() => { fetchClasses().then(setAvailableClasses).catch(() => {}); }, []);
+
+  const applyClassConfig = (cfg: ClassConfig, label: string) => {
+    setFormData(prev => {
+      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
+        const current: any = prev[key];
+        if (Array.isArray(current)) {
+          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
+        }
+        if (typeof current === 'boolean') {
+          return (current || !!incoming) as FormData[K];
+        }
+        if (typeof current === 'string') {
+          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
+        }
+        return (current ?? incoming) as FormData[K];
+      };
+      return {
+        ...prev,
+        subject: merge('subject', cfg.subject),
+        strand: merge('strand', cfg.strand),
+        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
+        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
+        totalStudents: merge('totalStudents', cfg.studentCount != null ? String(cfg.studentCount) : ''),
+        duration: merge('duration', cfg.classPeriodDuration),
+        pedagogicalStrategies: merge('pedagogicalStrategies', cfg.pedagogicalStrategies),
+        learningStyles: merge('learningStyles', cfg.learningStyles),
+        learningPreferences: merge('learningPreferences', cfg.learningPreferences),
+        multipleIntelligences: merge('multipleIntelligences', cfg.multipleIntelligences),
+        customLearningStyles: merge('customLearningStyles', cfg.customLearningStyles),
+        materials: merge('materials', cfg.availableMaterials),
+        prerequisiteSkills: merge('prerequisiteSkills', cfg.prerequisiteSkills),
+        specialNeeds: merge('specialNeeds', cfg.hasSpecialNeeds),
+        specialNeedsDetails: merge('specialNeedsDetails', cfg.specialNeedsDetails),
+      };
+    });
+    setClassContextApplied(label);
+  };
+
+  const handleSelectClass = async (value: string) => {
+    setSelectedClassName(value);
+    if (!value) { setClassContextApplied(null); return; }
+    const [gl, cls] = value.split('::');
+    try {
+      const cfg = await fetchClassConfig(cls, gl || undefined);
+      if (gl && !formData.gradeRange) {
+        setFormData(prev => ({ ...prev, gradeRange: gl }));
+      }
+      applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+    } catch (e) {
+      console.error('Failed to load class config', e);
+    }
+  };
 
   // Add timeout handling for stuck generations
   const [generationTimeout, setGenerationTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -807,6 +866,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
     const prompt = buildMultigradePrompt(multigradeFormData, settings.language);
 
+    const [pickedGrade, pickedClass] = (selectedClassName || '').split('::');
+    const formDataWithClass = {
+      ...formData,
+      className: pickedClass || (formData as any).className || '',
+      gradeLevel: (formData as any).gradeLevel || pickedGrade || '',
+    };
+
     if (queueEnabled) {
       enqueue({
         label: `Multigrade Plan - ${formData.topic || formData.subject}`,
@@ -815,6 +881,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         endpoint: ENDPOINT,
         prompt,
         generationMode: settings.generationMode,
+        extraMessageData: { formData: formDataWithClass },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -847,6 +914,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     try {
       ws.send(JSON.stringify({
         prompt,
+        formData: formDataWithClass,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
@@ -1105,6 +1173,38 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
 
+                    {/* Class picker -- auto-fills all class-level fields from Class Manager */}
+                    <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>
+                        Class (auto-fills from Class Manager settings)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={selectedClassName}
+                          onChange={(e) => handleSelectClass(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-sm"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        >
+                          <option value="">-- Select a class (optional) --</option>
+                          {availableClasses.map(c => {
+                            const key = `${c.grade_level || ''}::${c.class_name}`;
+                            const hasCfg = c.config && Object.keys(c.config).length > 0;
+                            return (
+                              <option key={key} value={key}>
+                                {c.grade_level ? `Grade ${c.grade_level} -- ` : ''}Class {c.class_name}
+                                {hasCfg ? '  [configured]' : '  [no settings]'}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                      {classContextApplied && (
+                        <p className="text-xs mt-2 text-theme-muted">
+                          Auto-filled from <strong>{classContextApplied}</strong>. You can still override any field below.
+                        </p>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div data-tutorial="multigrade-planner-grades">
                         <label className="block text-sm font-medium text-theme-label mb-2">
@@ -1195,13 +1295,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         <label className="block text-sm font-medium text-theme-label mb-2">
                           {t('forms.duration')} <span className="text-red-500">*</span>
                         </label>
-                        <input
-                          type="number"
+                        <DurationPicker
                           value={formData.duration}
-                          onChange={(e) => handleInputChange('duration', e.target.value)}
-                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.duration ? 'validation-error' : ''}`}
-                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                          data-validation-error={validationErrors.duration ? 'true' : undefined}
+                          onChange={(val) => handleInputChange('duration', val)}
+                          accentColor={tabColor}
+                          hasError={validationErrors.duration}
                         />
                       </div>
                     </div>

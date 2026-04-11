@@ -91,6 +91,7 @@ import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import ImageModeSelector from './ui/ImageModeSelector';
 import type { ImageMode } from '../types';
 import { NeuroSegment } from './ui/NeuroSegment';
+import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 
 
 // Curriculum types removed — now using curriculumLoader directly
@@ -238,6 +239,51 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     essentialOutcomes: '',
     specificOutcomes: ''
   });
+
+  // Class config auto-fill state
+  const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
+  const [configClassName, setConfigClassName] = useState<string>('');
+  const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchClasses().then(setConfigAvailableClasses).catch(() => {});
+  }, []);
+
+  const applyClassConfig = (cfg: ClassConfig, label: string) => {
+    setFormData(prev => {
+      const merge = <K extends keyof WorksheetFormData>(key: K, incoming: any): WorksheetFormData[K] => {
+        const current: any = prev[key];
+        if (typeof current === 'string') {
+          return ((current && current.trim() !== '') ? current : (incoming || '')) as WorksheetFormData[K];
+        }
+        return (current ?? incoming) as WorksheetFormData[K];
+      };
+      return {
+        ...prev,
+        subject: merge('subject', cfg.subject),
+        strand: merge('strand', cfg.strand),
+        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
+        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
+        studentCount: merge('studentCount', cfg.studentCount != null ? String(cfg.studentCount) : ''),
+      };
+    });
+    setClassConfigApplied(label);
+  };
+
+  const handleSelectConfigClass = async (value: string) => {
+    setConfigClassName(value);
+    if (!value) { setClassConfigApplied(null); return; }
+    const [gl, cls] = value.split('::');
+    try {
+      const cfg = await fetchClassConfig(cls, gl || undefined);
+      if (gl && !formData.gradeLevel) {
+        setFormData(prev => ({ ...prev, gradeLevel: gl }));
+      }
+      applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+    } catch (e) {
+      console.error('Failed to load class config', e);
+    }
+  };
 
   const [formData, setFormData] = useState<WorksheetFormData>(() => {
     const validStyles = ['cartoon_3d', 'line_art_bw', 'illustrated_painting', 'realistic'];
@@ -799,6 +845,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     console.log('Built prompt, jobId:', jobId);
     console.log('Using sceneSpec:', currentSceneSpec ? currentSceneSpec.scene_id : 'none');
 
+    // Include selected className so backend can inject class context
+    const [pickedGrade, pickedClass] = (configClassName || '').split('::');
+    const formDataWithClass = {
+      ...formData,
+      className: pickedClass || (formData as any).className || '',
+      gradeLevel: formData.gradeLevel || pickedGrade || '',
+    };
+
     if (queueEnabled) {
       enqueue({
         label: `Worksheet - ${formData.topic || formData.subject || 'Untitled'}`,
@@ -809,7 +863,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         generationMode: 'queued',
         extraMessageData: {
           formData: {
-            ...formData,
+            ...formDataWithClass,
             sceneSpec: currentSceneSpec,
             assetId: currentAssetId,
           },
@@ -823,7 +877,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     const message = {
       prompt,
       formData: {
-        ...formData,
+        ...formDataWithClass,
         sceneSpec: currentSceneSpec,
         assetId: currentAssetId,
       },
@@ -1323,6 +1377,38 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
+            {/* Class picker -- auto-fills from Class Manager settings */}
+            <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: worksheetTabColor, backgroundColor: `${worksheetTabColor}10` }}>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: worksheetTabColor }}>
+                Class (auto-fills from Class Manager settings)
+              </label>
+              <div className="flex items-center gap-2">
+                <select
+                  value={configClassName}
+                  onChange={(e) => handleSelectConfigClass(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-sm"
+                  style={{ '--tw-ring-color': worksheetTabColor } as React.CSSProperties}
+                >
+                  <option value="">-- Select a class (optional) --</option>
+                  {configAvailableClasses.map(c => {
+                    const key = `${c.grade_level || ''}::${c.class_name}`;
+                    const hasCfg = c.config && Object.keys(c.config).length > 0;
+                    return (
+                      <option key={key} value={key}>
+                        {c.grade_level ? `Grade ${c.grade_level} -- ` : ''}Class {c.class_name}
+                        {hasCfg ? '  [configured]' : '  [no settings]'}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              {classConfigApplied && (
+                <p className="text-xs mt-2 text-theme-muted">
+                  Auto-filled from <strong>{classConfigApplied}</strong>. You can still override any field below.
+                </p>
+              )}
+            </div>
+
             {/* Curriculum Section */}
             <div className="space-y-4" data-tutorial="worksheet-generator-curriculum">
               <h3 className="text-lg font-semibold text-theme-heading">Curriculum Alignment</h3>

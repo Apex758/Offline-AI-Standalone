@@ -99,6 +99,33 @@ process_lock = threading.Lock()
 
 # Global dict to track cancellable active generations: job_id -> threading.Event
 _active_cancel_events: dict = {}
+# Refcount so multiple concurrent requests can share one event under the same job_id
+# (e.g. ImageStudio fires N parallel image generations, all sharing the batch jobId).
+_cancel_refs: dict = {}
+_cancel_lock = threading.Lock()
+
+
+def acquire_cancel_event(job_id: str) -> threading.Event:
+    """Get-or-create a cancel event for job_id and bump its refcount.
+    Always pair with release_cancel_event in a finally block."""
+    with _cancel_lock:
+        ev = _active_cancel_events.get(job_id)
+        if ev is None:
+            ev = threading.Event()
+            _active_cancel_events[job_id] = ev
+        _cancel_refs[job_id] = _cancel_refs.get(job_id, 0) + 1
+        return ev
+
+
+def release_cancel_event(job_id: str) -> None:
+    """Decrement refcount; remove the event when no callers remain."""
+    with _cancel_lock:
+        n = _cancel_refs.get(job_id, 0) - 1
+        if n <= 0:
+            _cancel_refs.pop(job_id, None)
+            _active_cancel_events.pop(job_id, None)
+        else:
+            _cancel_refs[job_id] = n
 
 def register_process(process):
     """Register a subprocess for cleanup tracking"""
@@ -513,7 +540,9 @@ async def cancel_generation(job_id: str):
     cancel_event = _active_cancel_events.get(job_id)
     if cancel_event:
         cancel_event.set()
+        logger.info(f"[CANCEL] Set cancel event for job_id={job_id}")
         return {"status": "cancelled", "jobId": job_id}
+    logger.warning(f"[CANCEL] Unknown job_id={job_id} (no active generation found)")
     return {"status": "not_found", "jobId": job_id}
 
 
@@ -710,6 +739,90 @@ def build_prompt(system_prompt: str, user_prompt: str, prompt_format: str = None
             f"<|start_header_id|>user<|end_header_id|>\n\n{user_prompt}<|eot_id|>"
             f"<|start_header_id|>assistant<|end_header_id|>\n\n"
         )
+
+# ============================================================================
+# Class Context Helper (Phase 2: auto-inject class settings into prompts)
+# ============================================================================
+
+def build_class_context_block(form_data: dict) -> str:
+    """Return a 'Class Context' block for the system prompt built from the
+    stored class config for the class named in form_data. Returns empty
+    string if no class is selected or no config is stored. Covers fields
+    that don't have corresponding form inputs so they still reach the LLM.
+    """
+    if not isinstance(form_data, dict):
+        return ""
+    class_name = (form_data.get("className") or form_data.get("class_name") or "").strip()
+    if not class_name:
+        return ""
+    grade_level = (form_data.get("gradeLevel") or form_data.get("grade_level") or "").strip()
+    try:
+        cfg = student_service.get_class_config(class_name, grade_level or None) or {}
+    except Exception:
+        return ""
+    if not cfg:
+        return ""
+
+    lines: list[str] = []
+
+    def add(label: str, value):
+        if value is None:
+            return
+        if isinstance(value, bool):
+            if value:
+                lines.append(f"- {label}: Yes")
+            return
+        if isinstance(value, (list, tuple)):
+            vals = [str(v) for v in value if v]
+            if vals:
+                lines.append(f"- {label}: {', '.join(vals)}")
+            return
+        s = str(value).strip()
+        if s:
+            lines.append(f"- {label}: {s}")
+
+    add("Subject", cfg.get("subject"))
+    add("Curriculum strand", cfg.get("strand"))
+    add("Expected student count", cfg.get("studentCount"))
+    add("Students with IEPs / disabilities", cfg.get("studentsWithDisabilitiesCount"))
+    add("Learning styles", cfg.get("learningStyles"))
+    add("Learning preferences", cfg.get("learningPreferences"))
+    add("Multiple intelligences to engage", cfg.get("multipleIntelligences"))
+    add("Preferred pedagogical strategies", cfg.get("pedagogicalStrategies"))
+    add("Teacher notes on learning approach", cfg.get("customLearningStyles"))
+    add("Class has students with special needs", cfg.get("hasSpecialNeeds"))
+    add("Accommodation details", cfg.get("specialNeedsDetails"))
+    add("Culturally responsive teaching notes", cfg.get("culturallyResponsiveNotes"))
+    add("Class includes ELL / ESL students", cfg.get("hasELLStudents"))
+    add("ELL percentage", cfg.get("ellPercentage"))
+    add("Class includes advanced / gifted learners", cfg.get("hasAdvancedLearners"))
+    add("Behavior support focus", cfg.get("behaviorSupportFocus"))
+    add("Reading level", cfg.get("readingLevel"))
+    add("Primary language of instruction", cfg.get("primaryLanguage"))
+    add("Bilingual program", cfg.get("bilingualProgram"))
+    add("Preferred assessment format", cfg.get("preferredAssessmentFormat"))
+    add("Performance level scale (rubrics)", cfg.get("performanceLevels"))
+    add("Include point values in rubrics", cfg.get("includePointValues"))
+    add("Rubric focus areas", cfg.get("gradingFocusAreas"))
+    add("Default question types", cfg.get("defaultQuestionTypes"))
+    add("Default cognitive levels (Bloom's)", cfg.get("defaultCognitiveLevels"))
+    add("Default time per question (seconds)", cfg.get("defaultTimeLimitPerQuestion"))
+    add("Available classroom materials", cfg.get("availableMaterials"))
+    add("Prerequisite skills (already taught)", cfg.get("prerequisiteSkills"))
+    add("Class period duration", cfg.get("classPeriodDuration"))
+    add("Class-wide instructions / policies", cfg.get("additionalInstructions"))
+
+    if not lines:
+        return ""
+
+    header = (
+        f"\n\nCLASS CONTEXT (Class {class_name}"
+        f"{', Grade ' + grade_level if grade_level else ''}):\n"
+        "Apply every item below to the content you generate. Differentiate, "
+        "scaffold, and accommodate accordingly.\n"
+    )
+    return header + "\n".join(lines)
+
 
 # ============================================================================
 # Title Generation Helper Functions
@@ -1838,6 +1951,9 @@ async def websocket_lesson_plan(websocket: WebSocket):
             elif curriculum_context:
                 system_prompt += "\n\nCurriculum Alignment Context:\n" + curriculum_context
 
+            # Phase 2: inject stored class-level settings (auto-differentiation)
+            system_prompt += build_class_context_block(form_data)
+
             full_prompt = build_prompt(system_prompt, prompt)
 
             # Send curriculum references to frontend before generation
@@ -2000,6 +2116,9 @@ async def quiz_websocket(websocket: WebSocket):
                         if context_blocks:
                             system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
+            # Phase 2: inject stored class-level settings (auto-differentiation)
+            system_prompt += build_class_context_block(form_data)
+
             full_prompt = build_prompt(system_prompt, prompt)
 
             cancel_event = threading.Event()
@@ -2147,6 +2266,9 @@ async def rubric_websocket(websocket: WebSocket):
                     if context_blocks:
                         system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
+            # Phase 2: inject stored class-level settings (auto-differentiation)
+            system_prompt += build_class_context_block(form_data)
+
             full_prompt = build_prompt(system_prompt, prompt)
 
             cancel_event = threading.Event()
@@ -2258,6 +2380,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                 continue
 
             prompt = data.get("prompt", "")
+            form_data = data.get("formData", {})
             job_id = data.get("jobId") or data.get("id") or "kindergarten"
             generation_mode = data.get("generationMode", "queued")
 
@@ -2274,6 +2397,9 @@ async def kindergarten_websocket(websocket: WebSocket):
                 system_prompt = get_tier1_system_prompt("kindergarten", "K")
             else:
                 system_prompt = get_tier2_system_prompt("kindergarten")
+
+            # Phase 2: inject stored class-level settings (auto-differentiation)
+            system_prompt += build_class_context_block(form_data)
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -2381,6 +2507,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 continue
 
             prompt = data.get("prompt", "")
+            form_data = data.get("formData", {})
             job_id = data.get("jobId") or data.get("id") or "multigrade"
             generation_mode = data.get("generationMode", "queued")
 
@@ -2397,6 +2524,9 @@ async def multigrade_websocket(websocket: WebSocket):
                 system_prompt = get_tier1_system_prompt("multigrade")
             else:
                 system_prompt = get_tier2_system_prompt("multigrade")
+
+            # Phase 2: inject stored class-level settings (auto-differentiation)
+            system_prompt += build_class_context_block(form_data)
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -2523,6 +2653,9 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 system_prompt = get_tier1_system_prompt("cross-curricular", _grade)
             else:
                 system_prompt = get_tier2_system_prompt("cross-curricular")
+
+            # Phase 2: inject stored class-level settings (auto-differentiation)
+            system_prompt += build_class_context_block(form_data)
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -2674,6 +2807,9 @@ async def worksheet_websocket(websocket: WebSocket):
                     context_blocks = [c for c in context_blocks if c]
                     if context_blocks:
                         system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
+
+            # Phase 2: inject stored class-level settings (auto-differentiation)
+            system_prompt += build_class_context_block(form_data)
 
             full_prompt = build_prompt(system_prompt, prompt)
 
@@ -5046,6 +5182,7 @@ async def smart_grade_stream(
     student_files: List[UploadFile] = File(...),
     doc_id: str = Form(...),
     doc_type: str = Form("quiz"),
+    job_id: Optional[str] = Form(None),
 ):
     """Smart scan grading: try QR-based auto-grade first, fall back to OCR.
 
@@ -5054,7 +5191,9 @@ async def smart_grade_stream(
     2. If QR found -> use fast auto-grade pipeline (bubble detection or OCR with answer key)
     3. If no QR -> fall back to full OCR grading pipeline
 
-    Returns SSE stream with per-file results.
+    Returns SSE stream with per-file results. If job_id is supplied, the run is
+    cancellable via POST /api/cancel/{job_id} — the file loop checks the cancel
+    event between files and stops processing remaining scans.
     """
     from starlette.responses import StreamingResponse
     from qr_service import extract_qr_from_scan, remap_answers, remap_mc_option
@@ -5079,12 +5218,22 @@ async def smart_grade_stream(
 
     total = len(file_data)
 
+    # Register cancel event (no-op if no job_id provided)
+    cancel_event = acquire_cancel_event(job_id) if job_id else None
+
     async def event_stream():
         qr_graded = 0
         ocr_graded = 0
         failed = 0
+        cancelled = False
 
         for idx, (file_bytes, filename) in enumerate(file_data):
+            # Check cancel BEFORE starting each file — anything in progress
+            # finishes, but no new files are picked up.
+            if cancel_event and cancel_event.is_set():
+                cancelled = True
+                logger.info(f"[OCR] job_id={job_id} cancelled at file {idx}/{total}")
+                break
             result = {
                 'file_name': filename,
                 'student_name': None,
@@ -5235,8 +5384,15 @@ async def smart_grade_stream(
 
             yield f"data: {json.dumps({'event': 'result', 'index': idx, 'total': total, 'result': result})}\n\n"
 
-        # Final summary
-        yield f"data: {json.dumps({'event': 'complete', 'summary': {'qr_graded': qr_graded, 'ocr_graded': ocr_graded, 'failed': failed, 'total': total}})}\n\n"
+        # Release cancel registration (no-op if no job_id)
+        if job_id:
+            release_cancel_event(job_id)
+
+        if cancelled:
+            yield f"data: {json.dumps({'event': 'cancelled', 'summary': {'qr_graded': qr_graded, 'ocr_graded': ocr_graded, 'failed': failed, 'total': total}})}\n\n"
+        else:
+            # Final summary
+            yield f"data: {json.dumps({'event': 'complete', 'summary': {'qr_graded': qr_graded, 'ocr_graded': ocr_graded, 'failed': failed, 'total': total}})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
@@ -6145,6 +6301,28 @@ async def remove_student(student_id: str):
 @app.get("/api/classes")
 async def get_classes(grade_level: str | None = None):
     return student_service.list_classes(grade_level=grade_level)
+
+@app.get("/api/classes/config")
+async def get_class_config_endpoint(class_name: str, grade_level: str | None = None):
+    return {
+        "class_name": class_name,
+        "grade_level": grade_level,
+        "config": student_service.get_class_config(class_name, grade_level),
+    }
+
+@app.put("/api/classes/config")
+async def put_class_config_endpoint(payload: dict):
+    class_name = (payload or {}).get("class_name")
+    grade_level = (payload or {}).get("grade_level")
+    config = (payload or {}).get("config") or {}
+    if not class_name:
+        raise HTTPException(status_code=400, detail="class_name is required")
+    return student_service.save_class_config(class_name, grade_level, config)
+
+@app.delete("/api/classes/config")
+async def delete_class_config_endpoint(class_name: str, grade_level: str | None = None):
+    ok = student_service.delete_class_config(class_name, grade_level)
+    return {"success": ok}
 
 @app.post("/api/quiz-grades")
 async def add_quiz_grade(grade: QuizGradeCreate):
@@ -9132,6 +9310,7 @@ async def generate_image_base64(request: Request):
     }
     """
     print("[IMAGE-DEBUG] generate_image_base64 endpoint HIT", flush=True)
+    job_id = None
     try:
         data = await request.json()
         print(f"[IMAGE-DEBUG] Got request data, prompt={data.get('prompt', '')[:50]}", flush=True)
@@ -9146,6 +9325,7 @@ async def generate_image_base64(request: Request):
         num_steps = data.get('numInferenceSteps', None)
         init_image_b64 = data.get('initImage')
         strength = data.get('strength', 0.5)
+        job_id = data.get('jobId')  # optional; if present, request is cancellable
 
         if not prompt:
             return JSONResponse(
@@ -9167,35 +9347,61 @@ async def generate_image_base64(request: Request):
                     content={"error": "Invalid init image data"}
                 )
 
-        # Get image service
-        image_service = get_image_service()
+        # Register cancel event so this image can be cancelled before it starts.
+        # Multiple parallel images in a batch share the same job_id; refcounted.
+        cancel_event = acquire_cancel_event(job_id) if job_id else None
+        try:
+            # Bail early if cancel arrived before we got here
+            if cancel_event and cancel_event.is_set():
+                logger.info(f"[IMAGE] job_id={job_id} cancelled before start")
+                return JSONResponse(content={"success": False, "cancelled": True})
 
-        # Generate image (text-to-image or image-to-image)
-        loop = asyncio.get_running_loop()
-        image_bytes = await loop.run_in_executor(None, lambda: image_service.generate_image(
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            width=width,
-            height=height,
-            num_inference_steps=num_steps,
-            init_image=init_image_bytes,
-            strength=strength
-        ))
+            # Get image service
+            image_service = get_image_service()
 
-        if image_bytes is None:
-            return JSONResponse(
-                status_code=500,
-                content={"error": "Image generation failed"}
-            )
+            # Generate image (text-to-image or image-to-image).
+            # The image inference lock inside image_service serializes parallel
+            # batch requests; queued requests will see cancel_event when their
+            # turn comes up and bail before launching the next inference.
+            def _run():
+                # Final check after acquiring executor slot — catches the case
+                # where cancel arrived while we were waiting for the lock.
+                if cancel_event and cancel_event.is_set():
+                    return None
+                return image_service.generate_image(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    width=width,
+                    height=height,
+                    num_inference_steps=num_steps,
+                    init_image=init_image_bytes,
+                    strength=strength,
+                )
 
-        # Convert to base64
-        image_b64 = base64.b64encode(image_bytes).decode('utf-8')
-        data_uri = f"data:image/png;base64,{image_b64}"
+            loop = asyncio.get_running_loop()
+            image_bytes = await loop.run_in_executor(None, _run)
 
-        return JSONResponse(content={
-            "success": True,
-            "imageData": data_uri
-        })
+            if cancel_event and cancel_event.is_set():
+                logger.info(f"[IMAGE] job_id={job_id} cancelled during run")
+                return JSONResponse(content={"success": False, "cancelled": True})
+
+            if image_bytes is None:
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": "Image generation failed"}
+                )
+
+            # Convert to base64
+            image_b64 = base64.b64encode(image_bytes).decode('utf-8')
+            data_uri = f"data:image/png;base64,{image_b64}"
+
+            return JSONResponse(content={
+                "success": True,
+                "imageData": data_uri
+            })
+        finally:
+            if job_id:
+                release_cancel_event(job_id)
 
     except Exception as e:
         import traceback

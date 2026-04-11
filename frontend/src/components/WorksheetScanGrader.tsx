@@ -173,21 +173,27 @@ const WorksheetScanGrader: React.FC<WorksheetScanGraderProps> = ({ worksheetId: 
     setResults([]);
     setGradingProgress({ current: 0, total: scanFiles.length });
 
-    const formData = new FormData();
-    formData.append('doc_id', worksheetId);
-    formData.append('doc_type', 'worksheet');
-    scanFiles.forEach(f => formData.append('student_files', f));
-
-    // Set up cancellation + queue panel entry
+    // Set up cancellation + queue panel entry first so we have queueId for FormData
     const abortController = new AbortController();
     gradeAbortRef.current = abortController;
     const queueId = addExternalItem({
       label: `Worksheet Scans: ${scanFiles.length} file${scanFiles.length === 1 ? '' : 's'}`,
       toolType: 'Worksheet Scan Grading',
       tabId: tabId || 'worksheet-scan-grader',
-      onCancel: () => { try { abortController.abort(); } catch { /* ignore */ } },
+      onCancel: () => {
+        try { abortController.abort(); } catch { /* ignore */ }
+        // Tell the backend to stop processing remaining scan files.
+        fetch(`${API_BASE}/api/cancel/${encodeURIComponent(queueId)}`, { method: 'POST' })
+          .catch(() => { /* fire and forget */ });
+      },
     });
     gradeQueueIdRef.current = queueId;
+
+    const formData = new FormData();
+    formData.append('doc_id', worksheetId);
+    formData.append('doc_type', 'worksheet');
+    formData.append('job_id', queueId);
+    scanFiles.forEach(f => formData.append('student_files', f));
 
     try {
       const response = await fetch(`${API_BASE}/api/smart-grade-stream`, {

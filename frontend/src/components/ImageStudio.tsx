@@ -974,6 +974,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       tabId,
       onCancel: () => {
         try { abortController.abort(); } catch { /* ignore */ }
+        // Tell the backend to skip any not-yet-started images in this batch.
+        // The currently-running image finishes (no mid-step cancel in Tier 1).
+        fetch(`http://localhost:8000/api/cancel/${encodeURIComponent(queueId)}`, { method: 'POST' })
+          .catch(() => { /* fire and forget */ });
       },
     });
     generateQueueIdRef.current = queueId;
@@ -1007,6 +1011,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             height,
             numInferenceSteps,
             signal: abortController.signal,
+            jobId: queueId,
             ...(modelCapabilities.supports_img2img && referenceImage && { initImage: referenceImage, strength: img2imgStrength })
           });
 

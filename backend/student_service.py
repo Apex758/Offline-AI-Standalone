@@ -201,6 +201,15 @@ def init_db():
             )
         ''')
         conn.execute('''
+            CREATE TABLE IF NOT EXISTS class_configs (
+                class_name   TEXT NOT NULL,
+                grade_level  TEXT NOT NULL DEFAULT '',
+                config       TEXT NOT NULL DEFAULT '{}',
+                updated_at   TEXT DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (class_name, grade_level)
+            )
+        ''')
+        conn.execute('''
             CREATE TABLE IF NOT EXISTS answer_region_templates (
                 id              TEXT PRIMARY KEY,
                 doc_type        TEXT NOT NULL,
@@ -371,7 +380,83 @@ def list_classes(grade_level: str | None = None) -> list[dict]:
             rows = conn.execute(
                 'SELECT DISTINCT class_name, grade_level FROM students WHERE class_name IS NOT NULL ORDER BY grade_level, class_name'
             ).fetchall()
-        return [{'class_name': r['class_name'], 'grade_level': r['grade_level']} for r in rows]
+        # Merge in stored class_configs so callers get the config alongside
+        cfg_rows = conn.execute('SELECT class_name, grade_level, config FROM class_configs').fetchall()
+        cfg_map: dict[tuple[str, str], dict] = {}
+        for r in cfg_rows:
+            try:
+                cfg_map[(r['class_name'], r['grade_level'] or '')] = json.loads(r['config'] or '{}')
+            except Exception:
+                cfg_map[(r['class_name'], r['grade_level'] or '')] = {}
+        result = []
+        for r in rows:
+            cls = r['class_name']
+            gl = r['grade_level'] or ''
+            cfg = cfg_map.get((cls, gl), {})
+            # Count students for this class
+            count_row = conn.execute(
+                'SELECT COUNT(*) AS c FROM students WHERE class_name = ? AND COALESCE(grade_level, "") = ?',
+                (cls, gl)
+            ).fetchone()
+            result.append({
+                'class_name': cls,
+                'grade_level': r['grade_level'],
+                'student_count': int(count_row['c']) if count_row else 0,
+                'config': cfg,
+            })
+        return result
+    finally:
+        conn.close()
+
+
+def get_class_config(class_name: str, grade_level: str | None = None) -> dict:
+    """Return stored class config dict (empty dict if none)."""
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT config FROM class_configs WHERE class_name = ? AND grade_level = ?',
+            (class_name, grade_level or '')
+        ).fetchone()
+        if not row:
+            return {}
+        try:
+            return json.loads(row['config'] or '{}')
+        except Exception:
+            return {}
+    finally:
+        conn.close()
+
+
+def save_class_config(class_name: str, grade_level: str | None, config: dict) -> dict:
+    """Upsert the class config JSON blob. Returns the stored config."""
+    if not class_name:
+        raise ValueError('class_name is required')
+    conn = _get_conn()
+    try:
+        gl = grade_level or ''
+        payload = json.dumps(config or {})
+        conn.execute(
+            '''INSERT INTO class_configs (class_name, grade_level, config, updated_at)
+               VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+               ON CONFLICT(class_name, grade_level)
+               DO UPDATE SET config = excluded.config, updated_at = CURRENT_TIMESTAMP''',
+            (class_name, gl, payload)
+        )
+        conn.commit()
+        return {'class_name': class_name, 'grade_level': grade_level, 'config': config or {}}
+    finally:
+        conn.close()
+
+
+def delete_class_config(class_name: str, grade_level: str | None = None) -> bool:
+    conn = _get_conn()
+    try:
+        cur = conn.execute(
+            'DELETE FROM class_configs WHERE class_name = ? AND grade_level = ?',
+            (class_name, grade_level or '')
+        )
+        conn.commit()
+        return cur.rowcount > 0
     finally:
         conn.close()
 

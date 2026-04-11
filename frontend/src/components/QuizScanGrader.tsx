@@ -173,21 +173,27 @@ const QuizScanGrader: React.FC<QuizScanGraderProps> = ({ quizId: initialQuizId, 
     setResults([]);
     setGradingProgress({ current: 0, total: scanFiles.length });
 
-    const formData = new FormData();
-    formData.append('doc_id', quizId);
-    formData.append('doc_type', 'quiz');
-    scanFiles.forEach(f => formData.append('student_files', f));
-
-    // Set up cancellation + queue panel entry
+    // Set up cancellation + queue panel entry first so we have queueId for FormData
     const abortController = new AbortController();
     gradeAbortRef.current = abortController;
     const queueId = addExternalItem({
       label: `Quiz Scans: ${scanFiles.length} file${scanFiles.length === 1 ? '' : 's'}`,
       toolType: 'Quiz Scan Grading',
       tabId: tabId || 'quiz-scan-grader',
-      onCancel: () => { try { abortController.abort(); } catch { /* ignore */ } },
+      onCancel: () => {
+        try { abortController.abort(); } catch { /* ignore */ }
+        // Tell the backend to stop processing remaining scan files.
+        fetch(`${API_BASE}/api/cancel/${encodeURIComponent(queueId)}`, { method: 'POST' })
+          .catch(() => { /* fire and forget */ });
+      },
     });
     gradeQueueIdRef.current = queueId;
+
+    const formData = new FormData();
+    formData.append('doc_id', quizId);
+    formData.append('doc_type', 'quiz');
+    formData.append('job_id', queueId);
+    scanFiles.forEach(f => formData.append('student_files', f));
 
     try {
       // Use streaming endpoint for progress

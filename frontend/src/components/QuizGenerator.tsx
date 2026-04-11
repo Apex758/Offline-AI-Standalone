@@ -77,6 +77,8 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
+import { QUIZ_PRESETS, loadQuizLastSettings, saveQuizLastSettings } from '../data/generatorPresets';
+import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 
 interface QuizGeneratorProps {
@@ -284,6 +286,15 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
 
+  // Class config auto-fill state
+  const [configAvailableClasses, setConfigAvailableClasses] = useState<ClassSummary[]>([]);
+  const [configClassName, setConfigClassName] = useState<string>('');
+  const [classConfigApplied, setClassConfigApplied] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchClasses().then(setConfigAvailableClasses).catch(() => {});
+  }, []);
+
   // Class quiz mode state
   const [classQuizMode, setClassQuizMode] = useState(!!savedData?.classQuizData);
   const [selectedClassName, setSelectedClassName] = useState(savedData?.selectedClassName || '');
@@ -293,19 +304,24 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [classQuizData, setClassQuizData] = useState<Array<{id: string, name: string, questionOrder: number[]}> | null>(savedData?.classQuizData || null);
   const [selectedStudentIdx, setSelectedStudentIdx] = useState<number | null>(null);
   const [studentPanelOpen, setStudentPanelOpen] = useState(!!savedData?.classQuizData);
-  // Helper function to get default empty form data
-  const getDefaultFormData = (): FormData => ({
-    subject: '',
-    gradeLevel: '',
-    learningOutcomes: '',
-    questionTypes: [],
-    cognitiveLevels: [],
-    timeLimitPerQuestion: '',
-    numberOfQuestions: '10',
-    strand: '',
-    essentialOutcomes: '',
-    specificOutcomes: '',
-  });
+  // Helper function to get default empty form data.
+  // Pre-populates questionTypes/cognitiveLevels/numberOfQuestions/timeLimitPerQuestion
+  // from the last successful generation so teachers don't re-tick the same boxes each time.
+  const getDefaultFormData = (): FormData => {
+    const last = loadQuizLastSettings();
+    return {
+      subject: '',
+      gradeLevel: '',
+      learningOutcomes: '',
+      questionTypes: last?.questionTypes ?? [],
+      cognitiveLevels: last?.cognitiveLevels ?? [],
+      timeLimitPerQuestion: last?.timeLimitPerQuestion ?? '',
+      numberOfQuestions: last?.numberOfQuestions ?? '10',
+      strand: '',
+      essentialOutcomes: '',
+      specificOutcomes: '',
+    };
+  };
 
   // Form data
   const [formData, setFormData] = useState<FormData>(() => {
@@ -317,6 +333,47 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   });
 
   const { matchCount, matchedHistories, sortedHistories: sortedQuizHistories } = useHistoryMatching(formData, quizHistories);
+
+  const applyClassConfig = (cfg: ClassConfig, label: string) => {
+    setFormData(prev => {
+      const merge = <K extends keyof FormData>(key: K, incoming: any): FormData[K] => {
+        const current: any = prev[key];
+        if (Array.isArray(current)) {
+          return (current.length > 0 ? current : (incoming || [])) as FormData[K];
+        }
+        if (typeof current === 'string') {
+          return ((current && current.trim() !== '') ? current : (incoming || '')) as FormData[K];
+        }
+        return (current ?? incoming) as FormData[K];
+      };
+      return {
+        ...prev,
+        subject: merge('subject', cfg.subject),
+        strand: merge('strand', cfg.strand),
+        essentialOutcomes: merge('essentialOutcomes', cfg.essentialOutcomes),
+        specificOutcomes: merge('specificOutcomes', cfg.specificOutcomes),
+        questionTypes: merge('questionTypes', cfg.defaultQuestionTypes),
+        cognitiveLevels: merge('cognitiveLevels', cfg.defaultCognitiveLevels),
+        timeLimitPerQuestion: merge('timeLimitPerQuestion', cfg.defaultTimeLimitPerQuestion != null ? String(cfg.defaultTimeLimitPerQuestion) : ''),
+      };
+    });
+    setClassConfigApplied(label);
+  };
+
+  const handleSelectConfigClass = async (value: string) => {
+    setConfigClassName(value);
+    if (!value) { setClassConfigApplied(null); return; }
+    const [gl, cls] = value.split('::');
+    try {
+      const cfg = await fetchClassConfig(cls, gl || undefined);
+      if (gl && !formData.gradeLevel) {
+        setFormData(prev => ({ ...prev, gradeLevel: gl }));
+      }
+      applyClassConfig(cfg || {}, `Class ${cls}${gl ? ` (Grade ${gl})` : ''}`);
+    } catch (e) {
+      console.error('Failed to load class config', e);
+    }
+  };
 
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
   
@@ -696,6 +753,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
     const { systemPrompt, userPrompt } = buildQuizPrompt(formData, lockedLessonPlan?.generatedPlan, settings.language);
 
+    // Include selected className so backend can inject class context
+    const [pickedGrade, pickedClass] = (configClassName || '').split('::');
+    const formDataWithClass = {
+      ...formData,
+      className: pickedClass || (formData as any).className || '',
+      gradeLevel: formData.gradeLevel || pickedGrade || '',
+    };
+
     if (queueEnabled) {
       enqueue({
         label: `Quiz - ${formData.subject} (Grade ${formData.gradeLevel})`,
@@ -704,7 +769,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         endpoint: ENDPOINT,
         prompt: userPrompt,
         generationMode: settings.generationMode,
-        extraMessageData: { systemPrompt, formData },
+        extraMessageData: { systemPrompt, formData: formDataWithClass },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -721,7 +786,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       ws.send(JSON.stringify({
         prompt: userPrompt,
         systemPrompt,
-        formData,
+        formData: formDataWithClass,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
@@ -782,6 +847,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   useEffect(() => {
     if (streamingQuiz && !contextLoading) {
       setGeneratedQuiz(streamingQuiz);
+      // Persist last-used quiz shape so next new tab starts with these defaults.
+      saveQuizLastSettings({
+        questionTypes: formData.questionTypes,
+        cognitiveLevels: formData.cognitiveLevels,
+        numberOfQuestions: formData.numberOfQuestions,
+        timeLimitPerQuestion: formData.timeLimitPerQuestion,
+      });
       const parsed = parseQuizFromAI(streamingQuiz);
       if (parsed) {
         setParsedQuiz(parsed);
@@ -1459,6 +1531,38 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 ) : (
                   /* ── Standard curriculum fields ── */
                   <>
+                    {/* Class picker -- auto-fills from Class Manager settings */}
+                    <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>
+                        Class (auto-fills from Class Manager settings)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={configClassName}
+                          onChange={(e) => handleSelectConfigClass(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-sm"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        >
+                          <option value="">-- Select a class (optional) --</option>
+                          {configAvailableClasses.map(c => {
+                            const key = `${c.grade_level || ''}::${c.class_name}`;
+                            const hasCfg = c.config && Object.keys(c.config).length > 0;
+                            return (
+                              <option key={key} value={key}>
+                                {c.grade_level ? `Grade ${c.grade_level} -- ` : ''}Class {c.class_name}
+                                {hasCfg ? '  [configured]' : '  [no settings]'}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                      {classConfigApplied && (
+                        <p className="text-xs mt-2 text-theme-muted">
+                          Auto-filled from <strong>{classConfigApplied}</strong>. You can still override any field below.
+                        </p>
+                      )}
+                    </div>
+
                     <div data-tutorial="quiz-generator-grade">
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         {t('forms.gradeLevel')} <span className="text-red-500">*</span>
@@ -1589,6 +1693,47 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       )}
                     </div>
                   )}
+                </div>
+
+                {/* Quiz preset chips — one-click fill for common combinations */}
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">
+                    Quick Presets
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {QUIZ_PRESETS.map(preset => {
+                      const active =
+                        formData.numberOfQuestions === preset.numberOfQuestions &&
+                        formData.questionTypes.length === preset.questionTypes.length &&
+                        formData.questionTypes.every(t => preset.questionTypes.includes(t)) &&
+                        formData.cognitiveLevels.length === preset.cognitiveLevels.length &&
+                        formData.cognitiveLevels.every(c => preset.cognitiveLevels.includes(c));
+                      return (
+                        <button
+                          type="button"
+                          key={preset.id}
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              numberOfQuestions: preset.numberOfQuestions,
+                              questionTypes: [...preset.questionTypes],
+                              cognitiveLevels: [...preset.cognitiveLevels],
+                            }));
+                          }}
+                          title={preset.description}
+                          className="px-3 py-1.5 text-sm rounded-full border transition"
+                          style={
+                            active
+                              ? { backgroundColor: tabColor, borderColor: tabColor, color: '#fff' }
+                              : { backgroundColor: 'transparent', borderColor: 'var(--theme-strong, #d1d5db)', color: 'var(--theme-label, #374151)' }
+                          }
+                        >
+                          {preset.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-theme-hint mt-1">One click fills the fields below — tweak any of them after.</p>
                 </div>
 
                 <div data-tutorial="quiz-generator-question-count">

@@ -80,6 +80,72 @@ via OAK — never manually.
 - [ ] Settings > License status card shows `schoolName` / `territoryName` (human-readable) instead of raw IDs `[MEDIUM]`
 - Findings: ___
 
+### 1.6a Supabase OAK Migration Smoke Test
+*Run after applying `oak_migration.sql` + `oak_migration_v2_names.sql` to Project A
+(`lkdwldwtdzouvahvrcbe`). All checks happen in the Supabase SQL Editor unless noted.*
+
+**Prerequisite: sso-demo deployed with Project A schema fix**
+The sso-demo previously assumed `authz.memberships.id` (UUID PK) which does not
+exist in Project A. The generate/revoke routes now derive `teacher_id` from
+`sha256(auth0_sub)` and no longer insert `membership_id`. These must be deployed
+before the **Generate License** button will work.
+- [ ] sso-demo branch with the `membership_id` removal + sha256 `teacher_id` is merged `[CRITICAL]`
+- [ ] Vercel build for that commit is green and promoted to production `[CRITICAL]`
+- [ ] (Optional local check) Run `npx tsc --noEmit` in `sso-demo/` — exit 0 `[MEDIUM]`
+- [ ] Hitting `POST /api/oak/generate` no longer returns 500 with `membership.id is undefined` `[HIGH]`
+- Findings: ___
+
+**Base tables created**
+- [ ] `SELECT table_name FROM information_schema.tables WHERE table_schema = 'authz' AND table_name IN ('oak_licenses','support_reports');` returns 2 rows `[CRITICAL]`
+- [ ] In the Table Editor, `authz.oak_licenses` shows `auth0_sub TEXT REFERENCES authz.memberships(auth0_sub)` — NOT a UUID `membership_id` FK `[HIGH]`
+- [ ] `idx_oak_licenses_oak_license`, `idx_oak_licenses_auth0_sub`, `idx_oak_licenses_status` indexes exist `[MEDIUM]`
+- Findings: ___
+
+**RPCs installed**
+- [ ] `SELECT proname FROM pg_proc WHERE pronamespace = 'authz'::regnamespace AND proname IN ('validate_oak','submit_support_report','check_support_updates');` returns 3 rows `[CRITICAL]`
+- [ ] `SELECT pg_get_functiondef('authz.validate_oak(text,text)'::regprocedure);` shows a body that references `school_name` and `territory_name` (i.e. v2 is the one in effect) `[HIGH]`
+- Findings: ___
+
+**Generate a real OAK for the smoke test**
+- [ ] In the sso-demo dashboard (Vercel), click **Generate License** as a teacher whose membership has `status='approved'`, a `school_id`, and a `member_state_id` (e.g. Delon Pierre → `school_001` / `LCA`) `[HIGH]`
+- [ ] Row appears in `authz.oak_licenses` with correct `auth0_sub`, `school_id`, `territory_id`, `status='active'`, `device_id IS NULL` `[HIGH]`
+- Findings: ___
+
+**validate_oak happy path**
+```sql
+SELECT authz.validate_oak('OAK-REAL-KEY-HERE', 'smoke-test-device-001');
+```
+- [ ] Returns `valid: true` `[CRITICAL]`
+- [ ] `teacher_name` matches the membership's `full_name` `[HIGH]`
+- [ ] `school_id` is the raw code (e.g. `school_001`) `[MEDIUM]`
+- [ ] `school_name` is the human-readable name from `authz.schools.name` (e.g. `Demo Primary School`) — NOT the raw ID `[HIGH]`
+- [ ] `territory_id` is the raw code (e.g. `LCA`) `[MEDIUM]`
+- [ ] `territory_name` is the resolved OECS name (e.g. `Saint Lucia`) `[HIGH]`
+- [ ] `authz.oak_licenses.device_id` is now `'smoke-test-device-001'` and `last_validated_at` was just updated `[HIGH]`
+- Findings: ___
+
+**validate_oak device-binding enforcement**
+- [ ] Re-running with the SAME device_id returns `valid: true` and bumps `last_validated_at` `[HIGH]`
+- [ ] Running with a DIFFERENT device_id returns `valid: false, error: "License bound to another device"` `[CRITICAL]`
+- Findings: ___
+
+**validate_oak error paths**
+- [ ] `SELECT authz.validate_oak('OAK-DOES-NOT-EXIST', 'dev-x');` → `valid: false, error: "License not found"` `[HIGH]`
+- [ ] Manually `UPDATE authz.oak_licenses SET status='revoked' WHERE oak_license=...;` then validate → `valid: false, error: "License is revoked"` `[HIGH]`
+- [ ] Unknown territory code (e.g. `UPDATE ... SET territory_id='ZZZ'`) → `territory_name` falls back to `'ZZZ'` (raw id), no crash `[MEDIUM]`
+- [ ] Unknown `school_id` → `school_name` falls back to the raw id, no crash `[MEDIUM]`
+- Findings: ___
+
+**End-to-end through the Electron app**
+- [ ] Paste the same OAK into Settings > License → `LicenseSettingsBridge` writes `Demo Primary School` / `Saint Lucia` into `settings.profile` `[CRITICAL]`
+- [ ] Settings > Profile shows the locked "Verified via OAK" badges with readable names (not `school_001` / `LCA`) `[HIGH]`
+- [ ] Settings > License status card shows `School: Demo Primary School` and `Territory: Saint Lucia` `[MEDIUM]`
+- Findings: ___
+
+**Cleanup after smoke test**
+- [ ] Reset `device_id` on the test license so it can be reused on a real device: `UPDATE authz.oak_licenses SET device_id=NULL WHERE oak_license='OAK-REAL-KEY-HERE';` `[MEDIUM]`
+- Findings: ___
+
 ### 1.7 School Year Setup Modal
 - [ ] `SchoolYearSetupModal` appears on first run if no active school year config `[HIGH]`
 - [ ] Enter school year dates, term boundaries, holidays → saves to backend `[HIGH]`
@@ -1048,9 +1114,20 @@ via OAK — never manually.
 ---
 
 ## PHASE 25 — Unified Calendar System
-*Goal: Verify the single derived event layer that syncs School Year Calendar, Timetable, Curriculum Plan, Lesson Plans, Holidays, and Scheduled Tasks*
+*Goal: Verify the single derived event layer that syncs School Year Calendar, Timetable, Curriculum Plan, Lesson Plans, Holidays, Scheduled Tasks, and Daily Plans*
 
-> **Implementation phases:** Phase 1 (foundation) and Phase 6 (migration + validation) are SHIPPED. Phases 2–5 are pending. Items marked `[x]` were verified end-to-end via the synthetic test in `backend/migrations/unify_calendar.py` on 2026-04-10.
+> **Implementation phases (all 6 SHIPPED):**
+> - **Phase 1** — schema + projector functions + query endpoint (`backend/unified_calendar_service.py`, `backend/routes/unified_calendar.py`)
+> - **Phase 2a** — `blocks_classes` column + `lesson_plans`/`lesson_plan_edits`/`daily_plans` table schemas
+> - **Phase 2b** — Lesson plan refactor (JSON->SQLite migration, `lesson_plan_service.py`, `routes/lesson_plans.py`, projector wired). **Real production data:** 42 plans migrated from `lesson_plan_history.json` to SQLite, original file preserved as `.bak`.
+> - **Phase 2c** — `daily_plan_service.py` + `routes/daily_plans.py` + projector wired
+> - **Phase 2d** — `scheduled_tasks.insert_result()` + `update_result_status()` cross-DB projection
+> - **Phase 3** — Auto-link milestone->phase, lesson plan->slot, lesson plan->milestone suggestion, "Mark as taught" workflow, real conflict detection
+> - **Phase 4** — `lib/teacherId.ts` hoisted, `UnifiedCalendarView.tsx` 4th flip-card panel
+> - **Phase 5** — `useUnifiedCalendarFeed.ts` hook, `CompactCalendar` `unifiedEventsByDate` prop, `AnalyticsDashboard` wrapper
+> - **Phase 6** — Idempotent backfill migration with validation suite (all 7 source types)
+>
+> Items marked `[x]` were verified end-to-end via synthetic tests on 2026-04-10/11. Items marked `[ ]` are deferred frontend polish (Holiday Manager UI, SchoolYearContext refactor, click-through routing, lesson planner holiday warnings).
 
 ### 25.1 Schema Foundation (Sub-Phase 1) — SHIPPED
 - [x] `unified_events` table created in `students.db` with all 17 columns `[CRITICAL]`
@@ -1060,18 +1137,19 @@ via OAK — never manually.
 - [x] `python-dateutil>=2.8.0` declared explicitly in `requirements.txt` `[HIGH]`
 - Findings: All verified via `python -c "import unified_calendar_service as u; u.init_schema()"` against current `students.db`. Indexes confirmed via `sqlite_master` query.
 
-### 25.2 Projector Functions (Sub-Phase 1) — SHIPPED (stubs for Phase 2 sources)
+### 25.2 Projector Functions — ALL SHIPPED
 - [x] `project_school_year_event(conn, row)` upserts a school year event `[CRITICAL]`
 - [x] `project_school_year_event` routes `event_type='holiday'` rows to `source_type='holiday'` `[HIGH]`
-- [x] `project_timetable_slot(conn, slot, school_year_bounds)` builds an RRULE `[CRITICAL]`
-- [x] RRULE format is `FREQ=WEEKLY;BYDAY=<TOKEN>;UNTIL=<YYYYMMDDTHHMMSS>` `[HIGH]`
+- [x] `project_timetable_slot(conn, slot, school_year_bounds)` builds an iCal RRULE + EXDATE `[CRITICAL]`
+- [x] RRULE format is multi-line `RRULE:FREQ=WEEKLY;BYDAY=<TOKEN>;UNTIL=<YYYYMMDDTHHMMSS>\nEXDATE:...` `[HIGH]`
 - [x] `project_milestone(conn, row)` upserts only milestones with a `due_date` `[HIGH]`
 - [x] `project_milestone` skips milestones with no `due_date` (returns None) `[HIGH]`
 - [x] Status normalization map: `not_started→planned`, `in_progress→in_progress`, `completed→completed`, `skipped→cancelled` `[HIGH]`
-- [ ] `project_lesson_plan(conn, row)` — wired in Phase 2 (currently raises NotImplementedError) `[HIGH]`
-- [ ] `project_scheduled_result(conn, row)` — wired in Phase 2 `[MEDIUM]`
-- [ ] `project_daily_plan(conn, row)` — wired in Phase 2 `[MEDIUM]`
-- Findings: Synthetic test inserted 1 quiz event + 1 timetable slot, projected both, validated `expected==actual`.
+- [x] `project_lesson_plan(conn, row)` anchors to bound timetable slot (next matching weekday + slot times) or falls back to all-day on created_at `[CRITICAL]`
+- [x] `project_lesson_plan` status map: `draft→planned`, `completed→completed`, `cancelled→cancelled` `[HIGH]`
+- [x] `project_scheduled_result(conn, row)` labels by task_type, anchors to `week_of`, color violet `[MEDIUM]`
+- [x] `project_daily_plan(conn, row)` anchors to plan_date, all-day, color emerald `[MEDIUM]`
+- Findings: Phase 2b synthetic test verified lesson plan auto-binds to slot, anchors to next matching Monday with slot times (Mar 15 Sun -> Mar 16 Mon 09:00-10:00), status flips on mark-as-taught. Phase 2d test verified scheduled_result projection + status update reflects in metadata. Phase 2c daily_plan_service tested via routes.
 
 ### 25.3 Query Endpoint (Sub-Phase 1) — SHIPPED
 - [x] `GET /api/calendar/unified?teacher_id=X&start=...&end=...` returns 200 with empty array on empty teacher `[CRITICAL]`
@@ -1095,7 +1173,7 @@ via OAK — never manually.
 - [ ] `GET /api/calendar/conflicts` flags lesson plans whose `start_datetime` no longer matches their bound slot (Phase 3) `[HIGH]`
 - Findings: ___
 
-### 25.5 Backfill Migration (Sub-Phase 6) — SHIPPED
+### 25.5 Backfill Migration (Sub-Phase 6) — ALL SHIPPED
 - [x] `python -m migrations.unify_calendar` runs without error against empty DB `[CRITICAL]`
 - [x] `python -m migrations.unify_calendar --validate` runs validation only, no writes `[HIGH]`
 - [x] `python -m migrations.unify_calendar --teacher-id <id>` scopes backfill to one teacher `[HIGH]`
@@ -1108,11 +1186,11 @@ via OAK — never manually.
 - [x] Validation suite asserts `expected == actual` per source_type `[CRITICAL]`
 - [x] Validation reports orphan source_types not in `VALID_SOURCE_TYPES` `[HIGH]`
 - [x] Migration exits with code 0 on success, code 1 on validation failure `[HIGH]`
-- [ ] Backfill projects `lesson_plans` rows (requires Phase 2 SQLite migration) `[HIGH]`
-- [ ] Backfill projects `daily_plans` rows (requires Phase 2 SQLite migration) `[MEDIUM]`
-- [ ] Backfill projects `scheduled_results` rows (requires Phase 2 wiring) `[MEDIUM]`
+- [x] Backfill projects `lesson_plans` rows (Phase 2b) `[HIGH]`
+- [x] Backfill projects `daily_plans` rows (Phase 2c) `[MEDIUM]`
+- [x] Backfill projects `scheduled_results` rows from cross-DB `chat_memory.db` (Phase 2d) `[MEDIUM]`
 - [ ] Rollback test: `DROP TABLE unified_events` → app continues to function without error `[CRITICAL]`
-- Findings: Synthetic E2E test on 2026-04-10 verified all SHIPPED items. Created test config + event + timetable slot under teacher `__phase1_test__`, ran migration twice, confirmed counts stayed at 2 parent rows. Cleanup successful.
+- Findings: **Real production data migration succeeded on 2026-04-11.** The user's actual `lesson_plan_history.json` (42 plans) was auto-migrated to the SQLite `lesson_plans` table on first import, original file renamed to `.bak`, and all 42 rows projected into `unified_events` (validated `expected=42, actual=42`). Idempotency confirmed: 2nd run produced identical counts.
 
 ### 25.6 Holiday System (Sub-Phases 2 + 4) — BACKEND SHIPPED, FRONTEND PENDING
 - [x] Migration adds `blocks_classes INTEGER DEFAULT 0` column to `school_year_events` `[CRITICAL]`
@@ -1129,7 +1207,7 @@ via OAK — never manually.
 - [ ] Lesson planner shows warning when planning on a `blocks_classes=true` date `[HIGH]` (Phase 4 frontend)
 - Findings: Synthetic E2E test on 2026-04-10 (Phase 2 turn) created config + slot + blocking holiday on Mon 2026-02-16 via actual `school_year_service.save_event()`. Verified EXDATE was added to the timetable RRULE, query expansion suppressed Feb 16 while Feb 9 + Feb 23 still appeared, and `delete_event(holiday)` cleared the EXDATE. **Bug found and fixed:** initial RRULE format used inline `;EXDATE=...` which is invalid iCal syntax — `dateutil.rrulestr` rejected it and the soft fallback returned the unexpanded parent. Switched to multi-line format `RRULE:...\nEXDATE:...` which `rrulestr` parses correctly into an `rruleset`.
 
-### 25.7 Source Projector Wiring (Sub-Phase 2) — PARTIALLY SHIPPED
+### 25.7 Source Projector Wiring (Sub-Phases 2a/2b/2c/2d) — ALL SHIPPED
 - [x] `school_year_service.save_event()` calls `project_school_year_event()` in same transaction `[CRITICAL]`
 - [x] `school_year_service.delete_event()` calls `delete_unified_event()` for both `school_year` and `holiday` source types `[CRITICAL]`
 - [x] `school_year_service.upsert_timetable_slot()` calls `project_timetable_slot()` in same transaction with active config bounds `[CRITICAL]`
@@ -1138,54 +1216,73 @@ via OAK — never manually.
 - [x] `milestone_db.update_milestone()` projects, deletes projection if due_date cleared, deletes if hidden `[CRITICAL]`
 - [x] `_get_active_config_bounds()` helper looks up config without opening a new connection `[HIGH]`
 - [x] `_reproject_teacher_timetable_slots()` helper rebuilds all slot RRULEs after a holiday change (in-transaction) `[CRITICAL]`
-- [x] `lesson_plans` table schema created (empty placeholder, populated in 2b) `[HIGH]`
-- [x] `lesson_plan_edits` table schema created (empty placeholder) `[HIGH]`
-- [x] `daily_plans` table schema created (empty placeholder, populated in 2c) `[MEDIUM]`
+- [x] `lesson_plans` table schema created with `timetable_slot_id`, `suggested_milestone_id`, `taught_at`, `status`, `edit_count` columns `[HIGH]`
+- [x] `lesson_plan_edits` audit table created `[HIGH]`
+- [x] `daily_plans` table schema created `[MEDIUM]`
 - [x] Creating a school year event via service function immediately appears in `unified_events` `[CRITICAL]`
 - [x] Creating a timetable slot via service function immediately appears in `unified_events` `[CRITICAL]`
 - [x] Creating a milestone with due_date via service function immediately appears in `unified_events` `[CRITICAL]`
 - [x] Cross-DB milestone projection failures are caught and logged, never break the milestone write itself `[HIGH]`
-- [ ] New `routes/lesson_plans.py` create/update calls `project_lesson_plan()` `[HIGH]` (Phase 2b — pending)
-- [ ] `scheduled_tasks.py` result write calls `project_scheduled_result()` `[MEDIUM]` (Phase 2d — pending)
-- [ ] `lesson_plan_history.json` migrated to `lesson_plans` SQLite table `[HIGH]` (Phase 2b — pending)
-- [ ] Original JSON renamed to `.bak` and preserved `[HIGH]` (Phase 2b)
-- [ ] 50-entry history cap removed (all rows preserved) `[HIGH]` (Phase 2b)
-- [ ] Kindergarten localStorage `daily_plans` migrated to backend SQLite table `[MEDIUM]` (Phase 2c — pending)
-- [ ] Creating a lesson plan via UI immediately appears in `unified_events` `[CRITICAL]` (Phase 2b)
-- [ ] Saving a scheduled task result immediately appears in `unified_events` `[MEDIUM]` (Phase 2d)
-- Findings: Synthetic E2E test on 2026-04-10 ran 9 steps using actual service functions: save_config → save_event(quiz) → upsert_timetable_slot → save_event(blocking holiday) → verify EXDATE → query expansion suppression → delete_event(holiday) → delete_timetable_slot → delete_event(quiz). All 9 steps passed with all unified_events rows created and torn down correctly. Separate milestone test verified all 5 cross-DB scenarios: (1) create with no due_date → no projection, (2) update with due_date → projection appears with status mapping `in_progress`, (3) status flip to completed → unified status flips, (4) clear due_date → projection deleted, (5) hide milestone → projection deleted.
+- [x] New `routes/lesson_plans.py` POST `/api/lesson-plan-history` calls `project_lesson_plan()` `[CRITICAL]`
+- [x] `scheduled_tasks.insert_result()` calls `_project_scheduled_result_safe()` (cross-DB to students.db) `[MEDIUM]`
+- [x] `scheduled_tasks.update_result_status()` re-projects so unified metadata.review_status updates `[MEDIUM]`
+- [x] `lesson_plan_service.init_service()` one-shot migration of `lesson_plan_history.json` -> `lesson_plans` SQLite table `[HIGH]`
+- [x] Original JSON renamed to `.json.bak` after successful migration (preserved as backup) `[HIGH]`
+- [x] 50-entry history cap removed: all rows preserved (verified: 42 real plans migrated) `[HIGH]`
+- [x] `lesson_plan_service.save_history()` writes to SQLite + appends `lesson_plan_edits` snapshot `[HIGH]`
+- [x] `lesson_plan_service.delete_history()` cascades the unified_events row `[HIGH]`
+- [x] `daily_plan_service` + `routes/daily_plans.py` (POST/GET/DELETE `/api/daily-plans`) wired with projection `[MEDIUM]`
+- [x] Creating a lesson plan via service immediately appears in `unified_events` `[CRITICAL]`
+- [x] Saving a scheduled task result immediately appears in `unified_events` `[MEDIUM]`
+- [x] Legacy frontend URLs preserved exactly: GET/POST/DELETE `/api/lesson-plan-history(/{id})` still work, response shape unchanged `[CRITICAL]`
+- [x] Inline lesson plan endpoints removed from `main.py` lines 1604-1683; `routes/lesson_plans.py` is sole source `[HIGH]`
+- [x] Data export endpoint (`/api/data/export`) reads from `lesson_plan_service.list_histories()` instead of JSON file `[HIGH]`
+- [x] Data import endpoint (`/api/data/import`) calls `lesson_plan_service.save_history()` per row, idempotent on id `[HIGH]`
+- [x] Factory reset wipes `lesson_plans`, `lesson_plan_edits`, and `unified_events` rows of source_type='lesson_plan' `[HIGH]`
+- Findings: Phase 2b synthetic test (5 steps) verified create-without-slot -> draft, then create-after-slot -> auto-bind to Mon 09:00-10:00, list_histories preserves all original frontend keys, mark-as-taught flips lesson_plan + unified_events together, delete cascades. **Real data migration:** 42 plans from production `lesson_plan_history.json` migrated to SQLite + projected into `unified_events`, original JSON preserved as `.bak`. Phase 2d test: scheduled_tasks.insert_result writes to chat_memory.db AND projects to students.db unified_events; update_result_status refreshes the metadata.
 
-### 25.8 Cross-System Auto-Linking (Sub-Phase 3) — PENDING
-- [ ] Setting a milestone `due_date` auto-stamps `phase_id` from `get_phase_for_date()` `[HIGH]`
-- [ ] Editing a phase's date range re-buckets affected milestones `[HIGH]`
-- [ ] Creating a lesson plan auto-stamps `timetable_slot_id` via `lookup_timetable_slot()` `[HIGH]`
-- [ ] Lesson plans with no matching slot remain valid as "drafts" `[MEDIUM]`
-- [ ] Lesson plans with `curriculumMatches` auto-stamp `suggested_milestone_id` (top match) `[HIGH]`
-- [ ] Suggesting a milestone DOES NOT advance its status (manual only) `[HIGH]`
-- [ ] "Mark as taught" button on lesson plan detail flips lesson + milestone + unified_event in one transaction `[CRITICAL]`
-- [ ] "Mark as taught" appends a row to `milestone_history` `[HIGH]`
-- [ ] Lesson planner shows "this class has a quiz today" when a school year event matches the date `[MEDIUM]`
-- [ ] Scheduled task results tagged with `week_of` roll into `academic_phase_summaries` `[MEDIUM]`
-- [ ] `GET /api/calendar/conflicts` flags real conflicts (not the Phase 1 stub) `[HIGH]`
-- Findings: ___
+### 25.8 Cross-System Auto-Linking (Sub-Phase 3) — BACKEND SHIPPED
+- [x] Setting a milestone `due_date` auto-stamps `phase_id` from `get_phase_for_date()` via `_resolve_phase_for_date_safe()` helper `[HIGH]`
+- [ ] Editing a phase's date range re-buckets affected milestones `[HIGH]` (deferred — not in current scope, requires phase save hook)
+- [x] Creating/saving a lesson plan auto-stamps `timetable_slot_id` via `_auto_bind_slot()` -> `lookup_timetable_slot()` `[HIGH]`
+- [x] Lesson plans with no matching slot remain valid as "drafts" with all-day projection `[MEDIUM]`
+- [x] Lesson plans with `curriculumMatches` auto-stamp `suggested_milestone_id` (top match) via `_suggest_milestone()` `[HIGH]`
+- [x] Suggesting a milestone DOES NOT advance its status (manual only — `lesson_plan_service.save_history()` only writes the suggestion field) `[HIGH]`
+- [x] `POST /api/lesson-plans/{plan_id}/mark-taught` flips lesson_plan + unified_event + cascades to linked milestone `[CRITICAL]`
+- [x] "Mark as taught" appends a row to `milestone_history` (via `mdb.update_milestone(status='completed')` -> existing history hook) `[HIGH]`
+- [ ] Lesson planner shows "this class has a quiz today" when a school year event matches the date `[MEDIUM]` (frontend UX, deferred — backend data is queryable via `/api/calendar/unified`)
+- [x] Scheduled task results tagged with `week_of` projected into unified_events with anchor date `[MEDIUM]`
+- [x] `GET /api/calendar/conflicts` flags real conflicts: `lesson_plan_orphan` (slot deleted), `lesson_plan_holiday` (lesson on blocking holiday), `timetable_holiday_overlap` (multi-day holiday block) `[HIGH]`
+- Findings: Phase 2d+3 synthetic test (3 steps) verified all auto-link behaviors. (1) Created academic phase Mar 1-Apr 30, then milestone with due_date 2026-03-15 -> phase_id auto-stamped to phase23_term2_late. (2) Created lesson plan + slot + holiday on Mon 2026-03-16 -> conflict detection returned 1 lesson_plan_holiday conflict with the expected message. (3) `scheduled_tasks.insert_result()` projection works, status update via `update_result_status` refreshes metadata.
 
-### 25.9 Dashboard Hub Unification (Sub-Phase 4) — PENDING
-- [ ] New `frontend/src/contexts/SchoolYearContext.tsx` provides shared state to all 3 flip-cards `[CRITICAL]`
-- [ ] New `frontend/src/lib/teacherId.ts` extracts the `getTeacherId()` helper from `SchoolYearHub.tsx` `[HIGH]`
-- [ ] Selecting Term 2 in the Calendar panel filters Curriculum and Timetable panels too `[HIGH]`
-- [ ] Selecting a grade/subject in any panel filters all three `[HIGH]`
-- [ ] New 4th flip-card "Unified View" pulls from `/api/calendar/unified` `[HIGH]`
-- [ ] Holiday Manager UI panel renders inside SchoolYearCalendar `[HIGH]`
-- [ ] All 3 flip-cards no longer hold duplicate copies of `activeConfigId`/`selectedPhaseId` `[MEDIUM]`
-- Findings: ___
+### 25.9 Dashboard Hub Unification (Sub-Phase 4) — PARTIALLY SHIPPED
+- [ ] New `frontend/src/contexts/SchoolYearContext.tsx` provides shared state to all 3 flip-cards `[CRITICAL]` (deferred — flip-cards still hold their own state; the new 4th panel is the primary unification)
+- [x] New `frontend/src/lib/teacherId.ts` extracts the `getTeacherId()` helper, used by `SchoolYearHub` and `useUnifiedCalendarFeed` `[HIGH]`
+- [ ] Selecting Term 2 in the Calendar panel filters Curriculum and Timetable panels too `[HIGH]` (deferred — requires SchoolYearContext)
+- [ ] Selecting a grade/subject in any panel filters all three `[HIGH]` (deferred — requires SchoolYearContext)
+- [x] New 4th flip-card "Unified View" pulls from `/api/calendar/unified` `[HIGH]`
+- [x] `UnifiedCalendarView.tsx` component: month nav, source-type filter chips, conflicts banner, grouped-by-date list, color-coded source labels `[HIGH]`
+- [x] `SchoolYearHub` `PanelType` extended to include `'unified'`; `PANELS` array updated; `panelLabels` includes Layers01 icon + violet color `[HIGH]`
+- [x] `SchoolYearHub` consumes `getTeacherId` from shared `lib/teacherId` instead of local copy `[HIGH]`
+- [ ] Holiday Manager UI panel renders inside SchoolYearCalendar `[HIGH]` (deferred — backend `blocks_classes` column exists; frontend can set it via the existing event-create form by choosing event_type='holiday' and setting blocks_classes via a future UI control)
+- [ ] All 3 flip-cards no longer hold duplicate copies of `activeConfigId`/`selectedPhaseId` `[MEDIUM]` (deferred with SchoolYearContext)
+- [x] Frontend `tsc --noEmit` passes with zero errors after Phase 4 changes `[CRITICAL]`
+- Findings: Took an additive approach for Phase 4 to minimize risk in the existing 700-line flip-card component. The 4th "Unified View" panel delivers the user's core "100% synced" requirement by reading from `/api/calendar/unified` (which already contains every source). The shared SchoolYearContext refactor is deferred — the existing 3 panels still work standalone, and the unified panel replaces the cross-panel filtering use case. Type-check clean.
 
-### 25.10 CompactCalendar Widget Refactor (Sub-Phase 5) — PENDING
-- [ ] Widget fetches from `/api/calendar/unified` instead of taking 4 prop dicts `[HIGH]`
-- [ ] Widget gates fetch on `teacherId` presence (no fetch before auth resolves) `[HIGH]`
-- [ ] Color-coded dots distinguish source types (school_year, timetable, milestone, holiday, etc.) `[MEDIUM]`
-- [ ] Click a dot → routes to originating tab with date preselected `[HIGH]`
-- [ ] No regression in current sidebar rendering or layout `[MEDIUM]`
-- Findings: ___
+### 25.10 CompactCalendar Widget Refactor (Sub-Phase 5) — SHIPPED (additive)
+- [x] New `frontend/src/hooks/useUnifiedCalendarFeed.ts` hook fetches `/api/calendar/unified` for the current month and returns `{date: events[]}` `[HIGH]`
+- [x] Hook gates fetch on `teacherId` presence (no fetch before auth resolves) `[HIGH]`
+- [x] Hook re-fetches when month anchor changes (year/month deps) `[HIGH]`
+- [x] Hook exposes `refetch()` for manual reload `[MEDIUM]`
+- [x] Hook fails soft on network errors (returns empty dict, no crash) `[HIGH]`
+- [x] `CompactCalendar` accepts new optional `unifiedEventsByDate` prop (backwards compatible — all 4 existing prop dicts still work) `[HIGH]`
+- [x] `CompactCalendar` renders a 4th violet dot per date when `unifiedCount > 0` (alongside resource/task/milestone dots) `[MEDIUM]`
+- [x] Dot has tooltip showing the count of synced calendar events for that date `[LOW]`
+- [x] `AnalyticsDashboard` wraps `CompactCalendar` in `CompactCalendarWithUnifiedFeed` that calls the hook and threads the prop `[HIGH]`
+- [x] Existing 3-dot rendering (resource, task, milestone) is unchanged — no regression risk `[CRITICAL]`
+- [ ] Click a dot → routes to originating tab with date preselected `[HIGH]` (deferred — current widget design uses date selection, not per-event click-through)
+- [x] Type-check passes with zero errors after Phase 5 changes `[CRITICAL]`
+- Findings: Took the additive prop+hook approach instead of refactoring the 700-line widget. Existing widget consumers continue to work without changes. The new `CompactCalendarWithUnifiedFeed` wrapper in `AnalyticsDashboard` is the integration point — only one consumer of the widget is affected by Phase 5, the other (the widget itself) just gains an optional prop. `tsc --noEmit` clean.
 
 ### 25.11 Performance & Edge Cases
 - [ ] Query 1 year of data with 5 timetable slots → expansion completes in <200ms `[HIGH]`
@@ -1199,13 +1296,14 @@ via OAK — never manually.
 - Findings: ___
 
 ### 25.12 Integration with Existing Phases
-- [ ] Phase 11 (Progress Tracker): completing a milestone updates its `unified_events.status` `[HIGH]`
-- [ ] Phase 21 (Calendar Export): `.ics` export pulls from unified_events instead of separate sources `[MEDIUM]`
-- [ ] Phase 6 (Lesson Planner): "Mark as taught" workflow integrates correctly `[HIGH]`
-- [ ] Phase 17 (Educator Insights): phase summaries reflect milestone completions from unified layer `[MEDIUM]`
-- [ ] Phase 23 (Data Management): full data export includes `unified_events` table dump `[HIGH]`
-- [ ] Phase 23 (Factory Reset): reset clears `unified_events` along with other tables `[HIGH]`
-- Findings: ___
+- [x] Phase 11 (Progress Tracker): completing a milestone updates its `unified_events.status` (verified via Phase 2 milestone test, status `not_started`->`completed` mapping) `[HIGH]`
+- [ ] Phase 21 (Calendar Export): `.ics` export pulls from unified_events instead of separate sources `[MEDIUM]` (deferred — Phase 21 calendar export is independent and still works against its own source)
+- [x] Phase 6 (Lesson Planner): "Mark as taught" workflow integrates correctly via `POST /api/lesson-plans/{id}/mark-taught` (verified Phase 2b test) `[HIGH]`
+- [ ] Phase 17 (Educator Insights): phase summaries reflect milestone completions from unified layer `[MEDIUM]` (insights service still reads its own data sources; out of scope for calendar unification)
+- [x] Phase 23 (Data Management) export: lesson plans pulled from `lesson_plan_service.list_histories()` (SQLite) instead of JSON file `[HIGH]`
+- [x] Phase 23 (Data Management) import: lesson plans imported via `lesson_plan_service.save_history()` (idempotent, SQLite) `[HIGH]`
+- [x] Phase 23 (Factory Reset): wipes `lesson_plans`, `lesson_plan_edits`, and `unified_events` rows of source_type='lesson_plan'; also deletes both `lesson_plan_history.json` and `.bak` files `[HIGH]`
+- Findings: All applicable Phase 23 cleanup paths updated to handle the SQLite-backed lesson plans + projection. Phase 21/17 deferred as they're independent and still work as before.
 
 ---
 
@@ -1374,46 +1472,52 @@ The cancel button in the queue panel must work for every generator type.
 - [ ] Tab returns to idle, queue entry marked cancelled `[HIGH]`
 - Findings: ___
 
-### 27.4 Cancellation — Backend Token Plumbing `[HIGH]`
+### 27.4 Cancellation — Backend Token Plumbing (Tier 1) `[HIGH]`
 End-to-end cancel must actually stop server-side work, not just disconnect the client.
+**Tier 1 scope**: per-file (OCR) and per-image (diffusion) cancellation. Mid-step diffusion
+cancellation (diffusers `callback_on_step_end`) is intentionally **out of scope** — the
+diffusion backend on this hardware is OpenVINO/sd.cpp which has no per-step hook, and
+per-image granularity is sufficient. The currently-running image finishes; no further
+images launch.
 
 **Cancel registry (`/api/cancel/{job_id}`)**
 - [ ] `_active_cancel_events` registry exists in `backend/main.py` and the POST endpoint sets the event `[HIGH]`
+- [ ] `acquire_cancel_event` / `release_cancel_event` helpers are refcounted so concurrent batch images sharing one job_id work correctly `[HIGH]`
 - [ ] Unknown job_id returns `not_found` AND logs a warning (debugging aid) `[MEDIUM]`
-- [ ] Registry entries cleaned up in `finally` blocks of all generators (no leak across runs) `[HIGH]`
+- [ ] Registry entries cleaned up via refcount when last consumer releases (no leak across runs) `[HIGH]`
 
-**LLM (`/ws/*`) — already wired, regression check**
-- [ ] `LlamaInference.generate_stream` checks `cancel_event.is_set()` per token, breaks the loop `[HIGH]`
-- [ ] Cancel mid-generation actually frees the inference lock (next request goes through immediately) `[HIGH]`
-- [ ] WebSocket handlers register/clean up cancel_event in `_active_cancel_events` `[HIGH]`
-- [ ] Hardcoded fallback IDs (`"quiz"`, `"lesson-plan"`, …) replaced with unique generated IDs to prevent collisions `[MEDIUM]`
+**LLM (`/ws/*`) — already wired, regression check only**
+- [ ] Cancelling a quiz / lesson plan from the queue panel actually stops tokens mid-stream `[HIGH]`
+- [ ] After cancel, the inference lock is released and the next request goes through immediately `[HIGH]`
 
 **Diffusion (`/api/generate-image-base64`)**
 - [ ] Endpoint accepts `jobId` in the request body `[HIGH]`
 - [ ] Frontend `imageApi.generateImageBase64` forwards `jobId` from ImageStudio's queue id `[HIGH]`
-- [ ] Backend registers cancel event before kicking off `image_service.generate_image()` and clears it in `finally` `[HIGH]`
-- [ ] Diffusers backend: `callback_on_step_end` is wired to raise `CancelledError` when event is set → mid-step cancellation works `[HIGH]`
-- [ ] OpenVINO backend: cancel checked between consecutive `generate_image()` calls (per-image granularity, mid-step not supported by library — documented) `[MEDIUM]`
-- [ ] stable-diffusion.cpp backend: per-image cancel works, mid-step limitation documented `[MEDIUM]`
-- [ ] Cancelled response is `{"success": false, "cancelled": true}` so frontend can distinguish from real errors `[MEDIUM]`
+- [ ] Backend registers cancel event with `acquire_cancel_event` and releases it in `finally` `[HIGH]`
+- [ ] Cancel event checked **before** invoking `image_service.generate_image()` (in the executor lambda, after the inference lock is taken) `[HIGH]`
+- [ ] When ImageStudio asks for N images in a batch and cancel arrives partway through: currently-running image finishes, the remaining N-k images bail out immediately `[HIGH]`
+- [ ] Cancelled response shape is `{"success": false, "cancelled": true}` (frontend can distinguish from real errors) `[MEDIUM]`
 - [ ] ImageStudio's `onCancel` fires a `POST /api/cancel/{jobId}` in addition to `abortController.abort()` `[HIGH]`
 
 **OCR (`/api/smart-grade-stream`)**
-- [ ] Endpoint accepts `jobId` as a Form field `[HIGH]`
-- [ ] Both QuizScanGrader and WorksheetScanGrader append `jobId` to FormData (sourced from queue id) `[HIGH]`
-- [ ] Backend registers cancel event in `_active_cancel_events[jobId]` at top of SSE generator, cleans up in finally `[HIGH]`
-- [ ] Cancel event checked at the **top of the file loop** (subsequent files skipped) `[HIGH]`
-- [ ] Cancel event checked **between QR extraction and OCR fallback** `[MEDIUM]`
-- [ ] Cancel event checked **between OCR detection and LLM grading** `[MEDIUM]`
-- [ ] Cancel event passed into `_grade_detected_answers` / `_grade_single_quiz_scan` so it propagates to `LlamaInference.generate_stream` (mid-token cancellation in subjective grading) `[HIGH]`
-- [ ] On cancel, SSE stream emits a final `{"event": "cancelled"}` event and closes cleanly `[MEDIUM]`
+- [ ] Endpoint accepts `job_id` as an optional Form field (backwards compatible with old callers) `[HIGH]`
+- [ ] Both QuizScanGrader and WorksheetScanGrader append `job_id` to FormData (sourced from queue id) `[HIGH]`
+- [ ] Backend registers cancel event at start of the SSE generator, releases at the end `[HIGH]`
+- [ ] Cancel event checked at the **top of the file loop** — subsequent files skipped, currently-processing file finishes `[HIGH]`
+- [ ] On cancel, SSE stream emits a final `{"event": "cancelled", "summary": ...}` event and closes cleanly `[MEDIUM]`
 - [ ] Both scan graders fire `POST /api/cancel/{jobId}` in `onCancel` in addition to `abortController.abort()` `[HIGH]`
 
-**Smoke / collision tests**
+**Smoke tests**
 - [ ] Two concurrent quizzes (different tabs) cancelled independently — neither affects the other `[HIGH]`
 - [ ] Diffusion + OCR + LLM running simultaneously → cancelling one leaves the other two running `[MEDIUM]`
 - [ ] Cancel a job that is already finishing at the moment the cancel arrives → no exception, no zombie entry in registry `[MEDIUM]`
 - Findings: ___
+
+**Tier 2 (deferred — not in this round)**
+- Mid-step diffusion cancellation via diffusers `callback_on_step_end` (only useful if backend switches off OpenVINO/sd.cpp)
+- Cancel event propagation into `_grade_detected_answers` / `_grade_single_quiz_scan` for mid-token LLM cancel inside OCR grading
+- Replace hardcoded WS fallback job_ids (`"quiz"`, `"lesson-plan"`, …) with UUIDs to prevent collisions
+- OCR cancel checks between QR extraction / OCR fallback / LLM stages within a single file
 
 ### 27.5 QueueContext External Item API `[MEDIUM]`
 The new "external" item kind underpins ImageStudio + scan graders' queue integration.
@@ -1473,15 +1577,61 @@ Use this section to record all issues found during testing.
 | 22 | My Resources & File Mgmt | 21 | | |
 | 23 | Data Management | 13 | | |
 | 24 | Integration Tests | 14 | | |
-| 25 | Unified Calendar System | 91 | 56 (Phase 1+6+2 backend shipped) | |
+| 25 | Unified Calendar System | 113 | 96 (all 6 phases shipped, 17 deferred items are frontend polish + future enhancements) | |
 | 26 | Coworker Supercharge Features | 70 | | |
-| 27 | Tab Pulse, Queue Panel & Cancellation | 71 | | |
-| **TOTAL** | | **~737** | | |
+| 27 | Tab Pulse, Queue Panel & Cancellation (Tier 1) | 66 | | |
+| **TOTAL** | | **~732** | | |
 
 ---
 
 *End of PEARL Testing Plan*
 
+---
 
+## Regression Watch — Generator Optimisation (2026-04-11)
+
+Spot checks tied to the DurationPicker / presets rollout. These are behaviours
+that changed shape; confirm they still match teacher expectations.
+
+### RW.1 CrossCurricularPlanner duration field — now numeric-only `[MEDIUM]`
+- [ ] Open CrossCurricularPlanner, Step 1, Duration row
+- [ ] Chip buttons (30/40/45/60/80) select cleanly and fill the prompt
+- [ ] "Other" fallback accepts a custom number (e.g. 90) and generates OK
+- [ ] **Regression check:** previously teachers could type strings like
+      `"2 class periods"` or `"60 minutes"` into this field. That is no longer
+      possible — the field is numeric-only. Confirm no teacher workflow
+      depends on the freeform wording. If one does, the fix is to let the
+      "Other" input accept text as well.
+- Findings: ___
+
+### RW.2 RubricGenerator assignment-type auto-fill overwrites manual edits `[MEDIUM]`
+- [ ] Open RubricGenerator, select `Essay` — `focusAreas` and
+      `performanceLevels` auto-fill with soft defaults
+- [ ] Manually tick/untick `focusAreas` so they differ from the preset
+- [ ] Change `assignmentType` to `Presentation`
+- [ ] **Expected:** `focusAreas` + `performanceLevels` are overwritten with
+      the Presentation preset. The teacher's manual tweaks are lost.
+- [ ] This matches the spec's "soft defaults" language but is a known
+      footgun — flag it if any teacher complains. Possible fix is to only
+      auto-fill when `focusAreas` is empty or untouched since last type change.
+- Findings: ___
+
+### RW.3 Quiz last-used settings persistence `[LOW]`
+- [ ] Generate a quiz with a non-default mix of `questionTypes` /
+      `cognitiveLevels` / `numberOfQuestions` / `timeLimitPerQuestion`
+- [ ] Open a new QuizGenerator tab — those same values should be pre-filled
+- [ ] Clear localStorage key `quiz_last_settings` → new tab opens empty
+- Findings: ___
+
+### RW.4 DurationPicker across all four planners `[LOW]`
+- [ ] LessonPlanner Step 1 — chips + Other work, validation error style shows
+      when required and empty
+- [ ] KindergartenPlanner — same
+- [ ] MultigradePlanner — same
+- [ ] CrossCurricularPlanner — same
+- [ ] Selected chip visually reflects accent color of the tab
+- Findings: ___
+
+---
 
 make user manual
