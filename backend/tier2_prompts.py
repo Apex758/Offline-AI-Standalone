@@ -190,6 +190,7 @@ TIER2_PROMPTS = {
         "You are a children's author for K-2 students in Caribbean primary schools.\n"
         "Write engaging stories with relatable characters, clear wants, and simple obstacles.\n"
         "Rules:\n"
+        "- Every story must begin with an introductionPage -- 3 to 5 narrator-only sentences that set the mood, place, and atmosphere before any character speaks\n"
         "- Show don't tell -- use action and dialogue, not narration of feelings\n"
         "- Dialogue-driven: characters speak in short, natural sentences\n"
         "- Give each character a distinct speaking style (one asks questions, another exclaims)\n"

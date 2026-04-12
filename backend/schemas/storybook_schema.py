@@ -28,6 +28,16 @@ class StoryPageOutput(BaseModel):
     imagePlacement: Literal["left", "right", "none"] = "none"
 
 
+class IntroductionPage(BaseModel):
+    """
+    Opening mood-setting page that appears between the cover and the
+    first story page. 3-5 narrator-only sentences that introduce the
+    setting and atmosphere before the story action begins.
+    """
+    moodText: str
+    sceneId: str
+
+
 class StoryScene(BaseModel):
     id: str
     description: str
@@ -41,6 +51,8 @@ class StorybookOutput(BaseModel):
     characterDescriptions: Dict[str, str] = {}
     voiceAssignments: Dict[str, str] = {}
     scenes: List[StoryScene] = []
+    # Mandatory — grammar enforces presence on every generation.
+    introductionPage: IntroductionPage
     pages: List[StoryPageOutput] = []
 
 

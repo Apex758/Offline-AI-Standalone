@@ -50,6 +50,26 @@ export interface StoryScene {
   description: string;
 }
 
+// ─── Introduction Page ───────────────────────────────────────────────────────
+
+/**
+ * Opening mood-setting page that sits between the cover and page 1.
+ * 3-5 narrator-only sentences that introduce the atmosphere/setting
+ * before the story action begins. Mandatory for new stories; optional
+ * in the type for backwards compatibility with saved stories that
+ * pre-date this field.
+ */
+export interface IntroductionPage {
+  /** 3-5 narrator-only sentences setting the mood and place. */
+  moodText: string;
+  /** References a scene in ParsedStorybook.scenes[].id */
+  sceneId: string;
+  /** Bundled scene id after fuzzy matching (set client-side). */
+  bundledSceneId?: string;
+  /** Optional background image data (custom-generated or uploaded). */
+  backgroundImageData?: string;
+}
+
 export interface ParsedStorybook {
   title: string;
   gradeLevel: 'K' | '1' | '2';
@@ -85,6 +105,12 @@ export interface ParsedStorybook {
   characterReferenceImages?: Record<string, string>;
   /** Optional cover page data (title, author, cover image) */
   coverPage?: CoverPage;
+  /**
+   * Opening mood-setting page between cover and page 1. Optional in the
+   * type so older saved stories without it still load; new stories
+   * always have it (enforced by the grammar-constrained JSON schema).
+   */
+  introductionPage?: IntroductionPage;
 }
 
 // ─── Cover Page ─────────────────────────────────────────────────────────────

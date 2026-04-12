@@ -13,6 +13,7 @@ const GRADE_SPECS = {
     vocabulary: 'Sight words only (e.g., the, is, a, and, big, little, run, play)',
     dialogue: 'Very short — 3-5 words max per line (e.g., "Come play with me!")',
     style: 'Repetitive patterns, rhyming encouraged, single clear idea per page',
+    introExample: 'It was a hot day. Mia and Ben went to the park. They wanted to play on the swings.',
   },
   '1': {
     name: 'Grade 1',
@@ -22,6 +23,7 @@ const GRADE_SPECS = {
     vocabulary: 'Basic academic vocabulary, simple descriptive words, common verbs',
     dialogue: 'Short sentences — up to 8 words (e.g., "I want to find the lost ball.")',
     style: 'Simple plot with clear cause-and-effect, some repetition, friendly tone',
+    introExample: 'It was a bright and sunny day. Mia and Ben walked to the park together. They wanted to play on the new swings. Mia had her water bottle. Ben brought a small ball.',
   },
   '2': {
     name: 'Grade 2',
@@ -31,6 +33,7 @@ const GRADE_SPECS = {
     vocabulary: 'Grade 2 academic words, descriptive adjectives, simple adverbs',
     dialogue: 'Full sentences — up to 12 words with emotion/expression cues',
     style: 'Clear story arc (beginning/middle/end), characters show feelings, some problem-solving',
+    introExample: 'It was a warm Saturday morning at the beach. Mia and Ben had just finished their breakfast at home. Today they were going to look for pretty seashells by the water. Their teacher wanted shells for a class project. Mia put on her hat, and Ben grabbed a small bucket.',
   },
 };
 
@@ -129,7 +132,8 @@ function buildExampleJSON(formData: StorybookFormData, hasCurriculum: boolean): 
     "narrator": "${formData.speakers[0]?.voice || 'lessac'}"
   }`;
     textSegmentsExample = `[
-        { "speaker": "narrator", "text": "The little bird hopped along the branch." }
+        { "speaker": "narrator", "text": "The little bird hopped along the branch." },
+        { "speaker": "narrator", "text": "It looked down at the pond below." }
       ]`;
   } else if (charNames.length === 1) {
     // Narrator + 1 character
@@ -145,7 +149,8 @@ function buildExampleJSON(formData: StorybookFormData, hasCurriculum: boolean): 
   }`;
     textSegmentsExample = `[
         { "speaker": "narrator", "text": "The garden was full of bright flowers." },
-        { "speaker": "${name}", "text": "Look at all the colors!" }
+        { "speaker": "${name}", "text": "Look at all the colors! I want to pick the red one." },
+        { "speaker": "narrator", "text": "${name} bent down and reached for the flower." }
       ]`;
   } else {
     // Narrator + 2 characters
@@ -164,9 +169,11 @@ function buildExampleJSON(formData: StorybookFormData, hasCurriculum: boolean): 
     "${name2}": "${voice2}"
   }`;
     textSegmentsExample = `[
-        { "speaker": "narrator", "text": "They walked together through the sunny park." },
-        { "speaker": "${name1}", "text": "What is that sound?" },
-        { "speaker": "${name2}", "text": "Let us go and see!" }
+        { "speaker": "narrator", "text": "${name1} and ${name2} stopped near a big tree." },
+        { "speaker": "${name1}", "text": "Look over there! I think I can see something moving." },
+        { "speaker": "${name2}", "text": "Really? Let me see too. Where is it?" },
+        { "speaker": "narrator", "text": "They both walked closer to get a better look." },
+        { "speaker": "${name1}", "text": "It is a small frog! It is sitting on a leaf." }
       ]`;
   }
 
@@ -180,6 +187,10 @@ function buildExampleJSON(formData: StorybookFormData, hasCurriculum: boolean): 
   "scenes": [
     { "id": "park", "description": "a sunny green park with tall oak trees and a wooden bench" }
   ],
+  "introductionPage": {
+    "moodText": "3 to 5 simple narrator-only sentences. Open with setting (weather/place/time), name the main characters, and state where they are and what they are about to do. Plain concrete language, no metaphors, no personification. Must flow directly into page 1. See the example above for the exact tone.",
+    "sceneId": "park"
+  },
   "pages": [
     {
       "pageNumber": 1,
@@ -254,11 +265,26 @@ STORY REQUEST:
 Title: "${formData.title || '[Generate a creative, engaging story title based on the description, subject, and grade level]'}"
 Description: ${formData.description}
 Grade Level: ${spec.name} (${spec.age})${formData.subject ? `\nSubject: ${formData.subject}` : ''}
-Total Pages: ${formData.pageCount}
+Story Pages: ${formData.pageCount} (this count is the body of the story ONLY — the cover and the introductionPage are SEPARATE and do NOT count toward this total)
 
 ${pacingGuide}
 
-${curriculumBlock ? curriculumBlock + '\n\n' : ''}WRITING RULES:
+${curriculumBlock ? curriculumBlock + '\n\n' : ''}INTRODUCTION PAGE (MANDATORY):
+Every storybook must begin with an introductionPage — a simple, natural opening that sets the scene and introduces the characters BEFORE the main action begins. Think of it as the "once upon a time" opening, not a poetic mood piece.
+- Exactly 3 to 5 sentences, narrator voice only, NO dialogue
+- Use the SAME vocabulary and sentence rules as the story pages below (grade ${spec.name}, ${spec.sentenceLength})
+- Use plain concrete language — NO poetic metaphors, NO personification (do NOT write things like "the wind whispered secrets" or "the air smelled of adventure")
+- Open with a simple setting line (weather, place, time of day — e.g. "It was a warm sunny day.")
+- Name the main character(s) and state WHERE they are and WHAT they are about to do (e.g. "${hasMultipleSpeakers && formData.speakers.filter(s => s.characterName).length >= 2 ? formData.speakers.filter(s => s.characterName).slice(0, 2).map(s => s.characterName).join(' and ') : 'Mia'} went to the beach to look for seashells.")
+- Do NOT introduce conflict, mystery, or foreshadow a problem — the intro is just "here's who they are and what they're about to do"
+- Page 1 of the story must flow NATURALLY from the intro — it picks up exactly where the intro left off and starts the actual action. The intro is a lead-in, not a separate disconnected scene.
+
+EXAMPLE INTRODUCTION (for ${spec.name}, matching the required style and length):
+"${spec.introExample}"
+
+(Notice: simple words, names the characters, says what they are doing, no poetic language, no foreshadowing of problems. Your introduction should match this tone exactly.)
+
+WRITING RULES:
 - ${spec.sentences}
 - Sentence length: ${spec.sentenceLength}
 - Vocabulary: ${spec.vocabulary}
@@ -266,13 +292,17 @@ ${curriculumBlock ? curriculumBlock + '\n\n' : ''}WRITING RULES:
 - Story style: ${spec.style}
 - Show emotions through actions and dialogue, not narration (write "she jumped up and clapped" not "she was happy")
 - Each page must have ONE clear moment or action — do not pack too much into a page
-- Page 1 should be a narrator introduction: 1-2 sentences that set the scene and hook the reader before the story action begins
+- Page 1 is the first STORY page (after the introductionPage) — it must pick up DIRECTLY from what the introduction set up. If the intro says the characters went to the beach to look for shells, page 1 starts with them actually looking at / picking up / talking about a shell — not a new scene or time jump.
+- The final page must resolve the setup from the intro — if they went to look for shells, the final page shows them having found what they set out for (or learning something in the process).
 - Introduce the main character DOING something on an early page — not through description
 - Include at least one moment of humor, surprise, or wonder
 - Vary sentence beginnings — never start 3+ consecutive sentences with the same word
 - Use sensory details — colors, sounds, textures — that young readers can picture
 - Do NOT end with a moral lesson or summary paragraph (no "And so they learned that...")
 - Characters should solve problems with creativity, humor, or kindness — not be told the answer
+- NARRATOR vs CHARACTER RULE: the narrator ONLY describes actions and the scene (e.g. "They walked to the tree."). The narrator NEVER speaks dialogue or asks questions that a character would say. If a character says "What is that?" it goes ONLY in that character's segment, NEVER as a narrator segment. Do NOT duplicate lines — each sentence appears exactly once.
+- Characters should speak in 1-2 sentences per turn, not just single short phrases. Give them something real to say — an observation, a question, a reaction, or a suggestion. Vary the length across pages.
+- Do NOT copy the example JSON text. The example shows the FORMAT only. Write completely fresh story text.
 ${hasMultipleSpeakers ? '- Give each character a distinct speaking style — one might ask questions, another uses exclamations' : ''}
 
 ${speakerInstruction}
@@ -293,7 +323,7 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown, no explanation:
 
 ${exampleJSON}
 
-Generate all ${formData.pageCount} pages. Every page must have at least one textSegment. Return ONLY the JSON object.`;
+Generate exactly ${formData.pageCount} story pages in the "pages" array (NOT counting the introductionPage, which is a separate top-level field). Every page must have at least one textSegment. Return ONLY the JSON object.`;
 
   return prompt + getLanguageInstruction(language);
 }
@@ -325,7 +355,9 @@ export function buildNarrativePrompt(formData: StorybookFormData): string {
 
   return `You are a children's storybook author for ${spec.name} (${spec.age}).
 
-Write a complete ${formData.pageCount}-page children's story as plain text. Each page should be separated by "---PAGE BREAK---".
+Write a complete children's story as plain text. Your output must have TWO parts:
+1. First, an INTRODUCTION section (3-5 narrator-only sentences, no dialogue) that sets the mood, place, and atmosphere before the story action begins. Mark it with "---INTRODUCTION---" before and "---INTRO END---" after. This section is IN ADDITION TO the story pages — it does not count as a page.
+2. Then, exactly ${formData.pageCount} story pages separated by "---PAGE BREAK---". These are the body pages of the story, not counting the introduction.
 
 STORY REQUEST:
 Title: "${formData.title || '[Generate a creative, engaging story title based on the description, subject, and grade level]'}"
@@ -334,7 +366,19 @@ Grade Level: ${spec.name} (${spec.age})${formData.subject ? `\nSubject: ${formDa
 
 ${pacingGuide}
 
-${curriculumBlock ? curriculumBlock + '\n\n' : ''}WRITING RULES:
+${curriculumBlock ? curriculumBlock + '\n\n' : ''}INTRODUCTION RULES (for the opening paragraph):
+- 3 to 5 sentences, narrator voice ONLY, NO dialogue, NO character speech
+- SAME vocabulary and sentence rules as the story pages (${spec.name}, ${spec.sentenceLength})
+- Plain concrete language — NO poetic metaphors, NO personification
+- Open with a simple setting line (weather/place/time)
+- Name the main characters and state what they are about to do — like a "once upon a time" opening, not a mood piece
+- Do NOT introduce conflict, mystery, or foreshadow a problem
+- Page 1 of the story must pick up DIRECTLY from where the intro leaves off
+
+EXAMPLE INTRODUCTION (${spec.name}):
+"${spec.introExample}"
+
+STORY PAGE RULES:
 - ${spec.sentences}
 - Sentence length: ${spec.sentenceLength}
 - Vocabulary: ${spec.vocabulary}
@@ -351,7 +395,17 @@ ${hasMultipleSpeakers ? dialogueExample : '- Write in third person narrative voi
 
 IMPORTANT: The story must flow naturally from page to page. Each page should connect to the next. The story needs a clear beginning, middle, and end.
 
-Write exactly ${formData.pageCount} pages separated by "---PAGE BREAK---". Start writing the story now:`;
+Output format:
+---INTRODUCTION---
+(3-5 sentence mood-setting paragraph here)
+---INTRO END---
+(page 1 text)
+---PAGE BREAK---
+(page 2 text)
+---PAGE BREAK---
+... and so on for ${formData.pageCount} pages.
+
+Start writing now:`;
 }
 
 /**
@@ -389,11 +443,14 @@ ${imageInstructions}
 CHARACTER DESCRIPTIONS (for image consistency):
 For each named character, provide a "characterDescriptions" object with a detailed visual description (20-30 words).
 
+INTRODUCTION PAGE:
+The story above has an introduction section between "---INTRODUCTION---" and "---INTRO END---". Put that text verbatim in the "introductionPage.moodText" field. Do NOT split it into dialogue segments — it is narrator-only. Pick the sceneId that best matches where the story opens.
+
 OUTPUT FORMAT — return ONLY valid JSON, no markdown, no explanation:
 
 ${exampleJSON}
 
-IMPORTANT: Preserve the story text exactly as written above. Split it into pages matching the page breaks. Tag each sentence with the correct speaker using the EXACT names from the SPEAKERS list. Return ONLY the JSON object.`;
+IMPORTANT: Preserve the story text exactly as written above. Put the introduction between ---INTRODUCTION--- and ---INTRO END--- into introductionPage.moodText. Split everything AFTER ---INTRO END--- into pages matching the ---PAGE BREAK--- markers. Tag each sentence with the correct speaker using the EXACT names from the SPEAKERS list. Return ONLY the JSON object.`;
 }
 
 // ─── Curriculum Info Builder (for comprehension questions pass) ────────────────

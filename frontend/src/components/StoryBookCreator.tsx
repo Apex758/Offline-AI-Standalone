@@ -84,7 +84,7 @@ import {
 import type {
   StorybookFormData, ParsedStorybook, StoryPage, SpeakerConfig,
   VoiceName, SpeakerRole, ComprehensionQuestion, BundledScene,
-  SavedStorybook, StorybookExportSettings, CoverPage,
+  SavedStorybook, StorybookExportSettings, CoverPage, IntroductionPage,
 } from '../types/storybook';
 import type { ImageMode } from '../types';
 import {
@@ -1209,6 +1209,106 @@ function CoverPagePreview({
   );
 }
 
+// ─── Introduction Page Preview ───────────────────────────────────────────────
+
+/**
+ * Renders the opening mood-setting page between cover and page 1.
+ * Shows the moodText as centered serif prose over the chosen scene
+ * background. When `liveText` is provided, renders partial text with a
+ * caret and smooth reveal — used during streaming.
+ */
+function IntroductionPagePreview({
+  intro,
+  accentColor,
+  liveText,
+  isStreaming,
+}: {
+  intro: IntroductionPage;
+  accentColor: string;
+  /** When set, render this partial text with caret + smooth reveal. */
+  liveText?: string | null;
+  isStreaming?: boolean;
+}) {
+  const bgScene = intro.bundledSceneId
+    ? BUNDLED_SCENES.find(s => s.id === intro.bundledSceneId)
+    : null;
+  const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
+
+  // Smooth-reveal the live text so multi-char token jumps type in smoothly.
+  const revealed = useSmoothReveal(liveText || '', !!liveText);
+  const displayText = liveText != null ? revealed : intro.moodText;
+
+  return (
+    <div
+      className={`relative rounded-xl overflow-hidden border shadow-sm intro-streaming-wrap ${isStreaming ? 'is-streaming' : ''}`}
+      style={{
+        background: bgColor,
+        aspectRatio: '297 / 210',
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        borderColor: `${accentColor}55`,
+        ...(isStreaming
+          ? {
+              boxShadow: `0 0 0 2px ${accentColor}33, 0 0 24px ${accentColor}22`,
+              animation: 'introStreamPulse 1.8s ease-in-out infinite',
+            }
+          : {}),
+      }}
+    >
+      <div className="absolute inset-0 flex items-center justify-center p-12">
+        <p
+          className={`text-center italic text-gray-800 leading-relaxed text-lg max-w-[85%] ${liveText != null ? 'intro-active-text' : ''}`}
+        >
+          {displayText}
+          {liveText != null && <span className="intro-caret" aria-hidden="true" />}
+        </p>
+      </div>
+      {/* Subtle "Introduction" badge top-left */}
+      <div
+        className="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full"
+        style={{ background: `${accentColor}22`, color: accentColor }}
+      >
+        Introduction
+      </div>
+      <style>{`
+        @keyframes introStreamPulse {
+          0%, 100% { box-shadow: 0 0 0 2px ${accentColor}33, 0 0 24px ${accentColor}22; }
+          50%      { box-shadow: 0 0 0 2px ${accentColor}66, 0 0 32px ${accentColor}44; }
+        }
+        .intro-streaming-wrap .intro-active-text {
+          display: inline-block;
+          padding: 0 0.5rem;
+          border-radius: 6px;
+          background: linear-gradient(
+            90deg,
+            ${accentColor}11 0%,
+            ${accentColor}33 50%,
+            ${accentColor}11 100%
+          );
+          background-size: 200% 100%;
+          animation: introActiveShimmer 1.4s linear infinite;
+          box-shadow: 0 0 0 1px ${accentColor}55;
+        }
+        @keyframes introActiveShimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .intro-streaming-wrap .intro-caret {
+          display: inline-block;
+          width: 2px;
+          height: 0.9em;
+          margin-left: 2px;
+          vertical-align: middle;
+          background-color: ${accentColor};
+          animation: introCaretBlink 1s steps(2, start) infinite;
+        }
+        @keyframes introCaretBlink {
+          to { visibility: hidden; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 // ─── Page Preview ─────────────────────────────────────────────────────────────
 
 function PagePreview({
@@ -1666,6 +1766,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   //   ["pages", <pageIdx>, "textSegments", <segIdx>, "speaker"]
   //   ["pages", <pageIdx>, "characterScene"]
   //   ["pages", <pageIdx>, "sceneId"]
+  //   ["introductionPage", "moodText"]
   //   ["title"]  etc.
   // We only light up the text field case, because that's the lion's share
   // of wall-clock time during generation.
@@ -1693,6 +1794,17 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     return null;
   })();
 
+  // Separate detection for the introduction page's moodText so the intro
+  // view can type in live with the same caret + shimmer effect.
+  const sbIntroLiveText: string | null = (() => {
+    if (!isStreaming || !sbInProgressPath || sbInProgressValue == null) return null;
+    const p = sbInProgressPath;
+    if (p.length === 2 && p[0] === 'introductionPage' && p[1] === 'moodText') {
+      return sbInProgressValue;
+    }
+    return null;
+  })();
+
   // Track which page the AI is currently streaming (for auto-advance in editor)
   const prevLivePagesCountRef = useRef(0);
   const pageScanOffsetRef = useRef(0);
@@ -1710,6 +1822,144 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       setCurrentPageIdx(sbLiveTyping.pageIdx);
     }
   }, [sbLiveTyping, isStreaming]);
+
+  // Auto-advance to the intro view when the model starts typing the
+  // introductionPage.moodText. Fires once per stream.
+  const hasShownIntroRef = useRef(false);
+  useEffect(() => {
+    if (!isStreaming) {
+      hasShownIntroRef.current = false;
+      return;
+    }
+    if (sbIntroLiveText != null && !hasShownIntroRef.current) {
+      hasShownIntroRef.current = true;
+      if (viewRef.current === 'editor') {
+        setCurrentPageIdx(-2);
+      }
+    }
+  }, [sbIntroLiveText, isStreaming]);
+
+  // Sync the fine-parsed introductionPage.moodText into parsedBook
+  // during streaming, so:
+  //   - the thumbnail on the left shows the growing intro text preview
+  //   - the save/draft state captures the latest snapshot
+  //   - navigating away and back shows what's been typed so far
+  const introDebugLoggedRef = useRef(false);
+  useEffect(() => {
+    if (!isStreaming) {
+      introDebugLoggedRef.current = false;
+      return;
+    }
+    const streamedIntro = sbStreamingData && (sbStreamingData as any).introductionPage;
+    if (streamedIntro && !introDebugLoggedRef.current) {
+      introDebugLoggedRef.current = true;
+      console.log('[SB-INTRO-DEBUG] introductionPage appeared in stream:', streamedIntro);
+    }
+    if (!streamedIntro || typeof streamedIntro.moodText !== 'string') return;
+    setParsedBook(prev => {
+      if (!prev) return prev;
+      const prevIntro = prev.introductionPage;
+      // Avoid needless state updates if nothing changed
+      if (
+        prevIntro &&
+        prevIntro.moodText === streamedIntro.moodText &&
+        prevIntro.sceneId === (streamedIntro.sceneId || '')
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        introductionPage: {
+          moodText: streamedIntro.moodText,
+          sceneId: streamedIntro.sceneId || prevIntro?.sceneId || 'default',
+          bundledSceneId: prevIntro?.bundledSceneId,
+        },
+      };
+    });
+  }, [isStreaming, sbStreamingData]);
+
+  // ── Early editor-view transition ──────────────────────────────────────────
+  // The coarse `tryParsePartialPages` only commits a page when its closing
+  // '}' arrives, which means the old transition-to-editor logic waited an
+  // entire page (30-60 seconds) before switching off the skeleton view.
+  // During that wait, page 1 is already streaming live via the fine parser
+  // but the user can't see it because we're still in the generic skeleton.
+  //
+  // This effect watches the fine parser (useStreamingJson) and enters the
+  // editor view as soon as ANY streaming content arrives for the intro or
+  // any story page — typically within seconds of the stream starting. Then
+  // the live-typing auto-advance takes over for subsequent pages.
+  const hasTransitionedToEditorRef = useRef(false);
+  useEffect(() => {
+    if (!isStreaming) {
+      hasTransitionedToEditorRef.current = false;
+      return;
+    }
+    if (hasTransitionedToEditorRef.current) return;
+    if (viewRef.current !== 'streaming') return;
+
+    const hasIntroContent = !!(sbStreamingData && (sbStreamingData as any).introductionPage);
+    const hasPageContent = !!(
+      sbStreamingData &&
+      Array.isArray((sbStreamingData as any).pages) &&
+      (sbStreamingData as any).pages.length > 0
+    );
+    const hasLiveTyping = !!sbLiveTyping || sbIntroLiveText != null;
+
+    if (!hasIntroContent && !hasPageContent && !hasLiveTyping) return;
+
+    // Build a placeholder parsedBook so the editor has something to render.
+    const totalExpected = formData.pageCount;
+    const placeholderPages: StoryPage[] = [];
+    for (let i = 0; i < totalExpected; i++) {
+      placeholderPages.push({
+        pageNumber: i + 1,
+        textSegments: [],
+        sceneId: 'default',
+        imagePlacement: 'none',
+        characterAnimation: 'fadeIn',
+        textAnimation: 'fadeIn',
+      });
+    }
+    const gl = formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`;
+    const placeholderCover: CoverPage = {
+      title: formData.title || 'Generating...',
+      subtitle: `${gl}${formData.subject ? ' • ' + formData.subject : ''}`,
+      authorName: formData.authorName || undefined,
+    };
+    const placeholderIntro: IntroductionPage = {
+      moodText: '',
+      sceneId: 'default',
+    };
+
+    setParsedBook(prev => {
+      // Preserve any existing parsed book (e.g. from localStorage restore)
+      const base = prev || {
+        title: formData.title || 'Generating...',
+        gradeLevel: formData.gradeLevel,
+        pages: placeholderPages,
+        scenes: [],
+        styleSuffix: '',
+      };
+      return {
+        ...base,
+        pages: base.pages && base.pages.length > 0 ? base.pages : placeholderPages,
+        coverPage: base.coverPage || placeholderCover,
+        introductionPage: base.introductionPage || placeholderIntro,
+      };
+    });
+
+    // Navigate to whatever is currently streaming
+    if (sbIntroLiveText != null || hasIntroContent) {
+      setCurrentPageIdx(-2);
+    } else if (sbLiveTyping) {
+      setCurrentPageIdx(sbLiveTyping.pageIdx);
+    } else {
+      setCurrentPageIdx(0);
+    }
+    setView('editor');
+    hasTransitionedToEditorRef.current = true;
+  }, [isStreaming, sbStreamingData, sbLiveTyping, sbIntroLiveText, formData]);
 
   useEffect(() => {
     if (!streamingContent) {
@@ -1808,6 +2058,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         });
         // Inject constant styleSuffix client-side
         const withStyle = { ...full, pages, styleSuffix: full.styleSuffix || STORYBOOK_STYLE_SUFFIX };
+        // Match bundled scene for the introduction page (same treatment
+        // as story pages). Safe no-op on older saves without intro.
+        if (withStyle.introductionPage && withStyle.introductionPage.sceneId) {
+          withStyle.introductionPage = {
+            ...withStyle.introductionPage,
+            bundledSceneId: findBestScene(withStyle.introductionPage.sceneId).id,
+          };
+        }
         // Validate speakers match form config
         const validated = validateSpeakers(withStyle, formData);
         // Build cover page
@@ -2718,7 +2976,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   if (!parsedBook) return null;
 
   const isCoverSelected = currentPageIdx === -1;
-  const currentPage = isCoverSelected ? null : parsedBook.pages[currentPageIdx];
+  const isIntroSelected = currentPageIdx === -2;
+  const currentPage = isCoverSelected || isIntroSelected ? null : parsedBook.pages[currentPageIdx];
 
   return (
     <div className="flex h-full" style={{ '--ng-accent': accentColor } as React.CSSProperties}>
@@ -3025,6 +3284,33 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 </div>
               </button>
             )}
+            {/* Introduction page thumbnail — sits between cover and P1 */}
+            {parsedBook.introductionPage && (
+              <button
+                onClick={() => setCurrentPageIdx(-2)}
+                className="w-full rounded-lg overflow-hidden border-2 transition-all text-left"
+                style={{ borderColor: isIntroSelected ? accentColor : 'transparent' }}
+              >
+                <div
+                  className="relative overflow-hidden flex items-center justify-center"
+                  style={{
+                    aspectRatio: '297 / 210',
+                    background: `linear-gradient(135deg, ${accentColor}18, ${accentColor}05)`,
+                  }}
+                >
+                  <div className="relative z-10 text-center p-1">
+                    <p className="text-[5px] italic leading-[7px] text-gray-700 line-clamp-4" style={{ opacity: 0.8 }}>
+                      {parsedBook.introductionPage.moodText || 'Introduction...'}
+                    </p>
+                  </div>
+                </div>
+                <div className="px-1.5 py-0.5" style={{ background: isIntroSelected ? `${accentColor}10` : undefined }}>
+                  <p className="text-[10px] font-semibold" style={{ color: isIntroSelected ? accentColor : undefined }}>
+                    Intro
+                  </p>
+                </div>
+              </button>
+            )}
             {parsedBook.pages.map((page, i) => {
               const isActive = i === currentPageIdx;
               const isPageEmpty = page.textSegments.length === 0;
@@ -3115,18 +3401,42 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               {/* Page nav */}
               <div className="flex items-center justify-between">
                 <button
-                  disabled={isCoverSelected ? !parsedBook.coverPage : currentPageIdx === 0}
-                  onClick={() => setCurrentPageIdx(p => p === 0 && parsedBook.coverPage ? -1 : p - 1)}
+                  disabled={
+                    isCoverSelected ||
+                    (isIntroSelected && !parsedBook.coverPage) ||
+                    (currentPageIdx === 0 && !parsedBook.introductionPage && !parsedBook.coverPage)
+                  }
+                  onClick={() => setCurrentPageIdx(p => {
+                    // 0 → (intro if present) → (cover if present)
+                    if (p === 0) {
+                      if (parsedBook.introductionPage) return -2;
+                      if (parsedBook.coverPage) return -1;
+                      return p;
+                    }
+                    // -2 (intro) → -1 (cover)
+                    if (p === -2) return parsedBook.coverPage ? -1 : p;
+                    return p - 1;
+                  })}
                   className="text-theme-muted hover:text-theme-heading disabled:opacity-30"
                 >
                   <Icon icon={ArrowLeft01IconData} className="w-5" />
                 </button>
                 <span className="text-sm text-theme-muted">
-                  {isCoverSelected ? t('storybook.coverPage') : t('storybook.pageNofM', { n: currentPageIdx + 1, m: parsedBook.pages.length })}
+                  {isCoverSelected
+                    ? t('storybook.coverPage')
+                    : isIntroSelected
+                      ? 'Introduction'
+                      : t('storybook.pageNofM', { n: currentPageIdx + 1, m: parsedBook.pages.length })}
                 </span>
                 <button
                   disabled={currentPageIdx === parsedBook.pages.length - 1}
-                  onClick={() => setCurrentPageIdx(p => p + 1)}
+                  onClick={() => setCurrentPageIdx(p => {
+                    // -1 (cover) → -2 (intro if present) → 0
+                    if (p === -1) return parsedBook.introductionPage ? -2 : 0;
+                    // -2 (intro) → 0
+                    if (p === -2) return 0;
+                    return p + 1;
+                  })}
                   className="text-theme-muted hover:text-theme-heading disabled:opacity-30"
                 >
                   <Icon icon={ArrowRight01IconData} className="w-5" />
@@ -3135,7 +3445,53 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
               {isCoverSelected && parsedBook.coverPage ? (
                 <CoverPagePreview coverPage={parsedBook.coverPage} accentColor={accentColor} />
-              ) : currentPage ? (() => {
+              ) : isIntroSelected ? (() => {
+                // Intro view. Source of truth:
+                //  - Live: during streaming, pull moodText from sbStreamingData.
+                //    While the string is open, sbIntroLiveText has the partial
+                //    text and we render it with caret + smooth reveal. When
+                //    the string closes, it shows as fully committed text.
+                //  - Static: otherwise render parsedBook.introductionPage.
+                const streamingIntro = isStreaming
+                  ? sbStreamingData?.introductionPage
+                  : null;
+                const effectiveIntro: IntroductionPage | null =
+                  streamingIntro && typeof streamingIntro.moodText === 'string'
+                    ? {
+                        moodText: streamingIntro.moodText,
+                        sceneId: streamingIntro.sceneId || '',
+                        bundledSceneId: parsedBook.introductionPage?.bundledSceneId,
+                      }
+                    : parsedBook.introductionPage || null;
+
+                // If streaming but moodText hasn't opened yet, show a
+                // skeleton-like placeholder with the same pulse glow.
+                if (isStreaming && !effectiveIntro && sbIntroLiveText == null) {
+                  return (
+                    <IntroductionPagePreview
+                      intro={{ moodText: '', sceneId: '' }}
+                      accentColor={accentColor}
+                      liveText={''}
+                      isStreaming
+                    />
+                  );
+                }
+
+                if (!effectiveIntro) {
+                  // Genuine absence (e.g. old saved story without intro)
+                  // — fall through to showing nothing useful; this
+                  // button should not have been clickable in that case.
+                  return null;
+                }
+                return (
+                  <IntroductionPagePreview
+                    intro={effectiveIntro}
+                    accentColor={accentColor}
+                    liveText={sbIntroLiveText}
+                    isStreaming={isStreaming}
+                  />
+                );
+              })() : currentPage ? (() => {
                 // Does the live-typing path point at THIS page?
                 const liveMatches = !!(sbLiveTyping && sbLiveTyping.pageIdx === currentPageIdx);
 
@@ -3231,7 +3587,37 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
           {/* Right: Edit panel (hidden during streaming) */}
           <div className={`w-72 shrink-0 border-l border-theme overflow-y-auto p-4 space-y-5 ${isStreaming ? 'hidden' : ''}`}>
-            {isCoverSelected && parsedBook.coverPage ? (
+            {isIntroSelected && parsedBook.introductionPage ? (
+              /* ── Introduction Page Edit Panel ──────────────────────── */
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Introduction (Mood Text)</label>
+                  <p className="text-[11px] text-theme-muted mb-2 italic">3-5 narrator-only sentences that set the atmosphere before the story begins.</p>
+                  <textarea
+                    value={parsedBook.introductionPage.moodText}
+                    onChange={e => setParsedBook(prev => prev ? {
+                      ...prev,
+                      introductionPage: { ...prev.introductionPage!, moodText: e.target.value },
+                    } : prev)}
+                    rows={8}
+                    className="w-full px-3 py-2 text-sm border border-theme-strong rounded-lg bg-theme leading-relaxed"
+                    style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">Scene ID</label>
+                  <input
+                    value={parsedBook.introductionPage.sceneId}
+                    onChange={e => setParsedBook(prev => prev ? {
+                      ...prev,
+                      introductionPage: { ...prev.introductionPage!, sceneId: e.target.value },
+                    } : prev)}
+                    className="w-full px-3 py-2 text-sm border border-theme-strong rounded-lg bg-theme"
+                    placeholder="e.g. park, bedroom, forest"
+                  />
+                </div>
+              </>
+            ) : isCoverSelected && parsedBook.coverPage ? (
               /* ── Cover Page Edit Panel ─────────────────────────────── */
               <>
                 <div>
