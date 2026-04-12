@@ -87,15 +87,10 @@ export default function QuizTable({
       className="space-y-6 text-theme-primary"
       style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
     >
-      {/* Quiz-level metadata: title + instructions (always visible when teacher) */}
-      {(isTeacher || quiz.metadata.title) && (
-        <div
-          className="rounded-lg p-4"
-          style={{ border: `1px solid ${accentColor}33`, background: subtleBg }}
-        >
-          <div className="text-xs uppercase tracking-wide font-semibold mb-1" style={{ color: headerText }}>
-            {t("quiz.title", { defaultValue: "Title" })}
-          </div>
+      {/* Header - matches PDF export layout */}
+      <div className="mb-6">
+        {/* Title centered */}
+        <div className="text-center pb-3 mb-4" style={{ borderBottom: `2px solid ${accentColor}` }}>
           <InlineText
             value={quiz.metadata.title || ""}
             placeholder="(quiz title)"
@@ -103,13 +98,14 @@ export default function QuizTable({
             onChange={(v) =>
               onChange && onChange({ ...quiz, metadata: { ...quiz.metadata, title: v } })
             }
-            className="text-lg font-semibold block mb-2"
+            className="text-xl font-bold text-theme-primary inline-block"
           />
-          {(quiz.metadata.instructions || editable) && (
-            <>
-              <div className="text-xs uppercase tracking-wide font-semibold mb-1 mt-2" style={{ color: headerText }}>
-                {t("quiz.instructionsLabel", { defaultValue: "Instructions" })}
-              </div>
+        </div>
+
+        {/* Instructions (left) + Student info (right) row */}
+        <div className="flex gap-6 items-start mb-4">
+          <div className="flex-1">
+            {(quiz.metadata.instructions || editable) && (
               <InlineText
                 value={quiz.metadata.instructions || ""}
                 placeholder="(instructions for students)"
@@ -119,30 +115,36 @@ export default function QuizTable({
                   onChange &&
                   onChange({ ...quiz, metadata: { ...quiz.metadata, instructions: v } })
                 }
+                className="text-sm text-theme-muted"
               />
-            </>
+            )}
+          </div>
+          {studentInfo && (
+            <div className="flex-shrink-0 flex items-center gap-3">
+              <div className="text-right">
+                <div className="font-semibold text-sm text-theme-primary">{studentInfo.name}</div>
+                <div className="text-xs text-theme-muted">ID: {studentInfo.id}</div>
+              </div>
+              <div
+                className="w-10 h-10 rounded flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                style={{ backgroundColor: accentColor }}
+              >
+                {studentInfo.name.charAt(0)}
+              </div>
+            </div>
           )}
         </div>
-      )}
 
-      {/* Student info card (shown when viewing a specific student) */}
-      {studentInfo && (
-        <div
-          className="rounded-lg p-3 flex items-center gap-3"
-          style={{ border: `2px solid ${accentColor}44`, background: `${accentColor}08` }}
-        >
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-            style={{ backgroundColor: accentColor }}
-          >
-            {studentInfo.name.charAt(0)}
+        {/* Name / Date fields */}
+        <div className="flex gap-8 pb-3 border-b border-gray-300 dark:border-gray-600">
+          <div className="text-sm text-theme-primary">
+            Name: <span className="inline-block w-48 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
           </div>
-          <div>
-            <div className="font-semibold text-theme-primary">{studentInfo.name}</div>
-            <div className="text-xs text-theme-muted">Student ID: {studentInfo.id}</div>
+          <div className="text-sm text-theme-primary">
+            Date: <span className="inline-block w-32 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Questions */}
       <div className="space-y-6">
@@ -157,8 +159,8 @@ export default function QuizTable({
             <div key={question.id} className="space-y-3 group relative">
               {/* Question header (stem) */}
               <div
-                className="flex items-start gap-2 text-lg font-semibold p-3 rounded-lg"
-                style={{ color: headerText, backgroundColor: subtleBg }}
+                className="flex items-start gap-2 text-base font-semibold pt-2"
+                style={{ color: '#374151' }}
               >
                 <span className="flex-shrink-0">
                   {t("quiz.questionPrefix", { number: qIndex + 1 })}:

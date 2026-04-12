@@ -237,17 +237,6 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
   let htmlContent = '';
 
   // Render Questions Section
-  htmlContent += `
-    <h2 style="
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      color: ${accentColor}dd;
-      border-bottom: 2px solid ${accentColor}33;
-    ">Questions</h2>
-  `;
 
   parsed.questions.forEach((question, index) => {
     const correctLetter = correctAnswersMap.get(question.number);
@@ -538,146 +527,53 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
   ${qrCodeBase64 ? `<img class="scan-qr-code" src="data:image/png;base64,${qrCodeBase64}" />` : ''}
   ` : ''}
   <!-- Header Section -->
-  <div style="
-    position: relative;
-    overflow: hidden;
-    border-radius: 0.5rem;
-    margin-bottom: 2rem;
-    background: linear-gradient(135deg, ${accentColor} 0%, ${accentColor}dd 50%, ${accentColor}bb 100%);
-    padding: 2rem;
-  ">
-    <div style="
-      display: inline-flex;
-      align-items: center;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      background-color: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      margin-bottom: 1rem;
-    ">
-      <span style="
-        color: white;
-        font-size: 0.875rem;
-        font-weight: 500;
-      ">${formData.subject}</span>
-    </div>
-
+  <div style="margin-bottom: 1.5rem;">
+    <!-- Title centered -->
     <h1 style="
-      font-size: 2rem;
+      text-align: center;
+      font-size: 1.5rem;
       font-weight: 700;
-      color: white;
-      margin: 0.5rem 0;
-      line-height: 1.2;
-    ">${quizTitle || `${formData.subject}${formData.strand ? ' — ' + formData.strand : ''} Quiz`}</h1>
+      color: #1f2937;
+      margin: 0 0 1rem 0;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid ${accentColor};
+    ">${quizTitle || `${formData.subject}${formData.strand ? ' - ' + formData.strand : ''} Quiz`}</h1>
 
-    <div style="
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 1rem;
-      color: rgba(207, 250, 254, 1);
-      margin-top: 1rem;
-    ">
-      <div style="display: flex; align-items: center;">
-        <div style="
-          width: 0.5rem;
-          height: 0.5rem;
-          background-color: rgba(165, 243, 252, 1);
-          border-radius: 9999px;
-          margin-right: 0.5rem;
-        "></div>
-        <span style="font-size: 0.875rem;">Grade ${formData.gradeLevel}</span>
+    <!-- Instructions (left) + QR/Student (right) row -->
+    <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem; align-items: flex-start;">
+      <div style="flex: 1;">
+        ${instructions ? `
+        <div style="font-size: 0.8rem; color: #4b5563; line-height: 1.5;">${instructions}</div>
+        ` : ''}
       </div>
-      <div style="display: flex; align-items: center;">
-        <div style="
-          width: 0.5rem;
-          height: 0.5rem;
-          background-color: rgba(165, 243, 252, 1);
-          border-radius: 9999px;
-          margin-right: 0.5rem;
-        "></div>
-        <span style="font-size: 0.875rem;">${formData.questionTypes.join(', ')}</span>
+      ${studentInfo ? `
+      <div style="flex-shrink: 0; display: flex; align-items: center; gap: 0.75rem;">
+        ${qrCodeBase64 ? `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem; margin-bottom: 0.25rem;">${studentInfo.name}</div>
+          <div style="color: #6b7280; font-size: 0.7rem;">Student ID: ${studentInfo.id}</div>
+        </div>
+        <img src="data:image/png;base64,${qrCodeBase64}" style="
+          width: 3.5rem;
+          height: 3.5rem;
+          image-rendering: pixelated;
+        " />
+        ` : `
+        <div>
+          <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">${studentInfo.name}</div>
+          <div style="color: #6b7280; font-size: 0.7rem;">Student ID: ${studentInfo.id}</div>
+        </div>
+        `}
       </div>
+      ` : ''}
     </div>
 
-    <div style="
-      // margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(207, 250, 254, 1);
-      font-size: 0.875rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    ">
-      <span><span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}</span>
-      ${showAnswerKey && quizId ? `<span style="
-        background-color: rgba(255, 255, 255, 0.2);
-        padding: 0.25rem 0.75rem;
-        border-radius: 0.25rem;
-        font-family: monospace;
-        font-size: 0.8rem;
-        letter-spacing: 0.025em;
-      ">Quiz ID: ${quizId}</span>` : ''}
+    <!-- Name / Date fields -->
+    <div style="display: flex; gap: 2rem; padding-bottom: 0.75rem; border-bottom: 1px solid #d1d5db;">
+      <div style="font-size: 0.875rem; color: #374151;">Name: <span style="border-bottom: 1px solid #374151; display: inline-block; width: 14rem;">&nbsp;</span></div>
+      <div style="font-size: 0.875rem; color: #374151;">Date: <span style="border-bottom: 1px solid #374151; display: inline-block; width: 8rem;">&nbsp;</span></div>
     </div>
   </div>
-
-  ${studentInfo ? `
-  <!-- Student Info -->
-  <div style="
-    margin-top: 1.5rem;
-    padding: 1rem 1.5rem;
-    border: 2px solid ${accentColor}44;
-    border-radius: 0.5rem;
-    background-color: ${accentColor}08;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  ">
-    ${qrCodeBase64 ? `
-    <img src="data:image/png;base64,${qrCodeBase64}" style="
-      width: 4rem;
-      height: 4rem;
-      image-rendering: pixelated;
-    " />
-    ` : `
-    <div style="
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 50%;
-      background-color: ${accentColor};
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.125rem;
-    ">${studentInfo.name.charAt(0)}</div>
-    `}
-    <div>
-      <div style="font-weight: 600; color: #1f2937; font-size: 1rem;">${studentInfo.name}</div>
-      ${qrCodeBase64 ? `
-      <div style="color: #6b7280; font-size: 0.75rem;">Scan QR to identify student &amp; ${quizId ? 'quiz' : 'document'}</div>
-      ` : `
-      <div style="color: #6b7280; font-size: 0.875rem;">Student ID: ${studentInfo.id}</div>
-      `}
-    </div>
-  </div>
-  ` : ''}
-
-  ${instructions ? `
-  <!-- Instructions -->
-  <div style="
-    margin-top: 1.5rem;
-    padding: 1rem 1.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    background-color: #f9fafb;
-  ">
-    <div style="font-weight: 600; color: #374151; font-size: 0.875rem; margin-bottom: 0.25rem;">Instructions:</div>
-    <div style="color: #4b5563; font-size: 0.875rem; line-height: 1.5;">${instructions}</div>
-  </div>
-  ` : ''}
 
   <!-- Content -->
   <div style="margin-top: 2rem;">

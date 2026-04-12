@@ -54,7 +54,6 @@ const PanelRightOpen: React.FC<{ className?: string; style?: React.CSSProperties
 const PenTool: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PenTool01IconData} {...p} />;
 import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
-import ScanTemplatePreview from './ScanTemplatePreview';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizTable from './quiz/QuizTable';
 import { GeneratorShell } from './shared/GeneratorShell';
@@ -296,7 +295,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<'teacher' | 'student'>('teacher');
-  const [scanMode, setScanMode] = useState(false);
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
 
@@ -1103,14 +1101,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           </>
                         )}
                       </div>
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none ml-2" title="Scan-ready layout for auto-grading">
-                        <span className="text-[11px] text-theme-muted font-medium">Scan</span>
-                        <div className="relative">
-                          <input type="checkbox" checked={scanMode} onChange={e => setScanMode(e.target.checked)} className="sr-only peer" />
-                          <div className="w-8 h-[18px] bg-gray-300 rounded-full peer-checked:bg-blue-600 transition-colors" />
-                          <div className="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full transition-transform peer-checked:translate-x-[14px]" />
-                        </div>
-                      </label>
                       <ExportButton
                         dataType="quiz"
                         data={{
@@ -1144,7 +1134,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           accentColor={tabColor}
                           parsedQuiz={parsedQuiz}
                           classQuizData={classQuizData}
-                          scanMode={scanMode}
                           className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                         />
                       )}
@@ -1179,17 +1168,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1">
-                      {scanMode && displayParsedQuiz ? (
-                        <ScanTemplatePreview
-                          questions={displayParsedQuiz.questions}
-                          docMeta={{
-                            title: formData.subject ? `${formData.subject} Quiz` : 'Quiz',
-                            subject: formData.subject,
-                            gradeLevel: formData.gradeLevel,
-                            docId: currentQuizId || 'preview'
-                          }}
-                        />
-                      ) : displayParsedQuiz && !loading ? (
+                      {displayParsedQuiz && !loading ? (
                         <GeneratorShell accentColor={tabColor}>
                           <QuizTable
                             quiz={displayParsedQuiz}
@@ -1203,6 +1182,25 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       ) : (
                         // Streaming view — clean serif typography + live caret.
                         <GeneratorShell accentColor={tabColor} isStreaming={!!(loading && streamingQuiz)}>
+                          {/* Show title + instructions during streaming */}
+                          <div className="mb-6">
+                            <div className="text-center pb-3 mb-4" style={{ borderBottom: `2px solid ${tabColor}` }}>
+                              <div className="text-xl font-bold text-theme-primary">
+                                {formData.subject}{formData.strand ? ` - ${formData.strand}` : ''} Quiz
+                              </div>
+                            </div>
+                            <div className="text-sm text-theme-muted mb-4">
+                              {(() => {
+                                const types = formData.questionTypes || [];
+                                const parts: string[] = ['Read each question carefully.'];
+                                if (types.includes('Multiple Choice')) parts.push('For multiple choice questions, select the best answer.');
+                                if (types.includes('True/False')) parts.push('For true or false questions, determine if the statement is true or false.');
+                                if (types.includes('Fill-in-the-Blank')) parts.push('For fill-in-the-blank questions, write the correct word or phrase.');
+                                if (types.includes('Open-Ended')) parts.push('For open-ended questions, write your answer in complete sentences.');
+                                return parts.join(' ');
+                              })()}
+                            </div>
+                          </div>
                           <StreamingTextView
                             text={streamingQuiz || generatedQuiz}
                             isStreaming={!!(loading && streamingQuiz)}
