@@ -162,6 +162,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   useEffect(() => {
     const el = chartContainerRef.current;
     if (!el) return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
     const measure = () => {
       const r = el.getBoundingClientRect();
       const w = Math.round(r.width) || el.offsetWidth;
@@ -172,12 +173,15 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
     };
     measure();
     const raf = requestAnimationFrame(measure);
+    // Retry with escalating delays (Electron file:// timing)
+    [100, 300, 600, 1000].forEach(d => timers.push(setTimeout(measure, d)));
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     const onResize = () => requestAnimationFrame(measure);
     window.addEventListener('resize', onResize);
     return () => {
       cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
       observer.disconnect();
       window.removeEventListener('resize', onResize);
     };
