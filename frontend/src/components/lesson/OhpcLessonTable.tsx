@@ -78,6 +78,76 @@ function pathEquals(
 }
 
 // ---------------------------------------------------------------------------
+// LiveScalarCell — defined at module level so React sees a stable component
+// reference across re-renders (prevents unmount/remount on every token).
+// ---------------------------------------------------------------------------
+
+interface LiveScalarCellProps {
+  path: readonly (string | number)[];
+  value: string;
+  placeholder: string;
+  multiline?: boolean;
+  onChange: (v: string) => void;
+  className?: string;
+  wideSkeleton?: boolean;
+  accentColor: string;
+  editable: boolean;
+  isStreaming: boolean;
+  inProgressPath?: (string | number)[] | null;
+  inProgressValue?: string | null;
+}
+
+const LiveScalarCell = React.memo(function LiveScalarCell({
+  path,
+  value,
+  placeholder,
+  multiline,
+  onChange: onFieldChange,
+  className,
+  wideSkeleton,
+  accentColor,
+  editable,
+  isStreaming,
+  inProgressPath,
+  inProgressValue,
+}: LiveScalarCellProps) {
+  const streaming =
+    isStreaming && inProgressPath && inProgressValue != null && pathEquals(inProgressPath, path)
+      ? inProgressValue
+      : null;
+  const revealed = useSmoothReveal(streaming ?? "", streaming !== null);
+  if (streaming !== null) {
+    return (
+      <span className={`ohpc-active-field ${className || ""}`}>
+        <span className="whitespace-pre-wrap">{revealed}</span>
+        <span
+          className="inline-block w-[2px] h-[0.9em] ml-[1px] align-middle animate-pulse"
+          style={{ backgroundColor: accentColor }}
+        />
+      </span>
+    );
+  }
+  if (isStreaming && !value) {
+    return (
+      <span
+        className={`ohpc-skeleton ${wideSkeleton ? "ohpc-skeleton-wide" : ""} ${className || ""}`}
+        aria-label={placeholder}
+      />
+    );
+  }
+  return (
+    <InlineText
+      value={value}
+      placeholder={placeholder}
+      editable={editable}
+      multiline={multiline}
+      onChange={onFieldChange}
+      className={className}
+    />
+  );
+});
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -103,11 +173,6 @@ export default function OhpcLessonTable({
   // InlineText / BulletList calls with thin helpers so the rest of the
   // render tree stays readable.
 
-  const streamingStringField = (path: readonly (string | number)[]) => {
-    if (!isStreaming || !inProgressPath || inProgressValue == null) return null;
-    return pathEquals(inProgressPath, path) ? inProgressValue : null;
-  };
-
   const streamingBulletItem = (listPath: readonly (string | number)[]) => {
     if (!isStreaming || !inProgressPath || inProgressValue == null) return null;
     // Active when inProgressPath = [...listPath, <number>]
@@ -131,56 +196,6 @@ export default function OhpcLessonTable({
     isStreaming,
   });
 
-  // LiveScalarCell — wraps an InlineText call so that when its path is the
-  // active streaming path, we render the partial text + caret + shimmer.
-  // When streaming but this field hasn't been reached yet (empty value,
-  // not active), renders a subtle skeleton shimmer so the user sees
-  // constant motion across all pending cells.
-  const LiveScalarCell: React.FC<{
-    path: readonly (string | number)[];
-    value: string;
-    placeholder: string;
-    multiline?: boolean;
-    onChange: (v: string) => void;
-    className?: string;
-    /** Use the "wide" skeleton variant for long-text cells. */
-    wideSkeleton?: boolean;
-  }> = ({ path, value, placeholder, multiline, onChange: onFieldChange, className, wideSkeleton }) => {
-    const streaming = streamingStringField(path);
-    // Smooth the streaming value so multi-char token jumps are revealed
-    // character-by-character over ~180ms instead of snapping atomically.
-    const revealed = useSmoothReveal(streaming ?? "", streaming !== null);
-    if (streaming !== null) {
-      return (
-        <span className={`ohpc-active-field ${className || ""}`}>
-          <span className="whitespace-pre-wrap">{revealed}</span>
-          <span
-            className="inline-block w-[2px] h-[0.9em] ml-[1px] align-middle animate-pulse"
-            style={{ backgroundColor: accentColor }}
-          />
-        </span>
-      );
-    }
-    // Empty + streaming + not active → skeleton placeholder.
-    if (isStreaming && !value) {
-      return (
-        <span
-          className={`ohpc-skeleton ${wideSkeleton ? "ohpc-skeleton-wide" : ""} ${className || ""}`}
-          aria-label={placeholder}
-        />
-      );
-    }
-    return (
-      <InlineText
-        value={value}
-        placeholder={placeholder}
-        editable={editable}
-        multiline={multiline}
-        onChange={onFieldChange}
-        className={className}
-      />
-    );
-  };
 
   const patch = useCallback(
     (update: Partial<OhpcLessonPlan>) => {
@@ -291,6 +306,11 @@ export default function OhpcLessonTable({
             <LabelCell accent={accentColor} label="Subject:" />
             <ValueCell>
               <LiveScalarCell
+                accentColor={accentColor}
+                editable={editable}
+                isStreaming={isStreaming}
+                inProgressPath={inProgressPath}
+                inProgressValue={inProgressValue}
                 path={["subject"]}
                 value={l.subject || ""}
                 placeholder="(subject)"
@@ -300,6 +320,11 @@ export default function OhpcLessonTable({
             <LabelCell accent={accentColor} label="Grade:" />
             <ValueCell>
               <LiveScalarCell
+                accentColor={accentColor}
+                editable={editable}
+                isStreaming={isStreaming}
+                inProgressPath={inProgressPath}
+                inProgressValue={inProgressValue}
                 path={["grade"]}
                 value={l.grade || ""}
                 placeholder="(grade)"
@@ -309,6 +334,11 @@ export default function OhpcLessonTable({
             <LabelCell accent={accentColor} label="Duration of Lesson:" />
             <ValueCell>
               <LiveScalarCell
+                accentColor={accentColor}
+                editable={editable}
+                isStreaming={isStreaming}
+                inProgressPath={inProgressPath}
+                inProgressValue={inProgressValue}
                 path={["duration"]}
                 value={l.duration || ""}
                 placeholder="(duration)"
@@ -320,6 +350,11 @@ export default function OhpcLessonTable({
             <LabelCell accent={accentColor} label="Strand:" />
             <ValueCell>
               <LiveScalarCell
+                accentColor={accentColor}
+                editable={editable}
+                isStreaming={isStreaming}
+                inProgressPath={inProgressPath}
+                inProgressValue={inProgressValue}
                 path={["strand"]}
                 value={l.strand || ""}
                 placeholder="(strand)"
@@ -329,6 +364,11 @@ export default function OhpcLessonTable({
             <LabelCell accent={accentColor} label="Essential Learning Outcome:" />
             <td colSpan={3} style={{ border: tableBorder, padding: "0.5rem 0.75rem" }}>
               <LiveScalarCell
+                accentColor={accentColor}
+                editable={editable}
+                isStreaming={isStreaming}
+                inProgressPath={inProgressPath}
+                inProgressValue={inProgressValue}
                 path={["essential_learning_outcome"]}
                 value={l.essential_learning_outcome || ""}
                 placeholder="(ELO)"
@@ -347,6 +387,11 @@ export default function OhpcLessonTable({
                 General Objective of the Lesson:
               </div>
               <LiveScalarCell
+                accentColor={accentColor}
+                editable={editable}
+                isStreaming={isStreaming}
+                inProgressPath={inProgressPath}
+                inProgressValue={inProgressValue}
                 path={["general_objective"]}
                 value={l.general_objective || ""}
                 placeholder="(general objective)"
@@ -376,6 +421,11 @@ export default function OhpcLessonTable({
                 <div className="mt-2 text-xs italic">
                   Focus question:{" "}
                   <LiveScalarCell
+                    accentColor={accentColor}
+                    editable={editable}
+                    isStreaming={isStreaming}
+                    inProgressPath={inProgressPath}
+                    inProgressValue={inProgressValue}
                     path={["focus_question"]}
                     value={l.focus_question || ""}
                     placeholder="(optional focus question)"
@@ -560,6 +610,11 @@ export default function OhpcLessonTable({
                 )}
               </div>
               <LiveScalarCell
+                accentColor={accentColor}
+                editable={editable}
+                isStreaming={isStreaming}
+                inProgressPath={inProgressPath}
+                inProgressValue={inProgressValue}
                 path={["assessment", "description"]}
                 value={l.assessment?.description || ""}
                 placeholder="(assessment description)"

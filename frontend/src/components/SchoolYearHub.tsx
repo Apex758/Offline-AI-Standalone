@@ -33,6 +33,7 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
   const teacherId = getTeacherId();
 
   const [activePanel, setActivePanel] = useState<PanelType>(savedData?.activePanel || 'school-year');
+  const [headerActions, setHeaderActions] = useState<React.ReactNode>(null);
 
   // Card flip state: dynamic face assignment for 3 panels
   const [frontContent, setFrontContent] = useState<PanelType>(savedData?.activePanel || 'school-year');
@@ -104,6 +105,7 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
             savedData={undefined}
             onDataChange={noopDataChange}
             isActive={isActive && activePanel === 'school-year'}
+            onHeaderActions={setHeaderActions}
           />
         );
       case 'curriculum-plan':
@@ -113,6 +115,7 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
             savedData={undefined}
             onDataChange={noopDataChange}
             isActive={isActive && activePanel === 'curriculum-plan'}
+            onHeaderActions={setHeaderActions}
           />
         );
       case 'timetable':
@@ -123,6 +126,7 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
             onDataChange={(data: any) => onDataChange?.({ ...savedData, timetable: data, activePanel })}
             isActive={isActive && activePanel === 'timetable'}
             teacherId={teacherId}
+            onHeaderActions={setHeaderActions}
           />
         );
       default:
@@ -160,7 +164,7 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
       `}</style>
       {/* Header */}
       <div
-        className="px-6 py-3 flex-shrink-0 flex items-center justify-between"
+        className="px-6 py-3 flex-shrink-0 flex items-center gap-4"
         style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}
       >
         <div className="flex items-center gap-3">
@@ -184,6 +188,11 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
               {activePanel === 'timetable' && 'Set your weekly class schedule'}
             </p>
           </div>
+        </div>
+
+        {/* Sub-tab actions */}
+        <div className="flex items-center gap-3" style={{ marginLeft: 'auto', marginRight: 16 }}>
+          {headerActions}
         </div>
 
         {/* Panel Toggle */}

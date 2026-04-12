@@ -65,6 +65,7 @@ interface TimetableProps {
   onDataChange?: (data: any) => void;
   isActive?: boolean;
   teacherId: string;
+  onHeaderActions?: (actions: React.ReactNode) => void;
 }
 
 interface SlotFormState {
@@ -196,7 +197,7 @@ function slotMinutes(s: TimetableSlot): number {
 
 // ── Main Component ──
 
-const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, isActive, teacherId }) => {
+const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, isActive, teacherId, onHeaderActions }) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const timetableCtx = useTimetable();
@@ -251,6 +252,32 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
   useEffect(() => {
     onDataChange?.({ ...(savedData || {}), timeBlocks });
   }, [timeBlocks]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Expose header actions to parent ──
+  useEffect(() => {
+    if (!onHeaderActions) return;
+    onHeaderActions(
+      <button
+        onClick={() => setShowConfig(v => !v)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 12px', borderRadius: 8,
+          background: showConfig ? 'var(--bg-secondary)' : 'transparent',
+          color: 'var(--text-muted)',
+          border: '1px solid var(--border-primary)',
+          fontSize: 13, fontWeight: 500, cursor: 'pointer',
+        }}
+      >
+        <HugeiconsIcon icon={Settings01IconData} size={16} />
+        Configure Time Blocks
+      </button>
+    );
+  }, [showConfig, onHeaderActions]);
+
+  // ── Cleanup header actions on unmount ──
+  useEffect(() => {
+    return () => { onHeaderActions?.(null); };
+  }, [onHeaderActions]);
 
   // ── Fetch classes when grade changes ──
   useEffect(() => {
@@ -396,28 +423,6 @@ const Timetable: React.FC<TimetableProps> = ({ tabId, savedData, onDataChange, i
 
   return (
     <div className="flex flex-col gap-4 p-4 h-full" style={{ color: 'var(--text-primary)' }}>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon icon={Clock01IconData} className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-            {t('timetable.title', 'Weekly Timetable')}
-          </h2>
-        </div>
-        <button
-          onClick={() => setShowConfig(v => !v)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-          style={{
-            background: showConfig ? 'var(--bg-secondary)' : 'transparent',
-            color: 'var(--text-muted)',
-            border: '1px solid var(--border-primary)',
-          }}
-        >
-          <Icon icon={Settings01IconData} className="w-4 h-4" />
-          {t('timetable.configureBlocks', 'Configure Time Blocks')}
-        </button>
-      </div>
 
       {/* Time block config panel */}
       {showConfig && (

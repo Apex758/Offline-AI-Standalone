@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { getPhaseAbbreviation } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
@@ -46,9 +47,10 @@ interface CurriculumPlanProps {
   savedData?: any;
   onDataChange: (data: any) => void;
   isActive?: boolean;
+  onHeaderActions?: (actions: React.ReactNode) => void;
 }
 
-const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDataChange, isActive, onHeaderActions }) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const accentColor = settings.tabColors['curriculum-plan'] ?? '#3b82f6';
@@ -124,6 +126,27 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
 
   const unassignedCount = phaseCountMap['__unassigned__'] || 0;
 
+  useEffect(() => {
+    if (!onHeaderActions) return;
+    onHeaderActions(
+      unassignedCount > 0 ? (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 14px', borderRadius: 8,
+          background: 'rgba(245,158,11,0.15)', fontSize: 13, fontWeight: 600,
+          color: '#f59e0b',
+        }}>
+          <HugeiconsIcon icon={AlertCircleIconData} size={16} style={{ color: '#fbbf24' }} />
+          {unassignedCount} Unassigned ELO{unassignedCount !== 1 ? 's' : ''}
+        </div>
+      ) : null
+    );
+  }, [unassignedCount, onHeaderActions]);
+
+  useEffect(() => {
+    return () => { onHeaderActions?.(null); };
+  }, [onHeaderActions]);
+
   // Assign a single ELO to a phase
   const handleAssignSingle = async (eloId: string, phaseId: string | null) => {
     try {
@@ -148,10 +171,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
     const phase = allPhases.find(p => p.id === phaseId);
     if (!phase) return null;
     const color = getPhaseColor(phase.phase_key, phase.semester);
-    // Short label: first 2 chars of phase label
-    const short = phase.phase_label.length > 10
-      ? phase.phase_label.split(' ').map(w => w[0]).join('').slice(0, 3)
-      : phase.phase_label;
+    const short = getPhaseAbbreviation(phase.phase_key, phase.phase_label);
     return (
       <span
         style={{
@@ -187,35 +207,6 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-primary)', overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{
-        padding: '16px 24px',
-        background: accentColor,
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Icon icon={Calendar01IconData} size={24} style={{ color: '#fff' }} />
-          <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{t('curriculum.curriculumPlan')}</h1>
-            <p style={{ margin: 0, fontSize: 12, opacity: 0.8 }}>{t('curriculum.assignMilestones')}</p>
-          </div>
-        </div>
-        {unassignedCount > 0 && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 14px', borderRadius: 8,
-            background: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: 600,
-          }}>
-            <Icon icon={AlertCircleIconData} size={16} style={{ color: '#fbbf24' }} />
-            {unassignedCount} Unassigned ELO{unassignedCount !== 1 ? 's' : ''}
-          </div>
-        )}
-      </div>
-
       {/* Main content: phases sidebar + milestones */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Left: Phase list */}
@@ -375,7 +366,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
                   >
                     <HugeiconsIcon icon={isExpanded ? ArrowDown01IconData : ArrowRight01IconData} size={14} style={{ color: 'var(--text-muted)' }} />
                     <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {grade === 'K' ? 'Kindergarten' : `Grade ${grade}`}
+                      {grade === 'K' ? 'Kindergarten' : grade.startsWith('Grade') ? grade : `Grade ${grade}`}
                     </span>
                   </div>
                   {isExpanded && Array.from(filteredSubjects.entries())

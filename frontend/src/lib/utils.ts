@@ -127,6 +127,32 @@ export function generateColorVariants(baseColor: string, darkMode: boolean = fal
 }
 
 /**
+ * Returns a short abbreviation for a school-year phase.
+ * Uses a known mapping for standard Caribbean 3-term phases,
+ * falls back to first-letter abbreviation for custom phases.
+ */
+const PHASE_ABBREVIATIONS: Record<string, string> = {
+  term_1_early: 'T1E',
+  term_1_midterm_prep: 'T1MTP',
+  term_1_midterm: 'T1M',
+  term_1_late: 'T1L',
+  christmas_break: 'CB',
+  term_2_early: 'T2E',
+  term_2_midterm_prep: 'T2MTP',
+  term_2_midterm: 'T2M',
+  term_2_late: 'T2L',
+  easter_break: 'EB',
+  term_3_early: 'T3E',
+  term_3_late: 'T3L',
+  end_of_year_exam: 'EOY',
+  summer_vacation: 'SV',
+};
+
+export function getPhaseAbbreviation(phaseKey: string, phaseLabel: string): string {
+  return PHASE_ABBREVIATIONS[phaseKey] || phaseLabel.split(/[\s-]+/).filter(w => w).map(w => w[0]).join('').slice(0, 4);
+}
+
+/**
  * Determines if a hex color is dark or light based on relative luminance
  * @param hexColor - Hex color string (e.g., "#1e293b")
  * @returns true if the color is dark, false if light

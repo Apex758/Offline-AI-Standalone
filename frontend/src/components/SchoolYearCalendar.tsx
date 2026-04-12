@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { getPhaseAbbreviation } from '../lib/utils';
 import { ResourceGridSkeleton } from './ui/ResourceGridSkeleton';
 import {
   format,
@@ -64,6 +65,7 @@ interface SchoolYearCalendarProps {
   savedData?: any;
   onDataChange?: (data: any) => void;
   isActive?: boolean;
+  onHeaderActions?: (actions: React.ReactNode) => void;
 }
 
 // ── Constants ──
@@ -99,7 +101,7 @@ function getTeacherId(): string {
 
 // ── Component ──
 
-const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedData, onDataChange, isActive }) => {
+const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedData, onDataChange, isActive, onHeaderActions }) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const accentColor = settings.tabColors['school-year-calendar'] ?? '#0d9488';
@@ -327,6 +329,42 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       loadEvents(config.id);
     }
   }, [config, loadEvents]);
+
+  // ── Expose header actions to parent hub ──
+  useEffect(() => {
+    if (!onHeaderActions) return;
+    onHeaderActions(
+      <>
+        {currentPhase && (
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 12px', borderRadius: 9999,
+              border: `1px solid ${currentPhase.color}60`,
+              background: `${currentPhase.color}20`,
+              color: currentPhase.color,
+              fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+            }}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: currentPhase.color, flexShrink: 0 }} />
+            {currentPhase.phase_label}
+            <span style={{ opacity: 0.5 }}>&bull;</span>
+            {currentPhase.days_remaining}d left
+          </div>
+        )}
+        <button
+          className="syc-today-btn"
+          onClick={() => setSelectedDate(new Date())}
+        >
+          Today
+        </button>
+      </>
+    );
+  }, [currentPhase, onHeaderActions]);
+
+  useEffect(() => {
+    return () => { onHeaderActions?.(null); };
+  }, [onHeaderActions]);
 
   // ── Events grouped by date ──
 
@@ -643,45 +681,6 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
         </div>
       )}
 
-      {/* Header */}
-      <div className="syc-header">
-        <div className="syc-header-left">
-          <div className="syc-header-icon">
-            <HugeiconsIcon icon={Calendar01IconData} size={20} />
-          </div>
-          <div>
-            <div className="syc-header-title">School Year Calendar</div>
-            <div className="syc-header-subtitle">
-              {config ? config.label : 'No school year configured'}
-            </div>
-          </div>
-        </div>
-        <div className="syc-header-right">
-          {currentPhase && (
-            <div
-              className="syc-phase-badge"
-              style={{
-                background: `${currentPhase.color}20`,
-                borderColor: `${currentPhase.color}60`,
-                color: currentPhase.color,
-              }}
-            >
-              <span className="syc-phase-dot" style={{ background: currentPhase.color }} />
-              {currentPhase.phase_label}
-              <span className="syc-phase-sep">&bull;</span>
-              {format(parseISO(currentPhase.start_date), 'MMM d')} &ndash; {format(parseISO(currentPhase.end_date), 'MMM d')}
-              <span className="syc-phase-sep">&bull;</span>
-              {currentPhase.days_remaining}d left
-            </div>
-          )}
-          <div className="syc-header-actions">
-            <button className="syc-today-btn" onClick={() => setSelectedDate(new Date())}>
-              Today
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Stats Strip */}
       {config && events.length > 0 && (
         <div className="syc-stats-strip">
@@ -734,7 +733,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                     style={{ transition: 'stroke-dashoffset 0.5s ease' }}
                   />
                 </svg>
-                <span className="syc-ring-label">{p.phase_label.split(' ').map(w => w[0]).join('').slice(0, 3)}</span>
+                <span className="syc-ring-label">{getPhaseAbbreviation(p.phase_key, p.phase_label)}</span>
                 <span className="syc-ring-pct">{Math.round(pct)}%</span>
               </div>
             );
