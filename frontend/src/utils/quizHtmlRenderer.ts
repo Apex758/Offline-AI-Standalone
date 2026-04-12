@@ -24,6 +24,10 @@ interface RenderOptions {
   scanMode?: boolean;
   /** Base64-encoded QR code PNG to embed in the page header */
   qrCodeBase64?: string;
+  /** Custom quiz title (from parsed metadata) */
+  quizTitle?: string;
+  /** Instructions for students */
+  instructions?: string;
 }
 
 interface ParsedQuiz {
@@ -196,6 +200,11 @@ function parseQuizContent(text: string): ParsedQuiz {
   return { questions, answerKey };
 }
 
+/** Convert **bold** markdown to <strong> tags and strip other markdown artifacts */
+function processInlineMarkdown(text: string): string {
+  return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
 /**
  * Phase 2: Render HTML with conditional options
  */
@@ -211,7 +220,9 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     studentInfo,
     quizId,
     scanMode = false,
-    qrCodeBase64
+    qrCodeBase64,
+    quizTitle,
+    instructions
   } = options;
 
   // Parse the quiz
@@ -265,7 +276,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
           line-height: 1.625;
           margin-bottom: 0.75rem;
           margin-left: 1.5rem;
-        ">${question.text}</p>
+        ">${processInlineMarkdown(question.text)}</p>
       `;
     }
 
@@ -291,7 +302,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
               <div style="
                 width: 1.25rem; height: 1.25rem;
                 border: 2px solid #374151;
-                border-radius: 3px;
+                border-radius: 50%;
                 display: inline-block;
               "></div>
               <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">True</span>
@@ -300,7 +311,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
               <div style="
                 width: 1.25rem; height: 1.25rem;
                 border: 2px solid #374151;
-                border-radius: 3px;
+                border-radius: 50%;
                 display: inline-block;
               "></div>
               <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">False</span>
@@ -308,15 +319,15 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
           </div>
         `;
       } else {
-        // Multiple choice: render as bubble row
+        // Multiple choice: render as 2-column grid with bubble letters
         htmlContent += `
           <div style="
             margin-left: 1.5rem;
             margin-bottom: 0.75rem;
             margin-top: 0.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 2rem;
           ">
         `;
         question.options.forEach(option => {
@@ -329,37 +340,55 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
                 display: inline-block;
               "></div>
               <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">${option.letter})</span>
-              <span style="font-size: 0.95rem; color: #374151;">${option.text}</span>
+              <span style="font-size: 0.95rem; color: #374151;">${processInlineMarkdown(option.text)}</span>
             </div>
           `;
         });
         htmlContent += `</div>`;
       }
     } else {
-      // Standard rendering (teacher/preview mode)
+      // Standard rendering with 2-column grid and bubble letters
+      const isTF = question.options.length === 2 &&
+        question.options.some(o => /^true$/i.test(o.text.trim())) &&
+        question.options.some(o => /^false$/i.test(o.text.trim()));
+
+      htmlContent += `
+        <div style="
+          margin-left: 1.5rem;
+          margin-bottom: 0.75rem;
+          margin-top: 0.5rem;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.5rem 2rem;
+        ">
+      `;
       question.options.forEach(option => {
         const isCorrect = boldCorrectAnswers && option.letter === correctLetter;
-
         htmlContent += `
-          <div style="
-            margin-left: 1.5rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: flex-start;
-          ">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span style="
-              margin-right: 0.75rem;
-              font-weight: ${isCorrect ? '700' : '600'};
-              color: ${isCorrect ? accentColor : accentColor + 'cc'};
-              ${isCorrect ? `background-color: ${accentColor}15; padding: 0.25rem 0.5rem; border-radius: 0.25rem;` : ''}
-            ">${option.letter})</span>
+              width: 1.5rem;
+              height: 1.5rem;
+              border: 2px solid ${isCorrect ? accentColor : '#6b7280'};
+              border-radius: 50%;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 0.75rem;
+              font-weight: 600;
+              color: ${isCorrect ? 'white' : '#374151'};
+              background-color: ${isCorrect ? accentColor : 'transparent'};
+              flex-shrink: 0;
+            ">${option.letter}</span>
             <span style="
               color: #374151;
               font-weight: ${isCorrect ? '600' : 'normal'};
-            ">${option.text}</span>
+              font-size: 0.95rem;
+            ">${processInlineMarkdown(option.text)}</span>
           </div>
         `;
       });
+      htmlContent += `</div>`;
     }
 
     // Inline: Correct Answer + Explanation (Teacher Version)
@@ -539,7 +568,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       color: white;
       margin: 0.5rem 0;
       line-height: 1.2;
-    ">${formData.subject}${formData.strand ? ` — ${formData.strand}` : ''} Quiz</h1>
+    ">${quizTitle || `${formData.subject}${formData.strand ? ' — ' + formData.strand : ''} Quiz`}</h1>
 
     <div style="
       display: flex;
@@ -636,6 +665,20 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
   </div>
   ` : ''}
 
+  ${instructions ? `
+  <!-- Instructions -->
+  <div style="
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+  ">
+    <div style="font-weight: 600; color: #374151; font-size: 0.875rem; margin-bottom: 0.25rem;">Instructions:</div>
+    <div style="color: #4b5563; font-size: 0.875rem; line-height: 1.5;">${instructions}</div>
+  </div>
+  ` : ''}
+
   <!-- Content -->
   <div style="margin-top: 2rem;">
     ${htmlContent}
@@ -662,6 +705,8 @@ export function prepareQuizForExport(
     boldCorrectAnswers?: boolean;
     scanMode?: boolean;
     qrCodeBase64?: string;
+    quizTitle?: string;
+    instructions?: string;
   } = {},
   studentInfo?: { name: string; id: string },
   quizId?: string

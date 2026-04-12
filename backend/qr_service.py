@@ -9,7 +9,10 @@ import hashlib
 import numpy as np
 import cv2
 import qrcode
-from pyzbar.pyzbar import decode as decode_qr
+try:
+    from pyzbar.pyzbar import decode as decode_qr
+except ImportError:
+    decode_qr = None
 
 
 # ── QR Generation ───────────────────────────────────────────────────────────
@@ -50,6 +53,8 @@ def extract_qr_from_scan(image_bytes: bytes) -> dict | None:
 
     Returns parsed payload dict or None if no QR found.
     """
+    if decode_qr is None:
+        return None
     nparr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     if img is None:

@@ -22,6 +22,7 @@ interface Props {
   editable?: boolean;
   effectiveVersion?: "teacher" | "student";
   onChange?: (next: ParsedQuiz) => void;
+  studentInfo?: { name: string; id: string };
 }
 
 export default function QuizTable({
@@ -30,6 +31,7 @@ export default function QuizTable({
   editable = true,
   effectiveVersion = "teacher",
   onChange,
+  studentInfo,
 }: Props) {
   const { t } = useTranslation();
 
@@ -123,6 +125,25 @@ export default function QuizTable({
         </div>
       )}
 
+      {/* Student info card (shown when viewing a specific student) */}
+      {studentInfo && (
+        <div
+          className="rounded-lg p-3 flex items-center gap-3"
+          style={{ border: `2px solid ${accentColor}44`, background: `${accentColor}08` }}
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+            style={{ backgroundColor: accentColor }}
+          >
+            {studentInfo.name.charAt(0)}
+          </div>
+          <div>
+            <div className="font-semibold text-theme-primary">{studentInfo.name}</div>
+            <div className="text-xs text-theme-muted">Student ID: {studentInfo.id}</div>
+          </div>
+        </div>
+      )}
+
       {/* Questions */}
       <div className="space-y-6">
         {quiz.questions.map((question, qIndex) => {
@@ -204,77 +225,81 @@ export default function QuizTable({
 
               {/* Multiple Choice */}
               {question.type === "multiple-choice" && (
-                <div className="ml-6 space-y-2">
-                  {(question.options || []).map((option, oIndex) => {
-                    const letter = String.fromCharCode(65 + oIndex);
-                    const isCorrect = isTeacher && correctIdx === oIndex;
-                    return (
-                      <div key={oIndex} className="flex items-start gap-2 group/opt">
-                        <span
-                          className={`font-semibold ${isCorrect ? "px-2 py-0.5 rounded" : ""}`}
-                          style={{
-                            color: isCorrect ? accentColor : `${accentColor}cc`,
-                            backgroundColor: isCorrect ? `${accentColor}15` : "transparent",
-                            fontWeight: isCorrect ? 700 : 600,
-                          }}
-                        >
-                          {letter})
-                        </span>
-                        <InlineText
-                          value={option}
-                          placeholder="(option text)"
-                          editable={editable}
-                          onChange={(v) => {
-                            const nextOpts = [...(question.options || [])];
-                            nextOpts[oIndex] = v;
-                            patchQuestion(qIndex, { options: nextOpts });
-                          }}
-                          className={`flex-1 text-theme-label ${isCorrect ? "font-medium" : ""}`}
-                        />
-                        {editable && (
-                          <>
-                            <button
-                              onClick={() => patchQuestion(qIndex, { correctAnswer: oIndex })}
-                              className="opacity-0 group-hover/opt:opacity-100 text-xs px-1 text-green-600 hover:text-green-800"
-                              title="Mark as correct answer"
-                              type="button"
-                            >
-                              {correctIdx === oIndex ? "✓" : "mark"}
-                            </button>
-                            <button
-                              onClick={() => {
-                                const nextOpts = (question.options || []).filter(
-                                  (_, i) => i !== oIndex
-                                );
-                                const nextCorrect =
-                                  correctIdx === oIndex
-                                    ? 0
-                                    : correctIdx > oIndex
-                                    ? correctIdx - 1
-                                    : correctIdx;
-                                patchQuestion(qIndex, {
-                                  options: nextOpts,
-                                  correctAnswer: nextCorrect,
-                                });
-                              }}
-                              className="opacity-0 group-hover/opt:opacity-100 text-xs text-red-500 hover:text-red-700 px-1"
-                              title="Remove option"
-                              type="button"
-                            >
-                              x
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="ml-6">
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                    {(question.options || []).map((option, oIndex) => {
+                      const letter = String.fromCharCode(65 + oIndex);
+                      const isCorrect = isTeacher && correctIdx === oIndex;
+                      return (
+                        <div key={oIndex} className="flex items-center gap-2 group/opt">
+                          <span
+                            className="flex-shrink-0 inline-flex items-center justify-center rounded-full border-2 text-xs font-semibold"
+                            style={{
+                              width: "1.5rem",
+                              height: "1.5rem",
+                              borderColor: isCorrect ? accentColor : "#9ca3af",
+                              color: isCorrect ? "white" : "#374151",
+                              backgroundColor: isCorrect ? accentColor : "transparent",
+                            }}
+                          >
+                            {letter}
+                          </span>
+                          <InlineText
+                            value={option}
+                            placeholder="(option text)"
+                            editable={editable}
+                            onChange={(v) => {
+                              const nextOpts = [...(question.options || [])];
+                              nextOpts[oIndex] = v;
+                              patchQuestion(qIndex, { options: nextOpts });
+                            }}
+                            className={`flex-1 text-theme-label ${isCorrect ? "font-medium" : ""}`}
+                          />
+                          {editable && (
+                            <>
+                              <button
+                                onClick={() => patchQuestion(qIndex, { correctAnswer: oIndex })}
+                                className="opacity-0 group-hover/opt:opacity-100 text-xs px-1 text-green-600 hover:text-green-800"
+                                title="Mark as correct answer"
+                                type="button"
+                              >
+                                {correctIdx === oIndex ? "\u2713" : "mark"}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const nextOpts = (question.options || []).filter(
+                                    (_, i) => i !== oIndex
+                                  );
+                                  const nextCorrect =
+                                    correctIdx === oIndex
+                                      ? 0
+                                      : correctIdx > oIndex
+                                      ? correctIdx - 1
+                                      : correctIdx;
+                                  patchQuestion(qIndex, {
+                                    options: nextOpts,
+                                    correctAnswer: nextCorrect,
+                                  });
+                                }}
+                                className="opacity-0 group-hover/opt:opacity-100 text-xs text-red-500 hover:text-red-700 px-1"
+                                title="Remove option"
+                                type="button"
+                              >
+                                x
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                   {editable && (
                     <button
                       onClick={() => {
                         const nextOpts = [...(question.options || []), ""];
                         patchQuestion(qIndex, { options: nextOpts });
                       }}
-                      className="text-xs px-2 py-0.5 rounded border border-dashed opacity-60 hover:opacity-100 transition"
+                      className="text-xs px-2 py-0.5 mt-2 rounded border border-dashed opacity-60 hover:opacity-100 transition"
                       style={{ borderColor: `${accentColor}66`, color: `${accentColor}cc` }}
                       type="button"
                     >
@@ -293,37 +318,41 @@ export default function QuizTable({
 
               {/* True / False */}
               {question.type === "true-false" && (
-                <div className="ml-6 space-y-2">
-                  {["true", "false"].map((val, i) => {
-                    const letter = String.fromCharCode(65 + i);
-                    const isCorrect = isTeacher && question.correctAnswer === val;
-                    return (
-                      <div key={val} className="flex items-start gap-2">
-                        <span
-                          className={`font-semibold ${isCorrect ? "px-2 py-0.5 rounded" : ""}`}
-                          style={{
-                            color: isCorrect ? accentColor : `${accentColor}cc`,
-                            backgroundColor: isCorrect ? `${accentColor}15` : "transparent",
-                          }}
-                        >
-                          {letter})
-                        </span>
-                        <span className={`text-theme-label ${isCorrect ? "font-medium" : ""}`}>
-                          {val === "true" ? t("quiz.true") : t("quiz.false")}
-                        </span>
-                        {editable && (
-                          <button
-                            onClick={() => patchQuestion(qIndex, { correctAnswer: val })}
-                            className="text-xs px-1 text-green-600 hover:text-green-800"
-                            title="Mark as correct answer"
-                            type="button"
+                <div className="ml-6">
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                    {["true", "false"].map((val, i) => {
+                      const isCorrect = isTeacher && question.correctAnswer === val;
+                      return (
+                        <div key={val} className="flex items-center gap-2">
+                          <span
+                            className="flex-shrink-0 inline-flex items-center justify-center rounded-full border-2 text-xs font-semibold"
+                            style={{
+                              width: "1.5rem",
+                              height: "1.5rem",
+                              borderColor: isCorrect ? accentColor : "#9ca3af",
+                              color: isCorrect ? "white" : "#374151",
+                              backgroundColor: isCorrect ? accentColor : "transparent",
+                            }}
                           >
-                            {question.correctAnswer === val ? "✓" : "mark"}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+                            {val === "true" ? "T" : "F"}
+                          </span>
+                          <span className={`text-theme-label ${isCorrect ? "font-medium" : ""}`}>
+                            {val === "true" ? t("quiz.true") : t("quiz.false")}
+                          </span>
+                          {editable && (
+                            <button
+                              onClick={() => patchQuestion(qIndex, { correctAnswer: val })}
+                              className="text-xs px-1 text-green-600 hover:text-green-800"
+                              title="Mark as correct answer"
+                              type="button"
+                            >
+                              {question.correctAnswer === val ? "\u2713" : "mark"}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                   {isTeacher && (
                     <div className="mt-3 text-sm">
                       <span className="font-semibold text-green-700">

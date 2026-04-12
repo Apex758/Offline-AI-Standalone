@@ -503,6 +503,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       const parsed = parseQuizFromAI(generatedQuiz);
       if (parsed) {
         console.log('Loaded quiz parsed successfully');
+        // Enrich metadata from form data
+        parsed.metadata.title = `${formData.subject}${formData.strand ? ' - ' + formData.strand : ''} Quiz`;
+        parsed.metadata.subject = formData.subject;
+        parsed.metadata.gradeLevel = formData.gradeLevel;
+        if (!parsed.metadata.instructions) {
+          const types = formData.questionTypes || [];
+          const parts: string[] = ['Read each question carefully.'];
+          if (types.includes('Multiple Choice')) parts.push('For multiple choice questions, select the best answer.');
+          if (types.includes('True/False')) parts.push('For true or false questions, determine if the statement is true or false.');
+          if (types.includes('Fill-in-the-Blank')) parts.push('For fill-in-the-blank questions, write the correct word or phrase.');
+          if (types.includes('Open-Ended')) parts.push('For open-ended questions, write your answer in complete sentences.');
+          parsed.metadata.instructions = parts.join(' ');
+        }
         setParsedQuiz(parsed);
       } else {
         console.log('Loaded quiz parsing failed, creating fallback');
@@ -865,6 +878,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       });
       const parsed = parseQuizFromAI(cleanedQuiz);
       if (parsed) {
+        // Enrich metadata from form data
+        parsed.metadata.title = `${formData.subject}${formData.strand ? ' - ' + formData.strand : ''} Quiz`;
+        parsed.metadata.subject = formData.subject;
+        parsed.metadata.gradeLevel = formData.gradeLevel;
+        if (!parsed.metadata.instructions) {
+          const types = formData.questionTypes || [];
+          const parts: string[] = ['Read each question carefully.'];
+          if (types.includes('Multiple Choice')) parts.push('For multiple choice questions, select the best answer.');
+          if (types.includes('True/False')) parts.push('For true or false questions, determine if the statement is true or false.');
+          if (types.includes('Fill-in-the-Blank')) parts.push('For fill-in-the-blank questions, write the correct word or phrase.');
+          if (types.includes('Open-Ended')) parts.push('For open-ended questions, write your answer in complete sentences.');
+          parsed.metadata.instructions = parts.join(' ');
+        }
         setParsedQuiz(parsed);
       } else {
         setParsedQuiz(displayTextToQuiz(cleanedQuiz, {
@@ -1094,11 +1120,15 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           exportOptions: effectiveVersion === 'student' ? {
                             showAnswerKey: false,
                             showExplanations: false,
-                            boldCorrectAnswers: false
+                            boldCorrectAnswers: false,
+                            quizTitle: parsedQuiz?.metadata?.title,
+                            instructions: parsedQuiz?.metadata?.instructions,
                           } : {
                             showAnswerKey: true,
                             showExplanations: true,
-                            boldCorrectAnswers: true
+                            boldCorrectAnswers: true,
+                            quizTitle: parsedQuiz?.metadata?.title,
+                            instructions: parsedQuiz?.metadata?.instructions,
                           },
                           studentInfo: viewingStudent ? { name: viewingStudent.name, id: viewingStudent.id } : undefined,
                           quizId: currentQuizId || `quiz_${Date.now()}`
@@ -1167,6 +1197,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             editable={!viewingStudent}
                             effectiveVersion={effectiveVersion as 'teacher' | 'student'}
                             onChange={viewingStudent ? undefined : handleQuizInlineChange}
+                            studentInfo={viewingStudent ? { name: viewingStudent.name, id: viewingStudent.id } : undefined}
                           />
                         </GeneratorShell>
                       ) : (
