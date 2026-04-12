@@ -577,7 +577,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
         }}>
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: 16, fontWeight: 600, color: '#3b82f6' }}>Drop school calendar file here</p>
-            <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>.ics or .csv</p>
+            <p style={{ fontSize: 13, color: 'var(--text-hint)', marginTop: 4 }}>.ics or .csv</p>
           </div>
         </div>
       )}
@@ -590,7 +590,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <div style={{
-            backgroundColor: 'var(--theme-bg, #fff)',
+            backgroundColor: 'var(--bg-surface)',
             borderRadius: 12, padding: 24, maxWidth: 500, width: '90%',
             maxHeight: '70vh', display: 'flex', flexDirection: 'column',
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
@@ -601,16 +601,16 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: 16 }}>
               {importPreview.map((evt, i) => (
                 <div key={i} style={{
-                  padding: '8px 0', borderBottom: '1px solid var(--theme-border, #e5e7eb)',
+                  padding: '8px 0', borderBottom: '1px solid var(--border-default)',
                   fontSize: 13,
                 }}>
                   <span style={{ fontWeight: 500 }}>{evt.title}</span>
-                  <span style={{ color: '#6b7280', marginLeft: 8 }}>
+                  <span style={{ color: 'var(--text-hint)', marginLeft: 8 }}>
                     {evt.event_date}{evt.end_date ? ` → ${evt.end_date}` : ''}
                   </span>
                   <span style={{
                     marginLeft: 8, fontSize: 11, padding: '2px 6px',
-                    borderRadius: 4, backgroundColor: '#f3f4f6',
+                    borderRadius: 4, backgroundColor: 'var(--bg-tertiary)',
                   }}>
                     {evt.event_type}
                   </span>
@@ -621,7 +621,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
               <button
                 onClick={() => setImportPreview(null)}
                 style={{
-                  padding: '8px 16px', borderRadius: 8, border: '1px solid var(--theme-border, #d1d5db)',
+                  padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-strong)',
                   background: 'transparent', cursor: 'pointer', fontSize: 13,
                 }}
               >
@@ -782,10 +782,10 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                     <div key={s} style={{ flex: 1 }}>
                       <div style={{
                         height: 3, borderRadius: 2,
-                        backgroundColor: i <= setupStep ? '#3b82f6' : 'var(--theme-border, #e5e7eb)',
+                        backgroundColor: i <= setupStep ? '#3b82f6' : 'var(--border-default)',
                         transition: 'background 0.2s',
                       }} />
-                      <span style={{ fontSize: 9, color: i === setupStep ? '#3b82f6' : 'var(--theme-text-secondary, #6b7280)', fontWeight: i === setupStep ? 700 : 400, display: 'block', textAlign: 'center', marginTop: 3 }}>
+                      <span style={{ fontSize: 9, color: i === setupStep ? '#3b82f6' : 'var(--text-hint)', fontWeight: i === setupStep ? 700 : 400, display: 'block', textAlign: 'center', marginTop: 3 }}>
                         {s}
                       </span>
                     </div>
@@ -805,14 +805,14 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                         style={{
                           padding: '10px 12px',
                           borderRadius: 8,
-                          border: `2px solid ${structureType === opt.type ? '#3b82f6' : 'var(--theme-border, #e5e7eb)'}`,
+                          border: `2px solid ${structureType === opt.type ? '#3b82f6' : 'var(--border-default)'}`,
                           cursor: 'pointer',
                           backgroundColor: structureType === opt.type ? 'rgba(59,130,246,0.06)' : 'transparent',
                           transition: 'all 0.15s',
                         }}
                       >
-                        <p style={{ fontSize: 13, fontWeight: 600, color: structureType === opt.type ? '#3b82f6' : 'var(--theme-text, #111)', margin: '0 0 2px' }}>{opt.title}</p>
-                        <p style={{ fontSize: 11, color: 'var(--theme-text-secondary, #6b7280)', margin: 0 }}>{opt.desc}</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: structureType === opt.type ? '#3b82f6' : 'var(--text-heading)', margin: '0 0 2px' }}>{opt.title}</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-hint)', margin: 0 }}>{opt.desc}</p>
                       </div>
                     ))}
                   </div>
@@ -871,7 +871,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                 {/* Step 3: Final Exams */}
                 {setupStep === 3 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <p style={{ fontSize: 11, color: 'var(--theme-text-secondary, #6b7280)', margin: 0 }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-hint)', margin: 0 }}>
                       Enter the end-of-year examination window.
                     </p>
                     <label className="syc-form-label">
@@ -888,22 +888,22 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
                 {/* Step 4: Preview */}
                 {setupStep === 4 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <p style={{ fontSize: 11, color: 'var(--theme-text-secondary, #6b7280)', margin: '0 0 8px' }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-hint)', margin: '0 0 8px' }}>
                       Your academic calendar phases:
                     </p>
                     {previewPhases().map((p, i) => (
                       <div key={i} style={{
                         display: 'flex', alignItems: 'center', gap: 8,
                         padding: '6px 10px', borderRadius: 6,
-                        backgroundColor: 'var(--theme-bg-secondary, #f9fafb)',
-                        border: '1px solid var(--theme-border, #e5e7eb)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-default)',
                       }}>
                         <span style={{
                           width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
                           backgroundColor: p.semester === 'Semester 1' ? '#3b82f6' : p.semester === 'Semester 2' ? '#22c55e' : '#eab308',
                         }} />
                         <span style={{ flex: 1, fontSize: 12, fontWeight: 600 }}>{p.label}</span>
-                        <span style={{ fontSize: 10, color: 'var(--theme-text-secondary, #6b7280)' }}>{p.start} - {p.end}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-hint)' }}>{p.start} - {p.end}</span>
                       </div>
                     ))}
                     {setupError && (
@@ -2111,6 +2111,103 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
           color: #94A3B8;
           margin-top: 0.25rem;
         }
+
+        /* ===== Dark Mode ===== */
+
+        /* Text — primary */
+        .dark .syc-config-label,
+        .dark .syc-mini-month-label,
+        .dark .syc-date-day,
+        .dark .syc-date-weekday,
+        .dark .syc-event-title,
+        .dark .syc-empty-title,
+        .dark .syc-add-event-link,
+        .dark .syc-stat-item strong { color: #eeedeb; }
+
+        /* Text — secondary */
+        .dark .syc-stat-item,
+        .dark .syc-config-dates,
+        .dark .syc-form-label,
+        .dark .syc-config-btn,
+        .dark .syc-btn-secondary,
+        .dark .syc-date-month,
+        .dark .syc-event-desc,
+        .dark .syc-icon-btn,
+        .dark .syc-empty-desc { color: #a8a6a2; }
+
+        /* Text — muted */
+        .dark .syc-section-title,
+        .dark .syc-form-hint,
+        .dark .syc-mini-weekday,
+        .dark .syc-no-events p,
+        .dark .syc-event-meta,
+        .dark .syc-add-config-btn,
+        .dark .syc-icon-btn-sm { color: #8a8884; }
+
+        .dark .syc-mini-day-number { color: #d5d4d1; }
+
+        /* Surfaces — primary (white -> dark) */
+        .dark .syc-mini-month,
+        .dark .syc-right-panel,
+        .dark .syc-active-config,
+        .dark .syc-config-form,
+        .dark .syc-config-btn,
+        .dark .syc-quick-add-btn,
+        .dark .syc-btn-secondary,
+        .dark .syc-icon-btn { background: #2a2926; }
+
+        /* Surfaces — secondary (off-white -> darker) */
+        .dark .syc-left-panel,
+        .dark .syc-event-form,
+        .dark .syc-event-card,
+        .dark .syc-form-input { background: #252422; }
+
+        .dark .syc-stats-strip { background: #1e1e1e; }
+        .dark .syc-center-panel { background: #21201e; }
+
+        /* Hover states */
+        .dark .syc-mini-day:hover:not(:disabled):not(.syc-mini-day-selected) { background: #33312e; }
+        .dark .syc-config-btn:hover,
+        .dark .syc-btn-secondary:hover,
+        .dark .syc-add-config-btn:hover,
+        .dark .syc-icon-btn:hover { background: #33312e; color: #eeedeb; }
+        .dark .syc-form-input:focus { background: #2a2926; border-color: #504d48; }
+
+        /* Borders */
+        .dark .syc-mini-month,
+        .dark .syc-active-config,
+        .dark .syc-config-form,
+        .dark .syc-config-btn,
+        .dark .syc-quick-add-btn,
+        .dark .syc-form-input,
+        .dark .syc-left-panel,
+        .dark .syc-right-panel,
+        .dark .syc-date-display,
+        .dark .syc-event-form,
+        .dark .syc-event-card,
+        .dark .syc-icon-btn,
+        .dark .syc-btn-secondary,
+        .dark .syc-stats-strip,
+        .dark .syc-event-card-header,
+        .dark .syc-icon-btn-sm { border-color: #3d3b37; }
+
+        .dark .syc-mini-month-label { border-bottom-color: #33312e; }
+        .dark .syc-stat-divider { background: #504d48; }
+        .dark .syc-add-config-btn { border-color: #504d48; }
+
+        /* Special elements */
+        .dark .syc-mini-day-today { background: #2e2a1a; }
+        .dark .syc-empty-icon { background: #33312e; }
+        .dark .syc-icon-btn-sm:hover { background: #3d3b37; color: #eeedeb; }
+        .dark .syc-icon-btn-danger:hover { background: #2e1a1a; color: #E53E3E; }
+        .dark .syc-btn-primary { background: #33312e; }
+        .dark .syc-btn-primary:hover { background: #3d3b37; }
+        .dark .syc-date-count { background: #33312e; }
+        .dark .syc-add-event-link { color: #eeedeb; }
+        .dark .syc-add-event-link:hover { color: #F2A631; }
+        .dark .syc-add-event-btn:hover { background: #33312e; color: #F8E59D; border-color: #3d3b37; }
+        .dark .syc-event-card:hover { border-color: #504d48; }
+        .dark .syc-mini-month { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
       `}</style>
     </div>
   );

@@ -380,7 +380,8 @@
       "Bash(ls *.md)",
       "Bash(python -c \"import py_compile; py_compile.compile\\('main.py', doraise=True\\); print\\('main.py OK'\\)\")",
       "Bash(python -c \"import py_compile; py_compile.compile\\('insights_service.py', doraise=True\\); print\\('OK'\\)\")",
-      "Bash(grep \"\\\\.tsx$\")"
+      "Bash(grep \"\\\\.tsx$\")",
+      "Read(//c/Users/LG/AppData/Local/Temp/**)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

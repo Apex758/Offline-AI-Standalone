@@ -213,6 +213,12 @@ input, textarea, select {
   --border-default: #e5e7eb;   /* gray-200 — default borders */
   --border-strong: #d1d5db;    /* gray-300 — input borders */
 
+  /* Aliases used across components */
+  --text-primary: #111827;     /* alias for text-title */
+  --text-secondary: #6b7280;   /* alias for text-hint */
+  --bg-primary: #ffffff;       /* alias for bg-surface */
+  --border-primary: #e5e7eb;   /* alias for border-default */
+
   --sidebar-bg: rgba(232, 232, 235, 0.82);
   --sidebar-bg-collapsed: rgba(232, 232, 235, 0.55);
   --sidebar-text: #1f2937;
@@ -340,6 +346,12 @@ input, textarea, select {
   --bg-hover-subtle: #2f2d2a;
   --border-default: #3d3b37;
   --border-strong: #504d48;
+
+  /* Aliases — dark mode */
+  --text-primary: #f9f8f6;
+  --text-secondary: #8a8884;
+  --bg-primary: #21201e;
+  --border-primary: #3d3b37;
 
   --sidebar-bg: rgba(33, 32, 30, 0.82);
   --sidebar-bg-collapsed: rgba(33, 32, 30, 0.55);

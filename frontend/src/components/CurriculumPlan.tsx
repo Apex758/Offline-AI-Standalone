@@ -221,7 +221,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
         {/* Left: Phase list */}
         <div style={{
           width: 220, flexShrink: 0,
-          borderRight: '1px solid var(--border-color)',
+          borderRight: '1px solid var(--border-default)',
           overflowY: 'auto', padding: '12px 0',
           background: 'var(--bg-secondary)',
         }}>
@@ -283,7 +283,7 @@ const CurriculumPlan: React.FC<CurriculumPlanProps> = ({ tabId, savedData, onDat
               cursor: 'pointer',
               borderLeft: `3px solid ${selectedPhaseId === '__unassigned__' ? '#f59e0b' : 'transparent'}`,
               background: selectedPhaseId === '__unassigned__' ? '#f59e0b10' : 'transparent',
-              borderTop: '1px solid var(--border-color)',
+              borderTop: '1px solid var(--border-default)',
               marginTop: 8,
             }}
           >

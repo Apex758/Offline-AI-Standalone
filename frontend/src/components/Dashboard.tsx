@@ -49,6 +49,7 @@ import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useEngineStatus } from '../hooks/useEngineStatus';
+import { useCoworkerName } from '../hooks/useCoworkerName';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -475,7 +476,8 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
   const [setIndex, setSetIndex] = useState(0);
   const [visible, setVisible] = useState(true);
 
-  const quicklinkSets = getQuicklinkSets(t);
+  const coworkerName = useCoworkerName();
+  const quicklinkSets = getQuicklinkSets(t, coworkerName);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -536,7 +538,8 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
 
 const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const { t } = useTranslation();
-  const tips = getWelcomeTips(t);
+  const coworkerName = useCoworkerName();
+  const tips = getWelcomeTips(t, coworkerName);
   const [index, setIndex] = useState(() => Math.floor(Math.random() * tips.length));
   const [visible, setVisible] = useState(true);
 
@@ -607,10 +610,11 @@ const TabPanel = React.memo(({
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled, isToolChildEnabled, trackToolVisit } = useSettings();
   const { t } = useTranslation();
+  const coworkerName = useCoworkerName();
   // Build the translated tools list — re-evaluated whenever the language changes
-  const tools = useMemo(() => getTools(t), [t]);
+  const tools = useMemo(() => getTools(t, coworkerName), [t, coworkerName]);
   // Translate a tool name using the i18n key map, falling back to the original name
-  const tn = (tool: Tool) => SIDEBAR_I18N[tool.id] ? t(SIDEBAR_I18N[tool.id]) : tool.name;
+  const tn = (tool: Tool) => SIDEBAR_I18N[tool.id] ? t(SIDEBAR_I18N[tool.id], { coworkerName }) : tool.name;
   // Derive the display label for a tab — re-evaluates on language change for standard tool tabs
   const getTabLabel = (tab: Tab) => {
     if (tab.toolId) {
