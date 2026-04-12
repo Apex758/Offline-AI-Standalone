@@ -229,6 +229,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [titleSet, setTitleSet] = useState(false);
   const [generatingTitle, setGeneratingTitle] = useState(false);
+  const [chatTitle, setChatTitle] = useState(defaultChatTitle);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
@@ -441,8 +442,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         setCurrentChatId(parsed.currentChatId || null);
         setTitleSet(parsed.titleSet || false);
         setInput(parsed.input || '');
-        if (onTitleChange && parsed.title) {
-          onTitleChange(parsed.title);
+        if (parsed.title) {
+          setChatTitle(parsed.title);
+          if (onTitleChange) onTitleChange(parsed.title);
         }
       } catch (e) {
         // fallback to default if parse fails
@@ -479,12 +481,10 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       currentChatId,
       titleSet,
       input,
-      title: messages.length > 0 && messages[0].role === 'user'
-        ? (messages[0].content.length > 30 ? messages[0].content.substring(0, 30) + '...' : messages[0].content)
-        : defaultChatTitle
+      title: chatTitle
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [messages, streamingMessage, currentChatId, titleSet, input]);
+  }, [messages, streamingMessage, currentChatId, titleSet, input, chatTitle]);
 
   useEffect(() => {
     onDataChange({ messages, streamingMessage });
@@ -513,12 +513,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     if (messages.length === 0) return;
 
     try {
-      // Get the current title from the first user message for fallback
-      const fallbackTitle = messages[0]?.content.substring(0, 50) || 'New Chat';
-      
       const chatData = {
         id: currentChatId || `chat_${Date.now()}`,
-        title: fallbackTitle,
+        title: chatTitle,
         timestamp: new Date().toISOString(),
         messages: messages
       };
@@ -542,6 +539,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     if (onTitleChange) {
       const title = history.title.length > 30 ? history.title.substring(0, 30) + '...' : history.title;
       onTitleChange(title);
+      setChatTitle(title);
       setTitleSet(true);
     }
   };
@@ -571,11 +569,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       
       if (response.data && response.data.title) {
         onTitleChange(response.data.title);
+        setChatTitle(response.data.title);
         setTitleSet(true);
       } else {
         // Use fallback if response doesn't contain title
         const fallbackTitle = createFallbackTitle(userMessage);
         onTitleChange(fallbackTitle);
+        setChatTitle(fallbackTitle);
         setTitleSet(true);
       }
     } catch (error) {
@@ -583,6 +583,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       // Use fallback title on error
       const fallbackTitle = createFallbackTitle(userMessage);
       onTitleChange(fallbackTitle);
+      setChatTitle(fallbackTitle);
       setTitleSet(true);
     } finally {
       setGeneratingTitle(false);
@@ -612,6 +613,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setInput('');
     // Clear localStorage for this chat tab
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+    setChatTitle(defaultChatTitle);
     if (onTitleChange) {
       onTitleChange(defaultChatTitle);
     }

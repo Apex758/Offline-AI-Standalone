@@ -1438,6 +1438,21 @@ async def websocket_chat(websocket: WebSocket):
             if profile_context:
                 system_prompt += profile_context
 
+            # Strong language instruction: ensure AI responds in the selected language.
+            # The profile block has a soft hint; this adds an explicit, hard instruction
+            # matching what all other features (lesson planner, quiz, etc.) already do.
+            _resp_lang = (profile_snapshot or {}).get("language", "en")
+            if _resp_lang and _resp_lang != "en":
+                _lang_names = {"fr": "French", "es": "Spanish"}
+                _lang_name = _lang_names.get(_resp_lang)
+                if _lang_name:
+                    system_prompt += (
+                        f"\n\nIMPORTANT: You MUST respond entirely in {_lang_name}. "
+                        f"All content, instructions, labels, headings, and explanations "
+                        f"must be written in {_lang_name}. Do not use English unless it is "
+                        f"a proper noun or technical term."
+                    )
+
             # Curriculum matching: find related curriculum based on user message + profile
             # Skip for short/casual messages (greetings, short phrases) to avoid false matches
             if curriculum_matcher and profile_context and len(user_message.split()) >= 4:
@@ -9274,7 +9289,8 @@ async def text_to_speech(request: Request):
         data = await request.json()
         text = data.get("text", "").strip()
         speed = float(data.get("speed", 1.0))
-        voice = data.get("voice", "lessac")  # 'lessac' | 'ryan' | 'amy'
+        voice = data.get("voice", "lessac")  # 'lessac' | 'ryan' | 'amy' | 'siwis' | 'sharvard' etc.
+        language = data.get("language", "en")  # Language code for text preprocessing
 
         if not text:
             return JSONResponse(status_code=400, content={"error": "Text is required"})
@@ -9285,7 +9301,7 @@ async def text_to_speech(request: Request):
         # Run synthesis in thread pool to avoid blocking the event loop
         loop = asyncio.get_event_loop()
         wav_bytes = await loop.run_in_executor(
-            None, lambda: tts.synthesize(text, speed=speed, voice=voice)
+            None, lambda: tts.synthesize(text, speed=speed, voice=voice, lang=language)
         )
 
         return Response(content=wav_bytes, media_type="audio/wav")

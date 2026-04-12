@@ -157,20 +157,20 @@ class _VoiceInstance:
                 print(f"[ERR] [TTS] Failed to load voice {self._voice_name}: {e}", flush=True)
                 raise
 
-    def synthesize(self, text: str, speed: float = 1.0) -> bytes:
+    def synthesize(self, text: str, speed: float = 1.0, lang: str = 'en') -> bytes:
         self.ensure_loaded()
         from piper.config import SynthesisConfig
         from tts_preprocessor import preprocess_for_tts, smart_split_sentences
 
         # Preprocess text for more natural speech (number expansion, abbreviations, etc.)
-        text = preprocess_for_tts(text)
+        text = preprocess_for_tts(text, lang=lang)
 
         config = SynthesisConfig()
         config.length_scale = 1.05 / speed
         config.noise_scale = 0.667
         config.noise_w_scale = 0.8
 
-        sentences = smart_split_sentences(text)
+        sentences = smart_split_sentences(text, lang=lang)
         buf = io.BytesIO()
         with wave.open(buf, "wb") as wav_file:
             for i, sentence in enumerate(sentences):
@@ -285,7 +285,7 @@ class TTSService:
         default_model = resolve_voice_model_name("lessac")
         return default_model in self._voices and self._voices[default_model].is_loaded
 
-    def synthesize(self, text: str, speed: float = 1.0, voice: str = "lessac") -> bytes:
+    def synthesize(self, text: str, speed: float = 1.0, voice: str = "lessac", lang: str = "en") -> bytes:
         """
         Synthesize text to WAV bytes.
 
@@ -293,9 +293,10 @@ class TTSService:
             text: Text to synthesize.
             speed: Playback speed multiplier (1.0 = normal).
             voice: Voice key — 'lessac' (default), 'ryan', or 'amy'.
+            lang: Language code for text preprocessing ('en', 'fr', 'es').
         """
         instance = self._get_voice_instance(voice)
-        return instance.synthesize(text, speed=speed)
+        return instance.synthesize(text, speed=speed, lang=lang)
 
     def get_voice_info(self) -> dict:
         """Return info about available voices."""

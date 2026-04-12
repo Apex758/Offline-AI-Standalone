@@ -401,7 +401,8 @@
       "Bash(powershell -Command 'Set-Location '\\\\''c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend'\\\\''; $result = & npx tsc --noEmit 2>&1; Write-Output $result; if \\($LASTEXITCODE -eq 0\\) { Write-Output '\\\\''TSC_PASS'\\\\'' } else { Write-Output '\\\\''TSC_FAIL'\\\\'' }')",
       "Bash(setup)",
       "Bash(pyproject\")",
-      "Bash(grep -E \"\\\\.\\(py|js|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(py|js|ts\\)$\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('tts_preprocessor.py', doraise=True\\); print\\('OK'\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

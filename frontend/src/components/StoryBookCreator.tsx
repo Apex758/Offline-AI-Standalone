@@ -58,6 +58,7 @@ import SmartInput from './SmartInput';
 import SmartTextArea from './SmartTextArea';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { buildStorybookPrompt, buildNarrativePrompt, buildStructurePromptTemplate, buildCurriculumInfo, STORYBOOK_STYLE_SUFFIX } from '../utils/storybookPromptBuilder';
+import { STYLE_PRESETS, STYLE_SUFFIXES, type StylePresetId } from '../utils/imageStylePresets';
 import { BUNDLED_SCENES, findBestScene, getScenesByCategory, SCENE_CATEGORY_LABELS } from '../data/storybookScenes';
 import { compressImage, compressTransparentImage } from '../utils/imageCompression';
 import {
@@ -118,6 +119,7 @@ const DEFAULT_FORM: StorybookFormData = {
   authorName: '',
   pageCount: 8,
   imageMode: 'none',
+  stylePreset: 'cartoon_3d',
   backgroundCount: 'auto',
   speakerCount: 1,
   speakers: DEFAULT_SPEAKERS,
@@ -2056,7 +2058,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           };
         });
         // Inject constant styleSuffix client-side
-        const withStyle = { ...full, pages, styleSuffix: full.styleSuffix || STORYBOOK_STYLE_SUFFIX };
+        const withStyle = { ...full, pages, styleSuffix: full.styleSuffix || STYLE_SUFFIXES[formData.stylePreset || 'cartoon_3d'] || STORYBOOK_STYLE_SUFFIX };
         // Match bundled scene for the introduction page (same treatment
         // as story pages). Safe no-op on older saves without intro.
         if (withStyle.introductionPage && withStyle.introductionPage.sceneId) {
@@ -2264,7 +2266,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     setIsRemovingBg(pageIdx); // reuse spinner state
 
-    const styleSuffix = parsedBook.styleSuffix || "flat vector illustration, children's book style, bold outlines, pastel colors, bright and cheerful, simple shapes, no text";
+    const styleSuffix = parsedBook.styleSuffix || STYLE_SUFFIXES[formData.stylePreset || 'cartoon_3d'] || STORYBOOK_STYLE_SUFFIX;
     const charDescs = parsedBook.characterDescriptions || {};
 
     // Try to reuse seed and reference image from prior generation for consistency
@@ -2329,7 +2331,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     setIsRemovingBg(pageIdx); // reuse spinner state
 
-    const styleSuffix = parsedBook.styleSuffix || "flat vector illustration, children's book style, bold outlines, pastel colors, bright and cheerful, simple shapes, no text";
+    const styleSuffix = parsedBook.styleSuffix || STYLE_SUFFIXES[formData.stylePreset || 'cartoon_3d'] || STORYBOOK_STYLE_SUFFIX;
 
     // Narrator-only: fold character/subject descriptions into the background
     const isNarratorOnly = formData.speakerCount === 1;
@@ -2370,7 +2372,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       } else if (format === 'pptx') {
         await exportStorybookPPTX(parsedBook, formData, accentColor);
       } else {
-        await exportAnimatedHTML(parsedBook, formData, accentColor, (p) => setExportProgress(p));
+        await exportAnimatedHTML(parsedBook, formData, accentColor, (p) => setExportProgress(p), settings.language);
       }
     } catch (e) {
       console.error('[StoryBook] Export failed:', e);
@@ -2420,7 +2422,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             const voice = parsedBook.voiceAssignments?.[seg.speaker] || 'lessac';
             setSaveProgress({ current: done, total: totalSegs });
             try {
-              const blob = await fetchTTSBlob(seg.text, voice);
+              const blob = await fetchTTSBlob(seg.text, voice, settings.language);
               entries.push({ pageIndex: pi, segmentIndex: si, blob });
             } catch {
               // Skip failed segments
@@ -2768,6 +2770,37 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               descs={{ none: t('storybook.imageModeNoneDesc'), suggested: t('storybook.imageModeGuidanceDesc'), myImages: t('storybook.imageModeMyImagesDesc'), ai: t('storybook.imageModeAIDesc') }}
             />
           </div>
+
+          {/* Style Preset — only when AI image mode */}
+          {formData.imageMode === 'ai' && (
+            <div>
+              <label className="block text-sm font-medium text-theme-label mb-2">Visual Style</label>
+              <div
+                className="ng-segment ng-rect w-full"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${STYLE_PRESETS.length}, 1fr)`,
+                  '--ng-accent': accentColor,
+                } as React.CSSProperties}
+              >
+                {STYLE_PRESETS.map((preset) => {
+                  const active = formData.stylePreset === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => updateForm('stylePreset', preset.id)}
+                      className={`ng-segment-btn flex-col gap-0.5 py-2.5${active ? ' ng-seg-active' : ''}`}
+                      style={{ height: 'auto', borderRadius: '5px' }}
+                    >
+                      <span className="text-xs font-semibold leading-tight">{preset.label}</span>
+                      {active && <span className="text-[10px] leading-tight" style={{ opacity: 0.7 }}>{preset.hint}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Background Count — only when AI image mode */}
           {formData.imageMode === 'ai' && (

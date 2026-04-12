@@ -296,21 +296,21 @@ export async function exportStorybookPPTX(
 // ─── TTS Audio Pre-generation ──────────────────────────────────────────────────
 
 /** Fetch TTS audio as a raw Blob (WAV). Shared by save, export, and playback. */
-export async function fetchTTSBlob(text: string, voice: string): Promise<Blob> {
+export async function fetchTTSBlob(text: string, voice: string, language?: string): Promise<Blob> {
   const isElectron = typeof window !== 'undefined' && 'electronAPI' in window;
   const apiBase = isElectron ? 'http://127.0.0.1:8000' : 'http://localhost:8000';
 
   const res = await fetch(`${apiBase}/api/tts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, voice }),
+    body: JSON.stringify({ text, voice, ...(language ? { language } : {}) }),
   });
   if (!res.ok) throw new Error('TTS failed');
   return res.blob();
 }
 
-async function fetchAudioBase64(text: string, voice: string): Promise<string> {
-  const blob = await fetchTTSBlob(text, voice);
+async function fetchAudioBase64(text: string, voice: string, language?: string): Promise<string> {
+  const blob = await fetchTTSBlob(text, voice, language);
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
@@ -332,6 +332,7 @@ export async function exportAnimatedHTML(
   formData: StorybookFormData,
   accentColor = '#a855f7',
   onProgress?: (p: AnimatedHTMLProgress) => void,
+  language?: string,
 ): Promise<void> {
   const totalSegments = book.pages.reduce((sum, p) => sum + p.textSegments.length, 0);
   let processed = 0;
@@ -347,7 +348,7 @@ export async function exportAnimatedHTML(
       const voice = book.voiceAssignments?.[seg.speaker] || 'lessac';
       onProgress?.({ current: processed, total: totalSegments, label: `Generating audio (page ${pi + 1})...` });
       try {
-        const b64 = await fetchAudioBase64(seg.text, voice);
+        const b64 = await fetchAudioBase64(seg.text, voice, language);
         audioData.push({ pageIdx: pi, segIdx: si, base64: b64 });
       } catch {
         // TTS failed for this segment — skip audio

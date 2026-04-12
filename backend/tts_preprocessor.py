@@ -29,7 +29,7 @@ except ImportError:
 # Number-to-words expansion
 # ---------------------------------------------------------------------------
 
-def _expand_numbers(text: str) -> str:
+def _expand_numbers(text: str, lang: str = 'en') -> str:
     """Convert numeric values to spoken words for natural TTS."""
     if _num2words is None:
         return text
@@ -39,7 +39,7 @@ def _expand_numbers(text: str) -> str:
     def _replace_decimal(match):
         """Handle decimal numbers like 3.14"""
         try:
-            return num2words(float(match.group()), lang='en')
+            return num2words(float(match.group()), lang=lang)
         except Exception:
             return match.group()
 
@@ -50,7 +50,7 @@ def _expand_numbers(text: str) -> str:
             # Don't expand years (1900-2099) -- they sound better as-is
             if 1900 <= num <= 2099:
                 return match.group()
-            return num2words(num, lang='en')
+            return num2words(num, lang=lang)
         except Exception:
             return match.group()
 
@@ -59,12 +59,16 @@ def _expand_numbers(text: str) -> str:
         try:
             hour = int(match.group(1))
             minute = int(match.group(2))
-            hour_word = num2words(hour, lang='en')
+            hour_word = num2words(hour, lang=lang)
             if minute == 0:
+                if lang == 'fr':
+                    return f"{hour_word} heures"
+                elif lang == 'es':
+                    return f"{hour_word} en punto"
                 return f"{hour_word} o'clock"
             else:
-                minute_word = num2words(minute, lang='en')
-                if minute < 10:
+                minute_word = num2words(minute, lang=lang)
+                if lang == 'en' and minute < 10:
                     return f"{hour_word} oh {minute_word}"
                 return f"{hour_word} {minute_word}"
         except Exception:
@@ -84,8 +88,8 @@ def _expand_numbers(text: str) -> str:
 # Abbreviation & symbol expansion
 # ---------------------------------------------------------------------------
 
-# Common abbreviations that TTS engines often mispronounce
-ABBREVIATIONS = {
+# Common abbreviations that TTS engines often mispronounce (English)
+ABBREVIATIONS_EN = {
     r'\bDr\.':   'Doctor',
     r'\bMr\.':   'Mister',
     r'\bMrs\.':  'Misses',
@@ -111,8 +115,47 @@ ABBREVIATIONS = {
     r'\bSec\.':  'Secretary',
 }
 
-# Symbols that should be spoken
-SYMBOL_MAP = {
+# French abbreviations
+ABBREVIATIONS_FR = {
+    r'\bDr\.':   'Docteur',
+    r'\bM\.':    'Monsieur',
+    r'\bMme\.':  'Madame',
+    r'\bMlle\.': 'Mademoiselle',
+    r'\bProf\.': 'Professeur',
+    r'\bSt\.':   'Saint',
+    r'\betc\.':  'et cetera',
+    r'\bGen\.':  'General',
+    r'\bSgt\.':  'Sergent',
+    r'\bCpt\.':  'Capitaine',
+    r'\bLt\.':   'Lieutenant',
+    r'\bGov\.':  'Gouverneur',
+}
+
+# Spanish abbreviations
+ABBREVIATIONS_ES = {
+    r'\bDr\.':   'Doctor',
+    r'\bSr\.':   'Senor',
+    r'\bSra\.':  'Senora',
+    r'\bSrta\.': 'Senorita',
+    r'\bProf\.': 'Profesor',
+    r'\bSto\.':  'Santo',
+    r'\bSta\.':  'Santa',
+    r'\betc\.':  'etcetera',
+    r'\bGen\.':  'General',
+    r'\bSgt\.':  'Sargento',
+    r'\bCpt\.':  'Capitan',
+    r'\bLt\.':   'Teniente',
+    r'\bGob\.':  'Gobernador',
+}
+
+ABBREVIATIONS_MAP = {
+    'en': ABBREVIATIONS_EN,
+    'fr': ABBREVIATIONS_FR,
+    'es': ABBREVIATIONS_ES,
+}
+
+# Symbols that should be spoken (per language)
+SYMBOL_MAP_EN = {
     '&': ' and ',
     '%': ' percent',
     '+': ' plus ',
@@ -121,17 +164,43 @@ SYMBOL_MAP = {
     '#': ' number ',
 }
 
+SYMBOL_MAP_FR = {
+    '&': ' et ',
+    '%': ' pour cent',
+    '+': ' plus ',
+    '=': ' egale ',
+    '@': ' arobase ',
+    '#': ' numero ',
+}
 
-def _expand_abbreviations(text: str) -> str:
+SYMBOL_MAP_ES = {
+    '&': ' y ',
+    '%': ' por ciento',
+    '+': ' mas ',
+    '=': ' igual ',
+    '@': ' arroba ',
+    '#': ' numero ',
+}
+
+SYMBOL_MAPS = {
+    'en': SYMBOL_MAP_EN,
+    'fr': SYMBOL_MAP_FR,
+    'es': SYMBOL_MAP_ES,
+}
+
+
+def _expand_abbreviations(text: str, lang: str = 'en') -> str:
     """Expand common abbreviations for clearer TTS output."""
-    for pattern, replacement in ABBREVIATIONS.items():
+    abbrevs = ABBREVIATIONS_MAP.get(lang, ABBREVIATIONS_EN)
+    for pattern, replacement in abbrevs.items():
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     return text
 
 
-def _expand_symbols(text: str) -> str:
+def _expand_symbols(text: str, lang: str = 'en') -> str:
     """Expand symbols to spoken words."""
-    for symbol, word in SYMBOL_MAP.items():
+    symbol_map = SYMBOL_MAPS.get(lang, SYMBOL_MAP_EN)
+    for symbol, word in symbol_map.items():
         text = text.replace(symbol, word)
     return text
 
@@ -164,10 +233,21 @@ _NON_BREAKING_ABBR = {
     'inc', 'co', 'ltd', 'vs', 'etc', 'gen', 'sgt', 'cpl',
     'cpt', 'lt', 'gov', 'pres', 'sec', 'rev', 'hon',
     'vol', 'dept', 'est', 'approx', 'assn', 'ave', 'blvd',
+    # French
+    'mme', 'mlle',
+    # Spanish
+    'sra', 'srta', 'sto', 'sta', 'gob',
+}
+
+# NLTK language names for sent_tokenize
+_NLTK_LANG_MAP = {
+    'en': 'english',
+    'fr': 'french',
+    'es': 'spanish',
 }
 
 
-def smart_split_sentences(text: str) -> list[str]:
+def smart_split_sentences(text: str, lang: str = 'en') -> list[str]:
     """
     Split text into sentences more intelligently than regex alone.
 
@@ -178,17 +258,19 @@ def smart_split_sentences(text: str) -> list[str]:
     if not text:
         return []
 
+    nltk_lang = _NLTK_LANG_MAP.get(lang, 'english')
+
     # Try NLTK first (pre-imported at module level)
     if _nltk is not None:
         try:
             from nltk.tokenize import sent_tokenize
-            sentences = sent_tokenize(text)
+            sentences = sent_tokenize(text, language=nltk_lang)
             return [s.strip() for s in sentences if s.strip()]
         except LookupError:
             # punkt data not downloaded yet -- download it once
             _nltk.download('punkt_tab', quiet=True)
             from nltk.tokenize import sent_tokenize
-            sentences = sent_tokenize(text)
+            sentences = sent_tokenize(text, language=nltk_lang)
             return [s.strip() for s in sentences if s.strip()]
         except Exception as e:
             logger.warning(f"NLTK sentence split failed, using fallback: {e}")
@@ -226,7 +308,7 @@ def _regex_split_sentences(text: str) -> list[str]:
 # Main preprocessing pipeline
 # ---------------------------------------------------------------------------
 
-def preprocess_for_tts(text: str) -> str:
+def preprocess_for_tts(text: str, lang: str = 'en') -> str:
     """
     Run the full text normalization pipeline.
 
@@ -239,9 +321,9 @@ def preprocess_for_tts(text: str) -> str:
     if not text or not text.strip():
         return text
 
-    text = _expand_abbreviations(text)
-    text = _expand_symbols(text)
-    text = _expand_numbers(text)
+    text = _expand_abbreviations(text, lang=lang)
+    text = _expand_symbols(text, lang=lang)
+    text = _expand_numbers(text, lang=lang)
     text = _expand_acronyms(text)
 
     # Clean up any double spaces introduced by expansions

@@ -100,12 +100,17 @@ export function useTTS() {
   const fetchChunkAudio = useCallback(async (
     text: string,
     signal: AbortSignal,
-    voice?: string
+    voice?: string,
+    language?: string
   ): Promise<string> => {
     const response = await fetch('http://localhost:8000/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, ...(voice ? { voice } : {}) }),
+      body: JSON.stringify({
+        text,
+        ...(voice ? { voice } : {}),
+        ...(language ? { language } : {}),
+      }),
       signal,
     });
     if (!response.ok) throw new Error('TTS request failed');
@@ -128,13 +133,27 @@ export function useTTS() {
     const chunks = chunkTextForTTS(cleaned);
     const objectUrls: string[] = [];
 
-    // Resolve voice based on language if no explicit voice given
-    const resolvedVoice = voice || (language === 'fr' ? 'siwis' : language === 'es' ? 'sharvard' : undefined);
+    // Resolve voice based on language. If the explicit voice is English-only
+    // but the app language is non-English, switch to the language-default voice
+    // so French/Spanish text isn't read by an English voice.
+    const ENGLISH_VOICES = ['lessac', 'ryan', 'amy'];
+    const LANG_DEFAULT_VOICE: Record<string, string> = { fr: 'siwis', es: 'sharvard' };
+    let resolvedVoice: string | undefined;
+    if (language && language !== 'en' && LANG_DEFAULT_VOICE[language]) {
+      // Non-English language: use language voice unless user explicitly chose a matching voice
+      if (!voice || ENGLISH_VOICES.includes(voice)) {
+        resolvedVoice = LANG_DEFAULT_VOICE[language];
+      } else {
+        resolvedVoice = voice;
+      }
+    } else {
+      resolvedVoice = voice || undefined;
+    }
 
     try {
       // Pre-fetch first chunk immediately
       let nextAudioPromise: Promise<string> | null =
-        chunks.length > 0 ? fetchChunkAudio(chunks[0], controller.signal, resolvedVoice) : null;
+        chunks.length > 0 ? fetchChunkAudio(chunks[0], controller.signal, resolvedVoice, language) : null;
 
       for (let i = 0; i < chunks.length; i++) {
         if (cancelledRef.current) break;
@@ -145,7 +164,7 @@ export function useTTS() {
 
         // Start pre-fetching the next chunk while this one plays
         if (i + 1 < chunks.length) {
-          nextAudioPromise = fetchChunkAudio(chunks[i + 1], controller.signal, resolvedVoice);
+          nextAudioPromise = fetchChunkAudio(chunks[i + 1], controller.signal, resolvedVoice, language);
         } else {
           nextAudioPromise = null;
         }

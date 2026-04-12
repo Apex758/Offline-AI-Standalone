@@ -146,6 +146,8 @@ export interface StorybookFormData {
   authorName: string;
   pageCount: number;
   imageMode: ImageMode;
+  /** Visual style preset for AI image generation */
+  stylePreset: 'cartoon_3d' | 'illustrated_painting' | 'realistic';
   /** Number of unique backgrounds to generate, or 'auto' to let the AI decide */
   backgroundCount: number | 'auto';
   speakerCount: 1 | 2 | 3;
