@@ -39,6 +39,8 @@ const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSPropertie
 };
 
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useStreamingJson } from '../hooks/useStreamingJson';
+import { useSmoothReveal } from './shared/InlineEditPrimitives';
 import { useQueue } from '../contexts/QueueContext';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import { useSettings } from '../contexts/SettingsContext';
@@ -960,9 +962,20 @@ function PlaybackView({
 function StreamingPagePreview({
   page,
   accentColor,
+  liveSegment,
 }: {
   page: StoryPage;
   accentColor: string;
+  /**
+   * Optional "currently being typed" text segment. When present, renders
+   * an extra paragraph after the committed textSegments with a caret,
+   * shimmer, and smooth character reveal. The speaker is inferred from
+   * the current page's speakers (or defaults to narrator).
+   */
+  liveSegment?: {
+    text: string;
+    speaker?: string;
+  } | null;
 }) {
   const { t } = useTranslation();
   const bgScene = page.bundledSceneId
@@ -970,6 +983,11 @@ function StreamingPagePreview({
     : null;
   const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
   const lastIdx = page.textSegments.length - 1;
+  // Smoothly reveal the in-progress segment so multi-char token jumps
+  // type in character-by-character instead of snapping 4-12 chars at a time.
+  const liveText = liveSegment?.text || '';
+  const revealedLiveText = useSmoothReveal(liveText, !!liveSegment);
+  const liveSpeaker = liveSegment?.speaker || 'narrator';
 
   return (
     <div
@@ -986,11 +1004,14 @@ function StreamingPagePreview({
       <div className="relative z-10 p-6">
         <div className="space-y-2">
           {page.textSegments.map((seg, i) => {
-            const isLast = i === lastIdx;
+            // When a liveSegment is present, the caret + shimmer belong on
+            // the live paragraph (below), not the committed ones.
+            const isLastCommitted = i === lastIdx;
+            const shouldDecorate = isLastCommitted && !liveSegment;
             return (
               <p
                 key={i}
-                className={`leading-relaxed text-gray-800 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'} ${isLast ? 'sb-active-segment' : ''}`}
+                className={`leading-relaxed text-gray-800 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'} ${shouldDecorate ? 'sb-active-segment' : ''}`}
                 style={{
                   animation: 'streamFadeIn 0.3s ease both',
                   animationDelay: `${i * 0.05}s`,
@@ -1000,10 +1021,28 @@ function StreamingPagePreview({
                   <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
                 )}
                 {seg.speaker !== 'narrator' ? `"${seg.text}"` : seg.text}
-                {isLast && <span className="sb-caret" aria-hidden="true" />}
+                {shouldDecorate && <span className="sb-caret" aria-hidden="true" />}
               </p>
             );
           })}
+          {/* Live in-progress segment — rendered while the model is
+              mid-way through typing the next segment. Shows the partial
+              text with smooth-reveal animation, active shimmer, and the
+              typing caret. Disappears the moment the parser commits this
+              segment to page.textSegments above. */}
+          {liveSegment && (
+            <p
+              key="live-segment"
+              className={`leading-relaxed text-gray-800 sb-active-segment ${liveSpeaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'}`}
+            >
+              {liveSpeaker !== 'narrator' && (
+                <span className="text-xs font-bold text-purple-600 not-italic block">{liveSpeaker}:</span>
+              )}
+              {liveSpeaker !== 'narrator' ? `"${revealedLiveText}` : revealedLiveText}
+              <span className="sb-caret" aria-hidden="true" />
+              {liveSpeaker !== 'narrator' && !revealedLiveText.endsWith('"') && ''}
+            </p>
+          )}
           {/* Typing indicator */}
           <div className="flex items-center gap-1.5 pt-1">
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse" style={{ animationDelay: '0s' }} />
@@ -1599,10 +1638,78 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const isStreaming = getIsStreaming(tabId, WS_ENDPOINT);
   const streamingContent = getStreamingContent(tabId, WS_ENDPOINT);
 
+  // ── Per-field live streaming (lesson-planner pattern) ─────────────────────
+  // The coarse `tryParsePartialPages` parser below only commits a page once
+  // its closing '}' arrives — so the UI appears to "pop in" entire pages
+  // even though tokens are flowing in smoothly. `useStreamingJson` parses
+  // the same buffer and also reports which string field is currently being
+  // typed (e.g. `["pages", 2, "textSegments", 0, "text"]`). We use that to
+  // render the partial text live on the correct page, mid-type, with a
+  // caret and the same smooth-reveal animation the lesson planner uses.
+  //
+  // The existing page-level parser is unchanged: it still handles the
+  // commit-on-close logic that populates the post-generation editor.
+  const {
+    data: sbStreamingData,
+    inProgressPath: sbInProgressPath,
+    inProgressValue: sbInProgressValue,
+  } = useStreamingJson<any>({
+    rawText: streamingContent || '',
+    isStreaming,
+    throttleMs: 30,
+  });
+
+  // Decode the in-progress path into structured "what page is being typed?"
+  // and "what is the partial text?" so StreamingPagePreview can render it.
+  // Path shape during active string generation:
+  //   ["pages", <pageIdx>, "textSegments", <segIdx>, "text"]
+  //   ["pages", <pageIdx>, "textSegments", <segIdx>, "speaker"]
+  //   ["pages", <pageIdx>, "characterScene"]
+  //   ["pages", <pageIdx>, "sceneId"]
+  //   ["title"]  etc.
+  // We only light up the text field case, because that's the lion's share
+  // of wall-clock time during generation.
+  const sbLiveTyping: {
+    pageIdx: number;
+    segIdx: number;
+    partialText: string;
+  } | null = (() => {
+    if (!isStreaming || !sbInProgressPath || sbInProgressValue == null) return null;
+    const p = sbInProgressPath;
+    if (
+      p.length === 5 &&
+      p[0] === 'pages' &&
+      typeof p[1] === 'number' &&
+      p[2] === 'textSegments' &&
+      typeof p[3] === 'number' &&
+      p[4] === 'text'
+    ) {
+      return {
+        pageIdx: p[1] as number,
+        segIdx: p[3] as number,
+        partialText: sbInProgressValue,
+      };
+    }
+    return null;
+  })();
+
   // Track which page the AI is currently streaming (for auto-advance in editor)
   const prevLivePagesCountRef = useRef(0);
   const pageScanOffsetRef = useRef(0);
   const cachedParsedPagesRef = useRef<StoryPage[]>([]);
+
+  // Auto-advance to the page the live-typing path points at, so the user
+  // is always looking at the page the model is actually writing. Only
+  // fires when in the editor view and streaming.
+  const prevLivePageIdxRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!sbLiveTyping) return;
+    if (prevLivePageIdxRef.current === sbLiveTyping.pageIdx) return;
+    prevLivePageIdxRef.current = sbLiveTyping.pageIdx;
+    if (viewRef.current === 'editor' && isStreaming) {
+      setCurrentPageIdx(sbLiveTyping.pageIdx);
+    }
+  }, [sbLiveTyping, isStreaming]);
 
   useEffect(() => {
     if (!streamingContent) {
@@ -3029,15 +3136,84 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               {isCoverSelected && parsedBook.coverPage ? (
                 <CoverPagePreview coverPage={parsedBook.coverPage} accentColor={accentColor} />
               ) : currentPage ? (() => {
-                const isPageEmpty = currentPage.textSegments.length === 0;
-                const completedCount = livePages.length;
-                const isCurrentlyStreaming = isStreaming && currentPageIdx === completedCount - 1 && !isPageEmpty;
-                const isSkeletonPage = isStreaming && isPageEmpty;
+                // Does the live-typing path point at THIS page?
+                const liveMatches = !!(sbLiveTyping && sbLiveTyping.pageIdx === currentPageIdx);
+
+                // Fine-grained source of truth for segments on the active
+                // page. `sbStreamingData.pages[N].textSegments` grows as
+                // each segment's string closes — well ahead of the coarse
+                // `tryParsePartialPages` parser which only emits on the
+                // whole page's closing '}'.
+                const streamingSegments: Array<{ speaker: string; text?: string }> | null =
+                  isStreaming && sbStreamingData?.pages?.[currentPageIdx]?.textSegments
+                    ? sbStreamingData.pages[currentPageIdx].textSegments
+                    : null;
+
+                // Filter out ghost segments — the partial-JSON repair
+                // briefly emits `{speaker: "Alice"}` with text=undefined
+                // while the speaker string has closed but the text string
+                // hasn't opened yet. Rendering those would show literal
+                // "undefined" text rows. The live overlay below handles
+                // the currently-typing segment separately.
+                const committedStreamingSegments = streamingSegments
+                  ? streamingSegments.filter(
+                      (s: any) => s && typeof s.text === 'string' && s.text.length > 0
+                    )
+                  : null;
+
+                // Effective segments = fine-parsed if streaming, else the
+                // coarse/committed parsedBook version for non-streaming pages.
+                const effectiveSegments = committedStreamingSegments ?? currentPage.textSegments;
+
+                // Live overlay: render the partial text being typed.
+                // Speaker inference reads from the UNFILTERED streaming
+                // segments array, because the speaker field was
+                // committed before we filtered the ghost row out.
+                const liveSegProp = (() => {
+                  if (!liveMatches || !sbLiveTyping) return null;
+                  const segAtUnfiltered = streamingSegments?.[sbLiveTyping.segIdx];
+                  if (
+                    segAtUnfiltered &&
+                    typeof segAtUnfiltered.text === 'string' &&
+                    segAtUnfiltered.text.length >= sbLiveTyping.partialText.length
+                  ) {
+                    return null;
+                  }
+                  const inferredSpeaker = segAtUnfiltered?.speaker || 'narrator';
+                  return {
+                    text: sbLiveTyping.partialText,
+                    speaker: inferredSpeaker,
+                  };
+                })();
+
+                // Render decision — fixed to rely on the fine parser's
+                // segments and the live overlay, NOT the coarse livePages
+                // count. Previously the render fell through to an empty
+                // PagePreview during the ~200ms gap between "segment text
+                // closed" and "next segment text opened" on the same page,
+                // causing visible text to disappear between segments.
+                const hasAnyStreamingContent =
+                  effectiveSegments.length > 0 || liveMatches;
+                const showStreamingView = isStreaming && hasAnyStreamingContent;
+                const isSkeletonPage = isStreaming && !hasAnyStreamingContent;
 
                 if (isSkeletonPage) {
                   return <SkeletonPagePreview />;
-                } else if (isCurrentlyStreaming) {
-                  return <StreamingPagePreview page={currentPage} accentColor={accentColor} />;
+                } else if (showStreamingView) {
+                  // Build a synthetic "page" with the effective segments
+                  // so StreamingPagePreview renders all segments already
+                  // committed by the fine parser, plus any live overlay.
+                  const liveRenderPage: StoryPage = {
+                    ...currentPage,
+                    textSegments: effectiveSegments,
+                  };
+                  return (
+                    <StreamingPagePreview
+                      page={liveRenderPage}
+                      accentColor={accentColor}
+                      liveSegment={liveSegProp}
+                    />
+                  );
                 } else {
                   return <PagePreview page={currentPage} accentColor={accentColor} />;
                 }

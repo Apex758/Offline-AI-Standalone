@@ -375,7 +375,9 @@
       "Bash('.\\\\venv\\\\Scripts\\\\python' -c ':*)",
       "Bash(cmd //c \"cd /d \\\\\"c:\\\\\\\\Users\\\\\\\\LG\\\\\\\\Desktop\\\\\\\\Projects\\\\\\\\Offline AI Standalone\\\\\\\\frontend\\\\\" && npx tsc --noEmit 2>&1\")",
       "Bash(ls tsconfig*.json)",
-      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/a8be6449-a6d6-4bb8-87b4-f67fc43c3e84/tasks/**)"
+      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/a8be6449-a6d6-4bb8-87b4-f67fc43c3e84/tasks/**)",
+      "Bash(rm write_plan_stage*.py)",
+      "Bash(ls *.md)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
