@@ -11,6 +11,7 @@ require('dotenv').config({ path: envPath });
 const log = require('electron-log');
 const fs = require('fs');
 const fsp = fs.promises;
+const { safeStorage } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const isDev = !app.isPackaged;
 
@@ -25,6 +26,10 @@ const UPDATE_TOKEN = process.env.GH_TOKEN || '';
 if (UPDATE_TOKEN) {
   autoUpdater.requestHeaders = { Authorization: `token ${UPDATE_TOKEN}` };
 }
+
+// License status mirror — set by renderer via IPC so update checks
+// are gated in main process, not just on the frontend.
+let isRendererLicensed = false;
 
 // Configure logging paths
 const logsDir = path.join(app.getPath('appData'), 'OECS Class Coworker', 'logs');
@@ -718,6 +723,10 @@ ipcMain.handle('check-for-updates', async () => {
     log.info('Skipping update check in development mode');
     return;
   }
+  if (!isRendererLicensed) {
+    log.info('Skipping update check — no active license');
+    return;
+  }
   try {
     log.info('Licensed user requested update check');
     await autoUpdater.checkForUpdatesAndNotify();
@@ -737,6 +746,63 @@ ipcMain.on('frontend-log', (event, { level, message }) => {
 ipcMain.on('install-update', () => {
   log.info('User requested update install, quitting and installing...');
   autoUpdater.quitAndInstall();
+});
+
+// Renderer reports license status changes so the main process can gate updates
+ipcMain.on('set-license-status', (_event, licensed) => {
+  isRendererLicensed = !!licensed;
+  log.info(`License status updated: ${isRendererLicensed ? 'licensed' : 'unlicensed'}`);
+});
+
+// ── Encrypted license storage via safeStorage ──
+const secureStorePath = path.join(app.getPath('userData'), 'license-store.enc');
+
+ipcMain.handle('get-secure-data', async (_event, key) => {
+  try {
+    if (!fs.existsSync(secureStorePath)) return null;
+    const encrypted = fs.readFileSync(secureStorePath);
+    if (!safeStorage.isEncryptionAvailable()) {
+      log.warn('safeStorage encryption not available, returning null');
+      return null;
+    }
+    const decrypted = safeStorage.decryptString(encrypted);
+    const store = JSON.parse(decrypted);
+    return store[key] ?? null;
+  } catch (err) {
+    log.error('get-secure-data error:', err.message);
+    return null;
+  }
+});
+
+ipcMain.handle('store-secure-data', async (_event, key, value) => {
+  try {
+    if (!safeStorage.isEncryptionAvailable()) {
+      log.warn('safeStorage encryption not available, skipping secure store');
+      return false;
+    }
+    // Read existing store or start fresh
+    let store = {};
+    if (fs.existsSync(secureStorePath)) {
+      try {
+        const encrypted = fs.readFileSync(secureStorePath);
+        const decrypted = safeStorage.decryptString(encrypted);
+        store = JSON.parse(decrypted);
+      } catch {
+        store = {};
+      }
+    }
+    if (value === null || value === undefined) {
+      delete store[key];
+    } else {
+      store[key] = value;
+    }
+    const encrypted = safeStorage.encryptString(JSON.stringify(store));
+    fs.writeFileSync(secureStorePath, encrypted);
+    return true;
+  } catch (err) {
+    log.error('store-secure-data error:', err.message);
+    return false;
+  }
 });
 
 // ── System tray ──

@@ -53,6 +53,7 @@ export interface UserProfile {
   //   'manual' -> legacy manually entered (no longer editable, kept for migration)
   //   null     -> not set (manual users going forward)
   schoolSource?: 'oak' | 'manual' | null;
+  setupMode?: 'oak' | 'manual' | null;
   gradeSubjects: GradeSubjectMapping;
   filterContentByProfile: boolean;
   registrationDate?: string;
@@ -230,6 +231,7 @@ export const DEFAULT_SETTINGS: Settings = {
     school: '',
     territory: '',
     schoolSource: null,
+    setupMode: null,
     gradeSubjects: {},
     filterContentByProfile: true,
     coworkerName: 'Coworker',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLicense } from '../../contexts/LicenseContext';
 
@@ -17,6 +17,18 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onChooseManual, onOakActivate
   const [oakInput, setOakInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleActivateOak = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +67,11 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onChooseManual, onOakActivate
             <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
               Activate your OAK to sync your verified school and country, or continue without one.
             </p>
+            {!isOnline && (
+              <p className="text-xs mt-2 px-3 py-1.5 rounded-md" style={{ backgroundColor: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+                You appear to be offline. OAK activation requires an internet connection.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col w-full max-w-sm gap-3">
@@ -90,6 +107,11 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onChooseManual, onOakActivate
             Enter your OECS Authentication Key. Your school and country will be
             retrieved automatically.
           </p>
+          {!isOnline && (
+            <div className="text-xs px-3 py-2 rounded-md mb-3" style={{ backgroundColor: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+              No internet connection detected. OAK activation requires connectivity.
+            </div>
+          )}
           <input
             type="text"
             value={oakInput}

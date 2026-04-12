@@ -103,6 +103,7 @@ const SetupWizard: React.FC = () => {
       displayName: name,
       gradeSubjects,
       filterContentByProfile: selectedGrades.length > 0 && hasAnySubjects,
+      setupMode: mode,
     };
 
     completeSetup(selectedModules, profileUpdate);

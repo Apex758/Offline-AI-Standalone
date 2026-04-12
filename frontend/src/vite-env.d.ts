@@ -17,6 +17,9 @@ declare global {
         chrome: string;
         electron: string;
       };
+      setLicenseStatus?: (licensed: boolean) => void;
+      getSecureData?: (key: string) => Promise<string | null>;
+      storeSecureData?: (key: string, value: string | null) => Promise<boolean>;
       checkForUpdates?: () => Promise<void>;
       onUpdateAvailable?: (cb: (...args: any[]) => void) => void;
       onUpdateDownloaded?: (cb: (...args: any[]) => void) => void;

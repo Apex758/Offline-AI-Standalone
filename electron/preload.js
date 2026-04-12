@@ -43,6 +43,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateAvailable: (cb) => ipcRenderer.on('update-available', (_event, info) => cb(info)),
   onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', (_event, info) => cb(info)),
   installUpdate: () => ipcRenderer.send('install-update'),
+  setLicenseStatus: (licensed) => ipcRenderer.send('set-license-status', !!licensed),
+
+  // Encrypted license storage
+  getSecureData: (key) => ipcRenderer.invoke('get-secure-data', key),
+  storeSecureData: (key, value) => ipcRenderer.invoke('store-secure-data', key, value),
 
   // File Explorer APIs
   selectFolder: () => ipcRenderer.invoke('select-folder'),

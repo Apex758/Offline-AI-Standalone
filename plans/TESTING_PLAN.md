@@ -1,5 +1,5 @@
-# PEARL — Systematic Testing Plan (Teacher Journey Order)
-*2026-04-11 | Test every feature in the order a brand-new teacher encounters it*
+# OECS Class Coworker — Systematic Testing Plan (Teacher Journey Order)
+*2026-04-12 | Test every feature in the order a brand-new teacher encounters it*
 
 ---
 
@@ -20,7 +20,7 @@
 |-------|-------|-----------|-------|
 | 0 | Vendor Pre-Deployment: License Issuing Infrastructure | — | Supabase + Vercel + Auth0 + OAK schema |
 | 1 | Teacher Unboxing: Download, Install, First Launch | 0 | Installer, startup, UI shell, offline check |
-| 2 | First-Run Setup Wizard (OAK vs Manual) | 1 | SetupWizard, OAK activation, profile step |
+| 2 | First-Run Setup Wizard (OAK vs Manual) | 1 | SetupWizard, OAK activation, profile step, encrypted storage, main-process gating, periodic revalidation |
 | 3 | Settings Tour: Profile, Models, Display, Sidebar, Voice, System | 2 | All Settings panels |
 | 4 | School Year & Calendar Bootstrap | 3 | SchoolYearSetupModal, terms, holidays |
 | 5 | Class Build-Out: G1/2/4 x Math/LA/Science x 3 sections | 4 | 27 classes created |
@@ -236,6 +236,10 @@ SELECT authz.validate_oak('OAK-REAL-KEY-HERE', 'smoke-test-device-001');
 - [ ] Welcome shows two buttons: **Activate with OAK** and **Continue without OAK (manual setup)** `[HIGH]`
 - [ ] Clicking **Activate with OAK** reveals inline OAK input + Activate button `[HIGH]`
 - [ ] Clicking **Continue without OAK** advances directly to the profile step `[HIGH]`
+- [ ] **Offline warning (choice view):** Disconnect internet -> amber banner appears: "You appear to be offline. OAK activation requires an internet connection." `[HIGH]`
+- [ ] **Offline warning (OAK form):** Switch to OAK input view while offline -> amber banner appears above the input field `[HIGH]`
+- [ ] **Offline warning clears:** Reconnect internet -> amber banners disappear in real time (no reload needed) `[HIGH]`
+- [ ] **Manual path still works offline:** "Continue without OAK" button is always enabled regardless of connectivity `[MEDIUM]`
 - Findings: ___
 
 ### 2.2 OAK Path
@@ -245,13 +249,15 @@ SELECT authz.validate_oak('OAK-REAL-KEY-HERE', 'smoke-test-device-001');
 - [ ] Profile step shows a green **"Verified via OAK"** banner with the retrieved school and territory `[HIGH]`
 - [ ] Profile step only asks for **name** and **grades/subjects** (no school input) `[HIGH]`
 - [ ] "Back" on OAK input view returns to the choice view without deactivating an already-activated license `[MEDIUM]`
-- [ ] After Finish, localStorage `app-settings-main.profile.schoolSource === 'oak'` and `profile.school` + `profile.territory` are populated `[HIGH]`
+- [ ] After Finish, `profile.schoolSource === 'oak'` and `profile.school` + `profile.territory` are populated `[HIGH]`
+- [ ] After Finish, `profile.setupMode === 'oak'` is persisted in settings `[HIGH]`
 - Findings: ___
 
 ### 2.3 Manual Path
 
 - [ ] Profile step only asks for **name** and **grades/subjects** (no school input, no OAK banner) `[HIGH]`
 - [ ] After Finish, `profile.schoolSource === null` and `profile.school`/`profile.territory` are empty `[HIGH]`
+- [ ] After Finish, `profile.setupMode === 'manual'` is persisted in settings `[HIGH]`
 - [ ] Dashboard welcome sticky-note checklist shows "Set up your profile (name)" — without the "& school" suffix `[MEDIUM]`
 - Findings: ___
 
@@ -282,6 +288,42 @@ SELECT authz.validate_oak('OAK-REAL-KEY-HERE', 'smoke-test-device-001');
 - [ ] Settings > Profile hides the School field entirely for manual users (no editable input) `[HIGH]`
 - [ ] Manual-setup user -> Settings > License -> activate OAK -> Settings > Profile now shows locked School + Territory without a reload `[HIGH]`
 - [ ] Settings > License status card shows `schoolName` / `territoryName` (human-readable) instead of raw IDs `[MEDIUM]`
+- Findings: ___
+
+### 2.7 Encrypted License Storage (safeStorage)
+
+*Goal: Confirm the OAK license key and device ID are stored using Electron's OS-level encryption, not plaintext localStorage.*
+
+- [ ] **Fresh activation:** Activate OAK -> `license-store.enc` file appears in `%APPDATA%/OECS Class Coworker/` `[CRITICAL]`
+- [ ] **No plaintext:** After activation, `localStorage.getItem('oecs_oak_license')` returns `null` (removed after migration to safeStorage) `[CRITICAL]`
+- [ ] **Device ID encrypted:** `localStorage.getItem('oecs_device_id')` returns `null` (migrated to safeStorage) `[HIGH]`
+- [ ] **Encrypted file is not readable:** Open `license-store.enc` in a text editor -> contents are binary/gibberish, NOT readable JSON `[HIGH]`
+- [ ] **Survives restart:** Close and reopen app -> license is still active (read back from encrypted store) `[CRITICAL]`
+- [ ] **Migration from localStorage:** For an existing installation that had `oecs_oak_license` in localStorage, upgrading to this version migrates it to safeStorage automatically on first launch `[CRITICAL]`
+- [ ] **Dev mode fallback:** When running `npm run dev` (no Electron), storage falls back to localStorage gracefully `[MEDIUM]`
+- [ ] **Deactivation clears encrypted store:** Deactivate OAK -> `license-store.enc` no longer contains the license key (key entry deleted) `[HIGH]`
+- Findings: ___
+
+### 2.8 Main-Process Update Gating
+
+*Goal: Confirm update checks are gated in the Electron main process, not just the renderer.*
+
+- [ ] **License status sync:** Activate OAK -> main process log shows `License status updated: licensed` `[HIGH]`
+- [ ] **Deactivate sync:** Deactivate OAK -> main process log shows `License status updated: unlicensed` `[HIGH]`
+- [ ] **Gated update check (licensed):** With active OAK, "Check for Updates" -> main log shows `Licensed user requested update check` `[HIGH]`
+- [ ] **Gated update check (unlicensed):** Without OAK, manually invoke `window.electronAPI.checkForUpdates()` from DevTools -> main log shows `Skipping update check -- no active license` `[CRITICAL]`
+- [ ] **Race condition safety:** App starts, renderer sends license status before first update check -> main process has correct state `[HIGH]`
+- Findings: ___
+
+### 2.9 Periodic License Revalidation
+
+*Goal: Confirm the app periodically re-checks the license with Supabase and deactivates if revoked server-side.*
+
+- [ ] **Startup revalidation:** App start with cached license -> Supabase `validate_oak` RPC is called (visible in Supabase logs or network tab) `[HIGH]`
+- [ ] **Visibility revalidation:** Minimize app for >1 hour (or mock `lastCheckRef` to simulate), then restore -> revalidation fires `[HIGH]`
+- [ ] **Server-side revoke detected:** While app is running, revoke the license in Supabase (`UPDATE authz.oak_licenses SET status='revoked'`), then trigger revalidation -> app deactivates license locally, license section shows "not active" `[CRITICAL]`
+- [ ] **Offline tolerance:** Disconnect internet -> revalidation fires but fails with network error -> app continues to trust cached license (does NOT deactivate) `[CRITICAL]`
+- [ ] **Timer cleanup:** Navigate away or unmount LicenseProvider -> no leaked intervals (check DevTools Performance tab) `[MEDIUM]`
 - Findings: ___
 
 
@@ -2176,6 +2218,7 @@ every keystroke. Fix: all three hoisted to module scope.
 - [ ] All localStorage cleared `[HIGH]`
 - [ ] Factory reset also wipes the photo-transfer sessions folder `[HIGH]`
 - [ ] Factory reset wipes `lesson_plan_history.json.bak` files left behind by SQLite migration `[MEDIUM]`
+- [ ] Factory reset deletes `license-store.enc` (encrypted license storage) so the device is fully deactivated `[HIGH]`
 - Findings: ___
 
 ---
@@ -2357,7 +2400,7 @@ Use this section to record all issues found during testing.
 |-------|------|-------------|-----------|-------------|
 | 0 | Vendor Pre-Deployment: License Infra | 30 | | |
 | 1 | Teacher Unboxing: Install + UI Shell | 27 | | |
-| 2 | First-Run Setup Wizard | 22 | | |
+| 2 | First-Run Setup Wizard | 48 | | |
 | 3 | Settings Tour | 43 | | |
 | 4 | School Year & Calendar Bootstrap | 14 | | |
 | 5 | Class Build-Out (27 classes) | 14 | | |
@@ -2388,14 +2431,14 @@ Use this section to record all issues found during testing.
 | 30 | Cross-Feature Integration + Closed-Loop Smoke Test | 35 | | |
 | 31 | Tutorials, Support Reporting, System Health | 17 | | |
 | 32 | Data Management: Export, Import, Privacy Wipe | 9 | | |
-| 33 | Destructive: Factory Reset | 7 | | |
+| 33 | Destructive: Factory Reset | 8 | | |
 | 34 | Regression Watch (RW.1-RW.4 + CC.1-CC.12) | 54 | | |
 | 35 | Open Follow-ups | 11 | | |
-| **TOTAL** | | **~1035** | | |
+| **TOTAL** | | **~1062** | | |
 
 ---
 
-*End of PEARL Testing Plan — Teacher Journey Order*
+*End of OECS Class Coworker Testing Plan — Teacher Journey Order*
 
 ---
 
