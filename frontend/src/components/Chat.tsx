@@ -393,6 +393,30 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const streamingMessage = getStreamingContent(tabId, ENDPOINT);
   const loading = getIsStreaming(tabId, ENDPOINT);
 
+  // Auto-focus textarea on any printable keystroke while Chat tab is active
+  useEffect(() => {
+    if (!isActive) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't steal focus from other inputs (file search, etc.)
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)) {
+        return;
+      }
+      // Ignore modifier combos (Ctrl+C, Cmd+V, etc.)
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // Only handle printable characters and backspace/delete
+      if (e.key.length !== 1 && !['Backspace', 'Delete'].includes(e.key)) return;
+      // Don't focus if input is disabled (loading)
+      if (loading) return;
+
+      chatTextareaRef.current?.focus();
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isActive, loading]);
+
   // DEBUG: Log streaming and loading state
   useEffect(() => {
     console.log('[Chat] streamingMessage updated:', streamingMessage);
