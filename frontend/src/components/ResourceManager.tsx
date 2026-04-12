@@ -523,7 +523,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   };
 
   if (loading) {
-    return <ResourceGridSkeleton />;
+    return <ResourceGridSkeleton accentColor={tabColors['resource-manager'] ?? '#84cc16'} />;
   }
 
   return (

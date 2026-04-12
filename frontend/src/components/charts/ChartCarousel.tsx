@@ -121,6 +121,8 @@ interface ChartCarouselProps {
   onTimeframeChange: (timeframe: Timeframe) => void;
   forcePaused?: boolean;
   tabColors?: { [key: string]: string };
+  currentScore?: number;
+  currentGrade?: string;
 }
 
 const ChartCarousel: React.FC<ChartCarouselProps> = ({
@@ -130,6 +132,8 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   onTimeframeChange,
   forcePaused = false,
   tabColors = {},
+  currentScore,
+  currentGrade,
 }) => {
   const views: Array<'trend' | 'educator-insights'> = ['trend', 'educator-insights'];
   const [currentView, setCurrentView] = useState<'trend' | 'educator-insights'>('trend');
@@ -226,7 +230,12 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
           }`}
         >
-          <TeacherMetricsChart data={metricsHistory} height={460} />
+          <TeacherMetricsChart
+            data={metricsHistory}
+            height={460}
+            currentScore={currentScore}
+            currentGrade={currentGrade}
+          />
         </div>
       </div>
 

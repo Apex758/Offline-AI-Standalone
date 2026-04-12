@@ -332,6 +332,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
   const { settings } = useSettings();
   const { t } = useTranslation();
   const { isLicensed, oakLicense } = useLicense();
+  const accentColor = settings.tabColors?.['support'] ?? '#0ea5e9';
   const coworkerName = (settings.profile?.coworkerName || '').trim() || 'Coworker';
   const substituteCoworkerName = React.useCallback((s: string) => s.replace(/\{coworkerName\}/g, coworkerName), [coworkerName]);
 
@@ -459,7 +460,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
   const [initialLoad, setInitialLoad] = React.useState(true);
   React.useEffect(() => { setInitialLoad(false); }, []);
 
-  if (initialLoad) return <SettingsPanelSkeleton sectionCount={4} />;
+  if (initialLoad) return <SettingsPanelSkeleton sectionCount={4} accentColor={accentColor} />;
 
   // ── Support handlers ──
   const toggleCategory = (categoryId: string) => {

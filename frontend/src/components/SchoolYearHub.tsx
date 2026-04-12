@@ -5,7 +5,6 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
 import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
-import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getTeacherId } from '../lib/teacherId';
 
 const SchoolYearCalendar = React.lazy(() => import('./SchoolYearCalendar'));
@@ -153,6 +152,12 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
 
   return (
     <div className="h-full flex flex-col" style={{ background: 'var(--bg-primary)' }}>
+      <style>{`
+        @keyframes skeletonShimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
       {/* Header */}
       <div
         className="px-6 py-3 flex-shrink-0 flex items-center justify-between"
@@ -221,8 +226,20 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
             }}
           >
             <Suspense fallback={
-              <div className="h-full flex items-center justify-center">
-                <HeartbeatLoader className="w-8 h-8" />
+              <div className="h-full flex flex-col gap-3 p-6">
+                {[1, 2, 3, 4].map(i => (
+                  <div
+                    key={i}
+                    className="rounded-xl"
+                    style={{
+                      height: i === 1 ? '56px' : '80px',
+                      background: `linear-gradient(90deg, ${panelLabels[frontContent].color}18 25%, ${panelLabels[frontContent].color}30 50%, ${panelLabels[frontContent].color}18 75%)`,
+                      backgroundSize: '200% 100%',
+                      animation: 'skeletonShimmer 1.5s infinite linear',
+                      border: `1px solid ${panelLabels[frontContent].color}22`,
+                    }}
+                  />
+                ))}
               </div>
             }>
               {renderPanel(frontContent)}
@@ -243,8 +260,20 @@ const SchoolYearHub: React.FC<SchoolYearHubProps> = ({ tabId, savedData, onDataC
             }}
           >
             <Suspense fallback={
-              <div className="h-full flex items-center justify-center">
-                <HeartbeatLoader className="w-8 h-8" />
+              <div className="h-full flex flex-col gap-3 p-6">
+                {[1, 2, 3, 4].map(i => (
+                  <div
+                    key={i}
+                    className="rounded-xl"
+                    style={{
+                      height: i === 1 ? '56px' : '80px',
+                      background: `linear-gradient(90deg, ${panelLabels[backContent].color}18 25%, ${panelLabels[backContent].color}30 50%, ${panelLabels[backContent].color}18 75%)`,
+                      backgroundSize: '200% 100%',
+                      animation: 'skeletonShimmer 1.5s infinite linear',
+                      border: `1px solid ${panelLabels[backContent].color}22`,
+                    }}
+                  />
+                ))}
               </div>
             }>
               {renderPanel(backContent)}

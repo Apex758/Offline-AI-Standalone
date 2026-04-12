@@ -1629,50 +1629,51 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   useEffect(() => { setInitialLoad(false); }, []);
 
   if (initialLoad) {
+    const chatAccentColor = settings.tabColors['chat'] ?? '#2563eb';
     return (
       <div className="flex h-full tab-content-bg overflow-hidden">
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <div className="border-b border-theme p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-8 h-8 rounded-lg" />
               <div className="space-y-1">
-                <ShimmerBar accentColor="#3b82f6" className="h-5 w-36" />
-                <ShimmerBar accentColor="#3b82f6" className="h-3 w-24" />
+                <ShimmerBar accentColor={chatAccentColor} className="h-5 w-36" />
+                <ShimmerBar accentColor={chatAccentColor} className="h-3 w-24" />
               </div>
             </div>
             <div className="flex gap-2">
-              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
-              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
-              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-8 h-8 rounded-lg" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-8 h-8 rounded-lg" />
             </div>
           </div>
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="flex justify-end">
-              <ShimmerBar accentColor="#3b82f6" className="h-10 w-48 rounded-2xl" />
+              <ShimmerBar accentColor={chatAccentColor} className="h-10 w-48 rounded-2xl" />
             </div>
             <div className="flex justify-start gap-3">
-              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-full flex-shrink-0" />
-              <ShimmerBar accentColor="#3b82f6" className="h-16 w-64 rounded-2xl" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-8 h-8 rounded-full flex-shrink-0" />
+              <ShimmerBar accentColor={chatAccentColor} className="h-16 w-64 rounded-2xl" />
             </div>
             <div className="flex justify-end">
-              <ShimmerBar accentColor="#3b82f6" className="h-8 w-32 rounded-2xl" />
+              <ShimmerBar accentColor={chatAccentColor} className="h-8 w-32 rounded-2xl" />
             </div>
             <div className="flex justify-start gap-3">
-              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-full flex-shrink-0" />
-              <ShimmerBar accentColor="#3b82f6" className="h-20 w-72 rounded-2xl" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-8 h-8 rounded-full flex-shrink-0" />
+              <ShimmerBar accentColor={chatAccentColor} className="h-20 w-72 rounded-2xl" />
             </div>
             <div className="flex justify-start gap-3">
-              <ShimmerBar accentColor="#3b82f6" className="w-8 h-8 rounded-full flex-shrink-0" />
-              <ShimmerBar accentColor="#3b82f6" className="h-12 w-56 rounded-2xl" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-8 h-8 rounded-full flex-shrink-0" />
+              <ShimmerBar accentColor={chatAccentColor} className="h-12 w-56 rounded-2xl" />
             </div>
           </div>
           {/* Input bar */}
           <div className="border-t border-theme p-4">
             <div className="flex items-end gap-2">
-              <ShimmerBar accentColor="#3b82f6" className="flex-1 h-12 rounded-xl" />
-              <ShimmerBar accentColor="#3b82f6" className="w-10 h-10 rounded-xl" />
+              <ShimmerBar accentColor={chatAccentColor} className="flex-1 h-12 rounded-xl" />
+              <ShimmerBar accentColor={chatAccentColor} className="w-10 h-10 rounded-xl" />
             </div>
           </div>
         </div>

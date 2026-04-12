@@ -377,7 +377,9 @@
       "Bash(ls tsconfig*.json)",
       "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/a8be6449-a6d6-4bb8-87b4-f67fc43c3e84/tasks/**)",
       "Bash(rm write_plan_stage*.py)",
-      "Bash(ls *.md)"
+      "Bash(ls *.md)",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('main.py', doraise=True\\); print\\('main.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('insights_service.py', doraise=True\\); print\\('OK'\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

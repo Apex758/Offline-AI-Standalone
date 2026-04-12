@@ -2278,7 +2278,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           ) : (generatedWorksheet || streamingWorksheet || loading) ? (
             <div className="rounded-lg h-full overflow-y-auto widget-glass">
               {loading && !streamingWorksheet && !generatedWorksheet ? (
-                <GeneratorSkeleton accentColor={accentColor || '#3b82f6'} type="worksheet" />
+                <GeneratorSkeleton accentColor={worksheetTabColor} type="worksheet" />
               ) : scanMode && parsedWorksheet ? (
                 <div className="transform scale-90 origin-top">
                   <ScanTemplatePreview

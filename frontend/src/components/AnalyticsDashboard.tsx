@@ -34,7 +34,7 @@ import type { MilestoneStats, Milestone } from '../types/milestone';
 import type { Task } from '../types/task';
 import type { Timeframe, CurriculumView } from '../types/analytics';
 import type { Tab } from '../types';
-import type { InsightsReport } from '../types/insights';
+import type { InsightsReport, TeacherMetrics } from '../types/insights';
 
 
 // ── Module-level API response cache (survives unmount/remount) ──
@@ -117,6 +117,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   // Achievement data
   const { earned, totalAvailable, showcase, definitions } = useAchievementContext();
   const { settings } = useSettings();
+  const tabColor = settings.tabColors?.['analytics'] ?? '#3b82f6';
   const { notify } = useNotification();
   const { setActiveClass } = useActiveClass();
   // State management
@@ -151,6 +152,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [latestInsightsReport, setLatestInsightsReport] = useState<InsightsReport | null>(null);
   const [dashProgressScope, setDashProgressScope] = useState<'overall' | 'phase'>('overall');
   const [metricsHistory, setMetricsHistory] = useState<import('../types/insights').MetricSnapshot[]>([]);
+  const [liveTeacherMetrics, setLiveTeacherMetrics] = useState<TeacherMetrics | null>(null);
 
   // Stable teacherId for hooks
   const dashTeacherId = useMemo(() => {
@@ -399,6 +401,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         }
       } catch (metricsErr) {
         console.error('Failed to load teacher metrics history:', metricsErr);
+      }
+      // Load live teacher metrics for badge score
+      try {
+        const liveRes = await axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId || 'default_teacher')}&user_id=${encodeURIComponent(teacherId || 'default_teacher')}`);
+        if (liveRes.data?.metrics) {
+          setLiveTeacherMetrics(liveRes.data.metrics);
+        }
+      } catch (liveErr) {
+        console.error('Failed to load live teacher metrics:', liveErr);
       }
     } catch (error) {
       console.error('Failed to load analytics data:', error);
@@ -660,8 +671,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <div className="flex items-center space-x-4">
               <div className="w-14 h-14 rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
               <div className="space-y-2">
-                <ShimmerBar accentColor="#3b82f6" style={{ height: 24, width: 128 }} />
-                <ShimmerBar accentColor="#3b82f6" style={{ height: 16, width: 96 }} />
+                <ShimmerBar accentColor={tabColor} style={{ height: 24, width: 128 }} />
+                <ShimmerBar accentColor={tabColor} style={{ height: 16, width: 96 }} />
               </div>
             </div>
             <div className="flex items-center space-x-6">
@@ -669,8 +680,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <React.Fragment key={i}>
                   {i > 1 && <div className="w-px h-10" style={{ backgroundColor: 'var(--dash-border)' }} />}
                   <div className="text-center space-y-1">
-                    <div className="mx-auto w-fit"><ShimmerBar accentColor="#3b82f6" style={{ height: 28, width: 40 }} /></div>
-                    <ShimmerBar accentColor="#3b82f6" style={{ height: 12, width: 56 }} />
+                    <div className="mx-auto w-fit"><ShimmerBar accentColor={tabColor} style={{ height: 28, width: 40 }} /></div>
+                    <ShimmerBar accentColor={tabColor} style={{ height: 12, width: 56 }} />
                   </div>
                 </React.Fragment>
               ))}
@@ -686,7 +697,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Chart Carousel Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 144 }} />
+                  <ShimmerBar accentColor={tabColor} style={{ height: 20, width: 144 }} />
                   <div className="flex gap-2">
                     {[1, 2, 3].map(i => (
                       <div key={i} className="h-8 w-16 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
@@ -699,7 +710,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Curriculum Progress Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 176 }} />
+                  <ShimmerBar accentColor={tabColor} style={{ height: 20, width: 176 }} />
                   <div className="flex gap-2">
                     {[1, 2].map(i => (
                       <div key={i} className="h-7 w-20 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
@@ -716,13 +727,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
               {/* Recent Activity Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
-                <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 144 }} />
+                <ShimmerBar accentColor={tabColor} style={{ height: 20, width: 144 }} />
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-full animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
                     <div className="flex-1 space-y-1.5">
-                      <ShimmerBar accentColor="#3b82f6" className="w-3/4" style={{ height: 16 }} />
-                      <ShimmerBar accentColor="#3b82f6" className="w-1/3" style={{ height: 12 }} />
+                      <ShimmerBar accentColor={tabColor} className="w-3/4" style={{ height: 16 }} />
+                      <ShimmerBar accentColor={tabColor} className="w-1/3" style={{ height: 12 }} />
                     </div>
                   </div>
                 ))}
@@ -734,7 +745,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Calendar Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 112 }} />
+                  <ShimmerBar accentColor={tabColor} style={{ height: 20, width: 112 }} />
                   <div className="h-8 w-8 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
                 </div>
                 <div className="grid grid-cols-7 gap-1">
@@ -747,15 +758,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {/* Task List Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
                 <div className="flex items-center justify-between">
-                  <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 80 }} />
+                  <ShimmerBar accentColor={tabColor} style={{ height: 20, width: 80 }} />
                   <div className="h-8 w-8 rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
                 </div>
                 {[1, 2, 3].map(i => (
                   <div key={i} className="flex items-center space-x-3">
                     <div className="w-5 h-5 rounded-md animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
                     <div className="flex-1 space-y-1">
-                      <ShimmerBar accentColor="#3b82f6" className="w-4/5" style={{ height: 16 }} />
-                      <ShimmerBar accentColor="#3b82f6" className="w-1/4" style={{ height: 12 }} />
+                      <ShimmerBar accentColor={tabColor} className="w-4/5" style={{ height: 16 }} />
+                      <ShimmerBar accentColor={tabColor} className="w-1/4" style={{ height: 12 }} />
                     </div>
                   </div>
                 ))}
@@ -763,12 +774,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
               {/* Most Used Tools Skeleton */}
               <div className="rounded-2xl p-6 widget-glass space-y-4">
-                <ShimmerBar accentColor="#3b82f6" style={{ height: 20, width: 128 }} />
+                <ShimmerBar accentColor={tabColor} style={{ height: 20, width: 128 }} />
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-lg animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
                     <div className="flex-1 space-y-1.5">
-                      <ShimmerBar accentColor="#3b82f6" className="w-2/3" style={{ height: 16 }} />
+                      <ShimmerBar accentColor={tabColor} className="w-2/3" style={{ height: 16 }} />
                       <div className="h-2 w-full rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
                     </div>
                   </div>
@@ -1017,6 +1028,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               onTimeframeChange={setTimeframe}
               forcePaused={currentTutorialStep >= 5 && currentTutorialStep <= 7}
               tabColors={tabColors}
+              currentScore={liveTeacherMetrics ? Math.round(liveTeacherMetrics.composite_score) : undefined}
+              currentGrade={liveTeacherMetrics ? liveTeacherMetrics.composite_grade : undefined}
             />
 
             {/* Curriculum Progress */}

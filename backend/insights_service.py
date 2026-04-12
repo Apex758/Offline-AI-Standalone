@@ -283,17 +283,20 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
         return {"has_data": False, "llm_text": "", "avgScore": 0, "totalStudents": 0, "distribution": {}, "bySubject": []}
 
     try:
-        # Count students
+        # Count students and build name lookup
         student_count = conn.execute("SELECT COUNT(*) as cnt FROM students").fetchone()["cnt"]
+        student_names = {}
+        for row in conn.execute("SELECT id, full_name, first_name FROM students").fetchall():
+            student_names[row["id"]] = row["first_name"] or ((row["full_name"] or "").split()[0] if row["full_name"] else row["id"])
 
-        # All quiz grades (for overall totals)
+        # All quiz grades (for overall totals) — include student_id for per-student analysis
         quiz_grades = conn.execute(
-            "SELECT subject, percentage, letter_grade FROM quiz_grades"
+            "SELECT student_id, subject, percentage, letter_grade FROM quiz_grades"
         ).fetchall()
 
         # All worksheet grades (for overall totals)
         ws_grades = conn.execute(
-            "SELECT subject, percentage, letter_grade FROM worksheet_grades"
+            "SELECT student_id, subject, percentage, letter_grade FROM worksheet_grades"
         ).fetchall()
 
         all_grades = [dict(g) for g in quiz_grades] + [dict(g) for g in ws_grades]
@@ -303,8 +306,12 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
             allowed_subjects = {s.lower() for subjs in grade_subjects.values() for s in subjs}
             all_grades = [g for g in all_grades if (g.get("subject") or "").lower() in allowed_subjects]
 
+        # Compute count AFTER filtering so it reflects the teacher's actual scope
+        total_assessments = len(all_grades)
+
         if not all_grades or student_count == 0:
-            return {"has_data": False, "llm_text": "", "avgScore": 0, "totalStudents": student_count, "distribution": {}, "bySubject": []}
+            return {"has_data": False, "llm_text": "", "avgScore": 0, "totalStudents": student_count,
+                    "totalAssessments": 0, "distribution": {}, "bySubject": []}
 
         # Overall average
         percentages = [g["percentage"] for g in all_grades if g.get("percentage") is not None]
@@ -312,6 +319,36 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
 
         # Letter grade distribution
         distribution = Counter(g.get("letter_grade", "?") for g in all_grades)
+
+        # Per-student averages (for identifying struggling students)
+        student_grades = {}
+        for g in all_grades:
+            sid = g.get("student_id")
+            if sid and g.get("percentage") is not None:
+                student_grades.setdefault(sid, {"scores": [], "by_subject": {}})
+                student_grades[sid]["scores"].append(g["percentage"])
+                subj = g.get("subject") or "Unknown"
+                student_grades[sid]["by_subject"].setdefault(subj, []).append(g["percentage"])
+
+        struggling_students = []
+        for sid, data in student_grades.items():
+            avg = round(sum(data["scores"]) / len(data["scores"]), 1)
+            if avg < 60 and len(data["scores"]) >= 1:
+                # Find weakest subject
+                weakest_subj = ""
+                weakest_avg = 100
+                for subj, scores in data["by_subject"].items():
+                    subj_avg = round(sum(scores) / len(scores), 1)
+                    if subj_avg < weakest_avg:
+                        weakest_avg = subj_avg
+                        weakest_subj = subj
+                name = student_names.get(sid, sid)
+                struggling_students.append({
+                    "name": name, "avg": avg, "count": len(data["scores"]),
+                    "weakest_subject": weakest_subj, "weakest_avg": weakest_avg
+                })
+        struggling_students.sort(key=lambda s: s["avg"])
+        struggling_students = struggling_students[:5]  # Cap at 5
 
         # Period-specific grades (if date range provided)
         period_grades = []
@@ -348,7 +385,7 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
         # Build LLM text
         lines = [
             f"Total students: {student_count}",
-            f"Total assessments graded (all time): {len(all_grades)} (quizzes: {len(quiz_grades)}, worksheets: {len(ws_grades)})",
+            f"Total assessments graded (all time): {total_assessments}",
             f"Overall average score: {avg_score}%",
         ]
         if from_date and to_date:
@@ -369,7 +406,6 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
             for s in by_subject:
                 lines.append(f"- {s['subject']}: {s['avg']}% ({s['count']} assessments)")
         else:
-            # Balanced: 4 lowest avg + 4 highest avg so insights cover struggles and strengths
             sorted_subjects = sorted(by_subject, key=lambda s: s['avg'])
             selected = sorted_subjects[:4] + sorted_subjects[-4:]
             lines.append("(Showing 4 strongest and 4 weakest subjects)")
@@ -377,11 +413,20 @@ def aggregate_student_performance(from_date: str | None = None, to_date: str | N
                 lines.append(f"- {s['subject']}: {s['avg']}% ({s['count']} assessments)")
             lines.append(f"  ... and {len(by_subject) - 8} more subjects")
 
+        # Student-level data for actionable insights
+        if struggling_students:
+            lines.append("\nStudents needing attention (below 60% average):")
+            for s in struggling_students:
+                lines.append(f"- {s['name']}: {s['avg']}% avg across {s['count']} assessments (weakest: {s['weakest_subject']} {s['weakest_avg']}%)")
+        else:
+            lines.append("\nNo students currently below 60% average.")
+
         return {
             "has_data": True,
             "llm_text": "\n".join(lines),
             "avgScore": avg_score,
             "totalStudents": student_count,
+            "totalAssessments": total_assessments,
             "distribution": dict(distribution),
             "bySubject": by_subject,
             "periodAssessments": len(period_grades),
@@ -553,6 +598,14 @@ def aggregate_attendance_engagement(from_date: str | None = None, to_date: str |
             period_present = sum(1 for r in period_records if r.get("status") in ("Present", "Late"))
             period_rate = round(period_present / len(period_records) * 100, 1) if period_records else 0
 
+        # Build student name lookup for at-risk reporting
+        student_names = {}
+        try:
+            for row in conn.execute("SELECT id, full_name, first_name FROM students").fetchall():
+                student_names[row["id"]] = row["first_name"] or ((row["full_name"] or "").split()[0] if row["full_name"] else row["id"])
+        except Exception:
+            pass
+
         # At-risk students: > 3 absences in last 30 days
         cutoff = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
         recent_absences = {}
@@ -580,6 +633,14 @@ def aggregate_attendance_engagement(from_date: str | None = None, to_date: str |
         if from_date and to_date:
             lines.append(f"\nIn this period ({from_date} to {to_date}): {len(period_records)} records, attendance rate: {period_rate}%")
 
+        # Name at-risk students for actionable follow-up
+        if at_risk:
+            lines.append("\nAt-risk students needing follow-up:")
+            sorted_at_risk = sorted(at_risk.items(), key=lambda x: -x[1])[:5]
+            for sid, absences in sorted_at_risk:
+                name = student_names.get(sid, sid)
+                lines.append(f"- {name}: {absences} absences in last 30 days")
+
         lines.extend(["", "Engagement levels:"])
         for level, cnt in engagement_counter.most_common():
             pct = round(cnt / total_records * 100)
@@ -592,7 +653,6 @@ def aggregate_attendance_engagement(from_date: str | None = None, to_date: str |
                     rate = round(data["present"] / data["total"] * 100, 1) if data["total"] else 0
                     lines.append(f"- {cls}: {rate}% attendance ({data['total']} records)")
             else:
-                # Balanced: 4 lowest rate + 4 highest rate so insights cover both concerns and wins
                 sorted_classes = sorted(class_records.items(), key=lambda x: x[1]["present"] / max(x[1]["total"], 1))
                 selected = sorted_classes[:4] + sorted_classes[-4:]
                 lines.append("(Showing 4 best and 4 worst attendance classes)")
@@ -605,6 +665,7 @@ def aggregate_attendance_engagement(from_date: str | None = None, to_date: str |
             "has_data": True,
             "llm_text": "\n".join(lines),
             "avgRate": avg_rate,
+            "totalRecords": total_records,
             "atRiskCount": len(at_risk),
             "engagementDistribution": dict(engagement_counter),
             "byClass": {cls: round(d["present"] / d["total"] * 100, 1) if d["total"] else 0 for cls, d in class_records.items()},
@@ -687,6 +748,26 @@ def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str
         except Exception:
             pass
 
+    # Find nearest unearned achievements (closest to being earned)
+    earned_ids = {a.get("achievement_id") for a in all_earned}
+    nearest_achievements = []
+    try:
+        from achievement_service import ACHIEVEMENT_DEFINITIONS
+        for defn in ACHIEVEMENT_DEFINITIONS:
+            if defn["id"] not in earned_ids and not defn.get("hidden"):
+                nearest_achievements.append({
+                    "name": defn["name"],
+                    "description": defn["description"],
+                    "category": defn["category"],
+                    "rarity": defn["rarity"],
+                })
+        # Sort by rarity (common first = easiest to earn)
+        rarity_order = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4}
+        nearest_achievements.sort(key=lambda a: rarity_order.get(a["rarity"], 5))
+        nearest_achievements = nearest_achievements[:3]
+    except Exception:
+        pass
+
     # Build compact LLM text
     lines = [
         f"Achievements earned (all time): {total_earned}/{total_available}",
@@ -713,6 +794,12 @@ def aggregate_achievement_data(teacher_id: str = "default_teacher", user_id: str
         if strongest != weakest:
             lines.append(f"\nStrongest area: {strongest}")
             lines.append(f"Least explored: {weakest}")
+
+    # Nearest unearned achievements the teacher can aim for
+    if nearest_achievements:
+        lines.append("\nNearest achievements to earn:")
+        for a in nearest_achievements:
+            lines.append(f"- {a['name']} ({a['rarity']}): {a['description']}")
 
     return {
         "has_data": True,

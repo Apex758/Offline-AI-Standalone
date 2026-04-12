@@ -3931,8 +3931,8 @@ async def educator_insights_websocket(websocket: WebSocket):
                         # Build a summary from all-time data instead of calling the LLM
                         from_date = date_context.get("from_date", "unknown")
                         summary_parts = {
-                            "curriculum": lambda d: f"Total milestones: {d.get('totalMilestones', 0)} completed out of {d.get('totalMilestones', 0) + d.get('remainingMilestones', 0)}.",
-                            "performance": lambda d: f"Total assessments: {d.get('totalAssessments', 0)}. Overall average: {d.get('overallAvg', 0):.1f}%.",
+                            "curriculum": lambda d: f"Total milestones: {d.get('completed', 0)} completed out of {d.get('total', 0)}.",
+                            "performance": lambda d: f"Total assessments: {d.get('totalAssessments', 0)}. Overall average: {d.get('avgScore', 0):.1f}%.",
                             "content": lambda d: f"Total resources created: {d.get('totalResources', 0)}. Top type: {d.get('topType', 'N/A')}.",
                             "attendance": lambda d: f"Total records: {d.get('totalRecords', 0)}. Average rate: {d.get('avgRate', 0):.1f}%.",
                             "achievements": lambda d: f"Total earned: {d.get('totalEarned', 0)} of {d.get('totalAvailable', 0)}. Points: {d.get('totalPoints', 0)}.",
@@ -3965,6 +3965,23 @@ async def educator_insights_websocket(websocket: WebSocket):
                         continue
 
                     llm_input = dimension_data.get("llm_text", "")
+
+                    # Inject cross-dimension context for the content pass
+                    if pass_key == "content":
+                        cross_ref_lines = []
+                        curr_data = all_data.get("curriculum", {})
+                        perf_data = all_data.get("performance", {})
+                        curr_gaps = curr_data.get("gaps", [])
+                        if curr_gaps:
+                            cross_ref_lines.append(f"CROSS-REFERENCE -- Curriculum gaps (under 20% completion): {', '.join(curr_gaps)}")
+                        perf_subjects = perf_data.get("bySubject", [])
+                        if perf_subjects:
+                            weakest = sorted(perf_subjects, key=lambda s: s["avg"])[:3]
+                            weak_str = ", ".join(f"{s['subject']} ({s['avg']}%)" for s in weakest)
+                            cross_ref_lines.append(f"CROSS-REFERENCE -- Weakest subjects by student scores: {weak_str}")
+                        if cross_ref_lines:
+                            llm_input += "\n\n" + "\n".join(cross_ref_lines)
+
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Analyze the data and provide bullet points.")
                     system_prompt = system_prompt_template.replace("{data}", llm_input)
 
@@ -3979,7 +3996,7 @@ async def educator_insights_websocket(websocket: WebSocket):
 
                 elif pass_key == "recommendations":
                     # Combine outputs from passes 1-5, trimmed to save tokens
-                    per_pass_limit = 300 if _is_tier1 else 600
+                    per_pass_limit = 300 if _is_tier1 else 900
                     combined = []
                     for key in ("curriculum", "performance", "content", "attendance", "achievements"):
                         output = pass_outputs.get(key, "")
@@ -3990,7 +4007,18 @@ async def educator_insights_websocket(websocket: WebSocket):
                             combined.append(f"[{key.upper()}]\n{trimmed}")
                     combined_text = "\n\n".join(combined) if combined else "No analysis data available."
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Provide teaching recommendations.")
-                    system_prompt = system_prompt_template.replace("{data}", combined_text)
+
+                    # Build calendar context for time-appropriate recommendations
+                    calendar_context = ""
+                    if insights_phase_label:
+                        phase_lower = insights_phase_label.lower()
+                        if any(kw in phase_lower for kw in ("break", "vacation", "holiday", "recess")):
+                            end_info = f" (ends {insights_phase_end})" if insights_phase_end else ""
+                            calendar_context = f"CALENDAR: Currently in {insights_phase_label}{end_info}. Frame all actions for when school resumes, not for this week.\n\n"
+                        else:
+                            calendar_context = f"CALENDAR: Currently in {insights_phase_label}.\n\n"
+
+                    system_prompt = system_prompt_template.replace("{data}", combined_text).replace("{calendar_context}", calendar_context)
 
                     # Inject teacher metrics context for metric-aware recommendations
                     try:
@@ -4024,7 +4052,7 @@ async def educator_insights_websocket(websocket: WebSocket):
 
                 elif pass_key == "synthesis":
                     # Combine all prior outputs, trimmed to save tokens
-                    synth_limit = 400 if _is_tier1 else 800
+                    synth_limit = 400 if _is_tier1 else 1200
                     system_prompt_template = TIER1_PROMPTS.get(task_type, "Write a summary report.")
                     system_prompt = system_prompt_template
                     for synth_key in ("curriculum", "performance", "content", "attendance", "achievements", "recommendations"):
@@ -4054,12 +4082,17 @@ async def educator_insights_websocket(websocket: WebSocket):
                     tone_prefix = "Experienced user. Be concise and data-driven. Deltas and trends only. No metric explanations. "
                 system_prompt = tone_prefix + system_prompt
 
-                # Inject phase context header if phase-scoped
+                # Inject phase context header if phase-scoped, otherwise add date range context
                 if insights_phase_label and insights_phase_start and insights_phase_end:
                     from tier1_prompts import get_phase_context_header
                     phase_header = get_phase_context_header(insights_phase_label, insights_phase_start, insights_phase_end)
                     if phase_header:
                         system_prompt = phase_header + system_prompt
+                else:
+                    _from = date_context.get("from_date", "")
+                    _to = date_context.get("to_date", "")
+                    if _from and _to:
+                        system_prompt = f"Analysis period: {_from} to {_to}.\n\n" + system_prompt
 
                 user_prompt = "Analyze the data provided and generate your response."
 

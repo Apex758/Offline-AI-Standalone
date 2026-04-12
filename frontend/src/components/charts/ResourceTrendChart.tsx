@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
@@ -11,7 +11,6 @@ const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperti
 
 const TrendingUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ChartIncreaseIconData} {...p} />;
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { useContainerSize } from '../../hooks/useContainerSize';
 import { format, parseISO } from 'date-fns';
 import type { ResourceTrendData, Timeframe } from '../../types/analytics';
 
@@ -39,7 +38,29 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   tabColors = {}
 }) => {
   const { t } = useTranslation();
-  const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(0);
+
+  useEffect(() => {
+    const el = chartContainerRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = Math.round(el.getBoundingClientRect().width) || el.offsetWidth;
+      if (w > 0) setChartWidth(prev => prev !== w ? w : prev);
+    };
+    measure();
+    const raf = requestAnimationFrame(measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    const onResize = () => requestAnimationFrame(measure);
+    window.addEventListener('resize', onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
   const toggleSeries = (key: string) =>

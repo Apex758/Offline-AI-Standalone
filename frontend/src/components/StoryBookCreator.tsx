@@ -1844,17 +1844,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   //   - the thumbnail on the left shows the growing intro text preview
   //   - the save/draft state captures the latest snapshot
   //   - navigating away and back shows what's been typed so far
-  const introDebugLoggedRef = useRef(false);
   useEffect(() => {
-    if (!isStreaming) {
-      introDebugLoggedRef.current = false;
-      return;
-    }
+    if (!isStreaming) return;
     const streamedIntro = sbStreamingData && (sbStreamingData as any).introductionPage;
-    if (streamedIntro && !introDebugLoggedRef.current) {
-      introDebugLoggedRef.current = true;
-      console.log('[SB-INTRO-DEBUG] introductionPage appeared in stream:', streamedIntro);
-    }
     if (!streamedIntro || typeof streamedIntro.moodText !== 'string') return;
     setParsedBook(prev => {
       if (!prev) return prev;

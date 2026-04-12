@@ -25,6 +25,7 @@ import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import axios from 'axios';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '../contexts/SettingsContext';
 
 // ── Types ──
 
@@ -100,6 +101,8 @@ function getTeacherId(): string {
 
 const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedData, onDataChange, isActive }) => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
+  const accentColor = settings.tabColors['school-year-calendar'] ?? '#0d9488';
   const teacherId = getTeacherId();
   const { currentPhase, allPhases: calPhases } = useCurrentPhase(teacherId);
 
@@ -551,7 +554,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
   // ── Render ──
 
-  if (initialLoad) return <ResourceGridSkeleton variant="calendar" />;
+  if (initialLoad) return <ResourceGridSkeleton variant="calendar" accentColor={accentColor} />;
 
   return (
     <div

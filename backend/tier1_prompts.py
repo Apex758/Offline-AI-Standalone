@@ -309,58 +309,59 @@ TIER1_PROMPTS = {
     # ── Educator Insights — multi-pass analysis prompts ──────────────────────
 
     "insights-curriculum": (
-        "You are an educational analyst. Output ONLY bullet points. No preamble, no reasoning.\n\n"
+        "You are an educational analyst for a Caribbean primary school teacher. Output ONLY bullet points. No preamble, no reasoning.\n\n"
         "DATA:\n{data}\n\n"
         "Write 3-5 bullets covering:\n"
         "- Overall completion rate and whether the class is on track for the school year\n"
-        "- Which subject or grade is furthest behind schedule (name it specifically)\n"
+        "- Which subject or grade is furthest behind schedule (name it specifically with its exact percentage)\n"
         "- The single most urgent gap the teacher should close next week\n\n"
         "Each bullet: under 30 words. Start each with \"- \". Nothing else."
     ),
 
     "insights-performance": (
-        "You are an educational analyst. Output ONLY bullet points. No preamble, no reasoning.\n\n"
+        "You are an educational analyst for a Caribbean primary school teacher. Output ONLY bullet points. No preamble, no reasoning.\n\n"
         "DATA:\n{data}\n\n"
         "Write 3-5 bullets covering:\n"
         "- Class average and what grade band most students fall into\n"
-        "- The subject or skill where student scores are weakest (use exact numbers)\n"
-        "- Any pattern worth the teacher's attention this week (e.g. a cluster of failing students, one outlier subject)\n\n"
+        "- The subject where student scores are weakest (use exact numbers from the data)\n"
+        "- If students needing attention are listed, name them and their weakest area. If none are listed, note that all students are above 60%\n\n"
         "Each bullet: under 30 words. Start each with \"- \". Nothing else."
     ),
 
     "insights-content": (
-        "You are an educational analyst. Output ONLY bullet points. No preamble, no reasoning.\n\n"
+        "You are an educational analyst for a Caribbean primary school teacher. Output ONLY bullet points. No preamble, no reasoning.\n\n"
         "DATA:\n{data}\n\n"
         "Write 3-5 bullets covering:\n"
         "- Which content types the teacher creates most and least\n"
         "- Subjects with no or low content coverage (name them)\n"
-        "- One content gap directly affecting students based on the performance or curriculum data\n\n"
+        "- If CROSS-REFERENCE data is provided, identify one content gap that aligns with a curriculum gap or weak student performance area. If no cross-reference data, skip this bullet\n\n"
         "Each bullet: under 30 words. Start each with \"- \". Nothing else."
     ),
 
     "insights-attendance": (
-        "You are an educational analyst. Output ONLY bullet points. No preamble, no reasoning.\n\n"
+        "You are an educational analyst for a Caribbean primary school teacher. Output ONLY bullet points. No preamble, no reasoning.\n\n"
         "DATA:\n{data}\n\n"
         "Write 3-5 bullets covering:\n"
-        "- Overall attendance rate and whether it is acceptable, concerning, or critical\n"
-        "- The class or student group with the lowest attendance (use specific numbers)\n"
-        "- Any student flagged as at-risk who needs immediate follow-up\n\n"
+        "- Overall attendance rate and whether it is acceptable (>90%), concerning (80-90%), or critical (<80%)\n"
+        "- The class with the lowest attendance (use specific numbers)\n"
+        "- If at-risk students are named in the data, list them by name with their absence count. If none are listed, note that no students are currently at risk\n\n"
         "Each bullet: under 30 words. Start each with \"- \". Nothing else."
     ),
 
     "insights-achievements": (
-        "You are an educational analyst. Output ONLY bullet points. No preamble, no reasoning.\n\n"
+        "You are an educational analyst for a Caribbean primary school teacher. Output ONLY bullet points. No preamble, no reasoning.\n\n"
         "DATA:\n{data}\n\n"
         "Write 3-5 bullets covering:\n"
         "- Teacher's current streak and what it indicates about platform consistency\n"
         "- Which platform areas are used most vs. avoided (name specific categories)\n"
-        "- The nearest milestone or rank the teacher can reach and what is needed to get there\n\n"
+        "- If nearest achievements to earn are listed, name them and what the teacher needs to do. Otherwise note the teacher's overall progress\n\n"
         "Each bullet: under 30 words. Start each with \"- \". Nothing else."
     ),
 
     "insights-recommendations": (
         "You are a teaching coach. Output ONLY 3 recommendations. No preamble, no reasoning.\n\n"
         "FINDINGS:\n{data}\n\n"
+        "{calendar_context}"
         "For each recommendation use this exact format:\n"
         "**1. [Specific action verb + what to do]**\n"
         "*Why it matters:* [One sentence with a specific number from the data.]\n"
@@ -368,6 +369,7 @@ TIER1_PROMPTS = {
         "Rules:\n"
         "- Each recommendation targets a different dimension (e.g., curriculum, student support, content).\n"
         "- Reference exact figures (e.g., \"Grade 4 Science at 23%\", \"attendance fell to 81%\").\n"
+        "- Do not include section tags like [CURRICULUM] or [CONTENT] in your output.\n"
         "- No meta-actions. No \"collect more data.\" No generic advice.\n"
         "- Offline-first: all steps must work without internet. Only mention online tools if truly no offline alternative exists, and only in one sentence maximum.\n\n"
         "Output exactly 3 recommendations. Nothing else."
@@ -395,6 +397,7 @@ TIER1_PROMPTS = {
         "2. [Question that helps the teacher decide what to tackle first]\n"
         "3. [Question to deepen understanding of a pattern in the data]\n\n"
         "Rules for Questions: Ask only about things actionable in an offline classroom. No questions about apps, online platforms, or digital tools.\n"
+        "Do not include section tags like [CURRICULUM] or [CONTENT] in your output.\n"
         "Output only the report. Nothing else."
     ),
 

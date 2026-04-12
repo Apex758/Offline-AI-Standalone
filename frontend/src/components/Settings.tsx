@@ -1045,7 +1045,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const [initialLoad, setInitialLoad] = React.useState(true);
   React.useEffect(() => { setInitialLoad(false); }, []);
 
-  if (initialLoad) return <SettingsPanelSkeleton />;
+  if (initialLoad) return <SettingsPanelSkeleton accentColor={settings.tabColors['settings'] ?? '#6b7280'} />;
 
   // Convert hex to HSL
   const hexToHSL = (hex: string): [number, number, number] => {

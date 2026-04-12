@@ -1,10 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useId, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ReferenceArea, Line
 } from 'recharts';
-import { useContainerSize } from '../../hooks/useContainerSize';
 import { format, parseISO } from 'date-fns';
 import type { MetricSnapshot, SchoolPhase } from '../../types/insights';
 
@@ -155,8 +154,37 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   periodAvgColor,
 }) => {
   const { t } = useTranslation();
-  const { ref: chartContainerRef, width: chartWidth, height: chartContainerHeight } = useContainerSize();
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [chartDims, setChartDims] = useState({ width: 0, height: 0 });
+  const chartWidth = chartDims.width;
+  const chartContainerHeight = chartDims.height;
+
+  useEffect(() => {
+    const el = chartContainerRef.current;
+    if (!el) return;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      const w = Math.round(r.width) || el.offsetWidth;
+      const h = Math.round(r.height) || el.offsetHeight;
+      if (w > 0 && h > 0) {
+        setChartDims(prev => (prev.width !== w || prev.height !== h) ? { width: w, height: h } : prev);
+      }
+    };
+    measure();
+    const raf = requestAnimationFrame(measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    const onResize = () => requestAnimationFrame(measure);
+    window.addEventListener('resize', onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+  const instanceId = useId().replace(/:/g, '');
 
   const toggleSeries = (key: string) =>
     setHiddenSeries(prev => {
@@ -357,7 +385,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
   return (
     <div
-      className="rounded-2xl px-4 pt-3 pb-20 h-full flex flex-col tmc-root"
+      className="rounded-2xl pl-1 pr-4 pt-3 pb-3 h-full min-h-0 flex flex-col tmc-root"
       style={{ backgroundColor: 'var(--dash-card-bg)', boxShadow: '0 4px 16px var(--dash-card-shadow)', outline: 'none' }}
     >
       <style>{`.tmc-root *:focus { outline: none !important; }`}</style>
@@ -387,20 +415,20 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
 
       <div
         ref={chartContainerRef}
-        className="flex-1"
-        style={{ width: '100%', outline: 'none' }}
+        className="flex-1 min-h-0"
+        style={{ width: '100%', minHeight: 200, outline: 'none', overflow: 'hidden' }}
         onMouseDown={e => e.preventDefault()}
         onMouseEnter={onChartMouseEnter}
         onMouseLeave={onChartMouseLeave}
       >
-        {chartWidth > 0 && chartContainerHeight > 0 && (
-          <AreaChart width={chartWidth} height={chartContainerHeight} data={transformedData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
+        {chartWidth > 0 && (
+          <AreaChart width={chartWidth} height={chartContainerHeight || height} data={transformedData} margin={{ top: 8, right: 8, left: -8, bottom: 4 }}>
             <defs>
-              <linearGradient id="tmcAvgGradientFill" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`${instanceId}_avgGrad`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor={avgColor} stopOpacity={0.45} />
                 <stop offset="95%" stopColor={avgColor} stopOpacity={0.04} />
               </linearGradient>
-              <linearGradient id="tmcBadgeGradientFill" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`${instanceId}_badgeGrad`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor={badgeAreaColor} stopOpacity={0.45} />
                 <stop offset="95%" stopColor={badgeAreaColor} stopOpacity={0.04} />
               </linearGradient>
@@ -461,7 +489,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               name="Badge"
               stroke={badgeAreaColor}
               strokeWidth={3}
-              fill="url(#tmcBadgeGradientFill)"
+              fill={`url(#${instanceId}_badgeGrad)`}
               dot={false}
               activeDot={{ r: 5, fill: badgeAreaColor, strokeWidth: 0 }}
               hide={hiddenSeries.has('badge_score')}
@@ -475,7 +503,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
               name="Period Avg"
               stroke={avgColor}
               strokeWidth={3}
-              fill="url(#tmcAvgGradientFill)"
+              fill={`url(#${instanceId}_avgGrad)`}
               dot={false}
               activeDot={{ r: 5, fill: avgColor, strokeWidth: 0 }}
               hide={hiddenSeries.has('running_avg')}

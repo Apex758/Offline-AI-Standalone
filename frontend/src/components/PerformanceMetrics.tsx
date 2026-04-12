@@ -15,6 +15,7 @@ import { useContainerSize } from '../hooks/useContainerSize';
 import axios from 'axios';
 import { DashboardSkeleton } from './ui/DashboardSkeleton';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '../contexts/SettingsContext';
 
 const API = 'http://localhost:8000/api';
 const POLL_INTERVAL = 2500;
@@ -416,6 +417,7 @@ const ModelComparisonChart: React.FC<{
 
 const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
   const [summary, setSummary] = useState<MetricsSummary | null>(null);
   const [history, setHistory] = useState<InferenceMetric[]>([]);
   const [liveStats, setLiveStats] = useState<LiveStats | null>(null);
@@ -563,7 +565,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId, isActive = true }) => {
   };
 
   if (loading && !summary) {
-    return <DashboardSkeleton />;
+    return <DashboardSkeleton accentColor={settings.tabColors['performance-metrics'] ?? '#10b981'} />;
   }
 
   const specs = summary?.system_specs;
