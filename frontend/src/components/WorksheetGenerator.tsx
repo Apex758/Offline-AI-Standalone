@@ -2238,16 +2238,18 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   Grade
                 </button>
 
-                <NeuroSegment
-                  options={[
-                    { value: 'student', label: 'Student', icon: <Users className="w-3.5 h-3.5" /> },
-                    { value: 'teacher', label: 'Teacher', icon: <GraduationCap className="w-3.5 h-3.5" /> },
-                  ]}
-                  value={viewMode}
-                  onChange={(v) => setViewMode(v as 'student' | 'teacher')}
-                  size="sm"
-                  aria-label="View version"
-                />
+                <div data-tutorial="worksheet-generator-view-toggle">
+                  <NeuroSegment
+                    options={[
+                      { value: 'student', label: 'Student', icon: <Users className="w-3.5 h-3.5" /> },
+                      { value: 'teacher', label: 'Teacher', icon: <GraduationCap className="w-3.5 h-3.5" /> },
+                    ]}
+                    value={viewMode}
+                    onChange={(v) => setViewMode(v as 'student' | 'teacher')}
+                    size="sm"
+                    aria-label="View version"
+                  />
+                </div>
 
                 <ExportButton
                   dataType="worksheet"

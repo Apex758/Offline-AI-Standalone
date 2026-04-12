@@ -695,93 +695,12 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
 export default TutorialOverlay;
 
-// Analytics Dashboard Tutorial Steps
-// Static array kept for backward compatibility (e.g. tutorialSteps.ts module-level usage)
-export const analyticsDashboardSteps: TutorialStep[] = [
-  {
-    target: '[data-tutorial="welcome-header"]',
-    title: 'Welcome to Your Dashboard!',
-    description: 'This is your teaching resource hub where you can see all your created content and quick stats at a glance.',
-    position: 'bottom',
-  },
-  {
-    target: '[data-tutorial="stat-cards"]',
-    title: 'Resource Statistics',
-    description: 'Here you can see the total count of all your teaching resources including lesson plans, rubrics, and quizzes.',
-    position: 'bottom',
-  },
-  {
-    target: '[data-tutorial="lesson-breakdown"]',
-    title: 'Lesson Plan Breakdown',
-    description: 'This chart shows the distribution of your different lesson plan types - Standard, Kindergarten, Multigrade, and Cross-Curricular.',
-    position: 'right',
-  },
-  {
-    target: '[data-tutorial="quick-stats"]',
-    title: 'Quick Summary',
-    description: 'View your resource summary and total creation statistics all in one place.',
-    position: 'left',
-  },
-  {
-    target: '[data-tutorial="curriculum-access"]',
-    title: 'Quick Curriculum Access',
-    description: 'Jump directly to any grade level curriculum with these quick access buttons.',
-    position: 'top',
-  },
-  {
-    target: '[data-tutorial="action-cards"]',
-    title: 'Quick Actions',
-    description: 'Use these cards to quickly create new resources or browse the curriculum. Click any card to get started!',
-    position: 'top',
-  },
-];
-
-// Translated analytics dashboard steps — call inside a component that has useTranslation
-export const getAnalyticsDashboardSteps = (t: (key: string) => string): TutorialStep[] => [
-  {
-    target: '[data-tutorial="welcome-header"]',
-    title: t('tutorial.analytics.step1.title'),
-    description: t('tutorial.analytics.step1.description'),
-    position: 'bottom',
-  },
-  {
-    target: '[data-tutorial="stat-cards"]',
-    title: t('tutorial.analytics.step2.title'),
-    description: t('tutorial.analytics.step2.description'),
-    position: 'bottom',
-  },
-  {
-    target: '[data-tutorial="lesson-breakdown"]',
-    title: t('tutorial.analytics.step3.title'),
-    description: t('tutorial.analytics.step3.description'),
-    position: 'right',
-  },
-  {
-    target: '[data-tutorial="quick-stats"]',
-    title: t('tutorial.analytics.step4.title'),
-    description: t('tutorial.analytics.step4.description'),
-    position: 'left',
-  },
-  {
-    target: '[data-tutorial="curriculum-access"]',
-    title: t('tutorial.analytics.step5.title'),
-    description: t('tutorial.analytics.step5.description'),
-    position: 'top',
-  },
-  {
-    target: '[data-tutorial="action-cards"]',
-    title: t('tutorial.analytics.step6.title'),
-    description: t('tutorial.analytics.step6.description'),
-    position: 'top',
-  },
-];
-
 // Main Dashboard Tutorial Steps (First-time user experience)
 // Static array kept for backward compatibility
 export const dashboardWalkthroughSteps: TutorialStep[] = [
   {
     target: '[data-tutorial="main-sidebar"]',
-    title: 'Welcome to OECS Class Coworker!',
+    title: 'Welcome to OECS Teacher Assistant!',
     description: 'This is your teaching toolkit sidebar. Here you\'ll find all the tools to create lesson plans, quizzes, rubrics, and more. The sidebar auto-collapses when you hover away to give you more workspace.',
     position: 'right',
   },
@@ -808,8 +727,8 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
   },
   {
     target: '[data-tutorial="tool-chat"]',
-    title: 'Chat with Coworker',
-    description: 'Let\'s open another tool! Chat with your Coworker for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
+    title: 'Chat with Assistant',
+    description: 'Let\'s open another tool! Chat with your Assistant for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
     position: 'right',
     interactive: true,
     waitForAction: 'click',

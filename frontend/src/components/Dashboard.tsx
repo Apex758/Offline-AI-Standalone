@@ -49,7 +49,7 @@ import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import Calendar03IconData from '@hugeicons/core-free-icons/Calendar03Icon';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useEngineStatus } from '../hooks/useEngineStatus';
-import { useCoworkerName } from '../hooks/useCoworkerName';
+import { useAssistantName } from '../hooks/useAssistantName';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -173,7 +173,7 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-const getTools = (t: TFunction, coworkerName: string = 'Coworker'): Tool[] => [
+const getTools = (t: TFunction, assistantName: string = 'Assistant'): Tool[] => [
   {
     id: 'analytics',
     name: 'My Overview',
@@ -222,10 +222,10 @@ const getTools = (t: TFunction, coworkerName: string = 'Coworker'): Tool[] => [
   },
   {
     id: 'chat',
-    name: `Ask ${coworkerName}`,
+    name: `Ask ${assistantName}`,
     icon: 'MessageSquare',
     type: 'chat',
-    description: t('sidebar.descriptions.askPearl', { coworkerName })
+    description: t('sidebar.descriptions.askPearl', { assistantName })
   },
   {
     id: 'curriculum',
@@ -430,7 +430,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   CalendarRange,
 };
 
-const getWelcomeTips = (t: TFunction, coworkerName: string): string[] => [
+const getWelcomeTips = (t: TFunction, assistantName: string): string[] => [
   t('dashboard.tips.tip1'),
   t('dashboard.tips.tip2'),
   t('dashboard.tips.tip3'),
@@ -441,17 +441,17 @@ const getWelcomeTips = (t: TFunction, coworkerName: string): string[] => [
   t('dashboard.tips.tip8'),
   t('dashboard.tips.tip9'),
   t('dashboard.tips.tip10'),
-  t('dashboard.tips.tip11', { coworkerName }),
+  t('dashboard.tips.tip11', { assistantName }),
   t('dashboard.tips.tip12'),
   t('dashboard.tips.tip13'),
   t('dashboard.tips.tip14'),
   t('dashboard.tips.tip15'),
 ];
 
-const getQuicklinkSets = (t: TFunction, coworkerName: string) => [
+const getQuicklinkSets = (t: TFunction, assistantName: string) => [
   [
     { icon: LayoutDashboard, label: t('sidebar.myOverview'), type: 'analytics' },
-    { icon: MessageSquare, label: t('sidebar.askPearl', { coworkerName }), type: 'chat' },
+    { icon: MessageSquare, label: t('sidebar.askPearl', { assistantName }), type: 'chat' },
     { icon: Search, label: t('sidebar.curriculumBrowser'), type: 'curriculum' },
   ],
   [
@@ -476,8 +476,8 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
   const [setIndex, setSetIndex] = useState(0);
   const [visible, setVisible] = useState(true);
 
-  const coworkerName = useCoworkerName();
-  const quicklinkSets = getQuicklinkSets(t, coworkerName);
+  const assistantName = useAssistantName();
+  const quicklinkSets = getQuicklinkSets(t, assistantName);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -538,8 +538,8 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
 
 const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const { t } = useTranslation();
-  const coworkerName = useCoworkerName();
-  const tips = getWelcomeTips(t, coworkerName);
+  const assistantName = useAssistantName();
+  const tips = getWelcomeTips(t, assistantName);
   const [index, setIndex] = useState(() => Math.floor(Math.random() * tips.length));
   const [visible, setVisible] = useState(true);
 
@@ -610,11 +610,11 @@ const TabPanel = React.memo(({
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled, isToolChildEnabled, trackToolVisit } = useSettings();
   const { t } = useTranslation();
-  const coworkerName = useCoworkerName();
+  const assistantName = useAssistantName();
   // Build the translated tools list — re-evaluated whenever the language changes
-  const tools = useMemo(() => getTools(t, coworkerName), [t, coworkerName]);
+  const tools = useMemo(() => getTools(t, assistantName), [t, assistantName]);
   // Translate a tool name using the i18n key map, falling back to the original name
-  const tn = (tool: Tool) => SIDEBAR_I18N[tool.id] ? t(SIDEBAR_I18N[tool.id], { coworkerName }) : tool.name;
+  const tn = (tool: Tool) => SIDEBAR_I18N[tool.id] ? t(SIDEBAR_I18N[tool.id], { assistantName }) : tool.name;
   // Derive the display label for a tab — re-evaluates on language change for standard tool tabs
   const getTabLabel = (tab: Tab) => {
     if (tab.toolId) {
@@ -1951,12 +1951,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 Object.entries(tabColors).map(([type, colors]) => [type, colors.border])
               )}
             />
-            {/* Ensure only the centralized floating button is shown for analytics dashboard */}
-            <TutorialOverlay
-              steps={tutorials[TUTORIAL_IDS.ANALYTICS]?.steps || []}
-              showFloatingButton={false}
-              // Add any other required props as needed, e.g. onComplete, autoStart, etc.
-            />
           </>
         );
       case 'curriculum-tracker':
@@ -2558,6 +2552,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               );
             };
 
+            // Tutorial attribute map for grouped tool buttons
+            const groupTutorialMap: Record<string, string> = { 'quiz-generator': 'tool-quiz', 'rubric-generator': 'tool-rubric' };
+
             // Helper: render a collapsible group (lesson-planners or visual-studio)
             const renderGroup = (groupId: string, label: string, groupTools: Tool[], expanded: boolean, setExpanded: (v: boolean) => void, defaultIcon: React.ElementType) => {
               const activeTab = tabs.find(t => t.id === activeTabId);
@@ -2594,7 +2591,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       const isLocked = false;
                       const isChildNextStep = nextStepType === tool.type;
                       return (
-                        <button key={tool.id} data-tool-type={tool.type} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', opacity: isLocked ? 0.5 : 1, transition: 'background-color 0.2s' }}
+                        <button key={tool.id} data-tool-type={tool.type} data-tutorial={groupTutorialMap[tool.type]} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', opacity: isLocked ? 0.5 : 1, transition: 'background-color 0.2s' }}
                           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive && tc) { ic.style.color = tc; ic.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
                           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActive ? 'var(--sidebar-active)' : 'transparent'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive) { ic.style.color = 'var(--sidebar-text-muted)'; ic.style.filter = ''; } }}
                           title={isLocked ? t('dashboard.tier3Required') : tn(tool)}

@@ -94,7 +94,7 @@ def get_report_date_context(teacher_id: str = "default_teacher", user_id: str | 
 def _get_students_db_path() -> str:
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Class Coworker' / 'data'
+        data_dir = Path(app_data) / 'OECS Teacher Assistant' / 'data'
     else:
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     return str(data_dir / 'students.db')
@@ -109,7 +109,7 @@ def _get_students_conn() -> sqlite3.Connection:
 def _get_data_directory() -> Path:
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Class Coworker' / 'data'
+        data_dir = Path(app_data) / 'OECS Teacher Assistant' / 'data'
     else:
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     data_dir.mkdir(parents=True, exist_ok=True)

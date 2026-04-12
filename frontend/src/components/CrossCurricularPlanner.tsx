@@ -56,7 +56,6 @@ import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
-import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -1786,11 +1785,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       />
 
 
-      <TutorialButton
-        tutorialId={TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER}
-        onStartTutorial={() => setShowTutorial(true)}
-        position="bottom-right"
-      />
 
     </div>
   );

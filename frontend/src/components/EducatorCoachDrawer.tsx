@@ -6,6 +6,7 @@ import SentIconData from '@hugeicons/core-free-icons/SentIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import axios from 'axios';
 import type { TeacherMetrics, ConsultantConversation } from '../types/insights';
+import { API_CONFIG, getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -65,7 +66,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
   // Load conversations list
   useEffect(() => {
     if (isOpen) {
-      axios.get(`/api/consultant/conversations?teacher_id=${encodeURIComponent(teacherId)}`)
+      axios.get(`${API_CONFIG.BASE_URL}/api/consultant/conversations?teacher_id=${encodeURIComponent(teacherId)}`)
         .then(res => setConversations(res.data?.conversations || []))
         .catch(() => {});
     }
@@ -75,7 +76,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
   useEffect(() => {
     if (currentChatId) {
       chatIdRef.current = currentChatId;
-      axios.get(`/api/consultant/conversation/${currentChatId}`)
+      axios.get(`${API_CONFIG.BASE_URL}/api/consultant/conversation/${currentChatId}`)
         .then(res => {
           const conv = res.data?.conversation;
           if (conv?.messages) {
@@ -103,8 +104,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
     setIsStreaming(true);
     setStreamingContent('');
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//localhost:8000/ws/consultant`);
+    const ws = new WebSocket(getWebSocketUrl('/ws/consultant', isElectronEnvironment()));
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -168,7 +168,7 @@ const EducatorCoachDrawer: React.FC<EducatorCoachDrawerProps> = ({
     onChatIdChange?.(convId);
     chatIdRef.current = convId;
     setShowHistory(false);
-    axios.get(`/api/consultant/conversation/${convId}`)
+    axios.get(`${API_CONFIG.BASE_URL}/api/consultant/conversation/${convId}`)
       .then(res => {
         const conv = res.data?.conversation;
         if (conv?.messages) {

@@ -1,7 +1,7 @@
 {
-  "name": "oecs-class-coworker",
+  "name": "oecs-teacher-assistant",
   "version": "2.0.0",
-  "description": "OECS Class Coworker - AI-powered educational tools suite by the Organisation of Eastern Caribbean States",
+  "description": "OECS Teacher Assistant - AI-powered educational tools suite by the Organisation of Eastern Caribbean States",
   "main": "electron/main.js",
   "author": {
     "name": "Delon Pierre",
@@ -36,8 +36,8 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.oecs.classcoworker",
-    "productName": "OECS Class Coworker",
+    "appId": "com.oecs.teacherassistant",
+    "productName": "OECS Teacher Assistant",
     "copyright": "Copyright 2026 Organisation of Eastern Caribbean States. Developed by Delon Pierre.",
     "files": [
       "frontend/dist/**/*",

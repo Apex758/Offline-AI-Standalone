@@ -69,7 +69,7 @@ TIER1_MAX_TOKENS = {
 TIER1_PROMPTS = {
 
     "chat": (
-        "You are {coworker_name}, an AI assistant for Caribbean primary school teachers (K-6). Offline only -- no internet tools.\n\n"
+        "You are {assistant_name}, an AI assistant for Caribbean primary school teachers (K-6). Offline only -- no internet tools.\n\n"
         "### Instructions\n"
         "- Short answers. Match length to question.\n"
         "- Teaching questions: give one specific, ready-to-use idea.\n"
@@ -417,18 +417,18 @@ TIER1_PROMPTS = {
 # ── Public helpers ─────────────────────────────────────────────────────────────
 
 @lru_cache(maxsize=64)
-def get_tier1_system_prompt(task_type: str, grade: str | None = None, coworker_name: str = "Coworker") -> str | None:
+def get_tier1_system_prompt(task_type: str, grade: str | None = None, assistant_name: str = "Assistant") -> str | None:
     """Return the Tier-1 system prompt for a task type, or None if unchanged.
 
     If a grade is provided, appends age context so the model knows the target student age.
-    The coworker_name replaces the {coworker_name} placeholder in prompts that use it
+    The assistant_name replaces the {assistant_name} placeholder in prompts that use it
     (e.g. the chat prompt).
     """
     prompt = TIER1_PROMPTS.get(task_type, TIER1_PROMPTS["chat"])
     if prompt:
-        # Substitute the coworker name placeholder if present
-        if "{coworker_name}" in prompt:
-            prompt = prompt.replace("{coworker_name}", coworker_name or "Coworker")
+        # Substitute the assistant name placeholder if present
+        if "{assistant_name}" in prompt:
+            prompt = prompt.replace("{assistant_name}", assistant_name or "Assistant")
         if grade:
             age = get_age_for_grade(grade)
             if age:

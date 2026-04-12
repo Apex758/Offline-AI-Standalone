@@ -273,7 +273,7 @@ export function calculateToolUsage(tabs: Tab[]): ToolUsage[] {
     'kindergarten-planner': 'Kindergarten Planner',
     'multigrade-planner': 'Multigrade Planner',
     'cross-curricular-planner': 'Cross-Curricular Planner',
-    'chat': 'Chat with Coworker',
+    'chat': 'Chat with Assistant',
     'curriculum': 'Curriculum Browser',
     'analytics': 'Analytics Dashboard',
     'resource-manager': 'Resource Manager',

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 def _get_db_path() -> str:
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Class Coworker' / 'data'
+        data_dir = Path(app_data) / 'OECS Teacher Assistant' / 'data'
     else:
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -795,7 +795,7 @@ def _data_dir() -> Path:
     """Mirror of main.get_data_directory() — can't import without cycles."""
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        return Path(app_data) / 'OECS Class Coworker' / 'data'
+        return Path(app_data) / 'OECS Teacher Assistant' / 'data'
     return Path.home() / '.olh_ai_education' / 'data'
 
 

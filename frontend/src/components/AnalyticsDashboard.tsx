@@ -28,7 +28,6 @@ import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import { useNotification } from '../contexts/NotificationContext';
 import axios from 'axios';
 import { format } from 'date-fns';
-import TutorialOverlay, { getAnalyticsDashboardSteps } from './TutorialOverlay';
 import { milestoneApi } from '../lib/milestoneApi';
 import type { MilestoneStats, Milestone } from '../types/milestone';
 import type { Task } from '../types/task';
@@ -145,7 +144,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   // Phase 5: flip state for the "Upcoming Quizzes" <-> "Lessons Needing Plans" card
   const [quizzesFlipped, setQuizzesFlipped] = useState(false);
-  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showShowcase, setShowShowcase] = useState(settings.showTrophiesByDefault);
   const [viewingTrophy, setViewingTrophy] = useState<NewlyEarnedAchievement | null>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -1026,7 +1024,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               metricsHistory={metricsHistory}
               timeframe={timeframe}
               onTimeframeChange={setTimeframe}
-              forcePaused={currentTutorialStep >= 5 && currentTutorialStep <= 7}
               tabColors={tabColors}
               currentScore={liveTeacherMetrics ? Math.round(liveTeacherMetrics.composite_score) : undefined}
               currentGrade={liveTeacherMetrics ? liveTeacherMetrics.composite_grade : undefined}
@@ -1322,12 +1319,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         />
       )}
 
-      {/* Tutorial Overlay */}
-      <TutorialOverlay
-        steps={getAnalyticsDashboardSteps(t)}
-        showFloatingButton={false}
-        onStepChange={setCurrentTutorialStep}
-      />
     </div>
   );
 };

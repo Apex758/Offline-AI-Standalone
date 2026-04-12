@@ -1,4 +1,4 @@
-# OECS Class Coworker - Frozen Dependencies (2026-04-06)
+# OECS Teacher Assistant - Frozen Dependencies (2026-04-06)
 # Generated lock file - install exactly these versions for reproducibility
 # NOTE: iopaint removed; LaMa inpainting runs directly via torch.jit.load
 

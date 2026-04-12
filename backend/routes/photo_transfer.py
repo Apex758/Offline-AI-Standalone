@@ -40,7 +40,7 @@ def _get_photos_dir() -> Path:
     """Return the root photos directory (inside APPDATA on Windows)."""
     if os.name == "nt":
         app_data = os.environ.get("APPDATA", os.path.expanduser("~"))
-        base = Path(app_data) / "OECS Class Coworker" / "photo-transfer"
+        base = Path(app_data) / "OECS Teacher Assistant" / "photo-transfer"
     else:
         base = Path.home() / ".olh_ai_education" / "photo-transfer"
     base.mkdir(parents=True, exist_ok=True)
@@ -407,7 +407,7 @@ def _get_resources_dir() -> Path:
     """Return the app resources/photos directory (writable user data)."""
     if os.name == "nt":
         app_data = os.environ.get("APPDATA", os.path.expanduser("~"))
-        base = Path(app_data) / "OECS Class Coworker" / "resources" / "photos"
+        base = Path(app_data) / "OECS Teacher Assistant" / "resources" / "photos"
     else:
         base = Path.home() / ".olh_ai_education" / "resources" / "photos"
     base.mkdir(parents=True, exist_ok=True)
@@ -734,7 +734,7 @@ async def pwa_manifest():
     """Serve a PWA manifest so the phone page can be added to home screen."""
     return JSONResponse(
         content={
-            "name": "OECS Class Coworker",
+            "name": "OECS Teacher Assistant",
             "short_name": "OECS",
             "description": "Capture and transfer student worksheets",
             "display": "standalone",

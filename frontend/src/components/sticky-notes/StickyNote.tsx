@@ -207,7 +207,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
       title={title}
       onMouseDown={e => { e.preventDefault(); onAction(); }}
     >
-      <SIcon icon={icon} size={size} style={{ color: 'var(--text-muted)' }} />
+      <SIcon icon={icon} size={size} style={{ color: '#555' }} />
     </button>
   );
 
@@ -284,7 +284,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
       >
         <span
           className="flex-1 text-sm font-bold truncate"
-          style={{ color: 'var(--text-heading)', pointerEvents: 'none', letterSpacing: '-0.01em' }}
+          style={{ color: '#2D2D2D', pointerEvents: 'none', letterSpacing: '-0.01em' }}
         >
           {note.title}
         </span>
@@ -295,7 +295,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
           title="Options"
           onClick={() => setShowColorPicker(prev => !prev)}
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="var(--text-muted)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="#555">
             <circle cx="3" cy="8" r="1.3" />
             <circle cx="8" cy="8" r="1.3" />
             <circle cx="13" cy="8" r="1.3" />
@@ -315,7 +315,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
           }}
           style={{ opacity: note.pinned ? 1 : 0.35 }}
         >
-          <SIcon icon={PinIconData} size={16} style={{ color: 'var(--text-muted)' }} />
+          <SIcon icon={PinIconData} size={16} style={{ color: '#555' }} />
         </button>
 
         {/* Minimize */}
@@ -324,7 +324,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
           title="Minimize"
           onClick={() => updateNote(note.id, { minimized: true })}
         >
-          <SIcon icon={MinusSignIconData} size={16} style={{ color: 'var(--text-muted)' }} />
+          <SIcon icon={MinusSignIconData} size={16} style={{ color: '#555' }} />
         </button>
 
         {/* Close */}
@@ -333,7 +333,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
           title="Close (saves to saved list)"
           onClick={handleClose}
         >
-          <SIcon icon={Cancel01IconData} size={16} style={{ color: 'var(--text-muted)' }} />
+          <SIcon icon={Cancel01IconData} size={16} style={{ color: '#555' }} />
         </button>
       </div>
 
@@ -355,7 +355,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
             onKeyDown={e => { if (e.key === 'Enter') setShowColorPicker(false); }}
             placeholder={t('stickyNotes.noteTitle')}
             style={{
-              color: 'var(--text-heading)',
+              color: '#2D2D2D',
               background: 'rgba(255,255,255,0.45)',
               border: '1px solid rgba(0,0,0,0.08)',
             }}
@@ -379,7 +379,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
             className="w-full py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-90"
             style={{
               background: 'rgba(0,0,0,0.06)',
-              color: 'var(--text-muted)',
+              color: '#555',
               border: '1px dashed rgba(0,0,0,0.15)',
             }}
             onClick={() => {
@@ -409,7 +409,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
             onFocus={() => bringToFront(note.id)}
             data-placeholder={t('stickyNotes.typeAnything')}
             style={{
-              color: 'var(--text-heading)',
+              color: '#2D2D2D',
               minHeight: '100%',
               lineHeight: 1.6,
               wordBreak: 'break-word',
@@ -423,7 +423,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
         <div
           className="px-3 py-2 text-xs flex items-center justify-between"
           style={{
-            color: 'var(--text-muted)',
+            color: '#555',
             flexShrink: 0,
             borderTop: '1px solid rgba(0,0,0,0.06)',
             background: headerBg,
@@ -475,7 +475,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
               title="Horizontal rule"
               onMouseDown={e => { e.preventDefault(); execFormat('insertHorizontalRule'); }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#555" strokeWidth="1.5">
                 <line x1="2" y1="8" x2="14" y2="8" />
               </svg>
             </button>
@@ -495,7 +495,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({ note, zIndex, activeTabI
                     icon={CleanIconData}
                     size={16}
                     style={{
-                      color: isOrganizing ? '#999' : 'var(--text-muted)',
+                      color: isOrganizing ? '#999' : '#555',
                       animation: isOrganizing ? 'spin 1s linear infinite' : 'none',
                     }}
                   />

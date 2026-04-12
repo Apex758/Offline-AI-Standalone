@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { API_CONFIG } from '../config/api.config';
 import { SettingsPanelSkeleton } from './ui/SettingsPanelSkeleton';
 import { resetStepsCache } from '../lib/imageApi';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -49,6 +50,8 @@ import DashboardSquare01IconData from '@hugeicons/core-free-icons/DashboardSquar
 import Brain01IconData from '@hugeicons/core-free-icons/Brain01Icon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import StarIconData from '@hugeicons/core-free-icons/StarIcon';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -58,7 +61,7 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { FEATURE_MODULES } from '../lib/featureModules';
 import { FeatureModuleId } from '../types/feature-disclosure';
-import { useCoworkerName } from '../hooks/useCoworkerName';
+import { useAssistantName } from '../hooks/useAssistantName';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -371,7 +374,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const { t } = useTranslation();
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
   const triggerAchievementCheck = useAchievementTrigger();
-  const coworkerName = useCoworkerName();
+  const assistantName = useAssistantName();
   const { tier, hasVision, hasOcr, hasDiffusion, hasLama, hasOcrModel, dualModel, refreshCapabilities, recommendations } = useCapabilities();
   const { getActiveStreams } = useWebSocket();
   const { queue } = useQueue();
@@ -640,7 +643,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     } else {
       // Browser mode: trigger backend reload via uvicorn --reload, then refresh page
       try {
-        await fetch('/api/restart', { method: 'POST' });
+        await fetch(`${API_CONFIG.BASE_URL}/api/restart`, { method: 'POST' });
       } catch (e) {
         // Backend may already be restarting
       }
@@ -1718,23 +1721,23 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         </div>
                       )}
 
-                      {/* Coworker Name */}
+                      {/* Assistant Name */}
                       <div>
                         <label className="block text-sm font-medium text-theme-label mb-1.5">What should your AI assistant be called?</label>
                         <Input
-                          placeholder="Coworker"
+                          placeholder="Assistant"
                           maxLength={30}
-                          value={settings.profile.coworkerName || ''}
+                          value={settings.profile.assistantName || ''}
                           onChange={(e) => {
                             const val = e.target.value;
-                            updateSettings({ profile: { ...settings.profile, coworkerName: val } });
+                            updateSettings({ profile: { ...settings.profile, assistantName: val } });
                           }}
                           onBlur={(e) => {
                             const trimmed = e.target.value.trim();
-                            updateSettings({ profile: { ...settings.profile, coworkerName: trimmed || 'Coworker' } });
+                            updateSettings({ profile: { ...settings.profile, assistantName: trimmed || 'Assistant' } });
                           }}
                         />
-                        <p className="text-xs text-theme-hint mt-1">This name will be used throughout the app. Leave blank to use "Coworker".</p>
+                        <p className="text-xs text-theme-hint mt-1">This name will be used throughout the app. Leave blank to use "Assistant".</p>
                       </div>
 
                       {/* Grade Levels */}
@@ -2471,7 +2474,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           <ul className="mt-2 space-y-1">
                             {recommendations.warnings.map((w, i) => (
                               <li key={i} className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
-                                <span className="mt-px shrink-0">⚠</span>
+                                <HugeiconsIcon icon={AlertCircleIconData} size={14} className="mt-px shrink-0 text-amber-500" />
                                 <span>{w}</span>
                               </li>
                             ))}
@@ -2516,7 +2519,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           ) : (
                             availableModels.map((model) => (
                               <option key={model.name} value={model.name}>
-                                {model.tier > 0 ? `Tier ${model.tier} · ` : ''}{model.display_name || model.name} [{model.model_type === 'vision' ? 'Vision' : 'Text'}]{recommendations?.recommended_llm?.name === model.name ? ' ★ Recommended' : ''}
+                                {model.tier > 0 ? `Tier ${model.tier} · ` : ''}{model.display_name || model.name} [{model.model_type === 'vision' ? 'Vision' : 'Text'}]{recommendations?.recommended_llm?.name === model.name ? ' (Recommended)' : ''}
                               </option>
                             ))
                           )}
@@ -2536,7 +2539,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       {/* Recommended LLM callout */}
                       {recommendations?.recommended_llm && selectedModel !== recommendations.recommended_llm.name && !loadingModels && (
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
-                          <span className="text-blue-500 mt-0.5 shrink-0 text-base">★</span>
+                          <HugeiconsIcon icon={StarIconData} size={16} className="text-blue-500 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">{t('settingsPage.models.recommendedHardware')}</p>
                             <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 break-words">{recommendations.recommended_llm.name}</p>
@@ -2555,7 +2558,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       {/* Incompatibility warning for currently selected LLM */}
                       {recommendations?.llm_compatibility && selectedModel && recommendations.llm_compatibility[selectedModel] && !recommendations.llm_compatibility[selectedModel].comfortable && !loadingModels && (
                         <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
-                          <span className="text-amber-500 mt-0.5 shrink-0">⚠</span>
+                          <HugeiconsIcon icon={AlertCircleIconData} size={16} className="text-amber-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-amber-700 dark:text-amber-400">
                             {recommendations.llm_compatibility[selectedModel].fits
                               ? `This model (~${recommendations.llm_compatibility[selectedModel].estimated_ram_gb} GB) uses most of your available RAM. Performance may be reduced.`
@@ -2612,11 +2615,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 <Card data-search-section="personalization">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <span className="w-4.5 h-4.5 text-blue-500">🧠</span>
+                      <HugeiconsIcon icon={Brain01IconData} size={18} className="text-blue-500" />
                       Personalization
                     </CardTitle>
                     <CardDescription>
-                      Coworker can remember key facts about you across conversations to give more personalized responses. Stored locally only, never sent off your device.
+                      Assistant can remember key facts about you across conversations to give more personalized responses. Stored locally only, never sent off your device.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -2624,7 +2627,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       <div className="pr-4">
                         <p className="text-sm font-medium text-theme-heading">Long-term memory</p>
                         <p className="text-xs text-theme-hint mt-0.5">
-                          When enabled, Coworker extracts a few key facts from your conversations (preferences, struggles, teaching context) and recalls them in future chats.
+                          When enabled, Assistant extracts a few key facts from your conversations (preferences, struggles, teaching context) and recalls them in future chats.
                         </p>
                       </div>
                       <button
@@ -2642,10 +2645,10 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <div className="mt-4 pt-4 border-t border-theme-strong">
                       <button
                         onClick={async () => {
-                          if (!confirm('This will permanently delete every long-term memory Coworker has stored about you. Continue?')) return;
+                          if (!confirm('This will permanently delete every long-term memory Assistant has stored about you. Continue?')) return;
                           try {
                             const teacherId = settings.profile.displayName?.trim() || 'default_teacher';
-                            const res = await fetch(`http://127.0.0.1:8000/api/teacher-memory/all?teacher_id=${encodeURIComponent(teacherId)}`, { method: 'DELETE' });
+                            const res = await fetch(`${API_CONFIG.BASE_URL}/api/teacher-memory/all?teacher_id=${encodeURIComponent(teacherId)}`, { method: 'DELETE' });
                             const data = await res.json();
                             alert(`Deleted ${data.deleted ?? 0} stored memories.`);
                           } catch (e) {
@@ -2655,7 +2658,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         }}
                         className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 underline"
                       >
-                        Forget everything Coworker remembers about me
+                        Forget everything Assistant remembers about me
                       </button>
                     </div>
                   </CardContent>
@@ -2665,11 +2668,11 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                 <Card data-search-section="background-schedule">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <span className="w-4.5 h-4.5 text-blue-500">🗓️</span>
+                      <HugeiconsIcon icon={Calendar01IconData} size={18} className="text-blue-500" />
                       Background Schedule
                     </CardTitle>
                     <CardDescription>
-                      Run planning tasks automatically while you're away. Coworker can
+                      Run planning tasks automatically while you're away. Assistant can
                       prepare a weekly ELO breakdown, attendance summary, or progress
                       report on a schedule you choose.
                     </CardDescription>
@@ -2710,7 +2713,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                               <option value="">None (disabled)</option>
                               {availableDiffusionModels.map((model) => (
                                 <option key={model.name} value={model.name}>
-                                  {model.name} ({model.size_mb.toFixed(0)} MB){recommendations?.recommended_diffusion?.name === model.name ? ' ★ Recommended' : ''}
+                                  {model.name} ({model.size_mb.toFixed(0)} MB){recommendations?.recommended_diffusion?.name === model.name ? ' (Recommended)' : ''}
                                 </option>
                               ))}
                             </>
@@ -2731,7 +2734,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                       {/* Recommended diffusion model callout */}
                       {recommendations?.recommended_diffusion && selectedDiffusionModel !== recommendations.recommended_diffusion.name && availableDiffusionModels.length > 0 && !loadingDiffusionModels && (
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
-                          <span className="text-blue-500 mt-0.5 shrink-0 text-base">★</span>
+                          <HugeiconsIcon icon={StarIconData} size={16} className="text-blue-500 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">{t('settingsPage.models.recommendedHardware')}</p>
                             <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 break-words">{recommendations.recommended_diffusion.name}</p>
@@ -3587,7 +3590,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                           <Rocket className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-theme-label">{t('settingsPage.features.startOnBoot')}</p>
-                            <p className="text-xs text-theme-hint">Automatically launch OECS Class Coworker when you log in to Windows</p>
+                            <p className="text-xs text-theme-hint">Automatically launch OECS Teacher Assistant when you log in to Windows</p>
                           </div>
                         </div>
                         <input
@@ -3883,8 +3886,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                         <p className="font-medium">How file access works:</p>
                         <ul className="list-disc list-inside space-y-1 text-xs text-blue-700 dark:text-blue-300">
                           <li>A files button will appear in the Chat panel to browse your folders</li>
-                          <li>You can attach files as reference context when chatting with {coworkerName}</li>
-                          <li>Ask {coworkerName} to organize or find files in your allowed folders</li>
+                          <li>You can attach files as reference context when chatting with {assistantName}</li>
+                          <li>Ask {assistantName} to organize or find files in your allowed folders</li>
                           <li>The Resource Manager will show an "On PC" tab with your files</li>
                           <li>Files are <strong>never deleted</strong> — organizing only moves files into subfolders</li>
                           <li>Only these file types are visible: Word, PowerPoint, PDF, Excel, text, and images</li>
@@ -3930,7 +3933,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     </div>
                     <div className="flex-1">
                       <h2 className="text-2xl font-bold text-theme-title">{t('settingsPage.featureDiscovery.title')}</h2>
-                      <p className="text-sm text-theme-muted mt-1">Explore everything the Class Coworker can do</p>
+                      <p className="text-sm text-theme-muted mt-1">Explore everything the Teacher Assistant can do</p>
                       <p className="text-sm text-theme-secondary mt-2 font-medium">{discoveredCount} of {totalCount} features explored</p>
                     </div>
                   </div>

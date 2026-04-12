@@ -229,43 +229,6 @@
     "curriculumMatches": []
   },
   {
-    "id": "draft_lesson-planner-1776000947880_1776001522593",
-    "title": "Language Arts - Sentence Writing - 2",
-    "timestamp": "2026-04-12T13:45:22.593Z",
-    "plannerType": "lesson",
-    "formData": {
-      "subject": "Language Arts",
-      "gradeLevel": "2",
-      "topic": "Sentence Writing",
-      "strand": "reading",
-      "essentialOutcomes": "Students will understand key concepts of Sentence Writing",
-      "specificOutcomes": "Students will be able to demonstrate understanding of Sentence Writing through practice activities",
-      "studentCount": "21",
-      "duration": "45",
-      "pedagogicalStrategies": [
-        "hands-on",
-        "inquiry-based"
-      ],
-      "learningStyles": [
-        "auditory",
-        "visual"
-      ],
-      "learningPreferences": [],
-      "multipleIntelligences": [
-        "logical-mathematical"
-      ],
-      "customLearningStyles": "",
-      "materials": "Textbooks, worksheets, manipulatives for Sentence Writing",
-      "prerequisiteSkills": "Basic understanding of prerequisite concepts for Sentence Writing",
-      "specialNeeds": false,
-      "specialNeedsDetails": "",
-      "additionalInstructions": "",
-      "referenceUrl": ""
-    },
-    "step": 3,
-    "curriculumMatches": []
-  },
-  {
     "id": "draft_lesson-planner-1776000947880_1776002996626",
     "title": "Language Arts - Sentence Writing - 2",
     "timestamp": "2026-04-12T14:09:56.626Z",
@@ -636,40 +599,59 @@
     "curriculumMatches": []
   },
   {
-    "id": "draft_lesson-planner-1776003890952_1776003932209",
-    "title": "Language Arts - Sentence Writing - 2",
-    "timestamp": "2026-04-12T14:25:32.209Z",
-    "plannerType": "lesson",
+    "id": "draft_quiz-generator-1776034930448_1776035012490",
+    "title": "Science - 2",
+    "timestamp": "2026-04-12T23:03:32.490Z",
+    "plannerType": "quiz",
     "formData": {
-      "subject": "Language Arts",
+      "subject": "Science",
       "gradeLevel": "2",
-      "topic": "Sentence Writing",
-      "strand": "reading",
-      "essentialOutcomes": "Students will understand key concepts of Sentence Writing",
-      "specificOutcomes": "Students will be able to demonstrate understanding of Sentence Writing through practice activities",
-      "studentCount": "21",
-      "duration": "45",
-      "pedagogicalStrategies": [
-        "hands-on",
-        "inquiry-based"
+      "learningOutcomes": "",
+      "questionTypes": [
+        "Multiple Choice"
       ],
-      "learningStyles": [
-        "auditory",
-        "visual"
+      "cognitiveLevels": [
+        "Knowledge"
       ],
-      "learningPreferences": [],
-      "multipleIntelligences": [
-        "logical-mathematical"
-      ],
-      "customLearningStyles": "",
-      "materials": "Textbooks, worksheets, manipulatives for Sentence Writing",
-      "prerequisiteSkills": "Basic understanding of prerequisite concepts for Sentence Writing",
+      "timeLimitPerQuestion": "",
+      "numberOfQuestions": "10",
+      "strand": "Earth Systems",
+      "essentialOutcomes": "Use information from several sources to provide evidence that Earth events can occur quickly or slowly. [Clarification Statement: Examples of events and timescales could include volcanic explosions and earthquakes, which happen quickly and erosion of rocks, which occurs slowly.] [Assessment Boundary: Assessment does not include quantitative measurements of timescales.]",
+      "specificOutcomes": "Using examples, demonstrate an understanding of the difference between fast and slow earth events.",
       "specialNeeds": false,
       "specialNeedsDetails": "",
       "additionalInstructions": "",
-      "referenceUrl": ""
+      "preferredAssessmentFormat": ""
     },
-    "step": 3,
+    "step": 1,
+    "curriculumMatches": []
+  },
+  {
+    "id": "draft_quiz-generator-1776034930448_1776035319777",
+    "title": "Science - 2",
+    "timestamp": "2026-04-12T23:08:39.777Z",
+    "plannerType": "quiz",
+    "formData": {
+      "subject": "Science",
+      "gradeLevel": "2",
+      "learningOutcomes": "",
+      "questionTypes": [
+        "Multiple Choice"
+      ],
+      "cognitiveLevels": [
+        "Knowledge"
+      ],
+      "timeLimitPerQuestion": "",
+      "numberOfQuestions": "10",
+      "strand": "Earth Systems",
+      "essentialOutcomes": "Use information from several sources to provide evidence that Earth events can occur quickly or slowly. [Clarification Statement: Examples of events and timescales could include volcanic explosions and earthquakes, which happen quickly and erosion of rocks, which occurs slowly.] [Assessment Boundary: Assessment does not include quantitative measurements of timescales.]",
+      "specificOutcomes": "Using examples, demonstrate an understanding of the difference between fast and slow earth events.",
+      "specialNeeds": false,
+      "specialNeedsDetails": "",
+      "additionalInstructions": "",
+      "preferredAssessmentFormat": ""
+    },
+    "step": 1,
     "curriculumMatches": []
   }
 ]

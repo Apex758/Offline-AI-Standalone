@@ -17,7 +17,6 @@ const Menu: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Cancel01IconData} {...p} />;
 const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookOpen01IconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
-import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -293,13 +292,6 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
         autoStart={showTutorial}
         showFloatingButton={false}
       />
- 
-      <TutorialButton
-        tutorialId={TUTORIAL_IDS.CURRICULUM}
-        onStartTutorial={() => setShowTutorial(true)}
-        position="bottom-right"
-      />
-    
     </div>
   );
 };

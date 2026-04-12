@@ -57,13 +57,13 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
         {/* Content */}
         <div className="p-8" style={{ backgroundColor: '#FDFDF8' }}>
           <div className="space-y-4 mb-8">
-            <p className="text-lg leading-relaxed" style={{ color: 'var(--text-title)' }}>
-              The OECS Class Coworker is designed to help teachers create engaging lesson plans, quizzes, rubrics, and more - all tailored to the OECS curriculum.
+            <p className="text-lg leading-relaxed" style={{ color: '#2D2D2D' }}>
+              The OECS Teacher Assistant is designed to help teachers create engaging lesson plans, quizzes, rubrics, and more - all tailored to the OECS curriculum.
             </p>
 
             <div className="rounded-lg p-4" style={{ backgroundColor: '#F8E59D', border: '1px solid #E8EAE3' }}>
-              <h3 className="font-semibold mb-2" style={{ color: 'var(--text-heading)' }}>Key Features:</h3>
-              <ul className="space-y-2" style={{ color: 'var(--text-label)' }}>
+              <h3 className="font-semibold mb-2" style={{ color: '#1D362D' }}>Key Features:</h3>
+              <ul className="space-y-2" style={{ color: '#3A3A3A' }}>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
                   <span>Lesson planning for multiple grade levels</span>

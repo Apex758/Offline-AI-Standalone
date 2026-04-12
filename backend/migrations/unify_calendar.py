@@ -44,14 +44,14 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 def _students_db_path() -> str:
     if os.name == 'nt':
         return str(Path(os.environ.get('APPDATA', os.path.expanduser('~')))
-                   / 'OECS Class Coworker' / 'data' / 'students.db')
+                   / 'OECS Teacher Assistant' / 'data' / 'students.db')
     return str(Path.home() / '.olh_ai_education' / 'data' / 'students.db')
 
 
 def _milestones_db_path() -> str:
     if os.name == 'nt':
         return str(Path(os.environ.get('APPDATA', os.path.expanduser('~')))
-                   / 'OECS Class Coworker' / 'data' / 'milestones.db')
+                   / 'OECS Teacher Assistant' / 'data' / 'milestones.db')
     return str(Path.home() / '.olh_ai_education' / 'data' / 'milestones.db')
 
 
@@ -212,7 +212,7 @@ def backfill_scheduled_results(unified_conn: sqlite3.Connection, teacher_id: str
     Phase 2d: read scheduled_results from chat_memory.db (cross-DB) and project.
     """
     if os.name == 'nt':
-        path = Path(os.environ.get('APPDATA', os.path.expanduser('~'))) / 'OECS Class Coworker' / 'data' / 'chat_memory.db'
+        path = Path(os.environ.get('APPDATA', os.path.expanduser('~'))) / 'OECS Teacher Assistant' / 'data' / 'chat_memory.db'
     else:
         path = Path.home() / '.olh_ai_education' / 'data' / 'chat_memory.db'
     if not path.exists():
@@ -379,7 +379,7 @@ def validate(unified_conn: sqlite3.Connection, teacher_id: str | None) -> dict:
     # scheduled_task — count from chat_memory.db
     expected = 0
     if os.name == 'nt':
-        cm_path = Path(os.environ.get('APPDATA', os.path.expanduser('~'))) / 'OECS Class Coworker' / 'data' / 'chat_memory.db'
+        cm_path = Path(os.environ.get('APPDATA', os.path.expanduser('~'))) / 'OECS Teacher Assistant' / 'data' / 'chat_memory.db'
     else:
         cm_path = Path.home() / '.olh_ai_education' / 'data' / 'chat_memory.db'
     if cm_path.exists():

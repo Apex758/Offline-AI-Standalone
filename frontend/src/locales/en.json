@@ -1,6 +1,6 @@
 {
   "sidebar": {
-    "header": "OECS Class Coworker",
+    "header": "OECS Teacher Assistant",
     "tools": "Tools",
     "myOverview": "My Overview",
     "educatorInsights": "Educator Insights",
@@ -9,7 +9,7 @@
     "curriculumPlan": "Curriculum Plan",
     "myResources": "My Resources",
     "schoolYear": "School Year",
-    "askPearl": "Ask {{coworkerName}}",
+    "askPearl": "Ask {{assistantName}}",
     "curriculumBrowser": "Curriculum Browser",
     "quizBuilder": "Quiz Builder",
     "rubricBuilder": "Rubric Builder",
@@ -43,7 +43,7 @@
       "curriculumPlan": "Plan your term and year curriculum at a glance",
       "myResources": "Browse and manage all your saved lesson materials",
       "schoolYear": "View and plan your full school year calendar",
-      "askPearl": "Chat with {{coworkerName}}, your AI teaching assistant",
+      "askPearl": "Chat with {{assistantName}}, your AI teaching assistant",
       "curriculumBrowser": "Search and explore the full OECS curriculum",
       "quizBuilder": "Generate quizzes and assessments instantly",
       "rubricBuilder": "Create consistent grading rubrics in seconds",
@@ -149,7 +149,7 @@
       "stopCloseAll": "Stop & close all"
     },
     "welcome": {
-      "title": "Welcome to the OECS Class Coworker!",
+      "title": "Welcome to the OECS Teacher Assistant!",
       "subtitle": "Empowering Teachers Across the Eastern Caribbean",
       "getStarted": "Get Started"
     }
@@ -510,7 +510,7 @@
     "catPowerUser2": "Consistency is the secret ingredient of great teaching.",
     "catPowerUser3": "Your commitment to your craft is inspiring.",
     "catChat1": "Asking questions is how great ideas are born.",
-    "catChat2": "Every conversation with {{coworkerName}} sparks new possibilities.",
+    "catChat2": "Every conversation with {{assistantName}} sparks new possibilities.",
     "catChat3": "Collaboration — even with AI — makes teaching stronger.",
     "catBrainDump1": "Turning thoughts into action is a superpower.",
     "catBrainDump2": "Your ideas deserve to become reality.",
@@ -663,7 +663,7 @@
     "ocrUnavailable": "OCR Scan Grading Unavailable"
   },
   "setupWizard": {
-    "welcome": "Welcome to the OECS Class Coworker",
+    "welcome": "Welcome to the OECS Teacher Assistant",
     "subtitle": "Empowering Teachers Across the Eastern Caribbean",
     "quickSetup": "This takes less than a minute. You can always change your choices later in Settings.",
     "getStarted": "Get Started",
@@ -785,7 +785,7 @@
   },
   "settingsPage": {
     "title": "Settings",
-    "subtitle": "Customize your {{coworkerName}}",
+    "subtitle": "Customize your {{assistantName}}",
     "profile": {
       "title": "Profile",
       "description": "Your name, school & role",
@@ -812,13 +812,13 @@
       "setupWizard": "Setup Wizard",
       "setupWizardDesc": "Re-run the first-time setup to change which features are shown in your sidebar.",
       "redoSetup": "Redo Setup Wizard",
-      "tellPearl": "Tell {{coworkerName}} about yourself to personalize your experience",
+      "tellPearl": "Tell {{assistantName}} about yourself to personalize your experience",
       "displayNamePlaceholder": "e.g. Ms. Johnson",
       "schoolPlaceholder": "e.g. Castries Primary School"
     },
     "appearance": {
       "title": "Appearance",
-      "description": "Customize how {{coworkerName}} looks and feels",
+      "description": "Customize how {{assistantName}} looks and feels",
       "theme": "Theme",
       "themeDesc": "Choose your preferred color scheme",
       "light": "Light",
@@ -1440,7 +1440,7 @@
     "enterSplitView": "Enter Split View",
     "closeAllTabsExit": "Close All Tabs and Exit Split View",
     "notifications": "Notifications",
-    "welcomeTitle": "OECS Class Coworker",
+    "welcomeTitle": "OECS Teacher Assistant",
     "welcomeSubtitle": "Select a tool from the sidebar to get started",
     "rightClickOptions": "Right-click for options",
     "tips": {
@@ -1454,7 +1454,7 @@
       "tip8": "Image Studio can generate custom visuals for your worksheets.",
       "tip9": "Slide Deck turns your lesson plans into ready-to-present slides.",
       "tip10": "Storybook Creator is designed for K-2 illustrated storytelling.",
-      "tip11": "Ask {{coworkerName}} anything — it knows the full OECS curriculum.",
+      "tip11": "Ask {{assistantName}} anything — it knows the full OECS curriculum.",
       "tip12": "Integrated Lesson plans connect multiple subjects in one activity.",
       "tip13": "My Resources stores all your generated content in one library.",
       "tip14": "Use My Classes to organise students and track their progress.",
@@ -1545,7 +1545,7 @@
     },
     "dashboard": {
       "step1": {
-        "title": "Welcome to OECS Class Coworker!",
+        "title": "Welcome to OECS Teacher Assistant!",
         "description": "This is your teaching toolkit sidebar. Here you will find all the tools to create lesson plans, quizzes, rubrics, and more. The sidebar auto-collapses when you hover away to give you more workspace."
       },
       "step2": {
@@ -1562,8 +1562,8 @@
         "description": "Each tab shows your active tool. You can click the X to close a tab, or right-click to split it side-by-side with another tool."
       },
       "step5": {
-        "title": "Chat with {{coworkerName}}",
-        "description": "Let us open another tool! Chat with {{coworkerName}} for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!",
+        "title": "Chat with {{assistantName}}",
+        "description": "Let us open another tool! Chat with {{assistantName}} for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!",
         "actionHint": "Click to open!"
       },
       "step6": {

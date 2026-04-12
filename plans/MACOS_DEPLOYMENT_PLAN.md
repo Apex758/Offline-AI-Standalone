@@ -1,6 +1,6 @@
-# macOS Deployment Plan — OECS Class Coworker
+# macOS Deployment Plan — OECS Teacher Assistant
 
-> **Goal:** Package and distribute the OECS Class Coworker Electron app for macOS (both Apple Silicon and Intel) without requiring a Mac for the build process, using GitHub Actions as a free macOS CI runner.
+> **Goal:** Package and distribute the OECS Teacher Assistant Electron app for macOS (both Apple Silicon and Intel) without requiring a Mac for the build process, using GitHub Actions as a free macOS CI runner.
 
 ---
 
@@ -262,7 +262,7 @@ macOS requires an entitlements `.plist` file for sandboxed features. Create `bui
   "entitlementsInherit": "build/entitlements.mac.plist"
 },
 "dmg": {
-  "title": "OECS Class Coworker",
+  "title": "OECS Teacher Assistant",
   "internetEnabled": false
 }
 ```
@@ -402,7 +402,7 @@ Create `build-release-mac.sh` as the macOS equivalent of `build-release.ps1`:
 #!/bin/bash
 set -e
 
-echo "=== Building OECS Class Coworker (macOS) ==="
+echo "=== Building OECS Teacher Assistant (macOS) ==="
 
 # Step 1: Package Python backend
 echo "[1/5] Packaging Python backend for macOS..."

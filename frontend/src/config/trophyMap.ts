@@ -70,7 +70,7 @@ const ACHIEVEMENT_TROPHY_MAP: Record<string, TrophyType> = {
   active_days_200: 'flame',
   active_days_365: 'flame',
 
-  // Chat Bubble — Ask Coworker (images not yet available)
+  // Chat Bubble — Ask Assistant (images not yet available)
   first_chat: 'chat-bubble',
   chat_regular: 'chat-bubble',
   chat_messages_50: 'chat-bubble',

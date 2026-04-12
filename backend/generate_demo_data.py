@@ -1,5 +1,5 @@
 """
-Comprehensive Demo Data Generator for OECS Class Coworker
+Comprehensive Demo Data Generator for OECS Teacher Assistant
 Generates a full academic year (Sept 2025 - July 2026) of realistic demo data
 across all 14 Caribbean 3-term school year phases.
 
@@ -95,8 +95,8 @@ class LLMClient:
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://github.com/oecs/class-coworker",
-                "X-Title": "OECS Class Coworker Demo Generator",
+                "HTTP-Referer": "https://github.com/oecs/teacher-assistant",
+                "X-Title": "OECS Teacher Assistant Demo Generator",
             },
             method="POST",
         )
@@ -2193,7 +2193,7 @@ def main():
     global LLM_CLIENT
 
     parser = argparse.ArgumentParser(
-        description="Generate comprehensive demo data for OECS Class Coworker. "
+        description="Generate comprehensive demo data for OECS Teacher Assistant. "
                     "Supply --openrouter-key + --openrouter-model to LLM-generate "
                     "all lesson/quiz/worksheet/rubric/presentation/storybook content; "
                     "otherwise the script runs fully offline with short stub content."

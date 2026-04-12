@@ -226,8 +226,8 @@ const SYNONYM_MAP: Record<string, string[]> = {
   'subject': ['curriculum', 'subjects'],
 
   // chat
-  'ask': ['chat', 'coworker', 'ai'], 'talk': ['chat', 'coworker'],
-  'help': ['chat', 'coworker', 'tutorial'], 'coworker': ['chat', 'coworker'], 'pearl': ['chat', 'coworker'],
+  'ask': ['chat', 'assistant', 'ai'], 'talk': ['chat', 'assistant'],
+  'help': ['chat', 'assistant', 'tutorial'], 'coworker': ['chat', 'assistant'], 'pearl': ['chat', 'assistant'],
   'assistant': ['chat', 'ai', 'assistant'],
 
   // storybook

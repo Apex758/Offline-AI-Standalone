@@ -1,11 +1,11 @@
 # ========================================
-# Model Setup Script for OECS Class Coworker
+# Model Setup Script for OECS Teacher Assistant
 # ========================================
 # Purpose: Copy existing models into proper structure for Electron packaging
 # Copies to BOTH backend (for dev) and top-level models folder (for build)
 
 Write-Host "========================================"  -ForegroundColor Cyan
-Write-Host "OECS Class Coworker - Model Setup"  -ForegroundColor Cyan
+Write-Host "OECS Teacher Assistant - Model Setup"  -ForegroundColor Cyan
 Write-Host "========================================`n"
 
 # Define source paths (where your models currently are)

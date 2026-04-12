@@ -212,7 +212,7 @@ interface Ticket {
 const FAQ_DATA: FAQCategory[] = [
   {
     id: 'getting-started', title: 'Getting Started', titleKey: 'support.gettingStarted', icon: Lightbulb, color: '#f59e0b',
-    description: 'Learn the basics of navigating and using the Class Coworker',
+    description: 'Learn the basics of navigating and using the Teacher Assistant',
     items: [
       { question: 'How do I navigate between different tools?', answer: 'Use the sidebar on the left side of the screen. Hover over it to expand and see all available tools. Click any tool to open it in a new tab. You can have multiple tabs open at once and switch between them using the tab bar at the top.' },
       { question: 'How do I use the command palette?', answer: 'Press Ctrl+K (or Cmd+K on Mac) to open the command palette. You can search for any tool, setting, or action. Just start typing and select from the results. This is the fastest way to navigate the app.' },
@@ -283,12 +283,12 @@ const FAQ_DATA: FAQCategory[] = [
     ]
   },
   {
-    id: 'ask-coworker', title: 'Ask {coworkerName}', icon: MessageSquare, color: '#0ea5e9',
-    description: 'Getting the most out of {coworkerName}',
+    id: 'ask-assistant', title: 'Ask {assistantName}', icon: MessageSquare, color: '#0ea5e9',
+    description: 'Getting the most out of {assistantName}',
     items: [
-      { question: 'What can I ask {coworkerName}?', answer: '{coworkerName} can help with lesson planning ideas, explain curriculum concepts, suggest teaching strategies, help differentiate instruction, create activity ideas, and answer questions about pedagogy. Think of {coworkerName} as a knowledgeable teaching assistant.' },
-      { question: 'Does {coworkerName} know the OECS curriculum?', answer: 'Yes! {coworkerName} is trained on OECS curriculum standards and can reference specific learning outcomes, suggest aligned activities, and help you plan lessons that meet curriculum requirements for your subject and grade level.' },
-      { question: 'Can I have multiple chat conversations?', answer: 'Yes, you can open up to 3 Ask {coworkerName} tabs simultaneously. Each conversation is independent, so you can discuss different topics or subjects in parallel.' },
+      { question: 'What can I ask {assistantName}?', answer: '{assistantName} can help with lesson planning ideas, explain curriculum concepts, suggest teaching strategies, help differentiate instruction, create activity ideas, and answer questions about pedagogy. Think of {assistantName} as a knowledgeable teaching assistant.' },
+      { question: 'Does {assistantName} know the OECS curriculum?', answer: 'Yes! {assistantName} is trained on OECS curriculum standards and can reference specific learning outcomes, suggest aligned activities, and help you plan lessons that meet curriculum requirements for your subject and grade level.' },
+      { question: 'Can I have multiple chat conversations?', answer: 'Yes, you can open up to 3 Ask {assistantName} tabs simultaneously. Each conversation is independent, so you can discuss different topics or subjects in parallel.' },
     ]
   },
   {
@@ -333,8 +333,8 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
   const { t } = useTranslation();
   const { isLicensed, oakLicense } = useLicense();
   const accentColor = settings.tabColors?.['support'] ?? '#0ea5e9';
-  const coworkerName = (settings.profile?.coworkerName || '').trim() || 'Coworker';
-  const substituteCoworkerName = React.useCallback((s: string) => s.replace(/\{coworkerName\}/g, coworkerName), [coworkerName]);
+  const assistantName = (settings.profile?.assistantName || '').trim() || 'Assistant';
+  const substituteAssistantName = React.useCallback((s: string) => s.replace(/\{assistantName\}/g, assistantName), [assistantName]);
 
   // Which face is showing: false = Support (front), true = Reporting (back)
   const [flipped, setFlipped] = useState<boolean>(savedData?.flipped || false);
@@ -736,8 +736,8 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                             <Icon className="w-4 h-4" style={{ color: cat.color }} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{substituteCoworkerName((cat as any).titleKey ? t((cat as any).titleKey) : cat.title)}</p>
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{substituteCoworkerName(cat.description)} · {cat.items.length} question{cat.items.length !== 1 ? 's' : ''}</p>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{substituteAssistantName((cat as any).titleKey ? t((cat as any).titleKey) : cat.title)}</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{substituteAssistantName(cat.description)} · {cat.items.length} question{cat.items.length !== 1 ? 's' : ''}</p>
                           </div>
                           <NeuroChevron
                             expanded={isExp}
@@ -762,7 +762,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                     onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = 'transparent'; }}
                                   >
                                     <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: isOpen ? cat.color : 'var(--text-muted)' }} />
-                                    <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>{substituteCoworkerName(item.question)}</span>
+                                    <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>{substituteAssistantName(item.question)}</span>
                                     <NeuroChevron
                                       expanded={isOpen}
                                       onToggle={() => {}}
@@ -772,7 +772,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                   </button>
                                   {isOpen && (
                                     <div className="ml-9 mr-3 mt-1 mb-2">
-                                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{substituteCoworkerName(item.answer)}</p>
+                                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{substituteAssistantName(item.answer)}</p>
                                       <div className="flex items-center gap-3 mt-3">
                                         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Was this helpful?</span>
                                         <button

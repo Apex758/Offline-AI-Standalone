@@ -1,6 +1,6 @@
 """
 Generates the OLH Tier Analyzer — a standalone executable teachers can run
-on any PC to get a tier recommendation for the OECS Class Coworker.
+on any PC to get a tier recommendation for the OECS Teacher Assistant.
 
 build_analyzer() → tries PyInstaller first (produces .exe with OECS icon),
                    falls back to returning the raw .py script bytes.
@@ -288,7 +288,7 @@ def build_window(specs, results, best_tier):
     tk.Frame(hdr, bg=ACCENT, height=3).pack(fill="x")   # green top stripe
     hdr_inner = frame(hdr, bg=SURFACE2, pad=0)
     hdr_inner.pack(padx=20, pady=12)
-    lbl(hdr_inner, "OECS Class Coworker", fg=ACCENT, bg=SURFACE2, f=F_HEAD).pack(anchor="w")
+    lbl(hdr_inner, "OECS Teacher Assistant", fg=ACCENT, bg=SURFACE2, f=F_HEAD).pack(anchor="w")
     lbl(hdr_inner, "Tier Analyzer — System Compatibility Report", fg=TEXT_DIM, bg=SURFACE2, f=F_SUB).pack(anchor="w")
 
     content = frame(wrap, bg=BG, pad=0)

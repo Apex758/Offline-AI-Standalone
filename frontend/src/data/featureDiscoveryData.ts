@@ -116,13 +116,13 @@ export const FEATURE_CATALOG: DiscoverableFeature[] = [
   },
   {
     id: 'tool-chat',
-    name: 'Ask Coworker',
+    name: 'Ask Assistant',
     category: 'core',
-    description: 'Chat with your Coworker, your AI teaching assistant. Get help with lesson ideas, curriculum questions, differentiation strategies, and more through natural conversation.',
+    description: 'Chat with your Assistant, your AI teaching assistant. Get help with lesson ideas, curriculum questions, differentiation strategies, and more through natural conversation.',
     howToUse: [
-      'Click "Ask Coworker" in the sidebar',
+      'Click "Ask Assistant" in the sidebar',
       'Type your question or request in the chat input',
-      'Your Coworker can help with lesson ideas, explain curriculum standards, suggest activities, and more',
+      'Your Assistant can help with lesson ideas, explain curriculum standards, suggest activities, and more',
       'Your conversation history is saved so you can continue previous chats',
     ],
     toolType: 'chat',

@@ -1,5 +1,5 @@
 # ========================================
-# OECS Class Coworker - Backend Dependencies
+# OECS Teacher Assistant - Backend Dependencies
 # ========================================
 
 # --- API / Backend ---

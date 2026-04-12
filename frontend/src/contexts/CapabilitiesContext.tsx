@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { API_CONFIG } from '../config/api.config';
 
 export interface DualModelConfig {
   enabled: boolean;
@@ -108,7 +109,7 @@ export function CapabilitiesProvider({ children }: { children: React.ReactNode }
 
   const refreshCapabilities = useCallback(async () => {
     try {
-      const res = await fetch('/api/capabilities');
+      const res = await fetch(`${API_CONFIG.BASE_URL}/api/capabilities`);
       if (!res.ok) return;
       const data = await res.json();
       setCapabilities({
@@ -134,7 +135,7 @@ export function CapabilitiesProvider({ children }: { children: React.ReactNode }
   // Fetch recommendations once on mount — hardware doesn't change at runtime
   const fetchRecommendations = useCallback(async () => {
     try {
-      const res = await fetch('/api/recommendations');
+      const res = await fetch(`${API_CONFIG.BASE_URL}/api/recommendations`);
       if (!res.ok) return;
       const data: Recommendations = await res.json();
       setRecommendations(data);

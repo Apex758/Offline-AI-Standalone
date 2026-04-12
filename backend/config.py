@@ -516,16 +516,6 @@ MODEL_TEMPERATURE = 0.7
 # INFERENCE BACKEND CONFIGURATION
 # ============================================================================
 
-# Choose inference backend: "local" or "gemma_api"
-INFERENCE_BACKEND = os.environ.get("INFERENCE_BACKEND", "local")
-
-# Gemma API configuration (only used if INFERENCE_BACKEND="gemma_api")
-GEMMA_API_KEY = os.environ.get("GEMMA_API_KEY", "")
-
-# ============================================================================
-# INFERENCE BACKEND CONFIGURATION
-# ============================================================================
-
 # Choose inference backend: "local", "gemma_api", or "openrouter"
 INFERENCE_BACKEND = os.environ.get("INFERENCE_BACKEND", "local")
 

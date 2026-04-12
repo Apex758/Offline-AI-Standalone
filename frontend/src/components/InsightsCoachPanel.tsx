@@ -6,6 +6,8 @@ import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import axios from 'axios';
 import type { TeacherMetrics, ConsultantConversation } from '../types/insights';
 import type { DimensionClickContext } from './InsightsGraphRow';
+import { API_CONFIG, getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { useSettings } from '../contexts/SettingsContext';
 
 // ── Bubble Rise + Fade Wrapper ──
 const COACH_RISE_CSS = `
@@ -34,7 +36,6 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
     <div className={visible ? 'coach-bubble-rise' : 'coach-bubble-hidden'}>{children}</div>
   );
 }
-import { useSettings } from '../contexts/SettingsContext';
 
 function buildDimensionAutoMessage(dimension: string, ctx: DimensionClickContext): string {
   const gradeChar = ctx.grade.charAt(0);
@@ -157,7 +158,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
 
   useEffect(() => {
     if (!collapsed) {
-      axios.get(`/api/consultant/conversations?teacher_id=${encodeURIComponent(teacherId)}`)
+      axios.get(`${API_CONFIG.BASE_URL}/api/consultant/conversations?teacher_id=${encodeURIComponent(teacherId)}`)
         .then(res => setConversations(res.data?.conversations || []))
         .catch(() => {});
     }
@@ -166,7 +167,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
   useEffect(() => {
     if (currentChatId) {
       chatIdRef.current = currentChatId;
-      axios.get(`/api/consultant/conversation/${currentChatId}`)
+      axios.get(`${API_CONFIG.BASE_URL}/api/consultant/conversation/${currentChatId}`)
         .then(res => {
           const conv = res.data?.conversation;
           if (conv?.messages) {
@@ -216,8 +217,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
     setIsStreaming(true);
     setStreamingContent('');
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//localhost:8000/ws/consultant`);
+    const ws = new WebSocket(getWebSocketUrl('/ws/consultant', isElectronEnvironment()));
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -276,7 +276,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
     onChatIdChange?.(convId);
     chatIdRef.current = convId;
     setShowHistory(false);
-    axios.get(`/api/consultant/conversation/${convId}`)
+    axios.get(`${API_CONFIG.BASE_URL}/api/consultant/conversation/${convId}`)
       .then(res => {
         const conv = res.data?.conversation;
         if (conv?.messages) {

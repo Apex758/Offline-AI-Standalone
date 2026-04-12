@@ -19,6 +19,7 @@ import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
 import CalendarCheckIn01IconData from '@hugeicons/core-free-icons/CalendarCheckIn01Icon';
 import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import axios from 'axios';
+import { API_CONFIG, getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import { achievementApi } from '../lib/achievementApi';
 import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot, PhaseHistoryEntry, AcademicPhase, SchoolYearConfig } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
@@ -213,7 +214,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   // Load schedule on panel open
   useEffect(() => {
     if (scheduleOpen) {
-      fetch('/api/insights/schedule')
+      fetch(`${API_CONFIG.BASE_URL}/api/insights/schedule`)
         .then(r => r.json())
         .then(d => {
           setSchedMode(d.mode || 'manual');
@@ -240,7 +241,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   const saveSchedule = async () => {
     setSchedLoading(true);
     try {
-      await fetch('/api/insights/schedule', {
+      await fetch(`${API_CONFIG.BASE_URL}/api/insights/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: schedMode, time: schedTime, every_days: schedDays }),
@@ -308,7 +309,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   // Load report history on mount
   useEffect(() => {
     if (reportHistory.length === 0) {
-      axios.get('/api/insights/reports')
+      axios.get(`${API_CONFIG.BASE_URL}/api/insights/reports`)
         .then(res => {
           if (Array.isArray(res.data) && res.data.length > 0) {
             setReportHistory(res.data);
@@ -429,8 +430,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
       row2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//localhost:8000/ws/educator-insights`);
+    const ws = new WebSocket(getWebSocketUrl('/ws/educator-insights', isElectronEnvironment()));
     wsRef.current = ws;
 
     ws.onopen = () => {

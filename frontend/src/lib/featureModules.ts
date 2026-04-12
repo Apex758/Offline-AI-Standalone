@@ -36,10 +36,10 @@ export const FEATURE_MODULES: FeatureModule[] = [
   {
     id: 'ai-assistant',
     name: 'AI Assistant & Tools',
-    description: 'Chat with your Coworker for ideas, and use Brain Dump to turn thoughts into actions.',
+    description: 'Chat with your Assistant for ideas, and use Brain Dump to turn thoughts into actions.',
     icon: 'Brain',
     sidebarItems: ['chat', 'planning-prep'],
-    tools: ['Ask Coworker', 'Brain Dump'],
+    tools: ['Ask Assistant', 'Brain Dump'],
   },
   {
     id: 'creative-studio',

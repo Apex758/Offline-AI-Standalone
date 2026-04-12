@@ -37,9 +37,9 @@ Upload structure:
 releases/
   app/
     v2.0.0/
-      OECS-Class-Coworker-Setup-2.0.0.exe
+      OECS-Teacher-Assistant-Setup-2.0.0.exe
     v2.1.0/
-      OECS-Class-Coworker-Setup-2.1.0.exe
+      OECS-Teacher-Assistant-Setup-2.1.0.exe
   models/
     gemma-2b.gguf
     image_generation/

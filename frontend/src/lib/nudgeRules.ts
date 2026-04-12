@@ -60,7 +60,7 @@ export const NUDGE_RULES: NudgeRule[] = [
   {
     triggerTabType: 'chat',
     disabledModule: 'lesson-planning',
-    message: 'Your Coworker can help even more with the Lesson Planner enabled.',
+    message: 'Your Assistant can help even more with the Lesson Planner enabled.',
     ctaLabel: 'Enable Lesson Planning',
     navigateToTab: 'lesson-planner',
   },

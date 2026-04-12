@@ -1,6 +1,6 @@
 """
 =============================================================================
-PROMPT REVIEW FILE -- OECS Class Coworker (PEARL)
+PROMPT REVIEW FILE -- OECS Teacher Assistant (PEARL)
 =============================================================================
 Generated: 2026-04-05
 
@@ -1566,7 +1566,7 @@ Proposed: No change needed.
 # Target file: backend/main.py -> _build_brain_dump_prompt()
 # ----------------------------------------------------------------------------
 
-CURRENT_BRAINDUMP_PRIMARY = """You are an AI assistant for the OECS Class Coworker, a teacher productivity app. Your job is to analyze a teacher's free-form thoughts ("brain dump") and extract actionable items that map to features in the app.
+CURRENT_BRAINDUMP_PRIMARY = """You are an AI assistant for the OECS Teacher Assistant, a teacher productivity app. Your job is to analyze a teacher's free-form thoughts ("brain dump") and extract actionable items that map to features in the app.
 
 Available action types:
 {action_lines}
@@ -1688,7 +1688,7 @@ Dynamic fields:
 # Target file: backend/main.py -> brain_dump_websocket() -> generate-action branch
 # ----------------------------------------------------------------------------
 
-CURRENT_BRAINDUMP_GENACTION_SYSTEM = """You create structured actions for the OECS Class Coworker teacher app."""
+CURRENT_BRAINDUMP_GENACTION_SYSTEM = """You create structured actions for the OECS Teacher Assistant teacher app."""
 
 CURRENT_BRAINDUMP_GENACTION_USER = """Based on the teacher's note: "{action_text}"
 

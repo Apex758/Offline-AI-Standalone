@@ -1,5 +1,5 @@
 # ========================================
-# OECS Class Coworker - Backend Dependencies
+# OECS Teacher Assistant - Backend Dependencies
 # ========================================
 
 # --- API / Backend ---
@@ -23,8 +23,12 @@ accelerate>=0.24.0
 optimum-quanto>=0.2.0   # CPU-compatible 4-bit quantization (int4) via QuantoConfig
 bitsandbytes>=0.41.0    # GPU 4-bit quantization (NF4); skipped on CPU-only machines
 
+# --- System Monitoring ---
+psutil>=5.9.0
+
 # --- Document Processing ---
 opencv-python-headless>=4.8.0
+openpyxl>=3.1.0
 
 # --- QR Code / Scan Grading ---
 qrcode[pil]>=7.4.0
@@ -78,6 +82,18 @@ soupsieve==2.8
 # GPU is auto-detected at runtime via nvidia-smi. The build scripts
 # (manual-package.ps1, package-backend.py) also auto-detect and install
 # the correct wheel when packaging.
+
+# ========================================
+# OPTIONAL: GGUF Stable Diffusion backend
+# ========================================
+# Required only when using GGUF-format diffusion models (SDXL-Turbo GGUF, SD 3.5 GGUF, etc.)
+#   pip install stable-diffusion-cpp-python>=0.4.0
+
+# ========================================
+# OPTIONAL: Gemma API backend
+# ========================================
+# Required only when INFERENCE_BACKEND=gemma_api
+#   pip install google-genai>=1.0.0
 
 # ========================================
 # OPTIONAL: Intel Extension for PyTorch (IPEX)

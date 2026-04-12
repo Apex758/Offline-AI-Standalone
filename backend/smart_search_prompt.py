@@ -11,11 +11,11 @@ Prompt architecture:
 # ---------------------------------------------------------------------------
 # Core prompt — always included
 # ---------------------------------------------------------------------------
-SMART_SEARCH_CORE_PROMPT = """You are a helpful assistant embedded in the Class Coworker app, an offline AI teaching tool. A teacher is asking how to do something in the app. Based on their question, return a JSON object with step-by-step guidance.
+SMART_SEARCH_CORE_PROMPT = """You are a helpful assistant embedded in the Teacher Assistant app, an offline AI teaching tool. A teacher is asking how to do something in the app. Based on their question, return a JSON object with step-by-step guidance.
 
 ## App Tools (toolType -> what it does)
 - analytics: "My Overview" — teaching analytics, quick access dashboard
-- chat: "Ask Coworker" — chat with the AI assistant for ideas and help
+- chat: "Ask Assistant" — chat with the AI assistant for ideas and help
 - lesson-planner: "Lesson Plan" — create standard lesson plans
 - kindergarten-planner: "Early Childhood" — lesson plans for kindergarten/pre-school
 - multigrade-planner: "Multi-Level" — plans for multiple grade levels in one classroom
@@ -84,7 +84,7 @@ Example for "close everything" or "clear all tabs":
 {"intent":"navigation","summary":"Close all open tabs","steps":["Click the X button in the toolbar to close all tabs at once"],"action":{"actionName":"closeAllTabs"},"confidence":0.9}
 
 Rules:
-- The teacher is already inside the app. NEVER start steps with "Open the app" or "Launch Coworker". Start with the first in-app action (e.g., "Click 'Lesson Plan' in the sidebar").
+- The teacher is already inside the app. NEVER start steps with "Open the app" or "Launch Assistant". Start with the first in-app action (e.g., "Click 'Lesson Plan' in the sidebar").
 - "intent" must be exactly one of: "navigation", "generation", "settings", "info"
 - "steps" must be a JSON array of strings like ["step 1", "step 2"]
 - "action" is optional — only include when you can identify a specific tool, feature action, or setting
@@ -192,7 +192,7 @@ SMART_SEARCH_TUTORIALS_CHUNK = """
 ## Tutorial System
 Most tools have built-in interactive tutorials (step-by-step walkthrough with highlights and tooltips). For general "how do I use [tool]?" questions, suggest the tutorial. For specific task queries, give direct steps instead.
 
-Tools with tutorials: Analytics Dashboard, Curriculum Browser, Progress Tracker, Lesson Planner, Early Childhood Planner, Multi-Level Planner, Integrated Lesson Planner, Quiz Builder, Rubric Builder, Worksheet Builder, Image Studio, Resource Manager, Settings, Ask Coworker, My Classes, Storybook Creator
+Tools with tutorials: Analytics Dashboard, Curriculum Browser, Progress Tracker, Lesson Planner, Early Childhood Planner, Multi-Level Planner, Integrated Lesson Planner, Quiz Builder, Rubric Builder, Worksheet Builder, Image Studio, Resource Manager, Settings, Ask Assistant, My Classes, Storybook Creator
 
 For general queries, include a step like: "Tip: Click the '?' tutorial button in the bottom-right corner of the tool to get an interactive guided walkthrough"
 """
@@ -247,9 +247,9 @@ def build_smart_search_prompt(query: str) -> str:
 # ---------------------------------------------------------------------------
 # Tier 1 prompt — single compact prompt for the smallest models (no chunking)
 # ---------------------------------------------------------------------------
-SMART_SEARCH_TIER1_PROMPT = """You help teachers use the Class Coworker app. Return ONLY valid JSON, nothing else.
+SMART_SEARCH_TIER1_PROMPT = """You help teachers use the Teacher Assistant app. Return ONLY valid JSON, nothing else.
 
-The teacher is already inside the app. NEVER start steps with "Open the app" or "Launch Coworker". Start with the first in-app action.
+The teacher is already inside the app. NEVER start steps with "Open the app" or "Launch Assistant". Start with the first in-app action.
 
 Tools: analytics, chat, lesson-planner, kindergarten-planner, multigrade-planner, cross-curricular-planner, quiz-generator, rubric-generator, worksheet-generator, image-studio, resource-manager, curriculum, curriculum-tracker, class-management, settings, brain-dump, presentation-builder, storybook, achievements, performance-metrics, support
 

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 def _get_data_directory() -> Path:
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Class Coworker' / 'data'
+        data_dir = Path(app_data) / 'OECS Teacher Assistant' / 'data'
     else:
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -150,11 +150,11 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "content_100",         "name": "Content Machine",          "description": "Save 200 total resources",                   "category": "power-user",          "icon_name": "Trophy",              "rarity": "epic",      "check_key": "total_resources",        "check_value": 200},
     {"id": "image_creator",       "name": "Visual Designer",          "description": "Create 5 images in Image Studio",            "category": "power-user",          "icon_name": "Image",               "rarity": "uncommon",  "check_key": "images",                 "check_value": 5},
 
-    # ── Chat / Ask Coworker ──
-    {"id": "first_chat",          "name": "Hello Coworker",           "description": "Start your first conversation with your Coworker", "category": "chat",                "icon_name": "Chat",                "rarity": "common",    "check_key": "chat_conversations",     "check_value": 1},
-    {"id": "chat_regular",        "name": "Regular Chatter",          "description": "Have 10 conversations with your Coworker",    "category": "chat",                "icon_name": "Chat",                "rarity": "uncommon",  "check_key": "chat_conversations",     "check_value": 10},
-    {"id": "chat_messages_50",    "name": "Curious Mind",             "description": "Send 100 messages to your Coworker",          "category": "chat",                "icon_name": "MessageEdit",         "rarity": "rare",      "check_key": "chat_messages",          "check_value": 100},
-    {"id": "chat_messages_200",   "name": "Deep Thinker",             "description": "Send 500 messages to your Coworker",          "category": "chat",                "icon_name": "MessageEdit",         "rarity": "epic",      "check_key": "chat_messages",          "check_value": 500},
+    # ── Chat / Ask Assistant ──
+    {"id": "first_chat",          "name": "Hello Assistant",           "description": "Start your first conversation with your Assistant", "category": "chat",                "icon_name": "Chat",                "rarity": "common",    "check_key": "chat_conversations",     "check_value": 1},
+    {"id": "chat_regular",        "name": "Regular Chatter",          "description": "Have 10 conversations with your Assistant",    "category": "chat",                "icon_name": "Chat",                "rarity": "uncommon",  "check_key": "chat_conversations",     "check_value": 10},
+    {"id": "chat_messages_50",    "name": "Curious Mind",             "description": "Send 100 messages to your Assistant",          "category": "chat",                "icon_name": "MessageEdit",         "rarity": "rare",      "check_key": "chat_messages",          "check_value": 100},
+    {"id": "chat_messages_200",   "name": "Deep Thinker",             "description": "Send 500 messages to your Assistant",          "category": "chat",                "icon_name": "MessageEdit",         "rarity": "epic",      "check_key": "chat_messages",          "check_value": 500},
 
     # ── Brain Dump ──
     {"id": "first_brain_dump",    "name": "Brain Unleashed",          "description": "Use Brain Dump for the first time",          "category": "brain-dump",          "icon_name": "Brain",               "rarity": "common",    "check_key": "brain_dump_uses",        "check_value": 1},
@@ -281,8 +281,8 @@ ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
     },
     {
         "id": "pearl_companion",
-        "name": "Coworker Companion",
-        "description": "Earn all Ask Coworker achievements",
+        "name": "Assistant Companion",
+        "description": "Earn all Ask Assistant achievements",
         "category": "chat",
         "achievement_ids": ["first_chat", "chat_regular", "chat_messages_50", "chat_messages_200"],
     },

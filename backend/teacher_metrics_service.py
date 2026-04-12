@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 def _get_data_directory() -> Path:
     if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Class Coworker' / 'data'
+        data_dir = Path(app_data) / 'OECS Teacher Assistant' / 'data'
     else:
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     data_dir.mkdir(parents=True, exist_ok=True)

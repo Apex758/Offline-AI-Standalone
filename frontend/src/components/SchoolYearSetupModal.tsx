@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { API_CONFIG } from '../config/api.config';
 import type { SchoolYearConfig, AcademicPhase } from '../types/insights';
 
 interface Props {
@@ -79,7 +80,7 @@ const SchoolYearSetupModal: React.FC<Props> = ({ teacherId, onClose, onSaved }) 
     setSaving(true);
     setError(null);
     try {
-      const res = await axios.post('/api/teacher-metrics/setup-caribbean-year', {
+      const res = await axios.post(`${API_CONFIG.BASE_URL}/api/teacher-metrics/setup-caribbean-year`, {
         teacher_id: teacherId,
         label,
         structure_type: structureType,

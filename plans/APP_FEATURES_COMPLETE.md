@@ -1,4 +1,4 @@
-# OECS Class Coworker — Complete Feature & Function Reference
+# OECS Teacher Assistant — Complete Feature & Function Reference
 *Auto-generated deep dive | April 2026*
 
 ---
@@ -11,7 +11,7 @@
 5. [Rubric Builder](#5-rubric-builder)
 6. [Worksheet Builder & Grading](#6-worksheet-builder--grading)
 7. [Classroom Management](#7-classroom-management)
-8. [AI Chat Assistant (Ask Coworker)](#8-ai-chat-assistant-ask-coworker)
+8. [AI Chat Assistant (Ask Assistant)](#8-ai-chat-assistant-ask-coworker)
 9. [Curriculum Browser & Progress Tracker](#9-curriculum-browser--progress-tracker)
 10. [Brain Dump](#10-brain-dump)
 11. [Image Studio](#11-image-studio)
@@ -62,7 +62,7 @@
 
 **Design philosophy:** Offline-first. Everything — AI, grading, storage — works without internet. Optional cloud models require API keys.
 
-**App data folder:** `%APPDATA%/OECS Class Coworker/data` on Windows.
+**App data folder:** `%APPDATA%/OECS Teacher Assistant/data` on Windows.
 
 ---
 
@@ -73,7 +73,7 @@ The sidebar has **23 primary tabs**, organized into feature groups. Middle tabs 
 | # | Tab Name | Type ID | Icon | Feature Group |
 |---|----------|---------|------|--------------|
 | 1 | My Overview | `analytics` | LayoutDashboard | Dashboard |
-| 2 | Ask Coworker | `chat` | MessageSquare | AI Assistant |
+| 2 | Ask Assistant | `chat` | MessageSquare | AI Assistant |
 | 3 | Curriculum Browser | `curriculum` | Search | Planning & Prep |
 | 4 | Lesson Plan | `lesson-planner` | BookMarked | Lesson Planners |
 | 5 | Early Childhood | `kindergarten-planner` | Baby | Lesson Planners |
@@ -104,7 +104,7 @@ The sidebar has **23 primary tabs**, organized into feature groups. Middle tabs 
 - Split-view mode: two tabs side by side (`SplitViewState`: left pane / right pane)
 - Tab busy state prevents accidental close during generation
 
-**Note:** App data folder is at `%APPDATA%/OECS Class Coworker/data` on Windows.
+**Note:** App data folder is at `%APPDATA%/OECS Teacher Assistant/data` on Windows.
 
 ---
 
@@ -394,7 +394,7 @@ LessonPlan {
 
 ---
 
-## 8. AI Chat Assistant (Ask Coworker)
+## 8. AI Chat Assistant (Ask Assistant)
 
 **Component:** `Chat.tsx`
 **WebSocket:** `/ws/chat`
@@ -427,7 +427,7 @@ LessonPlan {
 
 ### 8.2 Thinking Level Controls (Quick / Deep)
 - Per-chat Quick/Deep toggle replaces the old global Thinking Mode setting
-- Brain icon in Ask Coworker opens the Quick/Deep popup
+- Brain icon in Ask Assistant opens the Quick/Deep popup
 - **Quick mode:** Faster, shorter responses — suited for rapid queries
 - **Deep mode:** Longer, reasoned responses with chain-of-thought
   - CoT prefix injected for Gemma models
@@ -1659,7 +1659,7 @@ Triggering "Mark as Taught" on a lesson plan simultaneously:
 
 ---
 
-### Ask Coworker (AI Chat) -> On-Demand Pedagogical Support
+### Ask Assistant (AI Chat) -> On-Demand Pedagogical Support
 
 **Time savings:**
 - Instant answers to "how do I explain fractions to visual learners" without searching the internet
@@ -1891,7 +1891,7 @@ Triggering "Mark as Taught" on a lesson plan simultaneously:
 
 #### Educator Coach Drawer
 **File:** `frontend/src/components/EducatorCoachDrawer.tsx`
-- Slide-out drawer panel (separate from Ask Coworker tab)
+- Slide-out drawer panel (separate from Ask Assistant tab)
 - Consultant-mode AI conversation
 - Conversation history via `/api/consultant/conversations`
 - Accessible from Educator Insights
@@ -1955,7 +1955,7 @@ Triggering "Mark as Taught" on a lesson plan simultaneously:
 | Rubric Builder | Consistent, transparent grading | Students self-assess and improve before submission |
 | Worksheet Builder | Differentiated materials at scale | Every student appropriately challenged |
 | Classroom Management | All data in one place | Evidence-based student support |
-| Ask Coworker | On-demand instructional coaching | Better-informed teaching decisions |
+| Ask Assistant | On-demand instructional coaching | Better-informed teaching decisions |
 | Curriculum Browser | Standards always accessible | Full coverage without gaps |
 | Progress Tracker | Milestone evidence for accountability | Sequenced, prerequisite-aware instruction |
 | Brain Dump | Zero-friction idea capture | Observations turned into responsive teaching |
@@ -1977,4 +1977,4 @@ Triggering "Mark as Taught" on a lesson plan simultaneously:
 
 ---
 
-*End of OECS Class Coworker Feature Reference — generated April 2026*
+*End of OECS Teacher Assistant Feature Reference — generated April 2026*

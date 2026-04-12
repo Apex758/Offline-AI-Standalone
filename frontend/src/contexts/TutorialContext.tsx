@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import TutorialOverlay, { TutorialStep } from '../components/TutorialOverlay';
 import type { TutorialId } from '../data/tutorialSteps';
+import { useSettings } from './SettingsContext';
 
 interface TutorialContextType {
   startTutorial: (id: TutorialId) => void;
@@ -13,9 +14,14 @@ const TutorialContext = createContext<TutorialContextType | null>(null);
 export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTutorialId, setActiveTutorialId] = useState<TutorialId | null>(null);
   const [activeSteps, setActiveSteps] = useState<TutorialStep[] | null>(null);
+  const { markTutorialComplete } = useSettings();
 
   const startTutorial = (id: TutorialId) => setActiveTutorialId(id);
-  const stopTutorial = () => { setActiveTutorialId(null); setActiveSteps(null); };
+  const stopTutorial = () => {
+    if (activeTutorialId) markTutorialComplete(activeTutorialId);
+    setActiveTutorialId(null);
+    setActiveSteps(null);
+  };
 
   // Lazy-load tutorial steps only when a tutorial is started
   useEffect(() => {

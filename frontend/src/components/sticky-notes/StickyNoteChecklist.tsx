@@ -28,7 +28,7 @@ export const StickyNoteChecklist: React.FC<Props> = ({ checklist, onToggle, onNa
             style={{
               textDecoration: item.completed ? 'line-through' : 'none',
               opacity: item.completed ? 0.5 : 1,
-              color: 'var(--text-heading)',
+              color: '#2D2D2D',
             }}
           >
             <span className="font-semibold text-green-700 mr-1">{i + 1}.</span>

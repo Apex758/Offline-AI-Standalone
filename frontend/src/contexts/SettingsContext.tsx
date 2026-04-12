@@ -57,7 +57,7 @@ export interface UserProfile {
   gradeSubjects: GradeSubjectMapping;
   filterContentByProfile: boolean;
   registrationDate?: string;
-  coworkerName: string; // user-set name for the AI assistant, default "Coworker"
+  assistantName: string; // user-set name for the AI assistant, default "Assistant"
   // Legacy fields — kept for migration only
   gradeLevels?: string[];
   subjects?: string[];
@@ -236,7 +236,7 @@ export const DEFAULT_SETTINGS: Settings = {
     setupMode: null,
     gradeSubjects: {},
     filterContentByProfile: true,
-    coworkerName: 'Coworker',
+    assistantName: 'Assistant',
   },
   sidebarOrder: DEFAULT_SIDEBAR_ORDER,
   // Writing assistant defaults
@@ -453,8 +453,8 @@ const loadSettingsFromStorage = (): Settings => {
           gradeSubjects,
           // Backfill registrationDate for existing users who already completed setup
           registrationDate: (parsed.profile?.registrationDate) || (parsed.tutorials?.hasCompletedSetup ? new Date().toISOString() : undefined),
-          // Migration: backfill coworkerName for existing users
-          coworkerName: (parsed.profile?.coworkerName || '').trim() || 'Coworker',
+          // Migration: backfill assistantName for existing users
+          assistantName: (parsed.profile?.assistantName || parsed.profile?.coworkerName || '').trim() || 'Assistant',
           // Migration: backfill schoolSource. Existing users with a school string
           // are flagged 'manual' (hidden from settings going forward). Users with
           // no school get null. OAK-activated users are re-flagged by LicenseSettingsBridge.
@@ -764,9 +764,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       snapshot.profile = snapshot.profile || {};
       snapshot.profile.displayName = settings.profile.displayName;
     }
-    if (settings.profile?.coworkerName) {
+    if (settings.profile?.assistantName) {
       snapshot.profile = snapshot.profile || {};
-      snapshot.profile.coworkerName = settings.profile.coworkerName;
+      snapshot.profile.assistantName = settings.profile.assistantName;
     }
     if (settings.profile?.gradeSubjects && Object.keys(settings.profile.gradeSubjects).length > 0) {
       snapshot.profile = snapshot.profile || {};

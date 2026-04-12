@@ -24,6 +24,7 @@ import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import axios from 'axios';
+import { API_CONFIG } from '../config/api.config';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../contexts/SettingsContext';
@@ -252,7 +253,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       const formData = new FormData();
       formData.append('file', file);
       formData.append('teacher_id', teacherId);
-      const res = await axios.post('/api/teacher-metrics/calendar-import', formData);
+      const res = await axios.post(`${API_CONFIG.BASE_URL}/api/teacher-metrics/calendar-import`, formData);
       const parsed = res.data.events || [];
       if (parsed.length === 0) {
         alert('No events found in the file.');
@@ -289,7 +290,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
         event_type: evt.event_type || 'custom',
         all_day: 1,
       }));
-      await axios.post('/api/school-year/events/bulk', { events: eventsToSave });
+      await axios.post(`${API_CONFIG.BASE_URL}/api/school-year/events/bulk`, { events: eventsToSave });
       setImportPreview(null);
       loadEvents(config.id);
     } catch (err: any) {
@@ -441,7 +442,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
     setSetupSaving(true);
     setSetupError(null);
     try {
-      const res = await axios.post('/api/teacher-metrics/setup-caribbean-year', {
+      const res = await axios.post(`${API_CONFIG.BASE_URL}/api/teacher-metrics/setup-caribbean-year`, {
         teacher_id: teacherId,
         label: setupLabel,
         structure_type: structureType,
@@ -558,7 +559,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
       if (editingEvent) {
         payload.id = editingEvent.id;
       }
-      await axios.post('/api/school-year/events', payload);
+      await axios.post(`${API_CONFIG.BASE_URL}/api/school-year/events`, payload);
       setShowEventForm(false);
       setEditingEvent(null);
       loadEvents(config.id);

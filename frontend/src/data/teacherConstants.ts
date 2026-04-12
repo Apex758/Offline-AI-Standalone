@@ -1,4 +1,4 @@
-// Canonical grade levels and subjects for the OECS Class Coworker
+// Canonical grade levels and subjects for the OECS Teacher Assistant
 // Single source of truth — all components should import from here
 
 export interface GradeLevel {

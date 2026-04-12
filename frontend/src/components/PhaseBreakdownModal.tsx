@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import type { PhaseHistoryEntry, AcademicPhaseSummary } from '../types/insights';
+import { API_CONFIG } from '../config/api.config';
 
 interface Props {
   entry: PhaseHistoryEntry;
@@ -77,7 +78,7 @@ const PhaseBreakdownModal: React.FC<Props> = ({ entry, teacherId, onClose }) => 
     setGenerating(true);
     try {
       const res = await axios.post(
-        `/api/teacher-metrics/phase-summary/${entry.phase_key}?teacher_id=${teacherId}`
+        `${API_CONFIG.BASE_URL}/api/teacher-metrics/phase-summary/${entry.phase_key}?teacher_id=${teacherId}`
       );
       setSummary(res.data.summary);
     } catch {

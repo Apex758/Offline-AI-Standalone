@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useCoworkerName } from '../hooks/useCoworkerName';
+import { useAssistantName } from '../hooks/useAssistantName';
 import type { NewlyEarnedAchievement, AchievementRarity, AchievementCategory } from '../types/achievement';
 
 /* ─── Rarity color themes ─── */
@@ -31,7 +31,7 @@ const CATEGORY_TIPS: Record<AchievementCategory, string> = {
   'curriculum': 'Keep hitting curriculum milestones and tracking standards.',
   'exploration': 'Never stop exploring new features and tools.',
   'power-user': 'Maintain your daily streak and stay active.',
-  'chat': 'Keep chatting with {coworkerName} to grow your skills.',
+  'chat': 'Keep chatting with {assistantName} to grow your skills.',
   'brain-dump': 'Turn more ideas into action with Brain Dump.',
   'analytics': 'Keep generating reports and using analytics tools.',
 };
@@ -46,7 +46,7 @@ interface TrophyDetailCardProps {
 
 export default function TrophyDetailCard({ achievement, trophyImageSrc, earnedAt, onClose }: TrophyDetailCardProps) {
   const { t } = useTranslation();
-  const coworkerName = useCoworkerName();
+  const assistantName = useAssistantName();
   const [flipped, setFlipped] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -565,7 +565,7 @@ export default function TrophyDetailCard({ achievement, trophyImageSrc, earnedAt
                       <div>
                         <div className="tdc-back-item-title">{t('trophy.howToKeep')}</div>
                         <div className="tdc-back-item-desc">
-                          {(CATEGORY_TIPS[achievement.category] || 'Stay active and keep progressing to maintain your achievements.').replace(/\{coworkerName\}/g, coworkerName)}
+                          {(CATEGORY_TIPS[achievement.category] || 'Stay active and keep progressing to maintain your achievements.').replace(/\{assistantName\}/g, assistantName)}
                         </div>
                       </div>
                     </div>

@@ -1,4 +1,4 @@
-# OECS Class Coworker — Systematic Testing Plan (Teacher Journey Order)
+# OECS Teacher Assistant — Systematic Testing Plan (Teacher Journey Order)
 *2026-04-12 | Test every feature in the order a brand-new teacher encounters it*
 
 ---
@@ -29,7 +29,7 @@
 | 8 | ClassConfigPanel & Class Defaults Wiring | 7 | Config per class, auto-fill, focus-loss fix |
 | 9 | Curriculum Browser, Standards & Milestones Initialization | 4 | Standards, skill tree, milestone setup |
 | 10 | Active Class Context, Defaults Banner, Auto-Filled Sections | 8 | ActiveClassContext, ClassDefaultsBanner |
-| 11 | Ask Coworker / Chat (AI Pipeline Smoke Test) | 3 | Chat, TTS/STT, memory, context budgeting |
+| 11 | Ask Assistant / Chat (AI Pipeline Smoke Test) | 3 | Chat, TTS/STT, memory, context budgeting |
 | 12 | Brain Dump & Sticky Notes | 11 | Brain Dump, Sticky Notes full feature |
 | 13 | Lesson Planning Suite | 10 | Standard / Early Childhood / Multi-Level / Cross-Curricular |
 | 14 | Quiz Builder (Generation, Editing, QR, Scheduling) | 10 | Quiz gen, edit, QR, answer keys |
@@ -159,7 +159,7 @@ SELECT authz.validate_oak('OAK-REAL-KEY-HERE', 'smoke-test-device-001');
 - [ ] Installer runs without admin-permission errors `[HIGH]`
 - [ ] App icon appears in Start menu / Applications `[MEDIUM]`
 - [ ] Bundled backend Python venv launches automatically on first run `[CRITICAL]`
-- [ ] AppData folder created at `%APPDATA%/OECS Class Coworker/data` (Win) on first run `[HIGH]`
+- [ ] AppData folder created at `%APPDATA%/OECS Teacher Assistant/data` (Win) on first run `[HIGH]`
 - [ ] Models directory exists or app prompts user to download a model `[HIGH]`
 - Findings: ___
 
@@ -294,7 +294,7 @@ SELECT authz.validate_oak('OAK-REAL-KEY-HERE', 'smoke-test-device-001');
 
 *Goal: Confirm the OAK license key and device ID are stored using Electron's OS-level encryption, not plaintext localStorage.*
 
-- [ ] **Fresh activation:** Activate OAK -> `license-store.enc` file appears in `%APPDATA%/OECS Class Coworker/` `[CRITICAL]`
+- [ ] **Fresh activation:** Activate OAK -> `license-store.enc` file appears in `%APPDATA%/OECS Teacher Assistant/` `[CRITICAL]`
 - [ ] **No plaintext:** After activation, `localStorage.getItem('oecs_oak_license')` returns `null` (removed after migration to safeStorage) `[CRITICAL]`
 - [ ] **Device ID encrypted:** `localStorage.getItem('oecs_device_id')` returns `null` (migrated to safeStorage) `[HIGH]`
 - [ ] **Encrypted file is not readable:** Open `license-store.enc` in a text editor -> contents are binary/gibberish, NOT readable JSON `[HIGH]`
@@ -770,7 +770,7 @@ every keystroke. Fix: all three hoisted to module scope.
 
 ---
 
-## STAGE 11 — Ask Coworker / Chat (AI Pipeline Smoke Test)
+## STAGE 11 — Ask Assistant / Chat (AI Pipeline Smoke Test)
 
 *Goal: Verify core AI inference pipeline works — this underpins all generation features.*
 
@@ -826,7 +826,7 @@ every keystroke. Fix: all three hoisted to module scope.
 ### 11.7 Thinking Level Controls (Feature 2)
 
 - [ ] Settings page no longer shows a global "Thinking Mode" toggle `[MEDIUM]`
-- [ ] Brain icon in Ask Coworker opens Quick / Deep popup `[HIGH]`
+- [ ] Brain icon in Ask Assistant opens Quick / Deep popup `[HIGH]`
 - [ ] Quick mode: faster, shorter responses `[HIGH]`
 - [ ] Deep mode: longer, more reasoned responses (CoT prefix for Gemma, `/think` for Qwen) `[HIGH]`
 - [ ] Brain icon visual state reflects current selection (dim = Quick, glow = Deep) `[MEDIUM]`
@@ -2409,7 +2409,7 @@ Use this section to record all issues found during testing.
 | 8 | ClassConfigPanel & Class Defaults | 17 | | |
 | 9 | Curriculum Browser + Milestones | 28 | | |
 | 10 | Active Class Context + Defaults Banner | 14 | | |
-| 11 | Ask Coworker / Chat | 37 | | |
+| 11 | Ask Assistant / Chat | 37 | | |
 | 12 | Brain Dump & Sticky Notes | 28 | | |
 | 13 | Lesson Planning Suite | 40 | | |
 | 14 | Quiz Builder | 26 | | |
@@ -2438,7 +2438,7 @@ Use this section to record all issues found during testing.
 
 ---
 
-*End of OECS Class Coworker Testing Plan — Teacher Journey Order*
+*End of OECS Teacher Assistant Testing Plan — Teacher Journey Order*
 
 ---
 

@@ -24,7 +24,7 @@ PROFILE_BLOCK_TOKEN_CAP = 150
 # THE allowlist. Any path not on this list is dropped at the boundary.
 PROFILE_ALLOWLIST = frozenset([
     "profile.displayName",
-    "profile.coworkerName",
+    "profile.assistantName",
     "profile.gradeSubjects",
     "profile.filterContentByProfile",
     "language",
@@ -36,7 +36,7 @@ PROFILE_ALLOWLIST = frozenset([
 FEATURE_FIELD_MAP: Dict[str, List[str]] = {
     "chat": [
         "profile.displayName",
-        "profile.coworkerName",
+        "profile.assistantName",
         "profile.gradeSubjects",
         "language",
     ],
@@ -168,7 +168,7 @@ def build_block(
             continue
         if field == "profile.displayName":
             lines.append(f"- Name: {v}")
-        elif field == "profile.coworkerName":
+        elif field == "profile.assistantName":
             lines.append(f"- Their AI's name: {v}")
         elif field == "profile.gradeSubjects":
             formatted = _format_grade_subjects(v, grade_hint)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCoworkerName } from '../hooks/useCoworkerName';
+import { useAssistantName } from '../hooks/useAssistantName';
 import AIDisclaimer from './AIDisclaimer';
 import { HugeiconsIcon } from '@hugeicons/react';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
@@ -217,8 +217,8 @@ const ThinkingBlock: React.FC<{ content: string; isStreaming?: boolean }> = ({ c
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick, onOpenCurriculumTab, isActive }) => {
   const { t } = useTranslation();
-  const coworkerName = useCoworkerName();
-  const defaultChatTitle = `Ask ${coworkerName}`;
+  const assistantName = useAssistantName();
+  const defaultChatTitle = `Ask ${assistantName}`;
   // DEBUG logging removed to prevent render storm spam
   // LocalStorage key for this chat tab
   const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
@@ -947,7 +947,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       chat_id: currentChatId,
       // Feature 2: per-message thinking mode (Quick / Deep) -- replaces global setting
       thinking_mode: thinkingMode,
-      coworker_name: coworkerName,
+      assistant_name: assistantName,
       // Feature 6: long-term memory routing
       teacher_id: settings.profile.displayName?.trim() || 'default_teacher',
       memory_enabled: settings.memoryEnabled !== false,
@@ -1716,7 +1716,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }}>
         <div className="border-b border-theme p-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-theme-heading">Chat with {coworkerName}</h2>
+            <h2 className="text-xl font-semibold text-theme-heading">Chat with {assistantName}</h2>
             <p className="text-sm text-theme-hint">
               {/* WebSocket connection status is not available via context API, so this is omitted or needs a new prop */}
             </p>

@@ -463,7 +463,7 @@ function buildDictionary(): Set<string> {
     'datum', 'media', 'criteria', 'phenomena', 'alumni', 'analyses',
     'bases', 'crises', 'diagnoses', 'hypotheses', 'parentheses', 'syntheses', 'theses',
     'per', 'via', 'versus',
-    'OECS', 'Coworker', 'AI',
+    'OECS', 'Assistant', 'AI',
     'St', 'Lucia', 'Vincent', 'Grenadines', 'Grenada', 'Dominica',
     'Antigua', 'Barbuda', 'Kitts', 'Nevis', 'Montserrat', 'Anguilla',
     'Caribbean', 'West', 'Indies',

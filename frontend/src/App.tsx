@@ -24,6 +24,7 @@ import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 import { EngineStatusProvider } from './contexts/EngineStatusContext';
 import { TimetableProvider } from './contexts/TimetableContext';
 import { ActiveClassProvider } from './contexts/ActiveClassContext';
+import { TutorialProvider } from './contexts/TutorialContext';
 
 const SetupWizard = lazy(() => import('./components/SetupWizard/SetupWizard'));
 function AppContent() {
@@ -103,6 +104,7 @@ function App() {
     <LicenseProvider>
       <LicenseGate>
         <SettingsProvider>
+          <TutorialProvider>
           <LicenseSettingsBridge />
           <CapabilitiesProvider>
             <NotificationProvider>
@@ -126,6 +128,7 @@ function App() {
               </ReminderProvider>
             </NotificationProvider>
           </CapabilitiesProvider>
+          </TutorialProvider>
         </SettingsProvider>
       </LicenseGate>
     </LicenseProvider>

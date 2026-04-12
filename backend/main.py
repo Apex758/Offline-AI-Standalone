@@ -197,7 +197,7 @@ def get_data_directory():
     """Get user-writable data directory"""
     if os.name == 'nt':  # Windows
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OECS Class Coworker' / 'data'
+        data_dir = Path(app_data) / 'OECS Teacher Assistant' / 'data'
     else:  # macOS/Linux
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     
@@ -682,7 +682,7 @@ def get_chat_params_for_mode(
     prompt_format: str,
     tier: int,
     model_supports_thinking: bool,
-    coworker_name: str = "Coworker",
+    assistant_name: str = "Assistant",
 ) -> dict:
     """Feature 2: resolve system prompt + sampling params for the chat thinking mode.
 
@@ -693,7 +693,7 @@ def get_chat_params_for_mode(
     from tier1_prompts import get_tier1_system_prompt, TIER1_MAX_TOKENS
 
     if thinking_mode == "deep":
-        system_prompt = get_tier2_system_prompt("chat", coworker_name=coworker_name)
+        system_prompt = get_tier2_system_prompt("chat", assistant_name=assistant_name)
         # Gemma family doesn't have a /think directive — coax it via system prompt
         if (prompt_format or "").startswith("gemma"):
             system_prompt += "\n\nThink carefully step by step before answering."
@@ -706,9 +706,9 @@ def get_chat_params_for_mode(
 
     # Quick mode (default) — low repeat_penalty for fast CPU sampling
     if tier == 1:
-        system_prompt = get_tier1_system_prompt("chat", coworker_name=coworker_name)
+        system_prompt = get_tier1_system_prompt("chat", assistant_name=assistant_name)
     else:
-        system_prompt = get_tier2_system_prompt("chat-quick", coworker_name=coworker_name)
+        system_prompt = get_tier2_system_prompt("chat-quick", assistant_name=assistant_name)
     return {
         "system_prompt": system_prompt,
         "max_tokens": TIER1_MAX_TOKENS.get("chat", 1500),
@@ -1304,8 +1304,8 @@ async def websocket_chat(websocket: WebSocket):
             profile_context = message_data.get("profile_context", "")
             # Context files attached from the frontend file picker
             context_files = message_data.get("context_files", None) or message_data.get("contextFiles", None)
-            # Configurable coworker name (AI persona name set by user in Settings)
-            coworker_name = (message_data.get("coworker_name") or "Coworker").strip() or "Coworker"
+            # Configurable assistant name (AI persona name set by user in Settings)
+            assistant_name = (message_data.get("assistant_name") or "Assistant").strip() or "Assistant"
             # Feature 6: long-term teacher memory (privacy kill-switch + per-teacher recall)
             teacher_id = message_data.get("teacher_id", "default_teacher")
             memory_enabled = bool(message_data.get("memory_enabled", True))
@@ -1331,7 +1331,7 @@ async def websocket_chat(websocket: WebSocket):
                 prompt_format=_early_prompt_fmt,
                 tier=_tier_info["tier"],
                 model_supports_thinking=False,  # set after inference resolved
-                coworker_name=coworker_name,
+                assistant_name=assistant_name,
             )
             default_system_prompt = _mode_params["system_prompt"]
             # Legacy var name kept for downstream code paths (vision fallback etc.)
@@ -1971,11 +1971,11 @@ async def websocket_lesson_plan(websocket: WebSocket):
             _t1_params = get_tier1_gen_params("lesson-plan") if _is_tier1 else {}
 
             _grade = form_data.get("gradeLevel", "") if isinstance(form_data, dict) else ""
-            _coworker_name = (data.get("coworker_name") or "Coworker").strip() or "Coworker"
+            _assistant_name = (data.get("assistant_name") or "Assistant").strip() or "Assistant"
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("lesson-plan", _grade, coworker_name=_coworker_name)
+                system_prompt = get_tier1_system_prompt("lesson-plan", _grade, assistant_name=_assistant_name)
             else:
-                system_prompt = get_tier2_system_prompt("lesson-plan", coworker_name=_coworker_name)
+                system_prompt = get_tier2_system_prompt("lesson-plan", assistant_name=_assistant_name)
 
             # Prefer user-selected ELO/SCOs from the form over generic curriculum context
             user_elo = ""
@@ -4445,7 +4445,7 @@ async def websocket_analyse(websocket: WebSocket):
                 prompt_format=prompt_fmt,
                 tier=_tier_info["tier"],
                 model_supports_thinking=False,
-                coworker_name="Coworker",
+                assistant_name="Assistant",
             )
             max_tokens = _params["max_tokens"]
             temperature = _params["temperature"]
@@ -11144,10 +11144,10 @@ async def export_calendar_ics(request: Request):
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//OECS Class Coworker//Test Reminders//EN",
+        "PRODID:-//OECS Teacher Assistant//Test Reminders//EN",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
-        "X-WR-CALNAME:OECS Class Coworker",
+        "X-WR-CALNAME:OECS Teacher Assistant",
     ]
 
     def _ics_date(date_str: str, time_str: str | None = None) -> str:
@@ -11179,7 +11179,7 @@ async def export_calendar_ics(request: Request):
             desc = f"{subject} - Grade {grade}\\n{desc}".strip("\\n")
 
         lines.append("BEGIN:VEVENT")
-        lines.append(f"UID:{uid}@oecs-class-coworker")
+        lines.append(f"UID:{uid}@oecs-teacher-assistant")
         if "T" in dtstart:
             lines.append(f"DTSTART:{dtstart}")
             # 1 hour duration for timed events
@@ -11216,7 +11216,7 @@ async def export_calendar_ics(request: Request):
         completed = t.get("completed", False)
 
         lines.append("BEGIN:VTODO")
-        lines.append(f"UID:task-{uid}@oecs-class-coworker")
+        lines.append(f"UID:task-{uid}@oecs-teacher-assistant")
         lines.append(f"DTSTART;VALUE=DATE:{dtstart}")
         lines.append(f"DUE;VALUE=DATE:{dtstart}")
         lines.append(f"SUMMARY:{summary}")

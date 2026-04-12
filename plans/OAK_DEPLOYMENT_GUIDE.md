@@ -14,7 +14,7 @@ Before starting, make sure you have access to:
 - **Auth0** dashboard (`dev-omn0pkrp0pd78lwa.us.auth0.com`)
 - **Vercel** account (SSO Demo already deployed)
 - **GitHub** repo for the SSO SandBox Demo
-- A packaged build of OECS Class Coworker (`.exe` installer)
+- A packaged build of OECS Teacher Assistant (`.exe` installer)
 
 ---
 
@@ -78,9 +78,9 @@ This bucket stores packaged app installers and model files. The folder structure
 releases/
   app/
     v2.0.0/
-      OECS-Class-Coworker-Setup-2.0.0.exe
+      OECS-Teacher-Assistant-Setup-2.0.0.exe
     v2.1.0/
-      OECS-Class-Coworker-Setup-2.1.0.exe
+      OECS-Teacher-Assistant-Setup-2.1.0.exe
   models/
     gemma-2b.gguf
     image_generation/
@@ -200,7 +200,7 @@ This produces the packaged installer in the `dist/` directory.
 2. Open the `releases` bucket
 3. Create folder: `app/v2.0.0/`
 4. Upload the `.exe` installer into that folder
-5. The full path should be: `app/v2.0.0/OECS-Class-Coworker-Setup-2.0.0.exe`
+5. The full path should be: `app/v2.0.0/OECS-Teacher-Assistant-Setup-2.0.0.exe`
 
 ### Upload model files (optional)
 
@@ -226,7 +226,7 @@ If you want to gate model downloads too:
 
 ### B. Teacher enters OAK in the desktop app
 
-1. Open OECS Class Coworker
+1. Open OECS Teacher Assistant
 2. Go to **Settings > OAK License** tab
 3. Paste the OAK license string
 4. Click **Activate OAK License**
@@ -276,7 +276,7 @@ If you want to gate model downloads too:
 Teacher (Browser)                    Teacher (Desktop App)
        |                                      |
        v                                      v
-  OAK Portal (Vercel)                 OECS Class Coworker
+  OAK Portal (Vercel)                 OECS Teacher Assistant
   - Auth0 login                       - OAK license input
   - Generate OAK                      - Validate via Supabase RPC
   - Download app                      - Send support via RPC

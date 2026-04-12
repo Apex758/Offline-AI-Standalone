@@ -13,6 +13,7 @@
 
 import { imageApi } from '../lib/imageApi';
 import type { ParsedStorybook, StoryPage } from '../types/storybook';
+import { API_CONFIG } from '../config/api.config';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -162,7 +163,7 @@ export async function generateBackgroundImage(
 /** Remove the background from a character image and return transparent PNG data URI. */
 export async function removeCharacterBg(imageData: string): Promise<string> {
   const base64 = imageData.includes(',') ? imageData.split(',')[1] : imageData;
-  const res = await fetch('/api/remove-background-base64', {
+  const res = await fetch(`${API_CONFIG.BASE_URL}/api/remove-background-base64`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: base64 }),

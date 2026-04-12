@@ -1,6 +1,6 @@
 {
-  "name": "OECS Class Coworker",
-  "short_name": "OECS Coworker",
+  "name": "OECS Teacher Assistant",
+  "short_name": "OECS Assistant",
   "description": "A platform for OECS teachers to share and access educational resources",
   "start_url": "/",
   "display": "standalone",

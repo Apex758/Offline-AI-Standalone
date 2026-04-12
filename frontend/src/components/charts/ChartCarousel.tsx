@@ -261,6 +261,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
       <div
         className="absolute bottom-3 left-1/2 flex gap-1.5"
         style={{ transform: 'translateX(-50%)', zIndex: 20 }}
+        data-tutorial="analytics-chart-navigation"
       >
         {views.map((v) => (
           <button

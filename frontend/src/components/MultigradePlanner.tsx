@@ -56,7 +56,6 @@ import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
 import MultigradeAlignmentFields from './ui/MultigradeAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
-import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
@@ -1679,13 +1678,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         showFloatingButton={false}
       />
 
-    
-      <TutorialButton
-        tutorialId={TUTORIAL_IDS.MULTIGRADE_PLANNER}
-        onStartTutorial={() => setShowTutorial(true)}
-        position="bottom-right"
-      />
-  
     </div>
   );
 };
