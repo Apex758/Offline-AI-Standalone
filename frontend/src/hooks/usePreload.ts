@@ -10,8 +10,10 @@ import { API_CONFIG } from '../config/api.config';
  *   Diffusion stays lazy (loaded on image tab switch by Dashboard.tsx)
  *
  * Uses a ref guard to prevent double-fire in React StrictMode.
+ *
+ * @param ttsVoice - The user's preferred TTS voice to preload (default: 'lessac')
  */
-export function usePreload() {
+export function usePreload(ttsVoice: string = 'lessac') {
   const called = useRef(false);
   useEffect(() => {
     if (called.current) return;
@@ -26,8 +28,8 @@ export function usePreload() {
         return;
       }
 
-      // Step 2: TTS (fast, fire and forget)
-      axios.post(`${API_CONFIG.BASE_URL}/api/tts/preload`).catch(() => {});
+      // Step 2: TTS — preload user's selected voice (fire and forget)
+      axios.post(`${API_CONFIG.BASE_URL}/api/tts/preload`, { voice: ttsVoice }).catch(() => {});
 
       // Step 3: OCR (after LLM is loaded)
       try {

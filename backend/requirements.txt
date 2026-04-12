@@ -43,6 +43,8 @@ rembg
 
 # --- Text-to-Speech (offline) ---
 piper-tts>=1.2.0
+num2words>=0.5.13            # TTS text preprocessing (number-to-words)
+nltk>=3.9.0                  # TTS smart sentence segmentation
 
 # --- Calendar Import ---
 icalendar>=5.0.0

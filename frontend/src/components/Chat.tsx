@@ -361,7 +361,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       tts.stop();
       setSpeakingMessageId(null);
     } else {
-      tts.speak(content, undefined, undefined, settings.language);
+      tts.speak(content, undefined, settings.ttsVoice, settings.language);
       setSpeakingMessageId(msgId);
     }
   };

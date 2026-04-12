@@ -109,7 +109,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     const step = steps[stepIndex];
     if (!step) return;
     const text = `${step.title}. ${step.description}`;
-    tts.speak(text, handleSpeechEnd, undefined, settings.language);
+    tts.speak(text, handleSpeechEnd, settings.ttsVoice, settings.language);
   }, [steps, tts, handleSpeechEnd]);
 
   // When step changes while in auto mode, speak the new card

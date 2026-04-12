@@ -148,6 +148,8 @@ export interface Settings {
     visitedTools: string[];
     dismissedProgressions: string[];
   };
+  // Text-to-speech voice selection
+  ttsVoice: 'lessac' | 'ryan' | 'amy';
 }
 
 export interface SettingsContextValue {
@@ -283,6 +285,8 @@ export const DEFAULT_SETTINGS: Settings = {
     visitedTools: [],
     dismissedProgressions: [],
   },
+  // Text-to-speech voice selection
+  ttsVoice: 'lessac',
 };
 
 // localStorage key

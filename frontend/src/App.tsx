@@ -43,12 +43,13 @@ function AppContent() {
   // Apply theme & display filters (brightness / warm tone)
   useTheme();
   useDisplayFilters();
-  // Preload LLM and TTS models once at app startup
-  usePreload();
-  // Engine status polling is now handled by EngineStatusProvider
 
-  // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally
+  // Settings must load before preload so we know which TTS voice to warm up
   const { settings, hasCompletedSetup } = useSettings();
+
+  // Preload LLM and TTS models once at app startup
+  usePreload(settings.ttsVoice);
+  // Engine status polling is now handled by EngineStatusProvider
   const { t, i18n } = useTranslation();
   useEffect(() => {
     document.documentElement.style.fontSize = `${settings.fontSize}%`;

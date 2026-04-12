@@ -8,6 +8,7 @@ Voice models are auto-downloaded on first use (~60-100 MB each).
 import io
 import os
 import wave
+import struct
 import logging
 import threading
 from pathlib import Path
@@ -159,13 +160,17 @@ class _VoiceInstance:
     def synthesize(self, text: str, speed: float = 1.0) -> bytes:
         self.ensure_loaded()
         from piper.config import SynthesisConfig
+        from tts_preprocessor import preprocess_for_tts, smart_split_sentences
+
+        # Preprocess text for more natural speech (number expansion, abbreviations, etc.)
+        text = preprocess_for_tts(text)
 
         config = SynthesisConfig()
         config.length_scale = 1.05 / speed
         config.noise_scale = 0.667
         config.noise_w_scale = 0.8
 
-        sentences = _split_sentences(text)
+        sentences = smart_split_sentences(text)
         buf = io.BytesIO()
         with wave.open(buf, "wb") as wav_file:
             for i, sentence in enumerate(sentences):
@@ -178,7 +183,9 @@ class _VoiceInstance:
                     sample_rate = self._voice.config.sample_rate
                     silence_samples = int(sample_rate * 0.25)
                     wav_file.writeframes(b'\x00\x00' * silence_samples)
-        return buf.getvalue()
+
+        # Post-process: normalize loudness and remove artifacts
+        return _post_process_audio(buf.getvalue())
 
     def get_sample_rate(self) -> int:
         self.ensure_loaded()
@@ -189,6 +196,64 @@ def _split_sentences(text: str) -> list[str]:
     import re
     parts = re.split(r'(?<=[.!?])\s+', text)
     return [p for p in parts if p.strip()]
+
+
+def _post_process_audio(wav_bytes: bytes) -> bytes:
+    """
+    Post-process synthesized WAV audio for consistent, professional quality.
+
+    - Loudness normalization (peak normalization to -1 dB headroom)
+    - Simple noise gate to remove faint synthesis artifacts
+
+    Uses only stdlib (struct/wave) -- no heavy dependencies required.
+    Falls back to returning original audio if anything goes wrong.
+    """
+    try:
+        # Read WAV data
+        with wave.open(io.BytesIO(wav_bytes), 'rb') as wav_in:
+            n_channels = wav_in.getnchannels()
+            sampwidth = wav_in.getsampwidth()
+            framerate = wav_in.getframerate()
+            n_frames = wav_in.getnframes()
+            raw_data = wav_in.readframes(n_frames)
+
+        if sampwidth != 2 or n_frames == 0:
+            return wav_bytes  # Only handle 16-bit PCM
+
+        # Unpack samples
+        fmt = f'<{n_frames * n_channels}h'
+        samples = list(struct.unpack(fmt, raw_data))
+
+        # Find peak amplitude
+        peak = max(abs(s) for s in samples) if samples else 0
+        if peak == 0:
+            return wav_bytes
+
+        # Noise gate: silence samples below 2% of peak
+        threshold = peak * 0.02
+        samples = [s if abs(s) >= threshold else 0 for s in samples]
+
+        # Peak normalize to -1 dB headroom (target ~29180 out of 32767)
+        target_peak = 29180
+        if peak > 0 and peak != target_peak:
+            scale = target_peak / peak
+            # Clamp to int16 range
+            samples = [max(-32768, min(32767, int(s * scale))) for s in samples]
+
+        # Re-pack and write WAV
+        packed = struct.pack(fmt, *samples)
+        out_buf = io.BytesIO()
+        with wave.open(out_buf, 'wb') as wav_out:
+            wav_out.setnchannels(n_channels)
+            wav_out.setsampwidth(sampwidth)
+            wav_out.setframerate(framerate)
+            wav_out.writeframes(packed)
+
+        return out_buf.getvalue()
+
+    except Exception as e:
+        logger.warning(f"Audio post-processing failed, returning raw audio: {e}")
+        return wav_bytes
 
 
 # ---------------------------------------------------------------------------

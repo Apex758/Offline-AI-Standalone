@@ -704,16 +704,16 @@ def get_chat_params_for_mode(
             "repeat_penalty": 1.1,
         }
 
-    # Quick mode (default)
+    # Quick mode (default) — low repeat_penalty for fast CPU sampling
     if tier == 1:
         system_prompt = get_tier1_system_prompt("chat", coworker_name=coworker_name)
     else:
-        system_prompt = get_tier2_system_prompt("chat", coworker_name=coworker_name)
+        system_prompt = get_tier2_system_prompt("chat-quick", coworker_name=coworker_name)
     return {
         "system_prompt": system_prompt,
         "max_tokens": TIER1_MAX_TOKENS.get("chat", 1500),
         "temperature": 0.4,
-        "repeat_penalty": 1.3,
+        "repeat_penalty": 1.05,
     }
 
 
@@ -1400,7 +1400,8 @@ async def websocket_chat(websocket: WebSocket):
                 try:
                     print(f"[ws/chat] Loading history for {chat_id}...")
                     memory = get_chat_memory()
-                    N = LLAMA_PARAMS.get("conversation_history_length", 4)
+                    _default_history = LLAMA_PARAMS.get("conversation_history_length", 4)
+                    N = min(_default_history, 2) if thinking_mode == "quick" else _default_history
                     # Feature 1: token-aware budgeting. Reserve room for the
                     # system prompt + the incoming user message so summary +
                     # history get whatever's left of the tier budget.
@@ -9295,22 +9296,29 @@ async def text_to_speech(request: Request):
 
 
 @app.post("/api/tts/preload")
-async def preload_tts():
+async def preload_tts(request: Request):
     """Preload the TTS voice model in the background.
 
     This triggers lazy loading of the voice model when a user opens
     a tab with speech options, so audio is ready by the time they
-    click Read Aloud.
+    click Read Aloud.  Accepts an optional ``voice`` field so the
+    user's preferred voice is warmed up instead of the default.
     """
     try:
+        # Accept optional voice from request body
+        voice = "lessac"
+        try:
+            data = await request.json()
+            voice = data.get("voice", "lessac")
+        except Exception:
+            pass  # No body or invalid JSON — use default
+
         from tts_service import get_tts_service
         tts = get_tts_service()
-        if tts.is_loaded:
-            return {"status": "loaded"}
-        logger.info("Preloading TTS default voice model...")
+        logger.info(f"Preloading TTS voice: {voice}...")
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, lambda: tts.synthesize("ready", voice="lessac"))
-        logger.info("TTS default voice preloaded successfully")
+        await loop.run_in_executor(None, lambda: tts.synthesize("ready", voice=voice))
+        logger.info(f"TTS voice preloaded successfully: {voice}")
         return {"status": "loaded"}
     except Exception as e:
         logger.error(f"Error preloading TTS model: {e}")

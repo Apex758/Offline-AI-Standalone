@@ -2048,6 +2048,29 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                   </CardContent>
                 </Card>
 
+                {/* TTS Voice */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      Voice
+                    </CardTitle>
+                    <CardDescription>Choose the voice used for text-to-speech throughout the app</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <NeuroSegment
+                      options={[
+                        { value: 'lessac', label: 'Lessac (F)' },
+                        { value: 'ryan', label: 'Ryan (M)' },
+                        { value: 'amy', label: 'Amy (F)' },
+                      ]}
+                      value={settings.ttsVoice}
+                      onChange={(v) => updateSettings({ ttsVoice: v as 'lessac' | 'ryan' | 'amy' })}
+                      size="lg"
+                      className="w-full"
+                    />
+                  </CardContent>
+                </Card>
+
                 {/* Font Size */}
                 <Card data-search-section="font-size">
                   <CardHeader>

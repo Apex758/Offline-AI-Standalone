@@ -196,11 +196,11 @@ export function useTTS() {
     setIsSpeaking(false);
   }, [stopAudio]);
 
-  const toggle = useCallback((text: string, language?: string) => {
+  const toggle = useCallback((text: string, language?: string, voice?: string) => {
     if (isSpeaking) {
       stop();
     } else {
-      speak(text, undefined, undefined, language);
+      speak(text, undefined, voice, language);
     }
   }, [isSpeaking, speak, stop]);
 
