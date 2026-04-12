@@ -3170,8 +3170,24 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
           ) : (
             <>
               {cur && (
-                <div className="rounded-lg overflow-hidden relative" style={{ boxShadow: `0 4px 32px ${primaryColor}18` }}>
+                <div
+                  className={`rounded-lg overflow-hidden relative ${loading ? 'pres-streaming-wrap' : ''}`}
+                  style={{
+                    boxShadow: loading
+                      ? `0 0 0 2px ${primaryColor}33, 0 0 24px ${primaryColor}22, 0 4px 32px ${primaryColor}18`
+                      : `0 4px 32px ${primaryColor}18`,
+                    ...(loading ? { animation: 'presStreamPulse 1.8s ease-in-out infinite' } : {}),
+                  }}
+                >
                   <SlideCanvas slide={cur} theme={theme} width={stageWidth} styleId={styleId} imageMode={imageMode} slideIndex={sel} />
+                  {loading && (
+                    <style>{`
+                      @keyframes presStreamPulse {
+                        0%, 100% { box-shadow: 0 0 0 2px ${primaryColor}33, 0 0 24px ${primaryColor}22, 0 4px 32px ${primaryColor}18; }
+                        50%      { box-shadow: 0 0 0 2px ${primaryColor}66, 0 0 32px ${primaryColor}44, 0 4px 32px ${primaryColor}28; }
+                      }
+                    `}</style>
+                  )}
                   {loading && (
                     <div className="absolute bottom-0 left-0 right-0 p-3" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
                       <div className="flex items-center gap-2 mb-1.5">

@@ -969,29 +969,41 @@ function StreamingPagePreview({
     ? BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)
     : null;
   const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
+  const lastIdx = page.textSegments.length - 1;
 
   return (
     <div
-      className="relative rounded-xl overflow-hidden border border-theme shadow-sm"
-      style={{ background: bgColor, aspectRatio: '297 / 210', fontFamily: 'Georgia, serif' }}
+      className="relative rounded-xl overflow-hidden border shadow-sm sb-streaming-wrap"
+      style={{
+        background: bgColor,
+        aspectRatio: '297 / 210',
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        borderColor: `${accentColor}55`,
+        boxShadow: `0 0 0 2px ${accentColor}33, 0 0 24px ${accentColor}22`,
+        animation: 'sbStreamPulse 1.8s ease-in-out infinite',
+      }}
     >
       <div className="relative z-10 p-6">
         <div className="space-y-2">
-          {page.textSegments.map((seg, i) => (
-            <p
-              key={i}
-              className={`leading-relaxed text-gray-800 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'}`}
-              style={{
-                animation: 'streamFadeIn 0.3s ease both',
-                animationDelay: `${i * 0.05}s`,
-              }}
-            >
-              {seg.speaker !== 'narrator' && (
-                <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
-              )}
-              {seg.speaker !== 'narrator' ? `"${seg.text}"` : seg.text}
-            </p>
-          ))}
+          {page.textSegments.map((seg, i) => {
+            const isLast = i === lastIdx;
+            return (
+              <p
+                key={i}
+                className={`leading-relaxed text-gray-800 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'} ${isLast ? 'sb-active-segment' : ''}`}
+                style={{
+                  animation: 'streamFadeIn 0.3s ease both',
+                  animationDelay: `${i * 0.05}s`,
+                }}
+              >
+                {seg.speaker !== 'narrator' && (
+                  <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
+                )}
+                {seg.speaker !== 'narrator' ? `"${seg.text}"` : seg.text}
+                {isLast && <span className="sb-caret" aria-hidden="true" />}
+              </p>
+            );
+          })}
           {/* Typing indicator */}
           <div className="flex items-center gap-1.5 pt-1">
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse" style={{ animationDelay: '0s' }} />
@@ -1009,6 +1021,42 @@ function StreamingPagePreview({
         @keyframes streamFadeIn {
           from { opacity: 0; transform: translateY(4px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes sbStreamPulse {
+          0%, 100% { box-shadow: 0 0 0 2px ${accentColor}33, 0 0 24px ${accentColor}22; }
+          50%      { box-shadow: 0 0 0 2px ${accentColor}66, 0 0 32px ${accentColor}44; }
+        }
+        /* Per-segment shimmer — highlights the text segment currently being typed.
+           Scoped to .sb-streaming-wrap so it can't bleed into other components. */
+        .sb-streaming-wrap .sb-active-segment {
+          display: inline-block;
+          padding: 0 0.25rem;
+          border-radius: 4px;
+          background: linear-gradient(
+            90deg,
+            ${accentColor}11 0%,
+            ${accentColor}33 50%,
+            ${accentColor}11 100%
+          );
+          background-size: 200% 100%;
+          animation: sbActiveShimmer 1.4s linear infinite;
+          box-shadow: 0 0 0 1px ${accentColor}55;
+        }
+        @keyframes sbActiveShimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .sb-streaming-wrap .sb-caret {
+          display: inline-block;
+          width: 2px;
+          height: 0.9em;
+          margin-left: 2px;
+          vertical-align: middle;
+          background-color: ${accentColor};
+          animation: sbCaretBlink 1s steps(2, start) infinite;
+        }
+        @keyframes sbCaretBlink {
+          to { visibility: hidden; }
         }
       `}</style>
     </div>

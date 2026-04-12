@@ -2005,15 +2005,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
 
                 # ✅ FIX: Use inference factory instead of process pool
                 from inference_factory import get_inference_instance, resolve_inference_for_task
-                # Always route lesson plans through the singleton, regardless
-                # of generation_mode. llama-cpp-python auto-reuses the KV
-                # cache via longest-prefix matching between sequential calls
-                # on the same instance — which saves ~1500-2000 tokens of
-                # redundant system-prompt prefill on every 2nd+ generation.
-                # Creating a fresh instance (the "simultaneous" path) throws
-                # that cache away. For single-user desktop usage, sequential
-                # cache reuse is always the bigger win than parallel isolation.
-                inference = resolve_inference_for_task("lesson-plan")
+                inference = resolve_inference_for_task("lesson-plan") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Load OHPC JSON schema for grammar-constrained structured output.
                 # Skip on tier-1 (small) models: grammar constraints are too
@@ -3023,14 +3015,7 @@ async def presentation_websocket(websocket: WebSocket):
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
 
                 from inference_factory import get_inference_instance, resolve_inference_for_task
-                # Always route through the singleton regardless of
-                # generation_mode. llama-cpp-python auto-reuses the KV cache
-                # via longest-prefix matching between sequential calls on
-                # the same instance — the system prompt (same every time)
-                # gets prefilled once and reused on every subsequent
-                # generation, saving hundreds of ms. Creating a fresh
-                # instance per call throws that cache away.
-                inference = resolve_inference_for_task("presentation")
+                inference = resolve_inference_for_task("presentation") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Structured output: enforce JSON schema for slide generation
                 from schemas.presentation_schema import PRESENTATION_JSON_SCHEMA
@@ -3213,12 +3198,7 @@ async def storybook_websocket(websocket: WebSocket):
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
 
                 from inference_factory import get_inference_instance, resolve_inference_for_task
-                # Always route through the singleton for KV prefix reuse
-                # across sequential generations. Storybook especially
-                # benefits in two-pass mode where the Pass 2 (JSON) system
-                # prompt is identical every call — that prefill is now free
-                # on the 2nd+ story in the same session.
-                inference = resolve_inference_for_task("storybook")
+                inference = resolve_inference_for_task("storybook") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 if two_pass and narrative_prompt and structure_prompt_template:
                     # ── Two-pass generation ──────────────────────────────────
@@ -3249,10 +3229,18 @@ async def storybook_websocket(websocket: WebSocket):
                     structure_full = build_prompt(structure_system, structure_prompt)
 
                     await websocket.send_json({"type": "status", "status": "formatting_pages", "jobId": job_id})
+                    # Use the same grammar-constrained schema as single-pass
+                    # mode. Pass 2 is structurally identical output (the
+                    # storybook JSON) — enforcing the schema guarantees
+                    # parseable output, eliminates a class of "invalid JSON"
+                    # failures, and makes decoding faster since the grammar
+                    # prunes invalid token candidates at every step.
+                    from schemas.storybook_schema import STORYBOOK_JSON_SCHEMA as _story_schema_pass2
                     result = await _run_generation(
                         inference, structure_prompt, structure_full,
                         max_tokens, temperature, job_id, stream_tokens=True,
                         repeat_penalty=repeat_penalty,
+                        json_schema=_story_schema_pass2,
                     )
                     if result is not None:
                         try:
