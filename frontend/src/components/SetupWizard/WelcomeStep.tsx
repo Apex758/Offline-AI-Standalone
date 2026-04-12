@@ -63,7 +63,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onChooseManual, onOakActivate
               className="px-6 py-3 rounded-xl font-semibold text-base transition-all hover:scale-[1.02] active:scale-95"
               style={{
                 backgroundColor: '#F2A631',
-                color: '#1D362D',
+                color: 'var(--text-heading)',
                 boxShadow: '0 4px 16px rgba(242,166,49,0.3)',
               }}
             >
@@ -133,7 +133,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onChooseManual, onOakActivate
               className="flex-1 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: '#F2A631',
-                color: '#1D362D',
+                color: 'var(--text-heading)',
                 boxShadow: '0 4px 16px rgba(242,166,49,0.3)',
               }}
             >

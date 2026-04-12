@@ -74,7 +74,7 @@ const NudgeToast: React.FC<NudgeToastProps> = ({ message, ctaLabel, onEnable, on
               <button
                 onClick={handleEnable}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105 active:scale-95"
-                style={{ backgroundColor: '#F2A631', color: '#1D362D' }}
+                style={{ backgroundColor: '#F2A631', color: 'var(--text-heading)' }}
               >
                 {ctaLabel}
               </button>

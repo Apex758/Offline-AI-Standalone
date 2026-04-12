@@ -200,10 +200,10 @@ export const StickyNoteGroupExpanded: React.FC<Props> = ({ group, zIndex, active
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)'; }}
             >
-              <p className="text-xs font-semibold truncate mb-1" style={{ color: '#1a1a1a' }}>
+              <p className="text-xs font-semibold truncate mb-1" style={{ color: 'var(--text-heading)' }}>
                 {n.title}
               </p>
-              <p className="text-xs line-clamp-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+              <p className="text-xs line-clamp-3" style={{ color: 'var(--text-hint)' }}>
                 {n.checklist
                   ? `${n.checklist.filter(c => c.completed).length}/${n.checklist.length} steps`
                   : (n.content || '').replace(/<[^>]*>/g, '').slice(0, 60) || 'Empty note'}
@@ -212,7 +212,7 @@ export const StickyNoteGroupExpanded: React.FC<Props> = ({ group, zIndex, active
                 className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-50 transition-opacity"
                 title="Open & remove from group"
               >
-                <SIcon icon={ArrowUpRight01IconData} size={12} style={{ color: '#1a1a1a' }} />
+                <SIcon icon={ArrowUpRight01IconData} size={12} style={{ color: 'var(--text-heading)' }} />
               </span>
             </div>
           ))}

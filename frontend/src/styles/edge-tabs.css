@@ -197,11 +197,11 @@
 
 .dark .edge-tab-close:hover {
   background: rgba(249, 248, 246, 0.1);
-  color: #eeedeb;
+  color: #d5d4d1;
 }
 
 .dark .edge-tab-label {
-  color: var(--tab-content-bg, #252422);
+  color: #a8a6a2;
 }
 
 .dark .edge-tab[data-active="true"] .edge-tab-label {

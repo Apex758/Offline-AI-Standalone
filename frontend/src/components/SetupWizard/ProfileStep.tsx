@@ -183,7 +183,7 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
           className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95"
           style={{
             backgroundColor: '#F2A631',
-            color: '#1D362D',
+            color: 'var(--text-heading)',
             boxShadow: '0 4px 16px rgba(242,166,49,0.3)',
           }}
         >

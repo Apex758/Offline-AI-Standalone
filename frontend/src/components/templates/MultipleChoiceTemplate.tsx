@@ -77,16 +77,16 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
           </div>
           {loading
             ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 300 }} />
-            : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.01em' }}>{worksheetTitle}</h1>
+            : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: 'var(--text-title)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>{worksheetTitle}</h1>
           }
         </div>
-        <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
           <div>{t('templates.name')} {studentName
-            ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
+            ? <span style={{ fontWeight: 700, color: 'var(--text-title)' }}>{studentName}</span>
             : <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 130 }}>&nbsp;</span>
           }</div>
           {studentId && (
-            <div>ID: <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentId}</span></div>
+            <div>ID: <span style={{ fontWeight: 700, color: 'var(--text-title)' }}>{studentId}</span></div>
           )}
           <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: studentName ? 100 : 130 }}>&nbsp;</span></div>
           <div>Score: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 55 }}>&nbsp;</span> / {questionCount}</div>
@@ -105,7 +105,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
             ? <Skeleton style={{ width: 220, height: 130, display: 'inline-block', background: '#e2e8f0', borderRadius: 4 }} />
             : generatedImage
               ? <img loading="lazy" src={generatedImage} alt="" style={{ maxWidth: 220, border: '1.5px solid #e2e8f0', borderRadius: 4 }} />
-              : <div style={{ display: 'inline-flex', width: 220, height: 130, background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: 4, alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 12 }}>image placeholder</div>
+              : <div style={{ display: 'inline-flex', width: 220, height: 130, background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: 4, alignItems: 'center', justifyContent: 'center', color: 'var(--text-hint)', fontSize: 12 }}>image placeholder</div>
           }
         </div>
       )}
@@ -126,7 +126,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
             <div style={{ flex: 1 }}>
               {loading
                 ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 15, width: '78%' }} />
-                : <p style={{ margin: '4px 0 14px', fontSize: 14, color: '#1e293b', lineHeight: 1.55, fontWeight: 600 }}>{q.question}</p>
+                : <p style={{ margin: '4px 0 14px', fontSize: 14, color: 'var(--text-heading)', lineHeight: 1.55, fontWeight: 600 }}>{q.question}</p>
               }
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px 18px' }}>
@@ -143,15 +143,15 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
                     }}>
                       <div style={{
                         width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                        border: `2px solid ${isCorrect && effectiveShowAnswers ? '#16a34a' : '#475569'}`,
+                        border: `2px solid ${isCorrect && effectiveShowAnswers ? '#16a34a' : 'var(--text-muted)'}`,
                         background: isCorrect && effectiveShowAnswers ? '#16a34a' : 'transparent',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 10, fontWeight: 900,
-                        color: isCorrect && effectiveShowAnswers ? '#fff' : '#475569',
+                        color: isCorrect && effectiveShowAnswers ? '#fff' : 'var(--text-muted)',
                       }}>{LETTERS[oi]}</div>
                       {loading
                         ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 12, flex: 1 }} />
-                        : <span style={{ fontSize: 13, color: '#334155' }}>{opt}</span>
+                        : <span style={{ fontSize: 13, color: 'var(--text-label)' }}>{opt}</span>
                       }
                     </div>
                   );
@@ -164,7 +164,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
 
       {/* Footer */}
       {studentName && !isAnswerKey && (
-        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
+        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-hint)' }}>
           <span>Score: _____ / {questionCount}</span>
           <span>Teacher: _________________________</span>
         </div>

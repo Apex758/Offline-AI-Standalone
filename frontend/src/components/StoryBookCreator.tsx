@@ -1011,7 +1011,7 @@ function StreamingPagePreview({
             return (
               <p
                 key={i}
-                className={`leading-relaxed text-gray-800 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'} ${shouldDecorate ? 'sb-active-segment' : ''}`}
+                className={`leading-relaxed text-gray-800 dark:text-gray-200 ${seg.speaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'} ${shouldDecorate ? 'sb-active-segment' : ''}`}
                 style={{
                   animation: 'streamFadeIn 0.3s ease both',
                   animationDelay: `${i * 0.05}s`,
@@ -1033,7 +1033,7 @@ function StreamingPagePreview({
           {liveSegment && (
             <p
               key="live-segment"
-              className={`leading-relaxed text-gray-800 sb-active-segment ${liveSpeaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'}`}
+              className={`leading-relaxed text-gray-800 dark:text-gray-200 sb-active-segment ${liveSpeaker === 'narrator' ? 'italic text-base' : 'font-semibold text-base'}`}
             >
               {liveSpeaker !== 'narrator' && (
                 <span className="text-xs font-bold text-purple-600 not-italic block">{liveSpeaker}:</span>
@@ -1256,7 +1256,7 @@ function IntroductionPagePreview({
     >
       <div className="absolute inset-0 flex items-center justify-center p-12">
         <p
-          className={`text-center italic text-gray-800 leading-relaxed text-lg max-w-[85%] ${liveText != null ? 'intro-active-text' : ''}`}
+          className={`text-center italic text-gray-800 dark:text-gray-200 leading-relaxed text-lg max-w-[85%] ${liveText != null ? 'intro-active-text' : ''}`}
         >
           {displayText}
           {liveText != null && <span className="intro-caret" aria-hidden="true" />}
@@ -1377,13 +1377,13 @@ function PagePreview({
         )}
         <div className="space-y-2">
           {narratorSegments.map((seg, i) => (
-            <p key={i} className="leading-relaxed text-gray-800 italic text-base">
+            <p key={i} className="leading-relaxed text-gray-800 dark:text-gray-200 italic text-base">
               {seg.text}
             </p>
           ))}
           {/* Fallback: character dialogue without image rendered as text */}
           {!hasChar && page.textSegments.filter(s => s.speaker !== 'narrator').map((seg, i) => (
-            <p key={`char-${i}`} className="leading-relaxed text-gray-800 font-semibold text-base">
+            <p key={`char-${i}`} className="leading-relaxed text-gray-800 dark:text-gray-200 font-semibold text-base">
               <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
               {`"${seg.text}"`}
             </p>
@@ -3291,7 +3291,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   }}
                 >
                   <div className="relative z-10 text-center p-1">
-                    <p className="text-[5px] italic leading-[7px] text-gray-700 line-clamp-4" style={{ opacity: 0.8 }}>
+                    <p className="text-[5px] italic leading-[7px] text-gray-700 dark:text-gray-300 line-clamp-4" style={{ opacity: 0.8 }}>
                       {parsedBook.introductionPage.moodText || 'Introduction...'}
                     </p>
                   </div>
@@ -3339,7 +3339,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     {isThumbStreaming ? (
                       <div className="relative z-10 p-1.5 h-full flex flex-col justify-center">
                         {page.textSegments.slice(0, 3).map((seg, j) => (
-                          <p key={j} className="text-[5px] leading-[7px] text-gray-700 truncate" style={{ opacity: 0.8 }}>
+                          <p key={j} className="text-[5px] leading-[7px] text-gray-700 dark:text-gray-300 truncate" style={{ opacity: 0.8 }}>
                             {seg.speaker !== 'narrator' ? `${seg.speaker}: ` : ''}{seg.text}
                           </p>
                         ))}
@@ -3368,7 +3368,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                         {/* Text content mini */}
                         <div className="flex-1 flex flex-col justify-center overflow-hidden" style={{ padding: '0 2px' }}>
                           {page.textSegments.slice(0, 4).map((seg, j) => (
-                            <p key={j} className="text-[5px] leading-[7px] text-gray-700 truncate" style={{ opacity: 0.7 }}>
+                            <p key={j} className="text-[5px] leading-[7px] text-gray-700 dark:text-gray-300 truncate" style={{ opacity: 0.7 }}>
                               {seg.speaker !== 'narrator' ? `${seg.speaker}: ` : ''}{seg.text}
                             </p>
                           ))}

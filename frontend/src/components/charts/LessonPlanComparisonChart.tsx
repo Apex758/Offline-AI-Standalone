@@ -42,8 +42,8 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
             boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
           }}
         >
-          <p className="font-semibold mb-1" style={{ color: '#020D03' }}>{payload[0].payload.type}</p>
-          <p className="text-sm" style={{ color: '#552A01' }}>
+          <p className="font-semibold mb-1" style={{ color: 'var(--text-title)' }}>{payload[0].payload.type}</p>
+          <p className="text-sm" style={{ color: 'var(--text-label)' }}>
             Count: <span className="font-semibold">{payload[0].value}</span>
           </p>
         </div>
@@ -62,8 +62,8 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
     >
       {/* Header */}
       <div className="flex items-center space-x-2 mb-6">
-        <BarChart3 className="w-5 h-5" style={{ color: '#1D362D' }} />
-        <h3 className="font-bold" style={{ color: '#020D03' }}>{t('charts.lessonComparison')}</h3>
+        <BarChart3 className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
+        <h3 className="font-bold" style={{ color: 'var(--text-title)' }}>{t('charts.lessonComparison')}</h3>
       </div>
 
       {/* Chart */}
@@ -73,11 +73,11 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
           <CartesianGrid strokeDasharray="3 3" stroke="#E8EAE3" />
           <XAxis
             dataKey="type"
-            tick={{ fontSize: 12, fill: '#552A01' }}
+            tick={{ fontSize: 12, fill: 'var(--text-label)' }}
             stroke="#E8EAE3"
           />
           <YAxis
-            tick={{ fontSize: 12, fill: '#552A01' }}
+            tick={{ fontSize: 12, fill: 'var(--text-label)' }}
             stroke="#E8EAE3"
           />
           <Tooltip content={<CustomTooltip />} />
@@ -100,9 +100,9 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
                   className="w-3 h-3 rounded"
                   style={{ backgroundColor: colorMap[entry.type] || '#552A01' }}
                 />
-                <span className="text-xs" style={{ color: '#552A01' }}>{entry.type}</span>
+                <span className="text-xs" style={{ color: 'var(--text-label)' }}>{entry.type}</span>
               </div>
-              <span className="text-sm font-semibold" style={{ color: '#020D03' }}>{entry.count}</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-title)' }}>{entry.count}</span>
             </div>
           ))}
         </div>

@@ -80,7 +80,7 @@ const FeaturePickerStep: React.FC<FeaturePickerStepProps> = ({
               {/* Checkmark */}
               {selected && (
                 <div className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F2A631' }}>
-                  <HugeiconsIcon icon={Tick01IconData} size={12} style={{ color: '#1D362D' }} />
+                  <HugeiconsIcon icon={Tick01IconData} size={12} style={{ color: 'var(--text-heading)' }} />
                 </div>
               )}
 
@@ -142,7 +142,7 @@ const FeaturePickerStep: React.FC<FeaturePickerStepProps> = ({
             className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
             style={{
               backgroundColor: '#F2A631',
-              color: '#1D362D',
+              color: 'var(--text-heading)',
               boxShadow: canContinue ? '0 4px 16px rgba(242,166,49,0.3)' : 'none',
             }}
           >

@@ -1350,6 +1350,129 @@ button[style*="background-color: rgb(59"] {
 }
 
 /* ========================================
+   Dark Mode: Curriculum Pages
+   Scoped to the curriculum content pane via [data-tutorial="curriculum-topics"].
+   Fixes light-only gradients, pastel backgrounds, borders, and text that the
+   100+ curriculum page files use without dark: variants.
+   ======================================== */
+
+/* --- Page-level background gradients --- */
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-br.from-blue-50.to-indigo-100,
+.dark [data-tutorial="curriculum-topics"] .min-h-screen.bg-gradient-to-br {
+  background: #21201e;
+}
+
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-br.from-green-50.via-blue-50.to-purple-50 {
+  background: linear-gradient(to bottom right, #252422, #2a2926);
+}
+
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-green-50.to-blue-50 {
+  background: linear-gradient(to right, #252422, #2a2926);
+}
+
+/* --- Teal/green section header gradients (subject pages) --- */
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-teal-100.to-green-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-green-100.to-emerald-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-emerald-100.to-teal-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-blue-100.to-teal-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-teal-100.to-blue-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-blue-100.to-indigo-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-blue-100.to-cyan-100 {
+  background: linear-gradient(to right, #252422, #2a2926);
+}
+
+/* --- Small accent/callout pastel gradients --- */
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-green-50.to-teal-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-teal-50.to-emerald-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-emerald-50.to-green-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-indigo-50.to-blue-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-teal-50.to-blue-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-amber-50.to-yellow-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-br.from-gray-50.to-blue-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-purple-50.to-fuchsia-50 {
+  background: #2a2926;
+}
+
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-purple-50.to-purple-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gradient-to-r.from-amber-50.to-amber-100 {
+  background: #2a2926;
+}
+
+/* --- Pastel solid backgrounds --- */
+.dark [data-tutorial="curriculum-topics"] .bg-green-50,
+.dark [data-tutorial="curriculum-topics"] .bg-teal-50,
+.dark [data-tutorial="curriculum-topics"] .bg-emerald-50,
+.dark [data-tutorial="curriculum-topics"] .bg-blue-50,
+.dark [data-tutorial="curriculum-topics"] .bg-indigo-50,
+.dark [data-tutorial="curriculum-topics"] .bg-purple-50,
+.dark [data-tutorial="curriculum-topics"] .bg-amber-50,
+.dark [data-tutorial="curriculum-topics"] .bg-yellow-50,
+.dark [data-tutorial="curriculum-topics"] .bg-gray-50 {
+  background-color: #2a2926;
+}
+
+.dark [data-tutorial="curriculum-topics"] .bg-green-100,
+.dark [data-tutorial="curriculum-topics"] .bg-teal-100,
+.dark [data-tutorial="curriculum-topics"] .bg-emerald-100,
+.dark [data-tutorial="curriculum-topics"] .bg-blue-100,
+.dark [data-tutorial="curriculum-topics"] .bg-indigo-100,
+.dark [data-tutorial="curriculum-topics"] .bg-purple-100,
+.dark [data-tutorial="curriculum-topics"] .bg-amber-100,
+.dark [data-tutorial="curriculum-topics"] .bg-yellow-100,
+.dark [data-tutorial="curriculum-topics"] .bg-gray-100 {
+  background-color: #363330;
+}
+
+/* --- Borders --- */
+.dark [data-tutorial="curriculum-topics"] .border-green-100,
+.dark [data-tutorial="curriculum-topics"] .border-teal-100,
+.dark [data-tutorial="curriculum-topics"] .border-emerald-100,
+.dark [data-tutorial="curriculum-topics"] .border-blue-100,
+.dark [data-tutorial="curriculum-topics"] .border-indigo-100,
+.dark [data-tutorial="curriculum-topics"] .border-purple-100,
+.dark [data-tutorial="curriculum-topics"] .border-amber-100 {
+  border-color: #3d3b37;
+}
+
+.dark [data-tutorial="curriculum-topics"] .border-green-200,
+.dark [data-tutorial="curriculum-topics"] .border-teal-200,
+.dark [data-tutorial="curriculum-topics"] .border-blue-200,
+.dark [data-tutorial="curriculum-topics"] .border-indigo-200,
+.dark [data-tutorial="curriculum-topics"] .border-purple-200 {
+  border-color: #504d48;
+}
+
+/* --- Text colors (body text without dark: variants) --- */
+.dark [data-tutorial="curriculum-topics"] .text-gray-900,
+.dark [data-tutorial="curriculum-topics"] .text-gray-800 {
+  color: #f9f8f6;
+}
+
+.dark [data-tutorial="curriculum-topics"] .text-gray-700 {
+  color: #d5d4d1;
+}
+
+.dark [data-tutorial="curriculum-topics"] .text-gray-600,
+.dark [data-tutorial="curriculum-topics"] .text-gray-500 {
+  color: #a8a6a2;
+}
+
+/* --- Colored text used in headings (subject pages) --- */
+.dark [data-tutorial="curriculum-topics"] .text-indigo-600 {
+  color: #63d72a;
+}
+
+/* --- Hover: bg-green-50 (used on standards hover) --- */
+.dark [data-tutorial="curriculum-topics"] .hover\:bg-green-50:hover {
+  background-color: rgba(99, 215, 42, 0.08);
+}
+
+/* --- Card container backgrounds (white cards inside pastel wrappers) --- */
+.dark [data-tutorial="curriculum-topics"] .bg-white {
+  background-color: #2a2926;
+}
+
+/* ========================================
    Streaming Content Fluidity
    ======================================== */
 .streaming-content {

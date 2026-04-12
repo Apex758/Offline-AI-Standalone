@@ -56,7 +56,7 @@ const CompletionStep: React.FC<CompletionStepProps> = ({ selectedModules, teache
         className="px-10 py-3 rounded-xl font-semibold text-base transition-all hover:scale-105 active:scale-95"
         style={{
           backgroundColor: '#F2A631',
-          color: '#1D362D',
+          color: 'var(--text-heading)',
           boxShadow: '0 4px 16px rgba(242,166,49,0.3)',
         }}
       >

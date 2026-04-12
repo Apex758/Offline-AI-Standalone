@@ -186,11 +186,11 @@ const ScheduledResultCard: React.FC<{
           {label}
           {isFailed && <span style={{ marginLeft: 6, fontSize: '10px', color: '#dc2626' }}>Failed</span>}
           {isFallback && <span style={{ marginLeft: 6, fontSize: '10px', color: '#d97706' }}>Partial</span>}
-          {isStub && <span style={{ marginLeft: 6, fontSize: '10px', color: '#6b7280' }}>Placeholder</span>}
+          {isStub && <span style={{ marginLeft: 6, fontSize: '10px', color: 'var(--text-hint)' }}>Placeholder</span>}
         </span>
-        {weekLabel && <span style={{ fontSize: '10.5px', color: '#6b7280' }}>{weekLabel}</span>}
+        {weekLabel && <span style={{ fontSize: '10.5px', color: 'var(--text-hint)' }}>{weekLabel}</span>}
         {!expanded && (
-          <span style={{ fontSize: '11px', color: '#4b5563', marginTop: 2 }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 2 }}>
             {summarizeResult(result)}
           </span>
         )}
@@ -230,7 +230,7 @@ const ScheduledResultCard: React.FC<{
             fontSize: '11.5px',
             padding: '5px 10px',
             background: 'transparent',
-            color: '#6b7280',
+            color: 'var(--text-hint)',
             border: '1px solid rgba(120, 120, 120, 0.3)',
             borderRadius: '6px',
             cursor: 'pointer',
@@ -270,18 +270,18 @@ function renderBody(r: ScheduledResult) {
   if (r.task_type === 'elo_breakdown') {
     const days = body.days || [];
     if (days.length === 0) {
-      return <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>{body.notes || 'No schedule generated.'}</p>;
+      return <p style={{ fontSize: '11px', color: 'var(--text-hint)', margin: 0 }}>{body.notes || 'No schedule generated.'}</p>;
     }
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '220px', overflowY: 'auto' }}>
         {days.map((day: any, i: number) => (
           <div key={i}>
-            <div style={{ fontSize: '11.5px', fontWeight: 600, color: '#111', marginBottom: '2px' }}>
+            <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-title)', marginBottom: '2px' }}>
               {day.day} {day.date ? `(${day.date})` : ''}
             </div>
             {(day.periods || []).map((p: any, j: number) => (
-              <div key={j} style={{ fontSize: '11px', color: '#4b5563', paddingLeft: '8px', marginTop: '1px' }}>
-                <span style={{ color: '#6b7280' }}>{p.time}</span>
+              <div key={j} style={{ fontSize: '11px', color: 'var(--text-muted)', paddingLeft: '8px', marginTop: '1px' }}>
+                <span style={{ color: 'var(--text-hint)' }}>{p.time}</span>
                 {' — '}
                 <span>Gr{p.grade} {p.subject}: </span>
                 {p.elo ? (
@@ -294,7 +294,7 @@ function renderBody(r: ScheduledResult) {
           </div>
         ))}
         {body.notes && (
-          <p style={{ fontSize: '10.5px', color: '#6b7280', marginTop: '6px', fontStyle: 'italic' }}>{body.notes}</p>
+          <p style={{ fontSize: '10.5px', color: 'var(--text-hint)', marginTop: '6px', fontStyle: 'italic' }}>{body.notes}</p>
         )}
       </div>
     );
@@ -304,9 +304,9 @@ function renderBody(r: ScheduledResult) {
     const s = body.stats || {};
     const flagged = body.flagged || [];
     return (
-      <div style={{ fontSize: '11px', color: '#374151', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--text-label)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {body.summary && <p style={{ margin: 0, lineHeight: 1.4 }}>{body.summary}</p>}
-        <div style={{ display: 'flex', gap: '10px', fontSize: '10.5px', color: '#6b7280' }}>
+        <div style={{ display: 'flex', gap: '10px', fontSize: '10.5px', color: 'var(--text-hint)' }}>
           <span>Present: {s.present ?? 0}</span>
           <span>Absent: {s.absent ?? 0}</span>
           <span>Late: {s.late ?? 0}</span>
@@ -316,7 +316,7 @@ function renderBody(r: ScheduledResult) {
           <div>
             <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#dc2626', marginBottom: '2px' }}>Flagged students:</div>
             {flagged.slice(0, 5).map((f: any, i: number) => (
-              <div key={i} style={{ fontSize: '10.5px', color: '#4b5563' }}>
+              <div key={i} style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                 • {f.name} ({f.absent} absent, {f.late} late)
               </div>
             ))}
@@ -332,13 +332,13 @@ function renderBody(r: ScheduledResult) {
     const highlights = body.highlights || [];
     const concerns = body.concerns || [];
     return (
-      <div style={{ fontSize: '11px', color: '#374151', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--text-label)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {body.summary && <p style={{ margin: 0, lineHeight: 1.4 }}>{body.summary}</p>}
         {Object.keys(bySubject).length > 0 && (
           <div>
-            <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#111', marginBottom: '2px' }}>Averages:</div>
+            <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-title)', marginBottom: '2px' }}>Averages:</div>
             {Object.entries(bySubject).map(([subj, data]: any) => (
-              <div key={subj} style={{ fontSize: '10.5px', color: '#4b5563' }}>
+              <div key={subj} style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                 • {subj}: {data.average}% ({data.count})
               </div>
             ))}
@@ -348,7 +348,7 @@ function renderBody(r: ScheduledResult) {
           <div>
             <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#059669', marginBottom: '2px' }}>Top:</div>
             {highlights.slice(0, 3).map((s: any, i: number) => (
-              <div key={i} style={{ fontSize: '10.5px', color: '#4b5563' }}>• {s.name}: {s.average}%</div>
+              <div key={i} style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>• {s.name}: {s.average}%</div>
             ))}
           </div>
         )}
@@ -356,7 +356,7 @@ function renderBody(r: ScheduledResult) {
           <div>
             <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#dc2626', marginBottom: '2px' }}>Support needed:</div>
             {concerns.slice(0, 3).map((s: any, i: number) => (
-              <div key={i} style={{ fontSize: '10.5px', color: '#4b5563' }}>• {s.name}: {s.average}%</div>
+              <div key={i} style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>• {s.name}: {s.average}%</div>
             ))}
           </div>
         )}
@@ -364,7 +364,7 @@ function renderBody(r: ScheduledResult) {
     );
   }
 
-  return <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>No preview available.</p>;
+  return <p style={{ fontSize: '11px', color: 'var(--text-hint)', margin: 0 }}>No preview available.</p>;
 }
 
 export default ScheduledResultsSection;

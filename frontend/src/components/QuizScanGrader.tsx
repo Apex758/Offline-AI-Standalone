@@ -332,7 +332,7 @@ const QuizScanGrader: React.FC<QuizScanGraderProps> = ({ quizId: initialQuizId, 
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
           <Icon icon={SquareLock01IconData} className="w-7 h-7" style={{ color: '#3b82f6' }} />
         </div>
-        <h3 className="text-lg font-semibold text-gray-800">{t('bulkGrader.ocrUnavailable')}</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('bulkGrader.ocrUnavailable')}</h3>
         <p className="text-sm text-gray-500 max-w-sm">
           Scan grading requires OCR (Tier 2). Enable OCR in Settings to grade student papers by scanning.
         </p>

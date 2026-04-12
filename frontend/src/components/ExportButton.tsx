@@ -274,14 +274,14 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
               >
                 <FileText className="w-4 h-4 mr-3 text-red-600" />
-                <span className="text-sm text-gray-700">{t('export.exportPdf')}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">{t('export.exportPdf')}</span>
               </button>
               <button
                 onClick={() => handleExport('docx')}
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
               >
                 <FileDown className="w-4 h-4 mr-3 text-blue-600" />
-                <span className="text-sm text-gray-700">{t('export.exportWord')}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">{t('export.exportWord')}</span>
               </button>
             </div>
           </div>

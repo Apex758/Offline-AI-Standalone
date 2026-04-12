@@ -486,8 +486,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             </svg>
           </div>
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', margin: 0 }}>{t('sidebar.photoTransfer')}</h2>
-            <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>{t('sidebar.photoTransfer')}</h2>
+            <p style={{ fontSize: 13, color: 'var(--text-hint)', margin: 0 }}>
               Send photos from phone or queue files for phone download
             </p>
           </div>
@@ -561,7 +561,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             cursor: 'pointer',
             fontSize: 13,
             fontWeight: 600,
-            color: gradeMode ? '#92400e' : '#64748b',
+            color: gradeMode ? '#92400e' : 'var(--text-hint)',
           }}>
             <input
               type="checkbox"
@@ -639,7 +639,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           {/* QR Code + Connection */}
           {networkInfo && networkInfo.ip !== '127.0.0.1' ? (
             <div style={{ padding: 20, textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 12 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>
                 Scan with your phone camera
               </p>
               <div style={{
@@ -657,7 +657,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 background: '#f1f5f9',
                 borderRadius: 8,
                 fontSize: 13,
-                color: '#334155',
+                color: 'var(--text-label)',
                 fontFamily: 'monospace',
                 wordBreak: 'break-all',
               }}>
@@ -710,7 +710,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>
                 </svg>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>{t('photoTransfer.laptopHotspot')}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-label)' }}>{t('photoTransfer.laptopHotspot')}</span>
               </div>
               <button
                 onClick={toggleHotspot}
@@ -733,7 +733,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             {hotspotActive && hotspotInfo && (
               <div style={{
                 padding: '8px 12px', borderRadius: 8,
-                background: '#f8fafc', fontSize: 12, color: '#475569',
+                background: '#f8fafc', fontSize: 12, color: 'var(--text-muted)',
               }}>
                 <div>Network: <strong>{hotspotInfo.ssid}</strong></div>
                 <div>Password: <strong>{hotspotInfo.password}</strong></div>
@@ -749,7 +749,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           {/* Sessions */}
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>Sessions</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-label)', margin: 0 }}>Sessions</h3>
               <button
                 onClick={() => setShowNewSession(true)}
                 style={{
@@ -822,10 +822,10 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             <>
               <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>
                     {activeSession.session_name}
                   </h3>
-                  <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-hint)', margin: 0 }}>
                     {activeSession.date} &middot; {photos.length} photo{photos.length !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -840,7 +840,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   style={{
                     padding: '6px 12px', borderRadius: 8,
                     background: '#f1f5f9', border: '1px solid #e2e8f0',
-                    fontSize: 12, fontWeight: 600, color: '#475569',
+                    fontSize: 12, fontWeight: 600, color: 'var(--text-muted)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
@@ -885,10 +885,10 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               {/* ── Send to Phone Section ── */}
               <div style={{ marginTop: 32 }}>
                 <div style={{ marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>
                     {t('photoTransfer.sendToPhone')}
                   </h3>
-                  <p style={{ fontSize: 13, color: '#64748b', margin: '4px 0 0' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-hint)', margin: '4px 0 0' }}>
                     {t('photoTransfer.dragDropHint')}
                   </p>
                 </div>
@@ -930,7 +930,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                     <polyline points="17 8 12 3 7 8"/>
                     <line x1="12" y1="3" x2="12" y2="15"/>
                   </svg>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: dragOver ? '#2563eb' : '#475569', margin: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: dragOver ? '#2563eb' : 'var(--text-muted)', margin: 0 }}>
                     {sendingToPhone ? 'Uploading...' : t('photoTransfer.dragDropHint')}
                   </p>
                   <p style={{ fontSize: 12, color: '#94a3b8', margin: '6px 0 0' }}>
@@ -969,7 +969,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
 
                           {/* Filename + size */}
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {f.filename}
                             </div>
                             <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
@@ -1042,7 +1042,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           }}>
             <div style={{ padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>Photo Detail</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-label)', margin: 0 }}>Photo Detail</h3>
                 <button
                   onClick={() => setSelectedPhoto(null)}
                   style={{
@@ -1099,7 +1099,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           }}>
             <div style={{ padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>{t('photoTransfer.gradingResults')}</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-label)', margin: 0 }}>{t('photoTransfer.gradingResults')}</h3>
                 <button
                   onClick={() => { setGradingResults(null); setGradingSummary(null); }}
                   style={{
@@ -1144,11 +1144,11 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>
                           {result.student_name || result.file_name}
                         </div>
                         {result.student_id && (
-                          <div style={{ fontSize: 11, color: '#64748b' }}>ID: {result.student_id}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>ID: {result.student_id}</div>
                         )}
                       </div>
                       {!result.error && (
@@ -1166,7 +1166,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                       <div style={{ fontSize: 11, color: '#dc2626', marginTop: 4 }}>{result.error}</div>
                     )}
                     {!result.error && (
-                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-hint)', marginTop: 4 }}>
                         Score: {result.score}/{result.total_points}
                       </div>
                     )}
@@ -1189,7 +1189,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           }}>
             <div style={{ padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#334155', margin: 0 }}>Scan Tracker</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-label)', margin: 0 }}>Scan Tracker</h3>
                 <button
                   onClick={() => setShowScanPanel(false)}
                   style={{
@@ -1253,17 +1253,17 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                           {first.doc_type}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {title}
                           </div>
-                          {subtitle && <div style={{ fontSize: 11, color: '#64748b' }}>{subtitle}</div>}
+                          {subtitle && <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>{subtitle}</div>}
                         </div>
                       </div>
 
                       {/* Progress bar */}
                       {expected.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginBottom: 4 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-hint)', marginBottom: 4 }}>
                             <span>{scannedIds.size} of {expected.length} students</span>
                             <span>{progressPct}%</span>
                           </div>
@@ -1286,7 +1286,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
                               <path d="M20 6L9 17l-5-5" />
                             </svg>
-                            <span style={{ fontSize: 12, color: '#1e293b', fontWeight: 500 }}>
+                            <span style={{ fontSize: 12, color: 'var(--text-heading)', fontWeight: 500 }}>
                               {m.student_name || m.student_id}
                             </span>
                           </div>
@@ -1300,7 +1300,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
                                 <circle cx="12" cy="12" r="10" />
                               </svg>
-                              <span style={{ fontSize: 12, color: '#64748b' }}>
+                              <span style={{ fontSize: 12, color: 'var(--text-hint)' }}>
                                 {s.full_name || s.student_id}
                               </span>
                             </div>
@@ -1344,8 +1344,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{toast.message}</div>
-                {toast.detail && <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{toast.detail}</div>}
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>{toast.message}</div>
+                {toast.detail && <div style={{ fontSize: 11, color: 'var(--text-hint)', marginTop: 1 }}>{toast.detail}</div>}
               </div>
             </div>
           ))}
@@ -1392,10 +1392,10 @@ const SessionItem: React.FC<{
       }}
     >
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {session.session_name}
         </div>
-        <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 2 }}>
           {session.date} &middot; {session.photo_count} photo{session.photo_count !== 1 ? 's' : ''}
         </div>
       </div>
@@ -1493,7 +1493,7 @@ const PhotoCard: React.FC<{
         />
       </div>
       <div style={{ padding: '8px 10px' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {`Photo ${photo.index}`}
         </div>
         <div style={{ fontSize: 11, color: '#94a3b8' }}>
@@ -1508,8 +1508,8 @@ const PhotoCard: React.FC<{
 
 const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
-    <span style={{ fontSize: 13, color: '#64748b' }}>{label}</span>
-    <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
+    <span style={{ fontSize: 13, color: 'var(--text-hint)' }}>{label}</span>
+    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
   </div>
 );
 

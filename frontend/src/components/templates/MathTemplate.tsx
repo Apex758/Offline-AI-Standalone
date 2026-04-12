@@ -125,16 +125,16 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
             </div>
             {loading
               ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 280 }} />
-              : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1 }}>{worksheetTitle || 'Math Practice'}</h1>
+              : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: 'var(--text-title)', lineHeight: 1.1 }}>{worksheetTitle || 'Math Practice'}</h1>
             }
           </div>
-          <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
             <div>{t('templates.name')} {studentName
-              ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
+              ? <span style={{ fontWeight: 700, color: 'var(--text-title)' }}>{studentName}</span>
               : <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span>
             }</div>
             {studentId && (
-              <div>ID: <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentId}</span></div>
+              <div>ID: <span style={{ fontWeight: 700, color: 'var(--text-title)' }}>{studentId}</span></div>
             )}
             <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: studentName ? 100 : 130, paddingBottom: 1 }}>&nbsp;</span></div>
             <div>{t('templates.score')} <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 55, paddingBottom: 1 }}>&nbsp;</span> / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</div>
@@ -194,10 +194,10 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
                 <div style={{ fontSize: 10, fontWeight: 700, color: ACCENT, marginBottom: 10 }}>#{i + 1}</div>
 
                 {/* Vertical problem */}
-                <div style={{ fontFamily: "'Courier New', 'Courier', monospace", fontSize: 24, fontWeight: 700, color: '#1e293b', textAlign: 'right', paddingRight: 8 }}>
+                <div style={{ fontFamily: "'Courier New', 'Courier', monospace", fontSize: 24, fontWeight: 700, color: 'var(--text-heading)', textAlign: 'right', paddingRight: 8 }}>
                   <div style={{ marginBottom: 4 }}>{prob.num1}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, borderBottom: '2.5px solid #334155', paddingBottom: 6, marginBottom: 6 }}>
-                    <span style={{ fontSize: 20, color: '#475569', fontFamily: 'inherit' }}>{displayOp(String(prob.operator))}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, borderBottom: '2.5px solid var(--text-label)', paddingBottom: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: 20, color: 'var(--text-muted)', fontFamily: 'inherit' }}>{displayOp(String(prob.operator))}</span>
                     <span>{prob.num2}</span>
                   </div>
                   {/* Answer box */}
@@ -231,7 +231,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
                   fontSize: 12, fontWeight: 900, color: '#fff',
                 }}>{i + 1}</div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: '2px 0 10px', fontSize: 14, color: '#1e293b', fontWeight: 600, lineHeight: 1.5 }}>{q.question}</p>
+                  <p style={{ margin: '2px 0 10px', fontSize: 14, color: 'var(--text-heading)', fontWeight: 600, lineHeight: 1.5 }}>{q.question}</p>
                   {effectiveShowAnswers && q.correctAnswer
                     ? <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 5, padding: '7px 12px', fontSize: 13, color: '#15803d', fontWeight: 600 }}>
                         Answer: {q.correctAnswer}
@@ -250,7 +250,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
 
       {/* Footer */}
       {studentName && !isAnswerKey && (
-        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
+        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-hint)' }}>
           <span>{t('templates.score')} _____ / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</span>
           <span>Teacher: _________________________</span>
         </div>

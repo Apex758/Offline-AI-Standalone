@@ -258,7 +258,7 @@ const StreamingPageDay = ({ lines, fillerCount }: { lines: string[]; fillerCount
     {lines.map((line, i) => (
       <p key={i} style={{
         margin: 0, fontSize: 11, lineHeight: 1.55,
-        color: "#5a3e28", fontWeight: line.includes(":") ? 500 : 400,
+        color: "var(--text-label)", fontWeight: line.includes(":") ? 500 : 400,
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         animation: "fadeInLineDay 0.35s ease both",
         animationDelay: `${i * 0.08}s`,
@@ -508,7 +508,7 @@ export default function KidsStorybookSkeletonDay({ livePages = [] }: { livePages
 
       <div style={{
         fontSize: 12, fontWeight: 700, letterSpacing: 3.5,
-        textTransform: "uppercase", color: "#b35a3a",
+        textTransform: "uppercase", color: "var(--text-muted)",
         marginBottom: 12, opacity: 0.6,
       }}>
         ✦ Loading Your Story ✦

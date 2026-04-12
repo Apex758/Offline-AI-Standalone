@@ -605,7 +605,7 @@ function JungleSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', top: 10 * sc, right: 40 * sc, width: 50 * sc, height: 80 * sc, background: `${leaf}10`, borderRadius: '50% 50% 50% 50%', transform: 'rotate(20deg)' }} />
       {L === 'title' ? (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${36 * sc}px ${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
-          {c.badge && <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: earthy, borderRadius: 4 * sc, marginBottom: 14 * sc, alignSelf: 'flex-start' }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: '#1a1a0a', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
+          {c.badge && <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: earthy, borderRadius: 4 * sc, marginBottom: 14 * sc, alignSelf: 'flex-start' }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: 'var(--text-title)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 34 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 ${2 * sc}px ${4 * sc}px rgba(0,0,0,0.3)` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: earthy, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
@@ -910,7 +910,7 @@ function PirateSlide({ slide, t, w }: SlideRendererProps) {
       </div>
       {L === 'title' ? (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
-          {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: gold, borderRadius: 4 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken('#ffd700', 0.3)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#1a1a0a', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
+          {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: gold, borderRadius: 4 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken('#ffd700', 0.3)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: 'var(--text-title)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 ${2 * sc}px ${6 * sc}px rgba(0,0,0,0.4)` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: gold, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
@@ -1039,7 +1039,7 @@ function FarmSlide({ slide, t, w }: SlideRendererProps) {
         <div style={{ position: 'absolute', top: 14 * sc, left: 20 * sc, right: 20 * sc, bottom: 18 * sc, ...imageAwareInsets(c.imagePlacement, w), background: 'rgba(255,255,255,0.7)', borderRadius: 12 * sc, padding: `${14 * sc}px ${18 * sc}px`, backdropFilter: 'blur(8px)' }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: grass, borderRadius: 14 * sc, marginBottom: 8 * sc }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: '#fff', letterSpacing: '0.08em' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 10 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
-          {c.body && <div style={{ fontSize: 11 * sc, color: '#555', lineHeight: 1.6, marginBottom: 10 * sc }}>{c.body}</div>}
+          {c.body && <div style={{ fontSize: 11 * sc, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 10 * sc }}>{c.body}</div>}
           {(c.bullets || []).map((b, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 * sc, marginBottom: 7 * sc }}>
               <div style={{ width: 16 * sc, height: 16 * sc, borderRadius: '50%', background: [grass, sun, barn, '#e74c3c'][i % 4], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><span style={{ fontSize: 7 * sc, fontWeight: 900, color: '#fff' }}>{i + 1}</span></div>
@@ -1078,7 +1078,7 @@ function CircusSlide({ slide, t, w }: SlideRendererProps) {
         <div style={{ position: 'absolute', top: 28 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: red, borderRadius: 20 * sc, marginBottom: 10 * sc, boxShadow: `0 ${2 * sc}px 0 ${darken(red, 0.2)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 21 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
-          {c.body && <div style={{ fontSize: 11 * sc, color: '#555', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${yellow}18`, borderRadius: 10 * sc }}>{c.body}</div>}
+          {c.body && <div style={{ fontSize: 11 * sc, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${yellow}18`, borderRadius: 10 * sc }}>{c.body}</div>}
           {(c.bullets || []).map((b, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 * sc, marginBottom: 7 * sc, padding: `${6 * sc}px ${10 * sc}px`, background: `${[red, yellow, p][i % 3]}12`, borderRadius: 8 * sc }}>
               <div style={{ width: 18 * sc, height: 18 * sc, borderRadius: '50%', background: [red, yellow, p, '#3498db'][i % 4], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 ${2 * sc}px 0 rgba(0,0,0,0.2)` }}><span style={{ fontSize: 8 * sc, fontWeight: 900, color: '#fff' }}>{i + 1}</span></div>
@@ -1232,13 +1232,13 @@ function BlocksSlide({ slide, t, w }: SlideRendererProps) {
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${18 * sc}px`, background: colors[0], borderRadius: 6 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken(colors[0], 0.2)}` }}><span style={{ fontSize: 10 * sc, fontWeight: 800, color: '#fff', letterSpacing: '0.08em' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 38 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
-          {c.subtitle && <div style={{ fontSize: 13 * sc, color: '#666', fontWeight: 600 }}>{c.subtitle}</div>}
+          {c.subtitle && <div style={{ fontSize: 13 * sc, color: 'var(--text-muted)', fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
         <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: colors[1], borderRadius: 6 * sc, marginBottom: 10 * sc, boxShadow: `0 ${2 * sc}px 0 ${darken(colors[1], 0.2)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 22 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
-          {c.body && <div style={{ fontSize: 11 * sc, color: '#555', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.7)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)', boxShadow: `0 ${2 * sc}px ${8 * sc}px rgba(0,0,0,0.08)` }}>{c.body}</div>}
+          {c.body && <div style={{ fontSize: 11 * sc, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.7)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)', boxShadow: `0 ${2 * sc}px ${8 * sc}px rgba(0,0,0,0.08)` }}>{c.body}</div>}
           {(c.bullets || []).map((b, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 * sc, marginBottom: 7 * sc, padding: `${6 * sc}px ${10 * sc}px`, background: `${colors[i % 4]}12`, borderRadius: 8 * sc, borderLeft: `3px solid ${colors[i % 4]}` }}>
               <div style={{ width: 18 * sc, height: 18 * sc, borderRadius: 4 * sc, background: colors[i % 4], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 ${2 * sc}px 0 rgba(0,0,0,0.15)` }}><span style={{ fontSize: 8 * sc, fontWeight: 900, color: '#fff' }}>{i + 1}</span></div>

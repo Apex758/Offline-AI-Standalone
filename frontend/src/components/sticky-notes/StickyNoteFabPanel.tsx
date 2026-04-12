@@ -124,13 +124,13 @@ export const StickyNoteFabPanel: React.FC<Props> = ({ activeTabId, onClose }) =>
                     className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                     onClick={() => toggleGroupExpand(g.id)}
                   >
-                    <SIcon icon={FolderOpenIconData} size={14} style={{ color: '#5e5475' }} />
+                    <SIcon icon={FolderOpenIconData} size={14} style={{ color: 'var(--text-muted)' }} />
                     <span className="flex-1 text-xs font-semibold truncate" style={{ color: 'var(--text-title, #111827)' }}>
                       {g.title}
                     </span>
                     <span
                       className="text-xs px-1.5 rounded-full"
-                      style={{ background: 'rgba(94,84,117,0.1)', color: '#5e5475', fontSize: 10 }}
+                      style={{ background: 'rgba(94,84,117,0.1)', color: 'var(--text-muted)', fontSize: 10 }}
                     >
                       {gNotes.length}
                     </span>

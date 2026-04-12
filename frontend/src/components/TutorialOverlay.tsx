@@ -600,25 +600,25 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       {highlightRect && (
       <div
         ref={tooltipRef}
-        className={`absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-[10002] transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
+        className={`absolute bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-[10002] transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
         style={tooltipPosition}
         >
           <button
             onClick={handleClose}
-            className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition"
+            className="absolute top-3 right-3 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
 
           <div className="pr-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {steps[currentStep].title}
             </h3>
-            <p className="text-gray-600 mb-4">{steps[currentStep].description}</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{steps[currentStep].description}</p>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   {t('tutorial.stepCounter', { current: currentStep + 1, total: steps.length })}
                 </div>
                 <button
@@ -628,7 +628,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                       ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
                       : ttsMode === 'single' && tts.isSpeaking
                       ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                      : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                   title={
                     ttsMode === 'off'
@@ -655,7 +655,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 <button
                   onClick={handlePrevious}
                   disabled={currentStep === 0 }
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   {t('tutorial.previous')}
@@ -682,7 +682,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                     ? 'bg-blue-600 w-6'
                     : index < currentStep
                     ? 'bg-blue-400'
-                    : 'bg-gray-300'
+                    : 'bg-gray-300 dark:bg-gray-600'
                 }`}
               />
             ))}

@@ -80,14 +80,14 @@ export function DailyPlan({
                       <Clock className="w-4 h-4 text-gray-500" />
                       <span className="text-sm font-semibold text-gray-600">{activity.time}</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                       {activity.title}
                     </h3>
-                    <p className="text-gray-600 mb-2">{activity.description}</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">{activity.description}</p>
 
                     {activity.materials && activity.materials.length > 0 && (
                       <div className="mt-2">
-                        <p className="text-sm font-medium text-gray-700 mb-1">{t('activityCard.materials')}</p>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('activityCard.materials')}</p>
                         <ul className="text-sm text-gray-600 space-y-1">
                           {activity.materials.map((material, idx) => (
                             <li key={idx} className="flex items-start">
@@ -110,7 +110,7 @@ export function DailyPlan({
           )}
         </div>
       ) : (
-        <div className="text-gray-700">
+        <div className="text-gray-700 dark:text-gray-300">
           {morningActivity && (
             <p className="mb-2"><strong>{t('dailyPlan.morningActivity')}</strong> {morningActivity}</p>
           )}

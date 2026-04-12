@@ -53,11 +53,11 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Target className={`h-5 w-5 text-${color}-600`} />
-                <h4 className="font-semibold text-gray-800">{t('weeklyOverview.focusAreas')}</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200">{t('weeklyOverview.focusAreas')}</h4>
               </div>
               <ul className="list-disc pl-5 space-y-1">
                 {(focusAreas || learningGoals)?.map((goal, index) => (
-                  <li key={index} className="text-gray-700">{goal}</li>
+                  <li key={index} className="text-gray-700 dark:text-gray-300">{goal}</li>
                 ))}
               </ul>
             </div>
@@ -67,11 +67,11 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen className={`h-5 w-5 text-${color}-600`} />
-                <h4 className="font-semibold text-gray-800">{t('weeklyOverview.keyVocabulary')}</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200">{t('weeklyOverview.keyVocabulary')}</h4>
               </div>
               <ul className="list-disc pl-5 space-y-1">
                 {(vocabulary || keyVocabulary)?.map((word, index) => (
-                  <li key={index} className="text-gray-700">{word}</li>
+                  <li key={index} className="text-gray-700 dark:text-gray-300">{word}</li>
                 ))}
               </ul>
             </div>

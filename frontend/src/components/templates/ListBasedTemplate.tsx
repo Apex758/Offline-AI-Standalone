@@ -70,7 +70,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
         }}>{index + 1}</div>
 
         <div style={{ flex: 1, paddingTop: 3 }}>
-          <p style={{ margin: '0 0 10px', fontSize: 14, color: '#1e293b', lineHeight: 1.55, fontWeight: 600 }}>
+          <p style={{ margin: '0 0 10px', fontSize: 14, color: 'var(--text-heading)', lineHeight: 1.55, fontWeight: 600 }}>
             {question.question}
           </p>
 
@@ -184,7 +184,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
         }
 
         {/* Directions */}
-        <div style={{ background: '#fafafa', border: '1.5px solid #e2e8f0', borderLeft: `4px solid ${ACCENT}`, borderRadius: 4, padding: '10px 16px', marginBottom: 24, fontSize: 13, color: '#334155' }}>
+        <div style={{ background: '#fafafa', border: '1.5px solid #e2e8f0', borderLeft: `4px solid ${ACCENT}`, borderRadius: 4, padding: '10px 16px', marginBottom: 24, fontSize: 13, color: 'var(--text-label)' }}>
           <strong>{t('templates.directions')}</strong> {DIRECTIONS[questionType] || 'Answer each question below.'}
         </div>
 
@@ -230,14 +230,14 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
 
       {/* Footer */}
       {studentName && !isAnswerKey && (
-        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
+        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-hint)' }}>
           <span>Score: _____ / {questionCount}</span>
           <span>Teacher: _________________________</span>
         </div>
       )}
 
       <div style={{ borderTop: '1.5px solid #e2e8f0', margin: '0 36px', padding: '10px 0 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>{t('templates.generatedForEducation')}</span>
+        <span style={{ fontSize: 11, color: 'var(--text-hint)' }}>{t('templates.generatedForEducation')}</span>
         <div style={{ width: 20, height: 5, background: ACCENT, borderRadius: 3 }} />
       </div>
     </div>

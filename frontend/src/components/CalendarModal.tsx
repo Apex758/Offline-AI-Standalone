@@ -677,7 +677,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                               className="cal-task-check"
                             >
                               {task.completed ? (
-                                <CheckCircle2 className="w-5 h-5" style={{ color: '#1D362D' }} />
+                                <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
                               ) : (
                                 <Circle className="w-5 h-5" style={{ color: '#D1D5DB' }} />
                               )}

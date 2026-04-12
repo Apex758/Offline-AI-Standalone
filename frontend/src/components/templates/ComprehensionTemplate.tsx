@@ -77,20 +77,20 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
             </div>
             {loading
               ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 28, width: 300 }} />
-              : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1 }}>{worksheetTitle}</h1>
+              : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: 'var(--text-title)', lineHeight: 1.1 }}>{worksheetTitle}</h1>
             }
-            {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#64748b' }}>{topic}</p>}
+            {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: 'var(--text-hint)' }}>{topic}</p>}
           </div>
-          <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
             <div>{t('templates.name')} {studentName
-              ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
+              ? <span style={{ fontWeight: 700, color: 'var(--text-title)' }}>{studentName}</span>
               : <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span>
             }</div>
             {studentId && (
-              <div>ID: <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentId}</span></div>
+              <div>ID: <span style={{ fontWeight: 700, color: 'var(--text-title)' }}>{studentId}</span></div>
             )}
             {className && (
-              <div>Class: <span style={{ fontWeight: 700, color: '#0f172a' }}>{className}</span></div>
+              <div>Class: <span style={{ fontWeight: 700, color: 'var(--text-title)' }}>{className}</span></div>
             )}
             <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: studentName ? 100 : 130, paddingBottom: 1 }}>&nbsp;</span></div>
           </div>
@@ -105,7 +105,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
             <div style={{ width: 24, height: 24, background: ACCENT, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ color: '#fff', fontSize: 12, fontWeight: 900 }}>A</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('templates.readPassage')}</h2>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: 'var(--text-title)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('templates.readPassage')}</h2>
           </div>
 
           <div style={{
@@ -148,7 +148,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
                       <ShimmerBar key={i} variant="paper" accentColor={ACCENT} style={{ height: 14, width: `${w}%` }} />
                     ))}
                   </div>
-                : <p style={{ margin: 0, fontSize: 14, color: '#1e293b', lineHeight: 1.85, whiteSpace: 'pre-wrap' }}>{displayPassage}</p>
+                : <p style={{ margin: 0, fontSize: 14, color: 'var(--text-heading)', lineHeight: 1.85, whiteSpace: 'pre-wrap' }}>{displayPassage}</p>
               }
             </div>
           </div>
@@ -160,7 +160,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
             <div style={{ width: 24, height: 24, background: ACCENT, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ color: '#fff', fontSize: 12, fontWeight: 900 }}>B</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('templates.answerQuestions')}</h2>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: 'var(--text-title)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('templates.answerQuestions')}</h2>
           </div>
 
           {displayQuestions.map((q, idx) => (
@@ -177,7 +177,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
                 <div style={{ flex: 1 }}>
                   {loading
                     ? <ShimmerBar variant="paper" accentColor={ACCENT} style={{ height: 14, width: '72%', marginBottom: 10, display: 'block' }} />
-                    : <p style={{ margin: '2px 0 10px', fontSize: 14, color: '#1e293b', fontWeight: 600, lineHeight: 1.5 }}>{q.question}</p>
+                    : <p style={{ margin: '2px 0 10px', fontSize: 14, color: 'var(--text-heading)', fontWeight: 600, lineHeight: 1.5 }}>{q.question}</p>
                   }
                   {effectiveShowAnswers && q.correctAnswer
                     ? <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 5, padding: '7px 12px', fontSize: 13, color: '#15803d', fontWeight: 600 }}>
@@ -198,14 +198,14 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
 
       {/* Footer */}
       {studentName && !isAnswerKey && (
-        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
+        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-hint)' }}>
           <span>{t('templates.score')} _____ / {displayQuestions.length}</span>
           <span>Teacher: _________________________</span>
         </div>
       )}
 
       <div style={{ borderTop: '2px solid #0f172a', margin: '0 36px', paddingTop: 10, paddingBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>{t('templates.generatedForEducation')}</span>
+        <span style={{ fontSize: 11, color: 'var(--text-hint)' }}>{t('templates.generatedForEducation')}</span>
         <div style={{ width: 24, height: 6, background: ACCENT, borderRadius: 3 }} />
       </div>
     </div>

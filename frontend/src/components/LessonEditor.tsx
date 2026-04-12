@@ -184,10 +184,10 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
       {/* COMPACT Header */}
       <div className="border-b border-gray-200 p-4 bg-gradient-to-r from-cyan-50 to-blue-50">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-2xl font-bold text-gray-800">Edit Lesson Plan</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Edit Lesson Plan</h2>
           <button
             onClick={onCancel}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition"
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition"
             title={t('editor.closeEditor')}
           >
             <X className="w-6 h-6" />
@@ -197,7 +197,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
         {/* COMPACT Metadata - 3 columns instead of 2 */}
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Topic</label>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Topic</label>
             <SmartInput
               value={lesson.metadata.title}
               onChange={(val) => updateMetadata('title', val)}
@@ -205,7 +205,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Subject</label>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Subject</label>
             <SmartInput
               value={lesson.metadata.subject}
               onChange={(val) => updateMetadata('subject', val)}
@@ -213,7 +213,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Grade</label>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Grade</label>
             <SmartInput
               value={lesson.metadata.gradeLevel}
               onChange={(val) => updateMetadata('gradeLevel', val)}
@@ -221,7 +221,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Strand</label>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Strand</label>
             <SmartInput
               value={lesson.metadata.strand}
               onChange={(val) => updateMetadata('strand', val)}
@@ -229,7 +229,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Duration</label>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Duration</label>
             <SmartInput
               value={lesson.metadata.duration}
               onChange={(val) => updateMetadata('duration', val)}
@@ -238,7 +238,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Students</label>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Students</label>
             <SmartInput
               value={lesson.metadata.studentCount}
               onChange={(val) => updateMetadata('studentCount', val)}
@@ -252,7 +252,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
       <div className="p-6 max-h-[65vh] overflow-y-auto">
         {/* Learning Objectives */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Learning Objectives</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Learning Objectives</h3>
           <div className="space-y-2">
             {lesson.learningObjectives.map((objective, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -262,7 +262,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                 >
                   <GripVertical className="w-4 h-4 text-gray-400" />
                 </button>
-                <span className="text-sm font-medium text-gray-600 min-w-[1.5rem]">{index + 1}.</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[1.5rem]">{index + 1}.</span>
                 <SmartInput
                   value={objective}
                   onChange={(val) => updateObjective(index, val)}
@@ -299,7 +299,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
           </div>
           <button
             onClick={addObjective}
-            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
+            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Learning Objective
@@ -308,7 +308,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
         {/* Materials */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Materials Needed</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Materials Needed</h3>
           <div className="space-y-2">
             {lesson.materials.map((material, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -318,7 +318,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                 >
                   <GripVertical className="w-4 h-4 text-gray-400" />
                 </button>
-                <span className="text-sm font-medium text-gray-600">•</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">•</span>
                 <SmartInput
                   value={material}
                   onChange={(val) => updateMaterial(index, val)}
@@ -355,7 +355,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
           </div>
           <button
             onClick={addMaterial}
-            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
+            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Material
@@ -364,7 +364,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
         {/* Lesson Sections */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Lesson Sections</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Lesson Sections</h3>
           <div className="space-y-4">
             {lesson.sections.map((section, index) => (
               <div key={section.id} className="border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition">
@@ -377,7 +377,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                     >
                       <GripVertical className="w-4 h-4 text-gray-400" />
                     </button>
-                    <span className="text-sm font-semibold text-gray-700">Section {index + 1}</span>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Section {index + 1}</span>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -408,7 +408,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
                 {/* Section Name */}
                 <div className="mb-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Section Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section Name</label>
                   <SmartInput
                     value={section.name}
                     onChange={(val) => updateSection(section.id, 'name', val)}
@@ -419,7 +419,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
                 {/* Section Content */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
                   <SmartTextArea
                     value={section.content}
                     onChange={(val) => updateSection(section.id, 'content', val)}
@@ -433,7 +433,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
           </div>
           <button
             onClick={addSection}
-            className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
+            className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-5 h-5" />
             Add Lesson Section
@@ -442,7 +442,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
         {/* Assessment Methods */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Assessment Methods</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Assessment Methods</h3>
           <div className="space-y-2">
             {lesson.assessmentMethods.map((assessment, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -452,7 +452,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                 >
                   <GripVertical className="w-4 h-4 text-gray-400" />
                 </button>
-                <span className="text-sm font-medium text-gray-600">•</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">•</span>
                 <SmartInput
                   value={assessment}
                   onChange={(val) => updateAssessment(index, val)}
@@ -489,7 +489,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
           </div>
           <button
             onClick={addAssessment}
-            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
+            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Assessment Method
@@ -499,7 +499,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
         {/* Optional Fields */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Prerequisites</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Prerequisites</label>
             <SmartTextArea
               value={lesson.prerequisites || ''}
               onChange={(val) => setLesson(prev => ({ ...prev, prerequisites: val }))}
@@ -510,7 +510,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Special Needs Accommodations</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Special Needs Accommodations</label>
             <SmartTextArea
               value={lesson.specialNeeds || ''}
               onChange={(val) => setLesson(prev => ({ ...prev, specialNeeds: val }))}
@@ -521,7 +521,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Additional Notes</label>
             <SmartTextArea
               value={lesson.additionalNotes || ''}
               onChange={(val) => setLesson(prev => ({ ...prev, additionalNotes: val }))}
@@ -534,8 +534,8 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
       </div>
 
       {/* Footer Actions */}
-      <div className="border-t border-gray-200 p-4 bg-gray-50 flex justify-between items-center">
-        <div className="text-sm text-gray-600">
+      <div className="border-t border-gray-200 p-4 bg-gray-50 dark:bg-gray-800 flex justify-between items-center">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
           {lesson.learningObjectives.length} objective{lesson.learningObjectives.length !== 1 ? 's' : ''} • 
           {lesson.sections.length} section{lesson.sections.length !== 1 ? 's' : ''} • 
           {lesson.materials.length} material{lesson.materials.length !== 1 ? 's' : ''}
@@ -543,7 +543,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
         <div className="flex gap-2">
           <button
             onClick={onCancel}
-            className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             <X className="w-4 h-4 mr-2" />
             Cancel

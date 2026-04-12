@@ -75,7 +75,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         {learningAreas && learningAreas.length > 0 && (
           <div className="mb-4">
             <h4 className="font-semibold mb-2">{t('activityCard.learningAreas')}</h4>
-            <ul className="list-disc pl-5 space-y-1 text-gray-700">
+            <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
               {learningAreas.map((area, index) => (
                 <li key={index}>{area}</li>
               ))}

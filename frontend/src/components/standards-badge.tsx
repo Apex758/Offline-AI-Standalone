@@ -25,7 +25,7 @@ export function StandardsBadge({
   variant = 'default'
 }: StandardsBadgeProps) {
   const variantStyles = {
-    default: 'bg-gray-100 text-gray-700 border-gray-300',
+    default: 'bg-gray-100 text-gray-700 dark:text-gray-300 border-gray-300',
     primary: 'bg-blue-100 text-blue-700 border-blue-300',
     success: 'bg-green-100 text-green-700 border-green-300',
     warning: 'bg-amber-100 text-amber-700 border-amber-300',

@@ -295,14 +295,14 @@ const ClassPackExportButton: React.FC<ClassPackExportButtonProps> = (props) => {
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
               >
                 <FileText className="w-4 h-4 mr-3 text-red-600" />
-                <span className="text-sm text-gray-700">PDF (ZIP)</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">PDF (ZIP)</span>
               </button>
               <button
                 onClick={() => handleExport('docx')}
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
               >
                 <FileDown className="w-4 h-4 mr-3 text-blue-600" />
-                <span className="text-sm text-gray-700">Word (ZIP)</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Word (ZIP)</span>
               </button>
             </div>
           </div>
