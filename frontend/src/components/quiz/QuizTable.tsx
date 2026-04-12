@@ -121,29 +121,29 @@ export default function QuizTable({
           </div>
           {studentInfo && (
             <div className="flex-shrink-0 flex items-center gap-3">
-              <div className="text-right">
-                <div className="font-semibold text-sm text-theme-primary">{studentInfo.name}</div>
-                <div className="text-xs text-theme-muted">ID: {studentInfo.id}</div>
-              </div>
+              <div className="font-semibold text-base text-theme-primary">{studentInfo.name}</div>
               <div
-                className="w-10 h-10 rounded flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                className="w-14 h-14 rounded flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
                 style={{ backgroundColor: accentColor }}
+                title="QR code will appear here in export"
               >
-                {studentInfo.name.charAt(0)}
+                QR
               </div>
             </div>
           )}
         </div>
 
-        {/* Name / Date fields */}
-        <div className="flex gap-8 pb-3 border-b border-gray-300 dark:border-gray-600">
-          <div className="text-sm text-theme-primary">
-            Name: <span className="inline-block w-48 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
+        {/* Name / Date fields (only when no student selected) */}
+        {!studentInfo && (
+          <div className="flex gap-8 pb-3 border-b border-gray-300 dark:border-gray-600">
+            <div className="text-sm text-theme-primary">
+              Name: <span className="inline-block w-48 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
+            </div>
+            <div className="text-sm text-theme-primary">
+              Date: <span className="inline-block w-32 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
+            </div>
           </div>
-          <div className="text-sm text-theme-primary">
-            Date: <span className="inline-block w-32 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Questions */}

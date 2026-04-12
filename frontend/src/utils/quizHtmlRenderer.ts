@@ -548,31 +548,25 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       </div>
       ${studentInfo ? `
       <div style="flex-shrink: 0; display: flex; align-items: center; gap: 0.75rem;">
+        <div style="font-weight: 600; color: #1f2937; font-size: 1rem;">${studentInfo.name}</div>
         ${qrCodeBase64 ? `
-        <div style="text-align: center;">
-          <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem; margin-bottom: 0.25rem;">${studentInfo.name}</div>
-          <div style="color: #6b7280; font-size: 0.7rem;">Student ID: ${studentInfo.id}</div>
-        </div>
         <img src="data:image/png;base64,${qrCodeBase64}" style="
-          width: 3.5rem;
-          height: 3.5rem;
+          width: 5rem;
+          height: 5rem;
           image-rendering: pixelated;
         " />
-        ` : `
-        <div>
-          <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">${studentInfo.name}</div>
-          <div style="color: #6b7280; font-size: 0.7rem;">Student ID: ${studentInfo.id}</div>
-        </div>
-        `}
+        ` : ''}
       </div>
       ` : ''}
     </div>
 
-    <!-- Name / Date fields -->
+    <!-- Name / Date fields (only when no student selected) -->
+    ${!studentInfo ? `
     <div style="display: flex; gap: 2rem; padding-bottom: 0.75rem; border-bottom: 1px solid #d1d5db;">
       <div style="font-size: 0.875rem; color: #374151;">Name: <span style="border-bottom: 1px solid #374151; display: inline-block; width: 14rem;">&nbsp;</span></div>
       <div style="font-size: 0.875rem; color: #374151;">Date: <span style="border-bottom: 1px solid #374151; display: inline-block; width: 8rem;">&nbsp;</span></div>
     </div>
+    ` : ''}
   </div>
 
   <!-- Content -->
