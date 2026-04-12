@@ -778,8 +778,10 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     if (guardOffline()) return;
 
     if (!validateForm()) {
-      const firstError = document.querySelector('[data-validation-error="true"]');
-      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
       return;
     }
 

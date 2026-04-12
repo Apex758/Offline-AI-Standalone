@@ -379,7 +379,8 @@
       "Bash(rm write_plan_stage*.py)",
       "Bash(ls *.md)",
       "Bash(python -c \"import py_compile; py_compile.compile\\('main.py', doraise=True\\); print\\('main.py OK'\\)\")",
-      "Bash(python -c \"import py_compile; py_compile.compile\\('insights_service.py', doraise=True\\); print\\('OK'\\)\")"
+      "Bash(python -c \"import py_compile; py_compile.compile\\('insights_service.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(grep \"\\\\.tsx$\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

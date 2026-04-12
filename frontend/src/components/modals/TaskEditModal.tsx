@@ -67,7 +67,14 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
     if (!formData.title.trim()) newErrors.title = t('tasks.titleRequired');
     if (!formData.date) newErrors.date = t('tasks.dateRequired');
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (Object.keys(newErrors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -145,14 +152,14 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-5">
           {/* Title */}
-          <div className="relative">
+          <div className="relative" data-validation-error={errors.title ? 'true' : undefined}>
             <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--dash-text-faint)' }}>
               <Type className="w-4 h-4" />
             </div>
             <SmartInput
               value={formData.title}
-              onChange={(val) => setFormData({ ...formData, title: val })}
-              className="w-full pl-10 pr-3 py-3 rounded-xl outline-none text-sm font-medium transition-all"
+              onChange={(val) => { setFormData({ ...formData, title: val }); setErrors(e => { const { title, ...rest } = e; return rest; }); }}
+              className={`w-full pl-10 pr-3 py-3 rounded-xl outline-none text-sm font-medium transition-all${errors.title ? ' validation-error' : ''}`}
               style={{
                 backgroundColor: 'var(--dash-task-bg)',
                 border: errors.title ? '1.5px solid #ef4444' : '1.5px solid transparent',
@@ -210,8 +217,9 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
             <input
               type="date"
               value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-xl outline-none text-sm transition-all"
+              onChange={(e) => { setFormData({ ...formData, date: e.target.value }); setErrors(prev => { const { date, ...rest } = prev; return rest; }); }}
+              className={`w-full px-3 py-2.5 rounded-xl outline-none text-sm transition-all${errors.date ? ' validation-error' : ''}`}
+              data-validation-error={errors.date ? 'true' : undefined}
               style={{
                 backgroundColor: 'var(--dash-task-bg)',
                 border: errors.date ? '1.5px solid #ef4444' : '1.5px solid transparent',

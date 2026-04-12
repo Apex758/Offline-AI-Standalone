@@ -278,6 +278,32 @@ input, textarea, select {
   --ng-thumb-bg-lo: rgba(255, 252, 245, 0.30);
   --ng-thumb-border: rgba(255, 252, 245, 0.50);
   --ng-thumb-shadow: rgba(0, 0, 0, 0.10);
+
+  /* PhotoReceiver / Document Transfer — light mode */
+  --pr-page-bg: #f8fafc;
+  --pr-surface: #ffffff;
+  --pr-surface-alt: #f1f5f9;
+  --pr-surface-hover: #f8fafc;
+  --pr-border: #e2e8f0;
+  --pr-text-muted: #94a3b8;
+  --pr-text-warning-heading: #92400e;
+  --pr-text-warning-body: #b45309;
+  --pr-badge-success-bg: #f0fdf4;
+  --pr-badge-success-border: #bbf7d0;
+  --pr-badge-error-bg: #fef2f2;
+  --pr-badge-error-border: #fecaca;
+  --pr-badge-warning-bg: #fef3c7;
+  --pr-badge-info-bg: #eff6ff;
+  --pr-badge-info-border: #bfdbfe;
+  --pr-badge-purple-bg: #ede9fe;
+  --pr-badge-purple-border: #c4b5fd;
+  --pr-badge-yellow-bg: #fefce8;
+  --pr-badge-yellow-border: #fef08a;
+  --pr-drop-border: #cbd5e1;
+  --pr-drop-active-bg: #eff6ff;
+  --pr-progress-track: #e2e8f0;
+  --pr-input-focus: #2563eb;
+  --pr-placeholder-bg: #f1f5f9;
 }
 
 .dark {
@@ -377,6 +403,32 @@ input, textarea, select {
   --ng-thumb-bg-lo: rgba(249, 240, 220, 0.03);
   --ng-thumb-border: rgba(249, 240, 220, 0.12);
   --ng-thumb-shadow: rgba(0, 0, 0, 0.38);
+
+  /* PhotoReceiver / Document Transfer — dark mode */
+  --pr-page-bg: #1a1918;
+  --pr-surface: #2a2926;
+  --pr-surface-alt: #33312e;
+  --pr-surface-hover: #33312e;
+  --pr-border: #3d3b37;
+  --pr-text-muted: #8a8780;
+  --pr-text-warning-heading: #fbbf24;
+  --pr-text-warning-body: #d97706;
+  --pr-badge-success-bg: #1a2e1a;
+  --pr-badge-success-border: #2d5a2d;
+  --pr-badge-error-bg: #2e1a1a;
+  --pr-badge-error-border: #5a2d2d;
+  --pr-badge-warning-bg: #2e2a1a;
+  --pr-badge-info-bg: #1a1e2e;
+  --pr-badge-info-border: #2d3d5a;
+  --pr-badge-purple-bg: #251e2e;
+  --pr-badge-purple-border: #4a3d6a;
+  --pr-badge-yellow-bg: #2e2c1a;
+  --pr-badge-yellow-border: #5a552d;
+  --pr-drop-border: #4a4845;
+  --pr-drop-active-bg: #1a1e2e;
+  --pr-progress-track: #3d3b37;
+  --pr-input-focus: #3b82f6;
+  --pr-placeholder-bg: #33312e;
 }
 
 /* ── Global dark mode for form inputs ── */

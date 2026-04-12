@@ -47,6 +47,7 @@ interface Props {
   inProgressValue?: string | null;
   onChange?: (next: Partial<OhpcLessonPlan>) => void;
   onReflectionsChange?: (next: TeacherReflections) => void;
+  topic?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -90,6 +91,7 @@ export default function OhpcLessonTable({
   inProgressValue,
   onChange,
   onReflectionsChange,
+  topic,
 }: Props) {
   const l: Partial<OhpcLessonPlan> = lesson || {};
   const reflect = reflections || EMPTY_TEACHER_REFLECTIONS;
@@ -274,7 +276,7 @@ export default function OhpcLessonTable({
         className="text-2xl font-bold text-center mb-2"
         style={{ color: headerText }}
       >
-        Lesson Plan
+        {topic ? `Exploring ${topic}` : 'Lesson Plan'}
       </h1>
 
       {/* ============================================================

@@ -1631,7 +1631,14 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
     }
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    if (Object.keys(errors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return false;
+    }
+    return true;
   };
 
   const handleGenerate = useCallback(() => {
@@ -2717,7 +2724,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 onChange={v => updateForm('description', v)}
                 rows={4}
                 placeholder={t('storybook.descriptionPlaceholder')}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent resize-none ${validationErrors.description ? 'border-red-500' : 'border-theme-strong'}`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent resize-none ${validationErrors.description ? 'border-red-500 validation-error' : 'border-theme-strong'}`}
+                data-validation-error={validationErrors.description ? 'true' : undefined}
                 style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
               />
               {validationErrors.description && (

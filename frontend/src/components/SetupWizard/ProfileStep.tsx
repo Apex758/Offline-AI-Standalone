@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GRADE_LEVELS, SUBJECTS, GradeSubjectMapping } from '../../data/teacherConstants';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -15,6 +15,8 @@ interface ProfileStepProps {
   onBack: () => void;
 }
 
+type ProfileErrors = Record<string, boolean>;
+
 const ProfileStep: React.FC<ProfileStepProps> = ({
   name, gradeSubjects, mode,
   onNameChange, onGradeToggle, onSubjectToggle, onApplyToAll,
@@ -23,6 +25,26 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
   const { t } = useTranslation();
   const { settings } = useSettings();
   const selectedGrades = Object.keys(gradeSubjects);
+  const [errors, setErrors] = useState<ProfileErrors>({});
+
+  const validateAndNext = () => {
+    const newErrors: ProfileErrors = {};
+    if (!name.trim()) newErrors.name = true;
+    if (selectedGrades.length === 0) newErrors.grades = true;
+    else {
+      const hasAnySubjects = Object.values(gradeSubjects).some(subs => subs.length > 0);
+      if (!hasAnySubjects) newErrors.subjects = true;
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return;
+    }
+    onNext();
+  };
 
   // For the OAK path, the bridge has already populated these from validate_oak.
   const oakSchool = settings.profile.school;
@@ -67,32 +89,32 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
         )}
 
         {/* Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('setupWizard.yourName')}</label>
+        <div data-validation-error={errors.name ? 'true' : undefined}>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('setupWizard.yourName')} <span style={{ color: '#ef4444' }}>*</span></label>
           <input
             type="text"
             value={name}
-            onChange={(e) => onNameChange(e.target.value)}
+            onChange={(e) => { onNameChange(e.target.value); setErrors(prev => { const { name, ...rest } = prev; return rest; }); }}
             placeholder={t('setupWizard.namePlaceholder')}
-            className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
+            className={`w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2${errors.name ? ' validation-error' : ''}`}
             style={{
               backgroundColor: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.15)',
+              border: errors.name ? '2px solid #ef4444' : '1px solid rgba(255,255,255,0.15)',
               color: '#fff',
             }}
           />
         </div>
 
         {/* Grade Levels */}
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>{t('setupWizard.gradeLevels')}</label>
+        <div data-validation-error={errors.grades ? 'true' : undefined}>
+          <label className="block text-sm font-medium mb-2" style={{ color: errors.grades ? '#ef4444' : 'rgba(255,255,255,0.7)' }}>{t('setupWizard.gradeLevels')} <span style={{ color: '#ef4444' }}>*</span></label>
           <div className="flex flex-wrap gap-2">
             {GRADE_LEVELS.map((g) => {
               const selected = selectedGrades.includes(g.value);
               return (
                 <button
                   key={g.value}
-                  onClick={() => onGradeToggle(g.value)}
+                  onClick={() => { onGradeToggle(g.value); setErrors(prev => { const { grades, ...rest } = prev; return rest; }); }}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                   style={{
                     backgroundColor: selected ? 'rgba(242,166,49,0.2)' : 'rgba(255,255,255,0.06)',
@@ -109,9 +131,9 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
 
         {/* Per-Grade Subject Selection */}
         {selectedGrades.length > 0 && (
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
-              Subjects per Grade
+          <div data-validation-error={errors.subjects ? 'true' : undefined}>
+            <label className="block text-sm font-medium mb-2" style={{ color: errors.subjects ? '#ef4444' : 'rgba(255,255,255,0.7)' }}>
+              Subjects per Grade <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <div className="space-y-3">
               {GRADE_LEVELS
@@ -148,7 +170,7 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
                           return (
                             <button
                               key={s}
-                              onClick={() => onSubjectToggle(g.value, s)}
+                              onClick={() => { onSubjectToggle(g.value, s); setErrors(prev => { const { subjects, ...rest } = prev; return rest; }); }}
                               className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all"
                               style={{
                                 backgroundColor: active ? 'rgba(242,166,49,0.18)' : 'rgba(255,255,255,0.05)',
@@ -179,7 +201,7 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
           Back
         </button>
         <button
-          onClick={onNext}
+          onClick={validateAndNext}
           className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95"
           style={{
             backgroundColor: '#F2A631',

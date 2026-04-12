@@ -2925,11 +2925,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       hoverColor={colors.activeBg || colors.bg}
                     />
                     {groupTabs.some(t => isTabWorking(t.id)) && <div className="edge-tab-generating-dot" />}
-                    <ChevronRight className="w-3.5 h-3.5 chevron-icon" style={{ color: activeInGroup ? '#fff' : '#333' }} />
+                    <ChevronRight className="w-3.5 h-3.5 chevron-icon" style={{ color: activeInGroup ? '#fff' : undefined }} />
                     <span
                       className="edge-tab-label"
                       style={{
-                        color: activeInGroup ? '#fff' : '#333',
+                        color: activeInGroup ? '#fff' : undefined,
                         fontWeight: activeInGroup ? 600 : 400,
                         maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                         WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'

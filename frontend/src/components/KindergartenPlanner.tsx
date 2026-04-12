@@ -1159,68 +1159,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
-                  {(streamingPlan || generatedPlan) && (
-                <div className="mb-8">
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg">
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
-                    
-                    <div className="relative px-8 py-8">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-                              <span className="text-white text-sm font-medium">{formData.curriculumUnit}</span>
-                            </div>
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-                              <span className="text-white text-sm font-medium">{formData.ageGroup}</span>
-                            </div>
-                          </div>
-
-                          <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
-                            {formData.lessonTopic}
-                          </h1>
-
-                          <div className="flex flex-wrap items-center gap-4 text-pink-100">
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-pink-200 rounded-full mr-2"></div>
-                              <span className="text-sm">Week {formData.week}, {formData.dayOfWeek}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-pink-200 rounded-full mr-2"></div>
-                              <span className="text-sm">{formData.duration} minutes</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-pink-200 rounded-full mr-2"></div>
-                              <span className="text-sm">{formData.students} students</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-pink-200 rounded-full mr-2"></div>
-                              <span className="text-sm">Generated on {new Date().toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {loading && (
-                          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
-                            <div className="flex items-center text-white">
-                              <HeartbeatLoader className="w-5 h-5 mr-3" />
-                              <div>
-                                <div className="text-sm font-medium">Generating...</div>
-                                <div className="text-xs text-pink-100">Early childhood plan</div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                    </div>
-                    
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-                  </div>
-                </div>
-                  )}
 
                   <div className="max-w-none">
                     {parsedPlan && !loading ? (

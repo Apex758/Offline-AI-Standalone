@@ -462,12 +462,12 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
   }, [activeSession]);
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--pr-page-bg)' }}>
       {/* ── Header ── */}
       <div style={{
         padding: '16px 24px',
-        background: 'white',
-        borderBottom: '1px solid #e2e8f0',
+        background: 'var(--pr-surface)',
+        borderBottom: '1px solid var(--pr-border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -499,8 +499,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '6px 12px',
             borderRadius: 20,
-            background: connected ? '#f0fdf4' : '#fef2f2',
-            border: `1px solid ${connected ? '#bbf7d0' : '#fecaca'}`,
+            background: connected ? 'var(--pr-badge-success-bg)' : 'var(--pr-badge-error-bg)',
+            border: `1px solid ${connected ? 'var(--pr-badge-success-border)' : 'var(--pr-badge-error-border)'}`,
           }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
@@ -556,12 +556,12 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '6px 12px',
             borderRadius: 20,
-            background: gradeMode ? '#fef3c7' : '#f1f5f9',
-            border: `1px solid ${gradeMode ? '#fbbf24' : '#e2e8f0'}`,
+            background: gradeMode ? 'var(--pr-badge-warning-bg)' : 'var(--pr-surface-alt)',
+            border: `1px solid ${gradeMode ? '#fbbf24' : 'var(--pr-border)'}`,
             cursor: 'pointer',
             fontSize: 13,
             fontWeight: 600,
-            color: gradeMode ? '#92400e' : 'var(--text-hint)',
+            color: gradeMode ? 'var(--pr-text-warning-heading)' : 'var(--text-hint)',
           }}>
             <input
               type="checkbox"
@@ -603,8 +603,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 12px',
                 borderRadius: 20,
-                background: showScanPanel ? '#ede9fe' : '#f0fdf4',
-                border: `1px solid ${showScanPanel ? '#c4b5fd' : '#bbf7d0'}`,
+                background: showScanPanel ? 'var(--pr-badge-purple-bg)' : 'var(--pr-badge-success-bg)',
+                border: `1px solid ${showScanPanel ? 'var(--pr-badge-purple-border)' : 'var(--pr-badge-success-border)'}`,
                 cursor: 'pointer',
                 fontSize: 13,
                 fontWeight: 600,
@@ -630,15 +630,15 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
         <div style={{
           width: 320,
           minWidth: 320,
-          background: 'white',
-          borderRight: '1px solid #e2e8f0',
+          background: 'var(--pr-surface)',
+          borderRight: '1px solid var(--pr-border)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'auto',
         }}>
           {/* QR Code + Connection */}
           {networkInfo && networkInfo.ip !== '127.0.0.1' ? (
-            <div style={{ padding: 20, textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>
+            <div style={{ padding: 20, textAlign: 'center', borderBottom: '1px solid var(--pr-border)' }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>
                 Scan with your phone camera
               </p>
@@ -646,7 +646,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 background: 'white',
                 padding: 16,
                 borderRadius: 12,
-                border: '2px solid #e2e8f0',
+                border: '2px solid var(--pr-border)',
                 display: 'inline-block',
               }}>
                 <QRCodeSVG value={`${networkInfo.phone_url}?theme=${resolvedTheme}`} size={200} level="M" />
@@ -654,7 +654,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               <div style={{
                 marginTop: 12,
                 padding: '8px 12px',
-                background: '#f1f5f9',
+                background: 'var(--pr-surface-alt)',
                 borderRadius: 8,
                 fontSize: 13,
                 color: 'var(--text-label)',
@@ -669,26 +669,26 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 {httpsEnabled && (
                   <span style={{
                     padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600,
-                    background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
+                    background: 'var(--pr-badge-success-bg)', color: '#16a34a', border: '1px solid var(--pr-badge-success-border)',
                   }}>HTTPS (iOS Ready)</span>
                 )}
                 {hotspotActive && (
                   <span style={{
                     padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600,
-                    background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe',
+                    background: 'var(--pr-badge-info-bg)', color: '#2563eb', border: '1px solid var(--pr-badge-info-border)',
                   }}>{t('photoTransfer.hotspotActive')}</span>
                 )}
               </div>
 
-              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 8 }}>
+              <p style={{ fontSize: 11, color: 'var(--pr-text-muted)', marginTop: 8 }}>
                 Phone must be on the same network as this PC
               </p>
             </div>
           ) : (
-            <div style={{ padding: 20, textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>
+            <div style={{ padding: 20, textAlign: 'center', borderBottom: '1px solid var(--pr-border)' }}>
               <div style={{
                 width: 48, height: 48, borderRadius: 12,
-                background: '#fef3c7', margin: '0 auto 12px',
+                background: 'var(--pr-badge-warning-bg)', margin: '0 auto 12px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2">
@@ -696,15 +696,15 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
               </div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#92400e' }}>No Network Detected</p>
-              <p style={{ fontSize: 12, color: '#b45309', marginTop: 4 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pr-text-warning-heading)' }}>No Network Detected</p>
+              <p style={{ fontSize: 12, color: 'var(--pr-text-warning-body)', marginTop: 4 }}>
                 Connect to WiFi or use the hotspot button below to create a direct connection.
               </p>
             </div>
           )}
 
           {/* ── Hotspot Controls ── */}
-          <div style={{ padding: '12px 20px', borderBottom: '1px solid #e2e8f0' }}>
+          <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--pr-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -722,7 +722,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   fontSize: 12,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  background: hotspotActive ? '#fef2f2' : '#eff6ff',
+                  background: hotspotActive ? 'var(--pr-badge-error-bg)' : 'var(--pr-badge-info-bg)',
                   color: hotspotActive ? '#dc2626' : '#2563eb',
                   opacity: hotspotLoading ? 0.6 : 1,
                 }}
@@ -733,28 +733,28 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             {hotspotActive && hotspotInfo && (
               <div style={{
                 padding: '8px 12px', borderRadius: 8,
-                background: '#f8fafc', fontSize: 12, color: 'var(--text-muted)',
+                background: 'var(--pr-surface-hover)', fontSize: 12, color: 'var(--text-muted)',
               }}>
                 <div>Network: <strong>{hotspotInfo.ssid}</strong></div>
                 <div>Password: <strong>{hotspotInfo.password}</strong></div>
               </div>
             )}
             {!hotspotActive && (
-              <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
+              <p style={{ fontSize: 11, color: 'var(--pr-text-muted)', margin: 0 }}>
                 No WiFi? Turn on hotspot and connect your phone to it.
               </p>
             )}
           </div>
 
           {/* Sessions */}
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--pr-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-label)', margin: 0 }}>Sessions</h3>
               <button
                 onClick={() => setShowNewSession(true)}
                 style={{
-                  padding: '4px 10px', borderRadius: 6, border: '1px solid #e2e8f0',
-                  background: 'white', fontSize: 12, fontWeight: 600, color: '#2563eb', cursor: 'pointer',
+                  padding: '4px 10px', borderRadius: 6, border: '1px solid var(--pr-border)',
+                  background: 'var(--pr-surface)', fontSize: 12, fontWeight: 600, color: '#2563eb', cursor: 'pointer',
                 }}
               >
                 + New
@@ -771,11 +771,11 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   onKeyDown={e => e.key === 'Enter' && createSession()}
                   style={{
                     width: '100%', padding: '10px 12px', borderRadius: 8,
-                    border: '2px solid #e2e8f0', fontSize: 14, marginBottom: 8,
+                    border: '2px solid var(--pr-border)', fontSize: 14, marginBottom: 8,
                     outline: 'none', fontFamily: 'inherit',
                   }}
-                  onFocus={e => (e.target.style.borderColor = '#2563eb')}
-                  onBlur={e => (e.target.style.borderColor = '#e2e8f0')}
+                  onFocus={e => (e.target.style.borderColor = 'var(--pr-input-focus)')}
+                  onBlur={e => (e.target.style.borderColor = 'var(--pr-border)')}
                   autoFocus
                 />
                 <button
@@ -809,7 +809,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             ))}
 
             {sessions.length === 0 && !showNewSession && (
-              <p style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', padding: 16 }}>
+              <p style={{ fontSize: 13, color: 'var(--pr-text-muted)', textAlign: 'center', padding: 16 }}>
                 No sessions yet. Create one or scan QR from your phone.
               </p>
             )}
@@ -839,7 +839,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   }}
                   style={{
                     padding: '6px 12px', borderRadius: 8,
-                    background: '#f1f5f9', border: '1px solid #e2e8f0',
+                    background: 'var(--pr-surface-alt)', border: '1px solid var(--pr-border)',
                     fontSize: 12, fontWeight: 600, color: 'var(--text-muted)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                   }}
@@ -854,7 +854,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
               {photos.length === 0 ? (
                 <div style={{
                   textAlign: 'center', padding: '60px 20px',
-                  color: '#94a3b8',
+                  color: 'var(--pr-text-muted)',
                 }}>
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ margin: '0 auto 16px', display: 'block', opacity: 0.5 }}>
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -916,12 +916,12 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                     input.click();
                   }}
                   style={{
-                    border: `2px dashed ${dragOver ? '#2563eb' : '#cbd5e1'}`,
+                    border: `2px dashed ${dragOver ? '#2563eb' : 'var(--pr-drop-border)'}`,
                     borderRadius: 12,
                     padding: '32px 20px',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    background: dragOver ? '#eff6ff' : '#f8fafc',
+                    background: dragOver ? 'var(--pr-drop-active-bg)' : 'var(--pr-surface-hover)',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -933,7 +933,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   <p style={{ fontSize: 14, fontWeight: 600, color: dragOver ? '#2563eb' : 'var(--text-muted)', margin: 0 }}>
                     {sendingToPhone ? 'Uploading...' : t('photoTransfer.dragDropHint')}
                   </p>
-                  <p style={{ fontSize: 12, color: '#94a3b8', margin: '6px 0 0' }}>
+                  <p style={{ fontSize: 12, color: 'var(--pr-text-muted)', margin: '6px 0 0' }}>
                     {t('photoTransfer.supportedFormats')}
                   </p>
                 </div>
@@ -953,7 +953,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                         <div key={f.id} style={{
                           display: 'flex', alignItems: 'center', gap: 10,
                           padding: '10px 12px', borderRadius: 8,
-                          background: 'white', border: '1px solid #e2e8f0',
+                          background: 'var(--pr-surface)', border: '1px solid var(--pr-border)',
                         }}>
                           {/* File type icon */}
                           <div style={{
@@ -972,7 +972,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {f.filename}
                             </div>
-                            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                            <div style={{ fontSize: 11, color: 'var(--pr-text-muted)', marginTop: 2 }}>
                               {(f.size_bytes / 1024).toFixed(1)} KB
                             </div>
                           </div>
@@ -980,9 +980,9 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                           {/* Status badge */}
                           <span style={{
                             padding: '3px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600, flexShrink: 0,
-                            background: f.downloaded ? '#f0fdf4' : '#fefce8',
+                            background: f.downloaded ? 'var(--pr-badge-success-bg)' : 'var(--pr-badge-yellow-bg)',
                             color: f.downloaded ? '#16a34a' : '#ca8a04',
-                            border: `1px solid ${f.downloaded ? '#bbf7d0' : '#fef08a'}`,
+                            border: `1px solid ${f.downloaded ? 'var(--pr-badge-success-border)' : 'var(--pr-badge-yellow-border)'}`,
                           }}>
                             {f.downloaded ? t('photoTransfer.downloaded') : t('photoTransfer.queued')}
                           </span>
@@ -1010,7 +1010,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                     })}
                   </div>
                 ) : (
-                  <p style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginTop: 16 }}>
+                  <p style={{ fontSize: 13, color: 'var(--pr-text-muted)', textAlign: 'center', marginTop: 16 }}>
                     {t('photoTransfer.noFilesQueued')}
                   </p>
                 )}
@@ -1019,7 +1019,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           ) : (
             <div style={{
               textAlign: 'center', padding: '80px 20px',
-              color: '#94a3b8',
+              color: 'var(--pr-text-muted)',
             }}>
               <p style={{ fontSize: 16, fontWeight: 600 }}>{t('photoTransfer.createSession')}</p>
               <p style={{ fontSize: 13, marginTop: 4 }}>
@@ -1034,8 +1034,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           <div style={{
             width: 320,
             minWidth: 320,
-            background: 'white',
-            borderLeft: '1px solid #e2e8f0',
+            background: 'var(--pr-surface)',
+            borderLeft: '1px solid var(--pr-border)',
             overflow: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -1047,7 +1047,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   onClick={() => setSelectedPhoto(null)}
                   style={{
                     width: 28, height: 28, borderRadius: 6,
-                    border: '1px solid #e2e8f0', background: 'white',
+                    border: '1px solid var(--pr-border)', background: 'var(--pr-surface)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
@@ -1062,7 +1062,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 alt={selectedPhoto.filename}
                 style={{
                   width: '100%', borderRadius: 8,
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid var(--pr-border)',
                 }}
               />
 
@@ -1076,7 +1076,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                 onClick={() => deletePhoto(selectedPhoto)}
                 style={{
                   width: '100%', padding: '10px', borderRadius: 8,
-                  background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca',
+                  background: 'var(--pr-badge-error-bg)', color: '#dc2626', border: '1px solid var(--pr-badge-error-border)',
                   fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 16,
                 }}
               >
@@ -1091,8 +1091,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           <div style={{
             width: 360,
             minWidth: 360,
-            background: 'white',
-            borderLeft: '1px solid #e2e8f0',
+            background: 'var(--pr-surface)',
+            borderLeft: '1px solid var(--pr-border)',
             overflow: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -1104,7 +1104,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   onClick={() => { setGradingResults(null); setGradingSummary(null); }}
                   style={{
                     width: 28, height: 28, borderRadius: 6,
-                    border: '1px solid #e2e8f0', background: 'white',
+                    border: '1px solid var(--pr-border)', background: 'var(--pr-surface)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
@@ -1138,8 +1138,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                     key={idx}
                     style={{
                       padding: 10, borderRadius: 8,
-                      border: `1px solid ${result.error ? '#fecaca' : '#e2e8f0'}`,
-                      background: result.error ? '#fef2f2' : '#ffffff',
+                      border: `1px solid ${result.error ? 'var(--pr-badge-error-border)' : 'var(--pr-border)'}`,
+                      background: result.error ? 'var(--pr-badge-error-bg)' : 'var(--pr-surface)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1154,7 +1154,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                       {!result.error && (
                         <div style={{
                           padding: '4px 10px', borderRadius: 12,
-                          background: result.percentage >= 70 ? '#f0fdf4' : result.percentage >= 50 ? '#fefce8' : '#fef2f2',
+                          background: result.percentage >= 70 ? 'var(--pr-badge-success-bg)' : result.percentage >= 50 ? 'var(--pr-badge-yellow-bg)' : 'var(--pr-badge-error-bg)',
                           color: result.percentage >= 70 ? '#16a34a' : result.percentage >= 50 ? '#ca8a04' : '#dc2626',
                           fontSize: 13, fontWeight: 700,
                         }}>
@@ -1181,8 +1181,8 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           <div style={{
             width: 360,
             minWidth: 360,
-            background: 'white',
-            borderLeft: '1px solid #e2e8f0',
+            background: 'var(--pr-surface)',
+            borderLeft: '1px solid var(--pr-border)',
             overflow: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -1194,7 +1194,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   onClick={() => setShowScanPanel(false)}
                   style={{
                     width: 28, height: 28, borderRadius: 6,
-                    border: '1px solid #e2e8f0', background: 'white',
+                    border: '1px solid var(--pr-border)', background: 'var(--pr-surface)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
@@ -1240,15 +1240,15 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                   return (
                     <div key={docId} style={{
                       marginBottom: 16, padding: 12, borderRadius: 8,
-                      border: '1px solid #e2e8f0', background: '#fafafa',
+                      border: '1px solid var(--pr-border)', background: 'var(--pr-surface)',
                     }}>
                       {/* Doc header */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                         <span style={{
                           padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-                          background: first.doc_type === 'quiz' ? '#eff6ff' : '#f0fdf4',
+                          background: first.doc_type === 'quiz' ? 'var(--pr-badge-info-bg)' : 'var(--pr-badge-success-bg)',
                           color: first.doc_type === 'quiz' ? '#2563eb' : '#16a34a',
-                          border: `1px solid ${first.doc_type === 'quiz' ? '#bfdbfe' : '#bbf7d0'}`,
+                          border: `1px solid ${first.doc_type === 'quiz' ? 'var(--pr-badge-info-border)' : 'var(--pr-badge-success-border)'}`,
                         }}>
                           {first.doc_type}
                         </span>
@@ -1267,7 +1267,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
                             <span>{scannedIds.size} of {expected.length} students</span>
                             <span>{progressPct}%</span>
                           </div>
-                          <div style={{ height: 6, borderRadius: 3, background: '#e2e8f0', overflow: 'hidden' }}>
+                          <div style={{ height: 6, borderRadius: 3, background: 'var(--pr-progress-track)', overflow: 'hidden' }}>
                             <div style={{
                               height: '100%', borderRadius: 3,
                               background: progressPct === 100 ? '#16a34a' : '#2563eb',
@@ -1326,7 +1326,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
           {scanToasts.map(toast => (
             <div key={toast.id} style={{
               padding: '10px 16px', borderRadius: 10,
-              background: 'white', border: '1px solid #bbf7d0',
+              background: 'var(--pr-surface)', border: '1px solid var(--pr-badge-success-border)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               display: 'flex', alignItems: 'center', gap: 10,
               animation: 'slideIn 0.3s ease',
@@ -1334,7 +1334,7 @@ const PhotoReceiver: React.FC<PhotoReceiverProps> = ({ tabId, savedData, onDataC
             }}>
               <div style={{
                 width: 32, height: 32, borderRadius: 8,
-                background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--pr-badge-success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
@@ -1383,8 +1383,8 @@ const SessionItem: React.FC<{
         borderRadius: 8,
         marginBottom: 4,
         cursor: 'pointer',
-        background: isActive ? '#eff6ff' : 'transparent',
-        border: isActive ? '1px solid #bfdbfe' : '1px solid transparent',
+        background: isActive ? 'var(--pr-badge-info-bg)' : 'transparent',
+        border: isActive ? '1px solid var(--pr-badge-info-border)' : '1px solid transparent',
         transition: 'all 0.15s',
         display: 'flex',
         alignItems: 'center',
@@ -1447,8 +1447,8 @@ const PhotoCard: React.FC<{
       style={{
         borderRadius: 10,
         overflow: 'hidden',
-        background: 'white',
-        border: isSelected ? '2px solid #2563eb' : '2px solid #e2e8f0',
+        background: 'var(--pr-surface)',
+        border: isSelected ? '2px solid #2563eb' : '2px solid var(--pr-border)',
         cursor: 'pointer',
         transition: 'border-color 0.15s, box-shadow 0.15s',
         boxShadow: isSelected ? '0 0 0 3px rgba(37,99,235,0.15)' : 'none',
@@ -1483,7 +1483,7 @@ const PhotoCard: React.FC<{
       )}
       <div style={{
         width: '100%', aspectRatio: '4/3', overflow: 'hidden',
-        background: '#f1f5f9',
+        background: 'var(--pr-placeholder-bg)',
       }}>
         <img
           src={photoUrl}
@@ -1496,7 +1496,7 @@ const PhotoCard: React.FC<{
         <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {`Photo ${photo.index}`}
         </div>
-        <div style={{ fontSize: 11, color: '#94a3b8' }}>
+        <div style={{ fontSize: 11, color: 'var(--pr-text-muted)' }}>
           {(photo.size_bytes / 1024).toFixed(0)} KB
         </div>
       </div>
@@ -1507,7 +1507,7 @@ const PhotoCard: React.FC<{
 // ── Detail row ───────────────────────────────────────────────────────────────
 
 const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--pr-border)' }}>
     <span style={{ fontSize: 13, color: 'var(--text-hint)' }}>{label}</span>
     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
   </div>

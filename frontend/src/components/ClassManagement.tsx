@@ -203,6 +203,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   const [form, setForm] = useState<StudentFormData>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formSaving, setFormSaving] = useState(false);
+  const [studentFormErrors, setStudentFormErrors] = useState<Record<string, boolean>>({});
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -568,7 +569,16 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   };
 
   const handleSave = async () => {
-    if (!form.first_name.trim()) return;
+    const errors: Record<string, boolean> = {};
+    if (!form.first_name.trim()) errors.first_name = true;
+    setStudentFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return;
+    }
     setFormSaving(true);
     try {
       if (editingId) {
@@ -1916,8 +1926,9 @@ ${tabScript}
             <div>
               <label className="block text-sm font-medium text-theme-label mb-1.5">First Name <span className="text-red-500">*</span></label>
               <SmartInput value={form.first_name}
-                onChange={val => setForm(f => ({ ...f, first_name: val }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2"
+                onChange={val => { setForm(f => ({ ...f, first_name: val })); setStudentFormErrors(e => { const { first_name, ...rest } = e; return rest; }); }}
+                className={`w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2${studentFormErrors.first_name ? ' validation-error' : ''}`}
+                data-validation-error={studentFormErrors.first_name ? 'true' : undefined}
                 placeholder="e.g. Jane"
                 style={{ '--tw-ring-color': accentColor } as any} />
             </div>
@@ -2037,7 +2048,7 @@ ${tabScript}
             />
           </div>
 
-          <button onClick={handleSave} disabled={!form.first_name.trim() || formSaving}
+          <button onClick={handleSave} disabled={formSaving}
             className="w-full py-3 rounded-xl text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: accentColor }}>
             <Save className="w-4 h-4" />

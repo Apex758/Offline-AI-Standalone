@@ -79,5 +79,42 @@
     },
     "step": 1,
     "curriculumMatches": []
+  },
+  {
+    "id": "draft_lesson-planner-1775968559100_1775969131231",
+    "title": "Language Arts - Sentence Writing - 2",
+    "timestamp": "2026-04-12T04:45:31.231Z",
+    "plannerType": "lesson",
+    "formData": {
+      "subject": "Language Arts",
+      "gradeLevel": "2",
+      "topic": "Sentence Writing",
+      "strand": "reading",
+      "essentialOutcomes": "Students will understand key concepts of Sentence Writing",
+      "specificOutcomes": "Students will be able to demonstrate understanding of Sentence Writing through practice activities",
+      "studentCount": "21",
+      "duration": "45",
+      "pedagogicalStrategies": [
+        "hands-on",
+        "inquiry-based"
+      ],
+      "learningStyles": [
+        "auditory",
+        "visual"
+      ],
+      "learningPreferences": [],
+      "multipleIntelligences": [
+        "logical-mathematical"
+      ],
+      "customLearningStyles": "",
+      "materials": "Textbooks, worksheets, manipulatives for Sentence Writing",
+      "prerequisiteSkills": "Basic understanding of prerequisite concepts for Sentence Writing",
+      "specialNeeds": false,
+      "specialNeedsDetails": "",
+      "additionalInstructions": "",
+      "referenceUrl": ""
+    },
+    "step": 1,
+    "curriculumMatches": []
   }
 ]

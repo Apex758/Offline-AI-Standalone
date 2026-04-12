@@ -1021,76 +1021,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 </div>
             
             <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
-              {/* Modern Header Card */}
-              {(streamingPlan || generatedPlan) && (
-                <div className="mb-8">
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg">
-                    {/* Background gradient */}
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
-                    
-                    {/* Content */}
-                    <div className="relative px-8 py-8">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          {/* Subject & Grade badges */}
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-                              <span className="text-white text-sm font-medium">{formData.subject}</span>
-                            </div>
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-                              <span className="text-white text-sm font-medium">Grade {formData.gradeLevel}</span>
-                            </div>
-                          </div>
-                          
-                          {/* Main title */}
-                          <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
-                            {formData.topic ? `Exploring ${formData.topic}` : 'Lesson Plan'}
-                          </h1>
-                          
-                          {/* Subtitle details */}
-                          <div className="flex flex-wrap items-center gap-4 text-blue-100">
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                              <span className="text-sm">{formData.strand}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                              <span className="text-sm">{formData.duration} minutes</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                              <span className="text-sm">{formData.studentCount} students</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                              <span className="text-sm">Generated on {new Date().toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Loading indicator */}
-                        {loading && (
-                          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
-                            <div className="flex items-center text-white">
-                              <HeartbeatLoader className="w-5 h-5 mr-3" />
-                              <div>
-                                <div className="text-sm font-medium">Generating...</div>
-                                <div className="text-xs text-blue-100">Lesson plan</div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                    </div>
-                    
-                    {/* Decorative elements */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-                  </div>
-                </div>
-              )}
 
                 {/* Read Aloud Button */}
                 {(generatedPlan || streamingPlan) && !loading && (
@@ -1123,6 +1053,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     inProgressValue={ohpcInProgressValue}
                     onChange={setOhpcLesson}
                     onReflectionsChange={setReflections}
+                    topic={formData.topic}
                   />
                   {/* Curriculum References */}
                   {(parsedLesson?.curriculumReferences || curriculumMatches.length > 0) && (
