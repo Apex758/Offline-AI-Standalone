@@ -398,7 +398,10 @@
       "Bash(powershell -Command 'Set-Location '\\\\''c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend'\\\\''; npx tsc --noEmit 2>&1 | Out-File '\\\\''c:\\\\tmp\\\\tsc_result.txt'\\\\''; if \\($LASTEXITCODE -eq 0\\) { Add-Content '\\\\''c:\\\\tmp\\\\tsc_result.txt'\\\\'' '\\\\''TSC_PASSED'\\\\'' } else { Add-Content '\\\\''c:\\\\tmp\\\\tsc_result.txt'\\\\'' '\\\\''TSC_FAILED'\\\\'' }')",
       "Bash(MSYS_NO_PATHCONV=1 cmd //c \"npx --prefix \\\\\"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend\\\\\" tsc --noEmit\")",
       "Bash(powershell -Command \"cd 'c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend'; npx tsc --noEmit 2>&1 | Out-String\")",
-      "Bash(powershell -Command 'Set-Location '\\\\''c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend'\\\\''; $result = & npx tsc --noEmit 2>&1; Write-Output $result; if \\($LASTEXITCODE -eq 0\\) { Write-Output '\\\\''TSC_PASS'\\\\'' } else { Write-Output '\\\\''TSC_FAIL'\\\\'' }')"
+      "Bash(powershell -Command 'Set-Location '\\\\''c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend'\\\\''; $result = & npx tsc --noEmit 2>&1; Write-Output $result; if \\($LASTEXITCODE -eq 0\\) { Write-Output '\\\\''TSC_PASS'\\\\'' } else { Write-Output '\\\\''TSC_FAIL'\\\\'' }')",
+      "Bash(setup)",
+      "Bash(pyproject\")",
+      "Bash(grep -E \"\\\\.\\(py|js|ts\\)$\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

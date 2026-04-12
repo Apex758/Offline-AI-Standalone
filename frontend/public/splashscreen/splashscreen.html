@@ -520,7 +520,10 @@ async function ensureMinimumSplashTime() {
     console.log(`Waiting ${remaining}ms to meet minimum splash time...`);
     await new Promise(resolve => setTimeout(resolve, remaining));
   }
-  
+
+  // Hold an extra 1.5s after backend is ready before starting exit animation
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
   triggerLightspeed();
 }
 

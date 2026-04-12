@@ -103,7 +103,7 @@ export default function QuizTable({
         </div>
 
         {/* Instructions (left) + Student info (right) row */}
-        <div className="flex gap-6 items-start mb-4">
+        <div className="flex gap-6 items-center mb-4">
           <div className="flex-1">
             {(quiz.metadata.instructions || editable) && (
               <InlineText
@@ -133,17 +133,20 @@ export default function QuizTable({
           )}
         </div>
 
-        {/* Name / Date fields (only when no student selected) */}
-        {!studentInfo && (
-          <div className="flex gap-8 pb-3 border-b border-gray-300 dark:border-gray-600">
-            <div className="text-sm text-theme-primary">
-              Name: <span className="inline-block w-48 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
+        {/* Separator line */}
+        <div className="pb-0 mb-4" style={{ borderBottom: `2px solid ${accentColor}` }}>
+          {/* Name / Date fields (only when no student selected) */}
+          {!studentInfo && (
+            <div className="flex gap-8 pb-3">
+              <div className="text-sm text-theme-primary">
+                Name: <span className="inline-block w-48 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
+              </div>
+              <div className="text-sm text-theme-primary">
+                Date: <span className="inline-block w-32 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
+              </div>
             </div>
-            <div className="text-sm text-theme-primary">
-              Date: <span className="inline-block w-32 border-b border-gray-400 dark:border-gray-500">&nbsp;</span>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Questions */}

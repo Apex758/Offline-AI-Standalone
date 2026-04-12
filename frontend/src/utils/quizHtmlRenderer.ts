@@ -283,27 +283,39 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
             margin-left: 1.5rem;
             margin-bottom: 0.75rem;
             margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 2rem;
           ">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div style="
-                width: 1.25rem; height: 1.25rem;
+              <span style="
+                width: 1.5rem; height: 1.5rem;
                 border: 2px solid #374151;
                 border-radius: 50%;
-                display: inline-block;
-              "></div>
-              <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">True</span>
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #374151;
+                flex-shrink: 0;
+              ">T</span>
+              <span style="font-size: 0.95rem; color: #374151;">True</span>
             </div>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div style="
-                width: 1.25rem; height: 1.25rem;
+              <span style="
+                width: 1.5rem; height: 1.5rem;
                 border: 2px solid #374151;
                 border-radius: 50%;
-                display: inline-block;
-              "></div>
-              <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">False</span>
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #374151;
+                flex-shrink: 0;
+              ">F</span>
+              <span style="font-size: 0.95rem; color: #374151;">False</span>
             </div>
           </div>
         `;
@@ -321,14 +333,19 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
         `;
         question.options.forEach(option => {
           htmlContent += `
-            <div style="display: flex; align-items: center; gap: 0.4rem;">
-              <div style="
-                width: 1.25rem; height: 1.25rem;
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="
+                width: 1.5rem; height: 1.5rem;
                 border: 2px solid #374151;
                 border-radius: 50%;
-                display: inline-block;
-              "></div>
-              <span style="font-size: 0.95rem; color: #374151; font-weight: 500;">${option.letter})</span>
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #374151;
+                flex-shrink: 0;
+              ">${option.letter}</span>
               <span style="font-size: 0.95rem; color: #374151;">${processInlineMarkdown(option.text)}</span>
             </div>
           `;
@@ -484,14 +501,14 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
 <html>
 <head>
   <meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Using Georgia serif to match preview -->
   <style>
     @page {
       size: A4;
       margin: 1.5cm;
     }
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: Georgia, 'Times New Roman', serif;
       line-height: 1.6;
       color: #374151;
       margin: 0;
@@ -540,7 +557,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     ">${quizTitle || `${formData.subject}${formData.strand ? ' - ' + formData.strand : ''} Quiz`}</h1>
 
     <!-- Instructions (left) + QR/Student (right) row -->
-    <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem; align-items: flex-start;">
+    <div style="display: flex; gap: 1.5rem; margin-bottom: 0; align-items: center;">
       <div style="flex: 1;">
         ${instructions ? `
         <div style="font-size: 0.8rem; color: #4b5563; line-height: 1.5;">${instructions}</div>
@@ -560,13 +577,15 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       ` : ''}
     </div>
 
-    <!-- Name / Date fields (only when no student selected) -->
+    <!-- Separator + Name/Date (only when no student selected) -->
     ${!studentInfo ? `
-    <div style="display: flex; gap: 2rem; padding-bottom: 0.75rem; border-bottom: 1px solid #d1d5db;">
+    <div style="display: flex; gap: 2rem; padding-bottom: 0.75rem; margin-top: 0.75rem; border-bottom: 2px solid ${accentColor};">
       <div style="font-size: 0.875rem; color: #374151;">Name: <span style="border-bottom: 1px solid #374151; display: inline-block; width: 14rem;">&nbsp;</span></div>
       <div style="font-size: 0.875rem; color: #374151;">Date: <span style="border-bottom: 1px solid #374151; display: inline-block; width: 8rem;">&nbsp;</span></div>
     </div>
-    ` : ''}
+    ` : `
+    <div style="border-bottom: 2px solid ${accentColor}; margin-top: 0.75rem;"></div>
+    `}
   </div>
 
   <!-- Content -->
