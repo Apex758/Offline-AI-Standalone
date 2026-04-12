@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { HeartbeatLoader } from "./ui/HeartbeatLoader";
 
 /* ── Streaming text types ───────────────────────────── */
 interface TextSegment { speaker: string; text: string; }
@@ -364,8 +365,11 @@ export default function KidsStorybookSkeletonDay({ livePages = [] }: { livePages
       alignItems: "center", justifyContent: "center",
       background: "linear-gradient(170deg, #a8d8ea 0%, #c5e8f2 30%, #f2e6d0 65%, #edd9bb 100%)",
       fontFamily: "'Baloo 2', 'Nunito', 'Comic Sans MS', cursive, sans-serif",
-      padding: "20px 16px", overflow: "hidden", position: "relative",
+      padding: "20px 16px", overflow: "hidden", position: "relative" as const,
     }}>
+      <div style={{ position: 'absolute', top: 32, right: 48, zIndex: 10, opacity: 0.6 }}>
+        <HeartbeatLoader size={22} />
+      </div>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap');
 

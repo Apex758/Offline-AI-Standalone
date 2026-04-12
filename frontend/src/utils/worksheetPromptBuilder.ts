@@ -1,6 +1,7 @@
 import { SceneSpec } from '../types/scene';
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
+import { buildTitleGenerationInstruction } from './titleExtractor';
 
 interface WorksheetFormData {
   subject: string;
@@ -1005,6 +1006,11 @@ ABSOLUTE REQUIREMENTS:
 ⚠️ CRITICAL: You MUST generate ${questionCount} questions. Not ${questionCount - 1}, not ${questionCount + 1}, EXACTLY ${questionCount}. Count your questions before finishing! ⚠️
 
 Begin generating the worksheet now:`;
+
+  // When both title and topic are blank, instruct the AI to emit a generated title marker
+  if (!formData.worksheetTitle && !formData.topic) {
+    prompt += buildTitleGenerationInstruction('worksheet', 'based on the subject, question type, and content');
+  }
 
   return prompt + getLanguageInstruction(language);
 }

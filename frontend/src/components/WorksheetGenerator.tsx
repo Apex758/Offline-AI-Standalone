@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -58,6 +58,7 @@ import { imageApi } from '../lib/imageApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
+import { extractGeneratedTitle } from '../utils/titleExtractor';
 import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText, StudentWorksheetVersion, WorksheetPackage } from '../types/worksheet';
 import { generateStudentVersions } from '../utils/worksheetRandomizer';
 import { deriveWorksheetPalette } from '../utils/worksheetColorUtils';
@@ -396,12 +397,30 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId || ''] || contextLoading;
 
+  // Holds an AI-generated title when the user left both worksheetTitle and topic blank
+  const generatedTitleRef = useRef<string | null>(null);
+
   // ✅ Finalization logic - when streaming completes, update generatedWorksheet
   useEffect(() => {
     if (streamingWorksheet && !contextLoading) {
       console.log('Raw AI response:', streamingWorksheet);
-      setGeneratedWorksheet(streamingWorksheet);
-      const parsed = parseWorksheetFromAI(streamingWorksheet);
+
+      // Extract a generated title when no title/topic was supplied
+      let finalContent = streamingWorksheet;
+      if (!formData.worksheetTitle && !formData.topic) {
+        const extracted = extractGeneratedTitle(streamingWorksheet);
+        if (extracted.title) {
+          generatedTitleRef.current = extracted.title;
+          finalContent = extracted.content;
+          console.log('[TitleExtractor] Extracted worksheet title:', extracted.title);
+        }
+      } else {
+        // Reset any previously extracted title if user has now provided one
+        generatedTitleRef.current = null;
+      }
+
+      setGeneratedWorksheet(finalContent);
+      const parsed = parseWorksheetFromAI(finalContent);
       if (parsed) {
         setParsedWorksheet(parsed);
       } else {
@@ -1080,7 +1099,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     try {
       const worksheetData = {
         id: currentWorksheetId || `worksheet_${Date.now()}`,
-        title: formData.worksheetTitle || `${formData.subject} - Grade ${formData.gradeLevel} Worksheet`,
+        title: formData.worksheetTitle || generatedTitleRef.current || `${formData.subject} - Grade ${formData.gradeLevel} Worksheet`,
         timestamp: new Date().toISOString(),
         formData,
         generatedWorksheet,
@@ -2243,7 +2262,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     generatedImages: generatedImages,
                     worksheetId: viewMode === 'teacher' ? (currentWorksheetId || `worksheet_${Date.now()}`) : undefined
                   }}
-                  filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
+                  filename={
+                    formData.worksheetTitle
+                      ? formData.worksheetTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                      : generatedTitleRef.current
+                        ? generatedTitleRef.current.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                        : `worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`
+                  }
                   className="!px-3.5 !py-1.5 !text-[13.5px]"
                   data-tutorial="worksheet-generator-export"
                 />

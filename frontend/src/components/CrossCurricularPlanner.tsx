@@ -49,6 +49,7 @@ import { StreamingTextView } from './shared/StreamingTextView';
 import type { ParsedCrossCurricularPlan } from '../types/crossCurricular';
 import axios from 'axios';
 import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilder';
+import { extractGeneratedTitle } from '../utils/titleExtractor';
 import { useSettings } from '../contexts/SettingsContext';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -686,6 +687,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
     return '';
   });
+  const generatedTitleRef = useRef<string | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
 
@@ -706,8 +708,16 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   // Finalization effect - runs when streaming completes
   useEffect(() => {
     if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
-      setGeneratedPlan(streamingPlan);
-      const parsed = parseCrossCurricularContent(streamingPlan, formData);
+      let finalContent = streamingPlan;
+      if (!formData.lessonTitle?.trim()) {
+        const extracted = extractGeneratedTitle(streamingPlan);
+        if (extracted.title) {
+          generatedTitleRef.current = extracted.title;
+          finalContent = extracted.content;
+        }
+      }
+      setGeneratedPlan(finalContent);
+      const parsed = parseCrossCurricularContent(finalContent, formData);
       if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
@@ -873,8 +883,9 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     setSaveStatus('saving');
     try {
       // Build a proper title with fallbacks
-      const title = formData.lessonTitle?.trim()
-        ? `${formData.lessonTitle} - ${formData.primarySubject || 'General'} (${formData.gradeLevel || 'All Grades'})`
+      const titleBase = formData.lessonTitle?.trim() || generatedTitleRef.current || null;
+      const title = titleBase
+        ? `${titleBase} - ${formData.primarySubject || 'General'} (${formData.gradeLevel || 'All Grades'})`
         : `Cross-Curricular Plan - ${formData.primarySubject || 'General'} (${formData.gradeLevel || 'All Grades'})`;
       
       const planData = {
@@ -1048,6 +1059,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const generatePlan = () => {
     if (guardOffline()) return;
     if (!validateStep()) return;
+    generatedTitleRef.current = null;
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
       ...formData,
@@ -1166,7 +1178,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                           formData: formData,
                           accentColor: tabColor
                         }}
-                        filename={`cross-curricular-${formData.lessonTitle.toLowerCase().replace(/\s+/g, '-')}`}
+                        filename={`cross-curricular-${(formData.lessonTitle || generatedTitleRef.current || 'plan').toLowerCase().replace(/\s+/g, '-')}`}
                         className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
                       <button

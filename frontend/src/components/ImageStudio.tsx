@@ -757,7 +757,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         setActiveModelName(data.modelName || '');
         // Reset steps to model-appropriate default when switching models
         if ((data.modelName || '').startsWith('sdxl-turbo')) {
-          setNumInferenceSteps(1);
+          setNumInferenceSteps(2);
         } else {
           setNumInferenceSteps(2);
         }
@@ -1143,47 +1143,6 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setSelectedImage(null);
     setError(null);
     setImageSlots([]);
-  };
-
-  // Refine: feed the generated image back through img2img with optional user guidance
-  const [refineText, setRefineText] = useState('');
-  const [refineTarget, setRefineTarget] = useState<string | null>(null); // image data of slot being refined
-
-  const handleRefine = async (imageData: string) => {
-    if (!prompt.trim()) return;
-
-    setRefineTarget(null);
-    setGenerationState('generating');
-    setError(null);
-    setImageSlots([{ imageData: null, seed: null, status: 'generating' }]);
-
-    try {
-      const basePrompt = buildStyledPrompt(prompt, selectedStyle);
-      const finalPrompt = refineText.trim()
-        ? `${basePrompt}, ${refineText.trim()}`
-        : basePrompt;
-      setRefineText('');
-      const response = await imageApi.generateImageBase64({
-        prompt: finalPrompt,
-        ...(modelCapabilities.supports_negative_prompt && { negativePrompt }),
-        width,
-        height,
-        numInferenceSteps,
-        initImage: imageData,
-        strength: 0.5,
-      });
-
-      if (response.success && response.imageData) {
-        setImageSlots([{ imageData: response.imageData, seed: Math.floor(Math.random() * 1000000), status: 'completed' }]);
-      } else {
-        setImageSlots([{ imageData: null, seed: null, status: 'error' }]);
-      }
-      setGenerationState('results');
-    } catch (err: any) {
-      console.error('Refine error:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to refine image');
-      setGenerationState('input');
-    }
   };
 
   // ========================================
@@ -2548,8 +2507,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <label className="block text-sm font-medium text-theme-label mb-2">Quality</label>
                     <NeuroSegment
                       options={activeModelName.startsWith('sdxl-turbo') ? [
-                        { value: '1',  label: 'Fast' },
-                        { value: '2',  label: 'Balanced' },
+                        { value: '2',  label: 'Fast' },
                         { value: '3',  label: 'Quality' },
                       ] : [
                         { value: '2',  label: 'Fast' },
@@ -2644,43 +2602,6 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 <Pencil className="w-4 h-4 mr-1" />
                                 Edit
                               </button>
-                              {modelCapabilities.supports_img2img && (
-                                refineTarget === slot.imageData ? (
-                                  <div className="flex-1 flex gap-1">
-                                    <input
-                                      type="text"
-                                      value={refineText}
-                                      onChange={(e) => setRefineText(e.target.value)}
-                                      onKeyDown={(e) => { if (e.key === 'Enter') handleRefine(slot.imageData!); if (e.key === 'Escape') setRefineTarget(null); }}
-                                      placeholder="e.g. fix the eyes, sharper hands"
-                                      className="flex-1 px-2 py-1.5 text-sm rounded-lg border border-theme bg-theme-secondary text-theme-label placeholder:text-theme-hint focus:outline-none focus:ring-1 focus:ring-amber-500"
-                                      autoFocus
-                                    />
-                                    <button
-                                      onClick={() => handleRefine(slot.imageData!)}
-                                      className="px-2 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm"
-                                      title="Run refinement"
-                                    >
-                                      <RefreshCw className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => { setRefineTarget(null); setRefineText(''); }}
-                                      className="px-2 py-1.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-sm"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    onClick={() => setRefineTarget(slot.imageData!)}
-                                    className="flex-1 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center justify-center text-sm"
-                                    title="Refine this image with optional guidance"
-                                  >
-                                    <RefreshCw className="w-4 h-4 mr-1" />
-                                    Refine
-                                  </button>
-                                )
-                              )}
                             </div>
                           </>
                         ) : slot.status === 'generating' ? (
@@ -2808,43 +2729,6 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 <Pencil className="w-4 h-4 mr-1" />
                                 Edit
                               </button>
-                              {modelCapabilities.supports_img2img && (
-                                refineTarget === slot.imageData ? (
-                                  <div className="flex-1 flex gap-1">
-                                    <input
-                                      type="text"
-                                      value={refineText}
-                                      onChange={(e) => setRefineText(e.target.value)}
-                                      onKeyDown={(e) => { if (e.key === 'Enter') handleRefine(slot.imageData!); if (e.key === 'Escape') setRefineTarget(null); }}
-                                      placeholder="e.g. fix the eyes, sharper hands"
-                                      className="flex-1 px-2 py-1.5 text-sm rounded-lg border border-theme bg-theme-secondary text-theme-label placeholder:text-theme-hint focus:outline-none focus:ring-1 focus:ring-amber-500"
-                                      autoFocus
-                                    />
-                                    <button
-                                      onClick={() => handleRefine(slot.imageData!)}
-                                      className="px-2 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm"
-                                      title="Run refinement"
-                                    >
-                                      <RefreshCw className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => { setRefineTarget(null); setRefineText(''); }}
-                                      className="px-2 py-1.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-sm"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <button
-                                    onClick={() => setRefineTarget(slot.imageData!)}
-                                    className="flex-1 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center justify-center text-sm"
-                                    title="Refine this image with optional guidance"
-                                  >
-                                    <RefreshCw className="w-4 h-4 mr-1" />
-                                    Refine
-                                  </button>
-                                )
-                              )}
                             </div>
                           </>
                         ) : slot.status === 'generating' ? (

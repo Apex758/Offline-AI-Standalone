@@ -1,6 +1,7 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
 import { BASE_GRADE_SPECS } from './gradeSpecs';
+import { buildTitleGenerationInstruction } from './titleExtractor';
 
 interface MultigradeFormData {
   topic: string;
@@ -322,6 +323,10 @@ ${formData.gradeLevels.map(grade => `
 IMPORTANT: Do not include any introductory text, headers, or explanations before the lesson plan. Start directly with the lesson plan content.
 
 Generate the complete multigrade lesson plan now:`;
+
+  if (!formData.topic?.trim()) {
+    prompt += buildTitleGenerationInstruction('multigrade lesson plan', 'based on the subject, grade levels, strand, and learning outcomes');
+  }
 
   prompt += getLanguageInstruction(language);
   return prompt;

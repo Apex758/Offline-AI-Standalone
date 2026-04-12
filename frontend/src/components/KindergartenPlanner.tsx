@@ -44,6 +44,7 @@ import { StreamingTextView } from './shared/StreamingTextView';
 import type { ParsedKindergartenPlan } from '../types/kindergarten';
 import axios from 'axios';
 import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
+import { extractGeneratedTitle } from '../utils/titleExtractor';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import AIDisclaimer from './AIDisclaimer';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
@@ -465,6 +466,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const [kindergartenHistories, setKindergartenHistories] = useState<KindergartenHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const generatedTitleRef = useRef<string | null>(null);
 
   // State for structured editing
   const [parsedPlan, setParsedPlan] = useState<ParsedKindergartenPlan | null>(() => {
@@ -768,8 +770,16 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   // ✅ Finalization effect - runs when streaming completes
   useEffect(() => {
     if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
-      setGeneratedPlan(streamingPlan);
-      const parsed = parseKindergartenContent(streamingPlan, formData);
+      let finalContent = streamingPlan;
+      if (!formData.lessonTopic?.trim()) {
+        const extracted = extractGeneratedTitle(streamingPlan);
+        if (extracted.title) {
+          generatedTitleRef.current = extracted.title;
+          finalContent = extracted.content;
+        }
+      }
+      setGeneratedPlan(finalContent);
+      const parsed = parseKindergartenContent(finalContent, formData);
       if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => {
@@ -804,8 +814,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     setSaveStatus('saving');
     try {
       // Build a proper title with fallbacks
-      const title = formData.lessonTopic?.trim()
-        ? `${formData.lessonTopic} - ${formData.curriculumUnit || 'General'} (${formData.ageGroup || 'All Ages'})`
+      const titleBase = formData.lessonTopic?.trim()
+        ? formData.lessonTopic.trim()
+        : generatedTitleRef.current || null;
+      const title = titleBase
+        ? `${titleBase} - ${formData.curriculumUnit || 'General'} (${formData.ageGroup || 'All Ages'})`
         : `Kindergarten Plan - ${formData.curriculumUnit || 'General'} (${formData.ageGroup || 'All Ages'})`;
       
       const planData = {
@@ -998,6 +1011,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       return;
     }
 
+    // Reset generated title ref for new generation
+    generatedTitleRef.current = null;
+
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
       ...formData,
@@ -1131,7 +1147,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                           formData: formData,
                           accentColor: tabColor
                         }}
-                        filename={`kindergarten-${formData.lessonTopic.toLowerCase().replace(/\s+/g, '-')}`}
+                        filename={`kindergarten-${(formData.lessonTopic || generatedTitleRef.current || 'plan').toLowerCase().replace(/\s+/g, '-')}`}
                         className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
                       <button

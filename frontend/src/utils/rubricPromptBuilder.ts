@@ -1,5 +1,6 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
+import { buildTitleGenerationInstruction } from './titleExtractor';
 
 interface RubricFormData {
   assignmentType: string;
@@ -250,6 +251,12 @@ ${formData.includePointValues
 Generate the complete rubric now. Start directly with the title - no preamble or explanation.`;
 
   prompt += getLanguageInstruction(language);
+
+  // When no title was provided, append marker-based instruction so the title can be parsed reliably
+  if (!formData.assignmentTitle?.trim()) {
+    prompt += buildTitleGenerationInstruction('rubric', 'based on the subject, grade level, and assignment type');
+  }
+
   return prompt;
 }
 

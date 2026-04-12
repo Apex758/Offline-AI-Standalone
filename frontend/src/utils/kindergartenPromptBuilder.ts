@@ -1,6 +1,7 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { GRADE_AGE_MAP } from './gradeSpecs';
 import { getLanguageInstruction } from './languageInstruction';
+import { buildTitleGenerationInstruction } from './titleExtractor';
 
 interface KindergartenFormData {
   theme: string;
@@ -156,6 +157,10 @@ KINDERGARTEN ESSENTIALS:
 IMPORTANT: Do not include any introductory text, headers, or explanations before the lesson plan. Start directly with the lesson plan content.
 
 Generate the complete plan now:`;
+
+  if (!formData.theme?.trim()) {
+    prompt += buildTitleGenerationInstruction('kindergarten lesson plan', 'based on the curriculum unit, age group, and learning domains');
+  }
 
   prompt += getLanguageInstruction(language);
   return prompt;

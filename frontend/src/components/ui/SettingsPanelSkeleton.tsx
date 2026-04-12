@@ -1,6 +1,7 @@
 import React from 'react';
 import { Skeleton } from './skeleton';
 import { ShimmerBar } from './ShimmerBar';
+import { SkeletonWrapper } from './SkeletonWrapper';
 
 interface SettingsPanelSkeletonProps {
   sectionCount?: number;
@@ -9,6 +10,7 @@ interface SettingsPanelSkeletonProps {
 
 export const SettingsPanelSkeleton: React.FC<SettingsPanelSkeletonProps> = ({ sectionCount = 8, accentColor = '#6b7280' }) => {
   return (
+    <SkeletonWrapper>
     <div className="h-full tab-content-bg flex">
 
       {/* Left sidebar */}
@@ -91,6 +93,7 @@ export const SettingsPanelSkeleton: React.FC<SettingsPanelSkeletonProps> = ({ se
         </div>
       </div>
     </div>
+    </SkeletonWrapper>
   );
 };
 

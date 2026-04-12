@@ -66,6 +66,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useTTS } from '../hooks/useVoice';
 import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
+import { extractGeneratedTitle } from '../utils/titleExtractor';
 import { useSettings } from '../contexts/SettingsContext';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -339,6 +340,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const timetableAutofill = useTimetableAutofill(formData.gradeLevel, formData.subject);
 
   const { matchCount, matchedHistories, sortedHistories: sortedLessonHistories } = useHistoryMatching(formData, lessonPlanHistories);
+
+  // Stores AI-extracted title when no topic was provided by the user
+  const extractedTitleRef = useRef<string | null>(null);
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
     // First check savedData (for resource manager view/edit)
@@ -707,8 +711,21 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const isStreaming = getIsStreaming(tabId, ENDPOINT);
   useEffect(() => {
     if (streamingPlan && !isStreaming) {
-      setGeneratedPlan(streamingPlan);
-      const parsed = parseLessonFromAI(streamingPlan, formData, curriculumReferences);
+      // If no topic was provided, extract the AI-generated title and clean content
+      let finalPlan = streamingPlan;
+      if (!formData.topic?.trim()) {
+        const extracted = extractGeneratedTitle(streamingPlan);
+        if (extracted.title) {
+          extractedTitleRef.current = extracted.title;
+          finalPlan = extracted.content;
+        } else {
+          extractedTitleRef.current = null;
+        }
+      } else {
+        extractedTitleRef.current = null;
+      }
+      setGeneratedPlan(finalPlan);
+      const parsed = parseLessonFromAI(finalPlan, formData, curriculumReferences);
       if (parsed) setParsedLesson(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => {
@@ -783,8 +800,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
     setSaveStatus('saving');
     try {
-      const title = formData.topic?.trim()
-        ? `${formData.subject || 'General'} - ${formData.topic} (Grade ${formData.gradeLevel || 'Unknown'})`
+      const topicLabel = formData.topic?.trim() || extractedTitleRef.current || null;
+      const title = topicLabel
+        ? `${formData.subject || 'General'} - ${topicLabel} (Grade ${formData.gradeLevel || 'Unknown'})`
         : `Lesson Plan - ${formData.subject || 'General'} (Grade ${formData.gradeLevel || 'Unknown'})`;
 
       let editCount = 1;
@@ -977,6 +995,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           curriculumReferences: parsedLesson?.curriculumReferences || [],
                           ohpcLesson: ohpcLesson || undefined,
                           reflections,
+                          extractedTitle: extractedTitleRef.current || undefined,
                           // Add rawHtml for PDF export
                           rawHtml: (() => {
                             // Try to get the lesson plan area HTML
@@ -989,7 +1008,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             return (clone as HTMLElement).outerHTML;
                           })()
                         }}
-                        filename={`lesson-plan-${formData.topic.replace(/\s+/g, '-').toLowerCase()}`}
+                        filename={`lesson-plan-${(formData.topic?.trim() || extractedTitleRef.current || formData.subject || 'untitled').replace(/\s+/g, '-').toLowerCase()}`}
                         className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
                       {/* --- HTML Export Enhancement End --- */}

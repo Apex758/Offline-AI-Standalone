@@ -48,6 +48,7 @@ import { GeneratorShell } from './shared/GeneratorShell';
 import { StreamingTextView } from './shared/StreamingTextView';
 import axios from 'axios';
 import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
+import { extractGeneratedTitle } from '../utils/titleExtractor';
 import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../types/multigrade'; 
 import { useSettings } from '../contexts/SettingsContext';
 import { filterSubjects, filterGradeRanges } from '../data/teacherConstants';
@@ -376,6 +377,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
     return null;
   });
+  const generatedTitleRef = useRef<string | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   const { activeClass, setActiveClass, config: activeConfig, hasConfig } = useActiveClass();
@@ -525,19 +527,30 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   useEffect(() => {
     if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       console.log('Multigrade streaming completed, setting generated plan');
-      
+
+      // Extract AI-generated title if topic was left blank
+      let finalContent = streamingPlan;
+      if (!formData.topic?.trim()) {
+        const extracted = extractGeneratedTitle(streamingPlan);
+        if (extracted.title) {
+          generatedTitleRef.current = extracted.title;
+          finalContent = extracted.content;
+          console.log('Extracted generated title:', extracted.title);
+        }
+      }
+
       // ✅ Save RAW content without cleaning
-      setGeneratedPlan(streamingPlan);
-      
+      setGeneratedPlan(finalContent);
+
       // ✅ Parse with new parser
-      const parsed = parseMultigradeContent(streamingPlan, formData);
+      const parsed = parseMultigradeContent(finalContent, formData);
       if (parsed) {
         setParsedPlan(parsed);
-        console.log('✅ Successfully parsed multigrade plan:', parsed);
+        console.log('[OK] Successfully parsed multigrade plan:', parsed);
       } else {
-        console.warn('⚠️ Failed to parse multigrade plan');
+        console.warn('[WARN] Failed to parse multigrade plan');
       }
-      
+
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
 
@@ -705,7 +718,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       // ✅ DON'T clean the plan - save it as-is
       const title = formData.topic?.trim()
         ? `${formData.subject || 'General'} - ${formData.topic} (${formData.gradeRange || 'All Grades'})`
-        : `Multigrade Plan - ${formData.subject || 'General'} (${formData.gradeRange || 'All Grades'})`;
+        : generatedTitleRef.current
+          ? `${formData.subject || 'General'} - ${generatedTitleRef.current} (${formData.gradeRange || 'All Grades'})`
+          : `Multigrade Plan - ${formData.subject || 'General'} (${formData.gradeRange || 'All Grades'})`;
       
       const planData = {
         id: currentPlanId || `multigrade_${Date.now()}`,
@@ -868,6 +883,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const generatePlan = () => {
     if (guardOffline()) return;
     if (!validateStep()) return;
+    // Reset generated title ref for new generation
+    generatedTitleRef.current = null;
     // Transform FormData to MultigradeFormData format
     const multigradeFormData = {
       topic: formData.topic,
@@ -1007,7 +1024,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                           formData: formData,
                           accentColor: tabColor
                         }}
-                        filename={`multigrade-${formData.topic.replace(/\s+/g, '-').toLowerCase()}`}
+                        filename={`multigrade-${(formData.topic || generatedTitleRef.current || formData.subject || 'plan').replace(/\s+/g, '-').toLowerCase()}`}
                         className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
                       <button

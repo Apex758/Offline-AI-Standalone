@@ -39,6 +39,7 @@ import { StreamingTextView } from './shared/StreamingTextView';
 import type { ParsedRubric, CriteriaRow } from '../types/rubric';
 import axios from 'axios';
 import { buildRubricPrompt } from '../utils/rubricPromptBuilder';
+import { extractGeneratedTitle } from '../utils/titleExtractor';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
@@ -297,15 +298,20 @@ const formatRubricText = (text: string, accentColor: string, isStreaming: boolea
 };
 
 // Parse rubric text content into structured ParsedRubric format
-const parseRubricContent = (text: string, formData: FormData): ParsedRubric | null => {
+const parseRubricContent = (text: string, formData: FormData, generatedTitle?: string | null): ParsedRubric | null => {
   if (!text) return null;
 
   try {
     const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
+
+    // Use AI-generated title when user did not provide one
+    const resolvedTitle = formData.assignmentTitle?.trim()
+      ? formData.assignmentTitle
+      : (generatedTitle || formData.assignmentTitle);
+
     // Extract metadata from form data
     const metadata = {
-      title: formData.assignmentTitle,
+      title: resolvedTitle,
       assignmentType: formData.assignmentType,
       subject: formData.subject,
       gradeLevel: formData.gradeLevel,
@@ -524,6 +530,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
+
+  // Holds an AI-generated title when the user did not supply one
+  const generatedTitleRef = useRef<string | null>(null);
 
 
   // Helper function to get default empty form data
@@ -759,8 +768,19 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   // Finalization effect - when streaming completes
   useEffect(() => {
     if (streamingRubric && !contextLoading) {
-      setGeneratedRubric(streamingRubric);
-      const parsed = parseRubricContent(streamingRubric, formData);
+      let finalContent = streamingRubric;
+
+      // If no title was provided, extract the AI-generated title marker and store it
+      if (!formData.assignmentTitle?.trim()) {
+        const extracted = extractGeneratedTitle(streamingRubric);
+        if (extracted.title) {
+          generatedTitleRef.current = extracted.title;
+          finalContent = extracted.content;
+        }
+      }
+
+      setGeneratedRubric(finalContent);
+      const parsed = parseRubricContent(finalContent, formData, generatedTitleRef.current);
       if (parsed) setParsedRubric(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
@@ -792,9 +812,16 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     setSaveStatus('saving');
     try {
       // Build a proper title with fallbacks
-      const title = formData.assignmentTitle?.trim() 
-        ? `${formData.assignmentTitle} - ${formData.subject || 'General'} (${formData.gradeLevel || 'All Grades'})`
-        : `Rubric - ${formData.subject || 'General'} (${formData.gradeLevel || 'All Grades'})`;
+      const subject = formData.subject || 'General';
+      const grade = formData.gradeLevel || 'All Grades';
+      let title: string;
+      if (formData.assignmentTitle?.trim()) {
+        title = `${formData.assignmentTitle} - ${subject} (${grade})`;
+      } else if (generatedTitleRef.current) {
+        title = `${generatedTitleRef.current} - ${subject} (${grade})`;
+      } else {
+        title = `Rubric - ${subject} (${grade})`;
+      }
       
       const rubricData = {
         id: currentRubricId || `rubric_${Date.now()}`,
@@ -910,6 +937,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       return;
     }
 
+    // Reset any previously extracted title before a new generation
+    generatedTitleRef.current = null;
+
     const prompt = buildRubricPrompt(formData, settings.language);
 
     // Include selected className so backend can inject class context
@@ -960,7 +990,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     clearStreaming(tabId, ENDPOINT);
     setParsedRubric(null);
     setCurrentRubricId(null);
-    setIsEditing(false);
+    generatedTitleRef.current = null;
     localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
@@ -1032,7 +1062,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                           formData: formData,
                           accentColor: tabColor
                         }}
-                        filename={`rubric-${formData.assignmentTitle.toLowerCase().replace(/\s+/g, '-')}`}
+                        filename={`rubric-${(formData.assignmentTitle || generatedTitleRef.current || formData.subject || 'generated').toLowerCase().replace(/\s+/g, '-')}`}
                         className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
                       <button
@@ -1542,7 +1572,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         contentType="rubric"
         onContentUpdate={(newContent) => {
           setGeneratedRubric(newContent);
-          const parsed = parseRubricContent(newContent, formData);
+          const parsed = parseRubricContent(newContent, formData, generatedTitleRef.current);
           if (parsed) setParsedRubric(parsed);
         }}
       />

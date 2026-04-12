@@ -23,6 +23,7 @@ import { LESSON_EXPORT_SPEC, buildColgroup } from "./lessonExportSpec";
 
 interface OhpcExportOptions {
   accentColor: string;
+  title?: string;
   formData?: {
     subject?: string;
     gradeLevel?: string;
@@ -328,7 +329,7 @@ export function renderOhpcLessonHtml(
   const fullHTML = `
     ${pageCss}
     <div id="lesson-plan-html-export" style="font-family:${font.family};color:#222;margin:0;padding:0;">
-      <h1 style="text-align:center;color:${headerText};font-size:${font.h1Px}px;margin:0 0 12px 0;">Lesson Plan</h1>
+      <h1 style="text-align:center;color:${headerText};font-size:${font.h1Px}px;margin:0 0 12px 0;">${esc(options.title || 'Lesson Plan')}</h1>
       ${table1}
       ${table2}
       ${table3}
@@ -347,10 +348,12 @@ export function prepareOhpcLessonForExport(
   reflections: TeacherReflections,
   formData: any,
   accentColor: string,
-  curriculumReferences?: any[]
+  curriculumReferences?: any[],
+  title?: string
 ) {
   const html = renderOhpcLessonHtml(lesson, reflections, {
     accentColor,
+    title,
     formData,
     curriculumReferences,
   });

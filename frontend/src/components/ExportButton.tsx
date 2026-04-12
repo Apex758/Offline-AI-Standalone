@@ -131,13 +131,15 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         // New path: structured OHPC lesson plan (Phase 3) -- use the OHPC
         // renderer when a structured lesson object is provided.
         // Legacy path: markdown content -- fall back to the old renderer.
+        const lessonTitleLabel = data.formData?.topic?.trim() || data.extractedTitle || null;
         if (data.ohpcLesson) {
           exportData = prepareOhpcLessonForExport(
             data.ohpcLesson,
             data.reflections,
             data.formData,
             data.accentColor,
-            data.curriculumReferences
+            data.curriculumReferences,
+            lessonTitleLabel || undefined
           );
         } else {
           exportData = prepareLessonForExport(
@@ -147,8 +149,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
             data.curriculumReferences
           );
         }
-        title = data.formData.topic
-          ? `${data.formData.topic} - Grade ${data.formData.gradeLevel}`
+        title = lessonTitleLabel
+          ? `${lessonTitleLabel} - Grade ${data.formData?.gradeLevel || ''}`
           : 'Lesson Plan';
       } else if (dataType === 'rubric') {  // ✅ ADD THIS
         exportData = prepareRubricForExport(

@@ -1,6 +1,7 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
 import { getGrade6ExamPrepNote } from './gradeSpecs';
+import { buildTitleGenerationInstruction } from './titleExtractor';
 
 interface QuizFormData {
   subject: string;
@@ -289,6 +290,11 @@ ${formData.timeLimitPerQuestion ? `- Time per question: ${formData.timeLimitPerQ
 - For True/False questions, write the statement directly. Do NOT prefix with "True or False:".
 - Do NOT repeat or echo these instructions in your output. Output ONLY the quiz questions.`;
 
+    const needsGeneratedTitle = !formData.subject?.trim();
+    const titleInstruction = needsGeneratedTitle
+      ? buildTitleGenerationInstruction('quiz', 'based on the content and difficulty level')
+      : '';
+
     const userPrompt = `Generate a ${formData.numberOfQuestions}-question quiz based on the following lesson plan. Questions must assess what was taught in the lesson.
 
 LESSON PLAN:
@@ -296,7 +302,7 @@ ${lessonPlanText}
 
 QUESTION TYPES: ${formData.questionTypes.join(', ')}
 
-Begin with Question 1:`;
+Begin with Question 1:${titleInstruction}`;
 
     return { systemPrompt: systemPrompt + getLanguageInstruction(language), userPrompt };
   }
@@ -333,9 +339,14 @@ ${formData.timeLimitPerQuestion ? `- Time per question: ${formData.timeLimitPerQ
 - For True/False questions, write the statement directly. Do NOT prefix with "True or False:".
 - Do NOT repeat or echo these instructions in your output. Output ONLY the quiz questions.`;
 
+  const needsGeneratedTitle = !formData.subject?.trim();
+  const titleInstruction = needsGeneratedTitle
+    ? buildTitleGenerationInstruction('quiz', 'based on the content and difficulty level')
+    : '';
+
   const userPrompt = `Create a ${formData.numberOfQuestions}-question ${formData.questionTypes.join(' and ')} quiz for Grade ${formData.gradeLevel} ${formData.subject} students on ${formData.strand}, focusing on: ${formData.learningOutcomes || formData.specificOutcomes || formData.essentialOutcomes}.
 
-Begin with Question 1:`;
+Begin with Question 1:${titleInstruction}`;
 
   return { systemPrompt: systemPrompt + getLanguageInstruction(language), userPrompt };
 }

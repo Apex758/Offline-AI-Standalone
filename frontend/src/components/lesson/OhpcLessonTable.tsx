@@ -291,7 +291,7 @@ export default function OhpcLessonTable({
         className="text-2xl font-bold text-center mb-2"
         style={{ color: headerText }}
       >
-        {topic ? `Exploring ${topic}` : 'Lesson Plan'}
+        {topic || 'Lesson Plan'}
       </h1>
 
       {/* ============================================================

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Skeleton } from './skeleton';
 import { ShimmerBar } from './ShimmerBar';
+import { SkeletonWrapper } from './SkeletonWrapper';
 
 interface ResourceGridSkeletonProps {
   accentColor?: string;
@@ -13,6 +14,7 @@ export const ResourceGridSkeleton: React.FC<ResourceGridSkeletonProps> = ({
 }) => {
   if (variant === 'roster') {
     return (
+      <SkeletonWrapper>
       <div className="h-full bg-theme-surface flex overflow-hidden">
         {/* Left sidebar */}
         <div className="w-[22%] min-w-[170px] max-w-[260px] border-r border-theme flex-shrink-0 flex flex-col">
@@ -83,11 +85,13 @@ export const ResourceGridSkeleton: React.FC<ResourceGridSkeletonProps> = ({
           </div>
         </div>
       </div>
+      </SkeletonWrapper>
     );
   }
 
   if (variant === 'calendar') {
     return (
+      <SkeletonWrapper>
       <div className="h-full flex flex-col" style={{ background: 'var(--bg-primary, var(--tab-content-bg))' }}>
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-theme">
@@ -157,11 +161,13 @@ export const ResourceGridSkeleton: React.FC<ResourceGridSkeletonProps> = ({
           </div>
         </div>
       </div>
+      </SkeletonWrapper>
     );
   }
 
   // Default: grid variant
   return (
+    <SkeletonWrapper>
     <div className="h-full flex tab-content-bg">
       {/* Sidebar */}
       <div className="w-60 flex-shrink-0 bg-theme-surface border-r border-theme flex flex-col h-full">
@@ -230,6 +236,7 @@ export const ResourceGridSkeleton: React.FC<ResourceGridSkeletonProps> = ({
         </div>
       </div>
     </div>
+    </SkeletonWrapper>
   );
 };
 

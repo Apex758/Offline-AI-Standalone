@@ -1,6 +1,7 @@
 import { BASE_GRADE_SPECS, getSubjectGuidance, getGrade6ExamPrepNote } from './gradeSpecs';
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
+import { buildTitleGenerationInstruction } from './titleExtractor';
 
 interface CurriculumReference {
   id: string;
@@ -120,6 +121,11 @@ REQUIRED LESSON PLAN STRUCTURE:
 Generate the complete lesson plan now.`;
 
   prompt += getLanguageInstruction(language);
+
+  if (!formData.topic?.trim()) {
+    prompt += buildTitleGenerationInstruction('lesson plan', 'based on the subject, grade level, strand, and learning outcomes');
+  }
+
   return prompt;
 }
 

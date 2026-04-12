@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShimmerBar } from './ShimmerBar';
+import { SkeletonWrapper } from './SkeletonWrapper';
 
 interface GeneratorSkeletonProps {
   accentColor?: string;
@@ -11,6 +12,7 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
   type = 'lesson'
 }) => {
   return (
+    <SkeletonWrapper>
     <div className="flex flex-col h-full">
       {/* Header skeleton */}
       <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
@@ -131,5 +133,6 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
         </div>
       </div>
     </div>
+    </SkeletonWrapper>
   );
 };

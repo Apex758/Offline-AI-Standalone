@@ -1,6 +1,7 @@
 import React from 'react';
 import { Skeleton } from './skeleton';
 import { ShimmerBar } from './ShimmerBar';
+import { SkeletonWrapper } from './SkeletonWrapper';
 
 interface DashboardSkeletonProps {
   accentColor?: string;
@@ -10,6 +11,7 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
   accentColor = '#6366f1',
 }) => {
   return (
+    <SkeletonWrapper>
     <div className="h-full overflow-y-auto">
       <div className="max-w-[90rem] mx-auto px-4 py-6 space-y-6">
 
@@ -120,5 +122,6 @@ export const DashboardSkeleton: React.FC<DashboardSkeletonProps> = ({
 
       </div>
     </div>
+    </SkeletonWrapper>
   );
 };

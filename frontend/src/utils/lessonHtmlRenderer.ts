@@ -39,8 +39,8 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
 
   // Extract the lesson title from "Lesson Plan: X" if present
   // Match the preview component's title logic
-  let lessonTitle = formData.topic 
-    ? `Exploring ${formData.topic}` 
+  let lessonTitle = formData.topic
+    ? formData.topic
     : 'Lesson Plan';
 
     // If AI generated a "Lesson Plan: X" line, extract and use that instead

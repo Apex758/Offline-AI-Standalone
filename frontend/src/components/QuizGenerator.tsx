@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStreamingRenderer } from '../hooks/useStreamingRenderer';
 import AIDisclaimer from './AIDisclaimer';
@@ -64,6 +64,7 @@ import ScheduleTestModal from './ScheduleTestModal';
 import axios from 'axios';
 import { ParsedQuiz, parseQuizFromAI, quizToDisplayText, displayTextToQuiz } from '../types/quiz';
 import { buildQuizPrompt } from '../utils/quizPromptBuilder';
+import { extractGeneratedTitle } from '../utils/titleExtractor';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
@@ -280,6 +281,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [lockedLessonPlan, setLockedLessonPlan] = useState<LessonPlanHistoryItem | null>(null);
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  // Stores an AI-generated title when formData.subject is empty
+  const generatedTitleRef = useRef<string | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // State for structured editing
@@ -615,10 +618,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
     setSaveStatus('saving');
     try {
-      // Build a proper title with fallbacks
+      // Build a proper title with fallbacks; use AI-generated title when subject is empty
       const title = formData.subject?.trim()
         ? `${formData.subject}${formData.strand?.trim() ? ` — ${formData.strand}` : ''} Quiz - Grade ${formData.gradeLevel || 'Unknown'}`
-        : `Quiz - Grade ${formData.gradeLevel || 'Unknown'}`;
+        : generatedTitleRef.current
+          ? `${generatedTitleRef.current} - Grade ${formData.gradeLevel || 'Unknown'}`
+          : `Quiz - Grade ${formData.gradeLevel || 'Unknown'}`;
       
       const quizData = {
         id: currentQuizId || `quiz_${Date.now()}`,
@@ -841,7 +846,16 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   // ✅ Finalization logic - when streaming completes, update generatedQuiz
   useEffect(() => {
     if (streamingQuiz && !contextLoading) {
-      setGeneratedQuiz(streamingQuiz);
+      // Extract AI-generated title (present when subject was empty) and strip marker from content
+      const { title: extractedTitle, content: cleanedQuiz } = extractGeneratedTitle(streamingQuiz);
+      if (extractedTitle) {
+        generatedTitleRef.current = extractedTitle;
+      } else if (formData.subject?.trim()) {
+        // Subject is present - clear any stale generated title from a previous run
+        generatedTitleRef.current = null;
+      }
+
+      setGeneratedQuiz(cleanedQuiz);
       // Persist last-used quiz shape so next new tab starts with these defaults.
       saveQuizLastSettings({
         questionTypes: formData.questionTypes,
@@ -849,11 +863,11 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         numberOfQuestions: formData.numberOfQuestions,
         timeLimitPerQuestion: formData.timeLimitPerQuestion,
       });
-      const parsed = parseQuizFromAI(streamingQuiz);
+      const parsed = parseQuizFromAI(cleanedQuiz);
       if (parsed) {
         setParsedQuiz(parsed);
       } else {
-        setParsedQuiz(displayTextToQuiz(streamingQuiz, {
+        setParsedQuiz(displayTextToQuiz(cleanedQuiz, {
           title: `${formData.subject}${formData.strand ? ` -- ${formData.strand}` : ''} Quiz`,
           subject: formData.subject,
           gradeLevel: formData.gradeLevel,
@@ -889,17 +903,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         // Persist quiz instances for QR-based scan grading
         // Must save answer key FIRST so the FK constraint in quiz_instances is satisfied
         const quizId = currentQuizId || `quiz_${Date.now()}`;
-        const title = formData.subject?.trim()
+        const autoSaveTitle = formData.subject?.trim()
           ? `${formData.subject}${formData.strand?.trim() ? ` — ${formData.strand}` : ''} Quiz - Grade ${formData.gradeLevel || 'Unknown'}`
-          : `Quiz - Grade ${formData.gradeLevel || 'Unknown'}`;
+          : generatedTitleRef.current
+            ? `${generatedTitleRef.current} - Grade ${formData.gradeLevel || 'Unknown'}`
+            : `Quiz - Grade ${formData.gradeLevel || 'Unknown'}`;
 
         // Auto-save answer key first, then save instances
         axios.post('http://localhost:8000/api/quiz-history', {
           id: quizId,
-          title,
+          title: autoSaveTitle,
           timestamp: new Date().toISOString(),
           formData,
-          generatedQuiz: streamingQuiz,
+          generatedQuiz: cleanedQuiz,
           parsedQuiz: finalParsed,
           classQuizData: studentData,
           selectedClassName,

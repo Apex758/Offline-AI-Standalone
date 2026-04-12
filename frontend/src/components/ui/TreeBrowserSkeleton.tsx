@@ -1,6 +1,7 @@
 import React from 'react';
 import { Skeleton } from './skeleton';
 import { ShimmerBar } from './ShimmerBar';
+import { SkeletonWrapper } from './SkeletonWrapper';
 
 interface TreeBrowserSkeletonProps {
   accentColor?: string;
@@ -13,6 +14,7 @@ export const TreeBrowserSkeleton: React.FC<TreeBrowserSkeletonProps> = ({
 }) => {
   if (contentOnly) {
     return (
+      <SkeletonWrapper>
       <div className="flex-1 p-6 space-y-6">
         <div className="space-y-2">
           <ShimmerBar accentColor={accentColor} className="h-7 w-64" />
@@ -31,10 +33,12 @@ export const TreeBrowserSkeleton: React.FC<TreeBrowserSkeletonProps> = ({
           ))}
         </div>
       </div>
+      </SkeletonWrapper>
     );
   }
 
   return (
+    <SkeletonWrapper>
     <div className="h-full flex flex-col bg-theme-secondary">
 
       {/* Gradient header */}
@@ -121,6 +125,7 @@ export const TreeBrowserSkeleton: React.FC<TreeBrowserSkeletonProps> = ({
 
       </div>
     </div>
+    </SkeletonWrapper>
   );
 };
 

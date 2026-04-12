@@ -1,5 +1,6 @@
 import { buildCurriculumPromptSection } from './curriculumPromptSection';
 import { getLanguageInstruction } from './languageInstruction';
+import { buildTitleGenerationInstruction } from './titleExtractor';
 
 interface CrossCurricularFormData {
   theme: string;
@@ -272,6 +273,14 @@ Do not include any introductory text, explanations, or meta-comments. Start dire
 Generate the complete cross-curricular lesson plan now:`;
 
   prompt += getLanguageInstruction(language);
+
+  if (!formData.lessonTitle?.trim()) {
+    prompt += buildTitleGenerationInstruction(
+      'cross-curricular lesson plan',
+      'based on the subjects, grade level, and integration theme'
+    );
+  }
+
   return prompt;
 }
 
