@@ -91,20 +91,28 @@ function hslToHex(h: number, s: number, l: number): string {
 /**
  * Generates color variants for tab styling based on a base hex color
  * @param baseColor - Hex color string (e.g., "#3b82f6")
+ * @param darkMode - Whether dark mode is active (produces darker inactive backgrounds)
  * @returns Object with border, bg, and activeBg color values
  */
-export function generateColorVariants(baseColor: string): {
+export function generateColorVariants(baseColor: string, darkMode: boolean = false): {
   border: string;
   bg: string;
   activeBg: string;
 } {
   const hsl = hexToHSL(baseColor);
 
-  // Create a richer background color with canvas-like texture
-  // Increase saturation slightly and adjust lightness more subtly for vibrancy
-  const bgSaturation = Math.min(100, hsl.s + 10); // Boost saturation for richness
-  const bgLightness = Math.min(92, hsl.l + 25); // More subtle lightness increase for depth
-  const bgColor = hslToHex(hsl.h, bgSaturation, bgLightness);
+  let bgColor: string;
+  if (darkMode) {
+    // Dark mode: muted, darker inactive tab background
+    const bgSaturation = Math.min(100, Math.max(10, hsl.s - 20));
+    const bgLightness = Math.max(18, Math.min(28, hsl.l - 15));
+    bgColor = hslToHex(hsl.h, bgSaturation, bgLightness);
+  } else {
+    // Light mode: richer background with canvas-like texture
+    const bgSaturation = Math.min(100, hsl.s + 10);
+    const bgLightness = Math.min(92, hsl.l + 25);
+    bgColor = hslToHex(hsl.h, bgSaturation, bgLightness);
+  }
 
   // Create a slightly darker, more saturated active color for pop
   const activeSaturation = Math.min(100, hsl.s + 15);
@@ -113,7 +121,7 @@ export function generateColorVariants(baseColor: string): {
 
   return {
     border: activeColor,   // Use enhanced active color for border
-    bg: bgColor,           // Richer background with canvas-like depth
+    bg: bgColor,           // Background color (dark in dark mode, light pastel in light mode)
     activeBg: activeColor  // More vibrant active state
   };
 }

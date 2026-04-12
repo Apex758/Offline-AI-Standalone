@@ -836,31 +836,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Generate dynamic tab colors based on settings
   const tabColors = useMemo(() => {
     const colors: { [key: string]: { border: string; bg: string; activeBg: string } } = {};
-    
+
     // Generate colors for each tab type from settings
     Object.entries(settings.tabColors).forEach(([type, hexColor]) => {
-      const variants = generateColorVariants(hexColor);
+      const variants = generateColorVariants(hexColor, isDarkMode);
       colors[type] = variants;
     });
-    
+
     // Add default color for settings (only if not customized)
-    if (!colors['settings']) colors['settings'] = generateColorVariants('#64748b'); // slate-500
+    if (!colors['settings']) colors['settings'] = generateColorVariants('#64748b', isDarkMode); // slate-500
 
     // Add default colors for support & reporting
-    if (!colors['support']) colors['support'] = generateColorVariants('#3b82f6'); // blue-500
+    if (!colors['support']) colors['support'] = generateColorVariants('#3b82f6', isDarkMode); // blue-500
 
     // Ensure brain-dump always has a color
-    if (!colors['brain-dump']) colors['brain-dump'] = generateColorVariants('#a855f7'); // purple-500
+    if (!colors['brain-dump']) colors['brain-dump'] = generateColorVariants('#a855f7', isDarkMode); // purple-500
 
     // Ensure performance-metrics always has a color
-    if (!colors['performance-metrics']) colors['performance-metrics'] = generateColorVariants('#10b981'); // emerald-500
+    if (!colors['performance-metrics']) colors['performance-metrics'] = generateColorVariants('#10b981', isDarkMode); // emerald-500
 
     // Ensure school-year-calendar always has a color
-    if (!colors['school-year-calendar']) colors['school-year-calendar'] = generateColorVariants('#0d9488'); // teal-600
+    if (!colors['school-year-calendar']) colors['school-year-calendar'] = generateColorVariants('#0d9488', isDarkMode); // teal-600
 
     return colors;
-  }, [settings.tabColors]);
-  
+  }, [settings.tabColors, isDarkMode]);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [splitView, setSplitView] = useState<SplitViewState>({
