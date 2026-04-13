@@ -938,7 +938,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // and auto-unload after 5 min when all image tabs are closed
   const diffusionUnloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const diffusionPreloading = useRef(false);
-  const IMAGE_TAB_TYPES = useMemo(() => new Set(['image-studio', 'storybook']), []);
+  const IMAGE_TAB_TYPES = useMemo(() => new Set(['image-studio']), []);
   const DIFFUSION_IDLE_MS = 5 * 60 * 1000; // 5 minutes
 
   useEffect(() => {

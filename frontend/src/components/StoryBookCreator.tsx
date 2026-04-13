@@ -1370,7 +1370,9 @@ function PagePreview({
   const hasChar = page.characterImageData && page.imagePlacement !== 'none';
 
   // Separate narrator vs character segments for bubble rendering
-  const narratorSegments = page.textSegments.filter(seg => !shouldUseBubble(seg, page));
+  const narratorSegments = hasChar
+    ? page.textSegments.filter(seg => !shouldUseBubble(seg, page))
+    : page.textSegments.filter(seg => seg.speaker === 'narrator');
   const characterSegments = page.textSegments.filter(seg => shouldUseBubble(seg, page));
   // Show the last character speech bubble (static preview shows most recent)
   const activeBubbleSeg = characterSegments.length > 0 ? characterSegments[characterSegments.length - 1] : null;
@@ -1805,8 +1807,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     if (ws.readyState === WebSocket.OPEN) send();
     else ws.addEventListener('open', send, { once: true });
 
-    // Preload diffusion pipeline during story generation so images are ready when needed
-    if (formData.imageMode !== 'none' && hasDiffusion) {
+    // Smart diffusion lifecycle: unload to free RAM for LLM streaming,
+    // then preload again ~2 pages before the end (see useEffect below).
+    // For short books (< 4 pages), keep the old preload behavior since
+    // the unload/reload cycle isn't worth it for brief generations.
+    if (hasDiffusion && formData.pageCount >= 4) {
+      fetch('http://localhost:8000/api/image-service/unload', { method: 'POST' }).catch(() => {});
+    } else if (formData.imageMode !== 'none' && hasDiffusion) {
       fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
     }
   }, [guardOffline, formData, tabId, tier, hasDiffusion, getConnection, clearStreaming]);
@@ -1928,6 +1935,28 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       }
     }
   }, [sbIntroLiveText, isStreaming]);
+
+  // Preload diffusion pipeline ~2 pages before the end of story generation.
+  // Uses both the fine parser (sbLiveTyping.pageIdx) and the coarse parser
+  // (livePages.length) as dual triggers so null gaps don't cause a miss.
+  const hasTriggeredPreloadRef = useRef(false);
+  useEffect(() => {
+    if (!isStreaming) {
+      hasTriggeredPreloadRef.current = false;
+      return;
+    }
+    if (hasTriggeredPreloadRef.current) return;
+    if (formData.pageCount < 4 || formData.imageMode === 'none' || !hasDiffusion) return;
+
+    const triggerIdx = formData.pageCount - 3; // 0-indexed: 2 pages before the last
+    const fineReached = sbLiveTyping && sbLiveTyping.pageIdx >= triggerIdx;
+    const coarseReached = livePages.length >= triggerIdx;
+
+    if (fineReached || coarseReached) {
+      hasTriggeredPreloadRef.current = true;
+      fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
+    }
+  }, [isStreaming, sbLiveTyping, livePages.length, formData.pageCount, formData.imageMode, hasDiffusion]);
 
   // Sync the fine-parsed introductionPage.moodText into parsedBook
   // during streaming, so:
@@ -2119,6 +2148,11 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     }
 
     if (!isStreaming && streamingContent) {
+      // Fallback: ensure diffusion is preloaded when streaming ends (if not already triggered)
+      if (!hasTriggeredPreloadRef.current && formData.imageMode !== 'none' && hasDiffusion) {
+        hasTriggeredPreloadRef.current = true;
+        fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
+      }
       // Streaming finished — parse full book
       setGenerationPhase('idle');
       setLivePages([]);
@@ -2274,7 +2308,10 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   // ── AI Image Generation Pipeline ──────────────────────────────────────────
 
   /** Generate all images for the current book (backgrounds + characters). */
-  const handleGenerateAllImages = useCallback(async (book?: ParsedStorybook) => {
+  const handleGenerateAllImages = useCallback(async (
+    book?: ParsedStorybook,
+    opts?: { skipBackgrounds?: boolean; skipCharacters?: boolean },
+  ) => {
     if (guardOffline()) return;
     const target = book || parsedBook;
     if (!target || isGeneratingImages) return;
@@ -2315,6 +2352,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         characterSeed: target.pages.find(p => p.characterSeed)?.characterSeed,
         characterReferenceImages: target.characterReferenceImages,
         narratorOnly: isNarratorOnly,
+        skipBackgrounds: opts?.skipBackgrounds,
+        skipCharacters: opts?.skipCharacters,
         signal: abort.signal,
       });
 
@@ -3862,6 +3901,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               </button>
               {/* AI background generation */}
               {hasDiffusion && (
+                <>
                 <button
                   onClick={() => handleGeneratePageBackground(currentPageIdx)}
                   disabled={isRemovingBg === currentPageIdx || isGeneratingImages}
@@ -3872,6 +3912,18 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     : <Icon icon={Image01IconData} className="w-4" style={{ color: accentColor }} />}
                   {t('storybook.generateAIBackground')}
                 </button>
+                <button
+                  onClick={() => handleGenerateAllImages(undefined, { skipCharacters: true })}
+                  disabled={isGeneratingImages}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm disabled:opacity-60 mt-1"
+                  style={{ color: accentColor }}
+                >
+                  {isGeneratingImages && imageGenProgress?.stage === 'background'
+                    ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
+                    : <Icon icon={Image01IconData} className="w-4" />}
+                  Generate All Backgrounds
+                </button>
+                </>
               )}
               {/* Import background */}
               <div className="relative mt-2">
@@ -3955,6 +4007,19 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
                       : <Icon icon={Image01IconData} className="w-4" />}
                     {t('storybook.generateAICharacter')}
+                  </button>
+                )}
+                {hasDiffusion && (
+                  <button
+                    onClick={() => handleGenerateAllImages(undefined, { skipBackgrounds: true })}
+                    disabled={isGeneratingImages}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm disabled:opacity-60"
+                    style={{ color: accentColor }}
+                  >
+                    {isGeneratingImages && imageGenProgress?.stage === 'character'
+                      ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
+                      : <Icon icon={Image01IconData} className="w-4" />}
+                    Generate All Characters
                   </button>
                 )}
                 <button

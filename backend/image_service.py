@@ -513,6 +513,7 @@ class ImageService:
         self.model_key = None
         self._prompt_cache = {}  # LRU prompt embedding cache for Flux OV
         self._prompt_cache_max = 10
+        self._cancel_load = threading.Event()  # Signal to abort an in-progress pipeline load
 
 
         try:
@@ -610,6 +611,12 @@ class ImageService:
         if self.pipeline is not None:
             return True
 
+        # If a cancellation was requested, don't even start loading
+        if self._cancel_load.is_set():
+            logger.info("Pipeline load cancelled before start")
+            self._cancel_load.clear()
+            return False
+
         # Gate: Brain (LLM) must be loaded before diffusion can start
         try:
             import inference_factory as _inf_mod
@@ -624,6 +631,12 @@ class ImageService:
             # Double-check after acquiring lock
             if self.pipeline is not None:
                 return True
+
+            # Check cancellation again after acquiring lock (may have waited)
+            if self._cancel_load.is_set():
+                logger.info("Pipeline load cancelled while waiting for lock")
+                self._cancel_load.clear()
+                return False
 
             if not self.model_path.exists():
                 logger.error(f"Model folder not found: {self.model_path}")
@@ -642,12 +655,32 @@ class ImageService:
                     self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
                 else:
                     self.pipeline = loader(self.model_path)
+
+                # Check if cancelled during model load — if so, immediately free what we just loaded
+                if self._cancel_load.is_set():
+                    logger.info("Pipeline load cancelled during model loading -- releasing immediately")
+                    self._cancel_load.clear()
+                    import gc
+                    del self.pipeline
+                    self.pipeline = None
+                    gc.collect()
+                    return False
+
                 logger.info("Pipeline loaded successfully.")
 
                 # Warmup: run a tiny dummy inference to pre-allocate buffers.
                 # Hold _inference_lock so generate_image waits until warmup finishes.
                 if backend in ("openvino_flux", "openvino"):
                     with self._inference_lock:
+                        # Final cancellation check before warmup
+                        if self._cancel_load.is_set():
+                            logger.info("Pipeline load cancelled before warmup -- releasing")
+                            self._cancel_load.clear()
+                            import gc
+                            del self.pipeline
+                            self.pipeline = None
+                            gc.collect()
+                            return False
                         try:
                             _label = "Flux" if backend == "openvino_flux" else "SDXL"
                             logger.info(f"Running warmup inference for {_label} OpenVINO...")
@@ -1114,25 +1147,38 @@ class ImageService:
             return None
 
     def unload_pipeline(self):
-        """Unload the diffusion pipeline to free memory, but keep the service alive."""
+        """Unload the diffusion pipeline to free memory, but keep the service alive.
+
+        Also cancels any in-progress pipeline load so it doesn't finish
+        loading after we've freed memory.
+        """
         import gc
+        # Signal any in-progress initialize_pipeline() to abort
+        self._cancel_load.set()
         freed = False
-        if self.pipeline:
-            try:
-                del self.pipeline
-                self.pipeline = None
-                freed = True
-                logger.info("Diffusion pipeline unloaded to free memory")
-            except Exception as e:
-                logger.error(f"Error unloading pipeline: {e}")
-        if self.img2img_pipeline:
-            try:
-                del self.img2img_pipeline
-                self.img2img_pipeline = None
-                freed = True
-            except Exception as e:
-                logger.error(f"Error unloading img2img pipeline: {e}")
+        # Wait for any in-flight inference to finish before destroying the pipeline
+        self._inference_lock.acquire()
+        try:
+            if self.pipeline:
+                try:
+                    del self.pipeline
+                    self.pipeline = None
+                    freed = True
+                    logger.info("Diffusion pipeline unloaded to free memory")
+                except Exception as e:
+                    logger.error(f"Error unloading pipeline: {e}")
+            if self.img2img_pipeline:
+                try:
+                    del self.img2img_pipeline
+                    self.img2img_pipeline = None
+                    freed = True
+                except Exception as e:
+                    logger.error(f"Error unloading img2img pipeline: {e}")
+        finally:
+            self._inference_lock.release()
         self._prompt_cache.clear()
+        # Clear the cancel flag so future preloads aren't blocked
+        self._cancel_load.clear()
         if freed:
             gc.collect()
         return freed
