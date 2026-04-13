@@ -88,41 +88,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     id: TUTORIAL_IDS.CURRICULUM,
     name: 'Curriculum Viewer',
     description: 'Navigate the OECS curriculum content',
-    steps: [
-      {
-        target: '[data-tutorial="curriculum-welcome"]',
-        title: 'Welcome to Curriculum Browser',
-        description: 'Explore the complete OECS curriculum with standards, learning objectives, and suggested activities for all subjects and grades.',
-        position: 'bottom'
-      },
-      {
-        target: '[data-tutorial="curriculum-grades"]',
-        title: 'Select Grade Level',
-        description: 'Choose the grade level you teach. The curriculum is organized from Kindergarten through Grade 6.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="curriculum-subjects"]',
-        title: 'Choose Subject',
-        description: 'Select from Language Arts, Mathematics, Science, or Social Studies to view subject-specific content.',
-        position: 'right',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="curriculum-topics"]',
-        title: 'Browse Topics',
-        description: 'Navigate through curriculum topics and learning units. Each topic contains detailed objectives and activities.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="curriculum-breadcrumb"]',
-        title: 'Navigation Breadcrumb',
-        description: 'Use this to track your location and quickly jump back to previous levels in the curriculum.',
-        position: 'bottom'
-      }
-    ]
+    steps: []
   },
 
   [TUTORIAL_IDS.CURRICULUM_TRACKER]: {
@@ -896,12 +862,24 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         target: '[data-tutorial="chat-history"]',
         title: 'Chat Messages',
         description: 'Your conversation appears here. Your Assistant provides formatted responses with suggestions, examples, and curriculum-aligned content.',
-        position: 'left'
+        position: 'center'
       },
       {
         target: '[data-tutorial="chat-input"]',
         title: 'Type Your Message',
         description: 'Ask your Assistant anything about teaching, lesson planning, or the OECS curriculum. Try questions like "Help me plan a Grade 3 Science lesson on plants" or "What activities work for mixed-ability groups?"',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="chat-mic"]',
+        title: 'Voice Input',
+        description: 'Click the microphone to speak your message instead of typing. Click again to stop listening. Your speech will be converted to text automatically.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="chat-thinking"]',
+        title: 'Thinking Modes',
+        description: 'Click the brain icon to switch between Quick and Deep thinking. Quick gives fast, direct answers. Deep uses step-by-step reasoning for more thorough responses -- great for complex lesson planning or detailed curriculum questions.',
         position: 'top'
       },
       {

@@ -2006,6 +2006,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               <button
                 onClick={stt.toggleListening}
                 disabled={loading}
+                data-tutorial="chat-mic"
                 className={`rounded-lg transition flex-shrink-0 flex items-center justify-center ${
                   stt.isListening
                     ? 'text-red-500 animate-pulse'
@@ -2031,7 +2032,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               />
 
               {/* Feature 2: Brain icon -> Quick/Deep popup (per-message thinking mode) */}
-              <div className="relative flex-shrink-0" data-thinking-popup-root>
+              <div className="relative flex-shrink-0" data-thinking-popup-root data-tutorial="chat-thinking">
                 <button
                   onClick={() => setShowThinkingPopup(v => !v)}
                   className={`rounded-lg transition flex items-center justify-center ${

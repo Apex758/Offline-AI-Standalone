@@ -83,9 +83,11 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
     }
   }, [savedData?.currentPath]);
 
-  // Auto-show tutorial on first use
+  // Auto-show tutorial on first use (skip if no steps defined)
   useEffect(() => {
+    const steps = tutorials[TUTORIAL_IDS.CURRICULUM]?.steps;
     if (
+      steps && steps.length > 0 &&
       settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
       !isTutorialCompleted(TUTORIAL_IDS.CURRICULUM)
     ) {
@@ -286,12 +288,14 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
       </div>
 
       {/* Tutorial Components */}
-      <TutorialOverlay
-        steps={tutorials[TUTORIAL_IDS.CURRICULUM].steps}
-        onComplete={handleTutorialComplete}
-        autoStart={showTutorial}
-        showFloatingButton={false}
-      />
+      {tutorials[TUTORIAL_IDS.CURRICULUM].steps.length > 0 && (
+        <TutorialOverlay
+          steps={tutorials[TUTORIAL_IDS.CURRICULUM].steps}
+          onComplete={handleTutorialComplete}
+          autoStart={showTutorial}
+          showFloatingButton={false}
+        />
+      )}
     </div>
   );
 };
