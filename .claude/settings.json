@@ -448,7 +448,13 @@
       "Bash(python -c \"import py_compile; py_compile.compile\\('tts_service.py', doraise=True\\); print\\('OK'\\)\")",
       "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\" --version)",
       "Bash(python -m pip install llama-cpp-python==0.3.20 --only-binary llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --dry-run)",
-      "Bash(python -m pip install llama-cpp-python==0.3.19 --only-binary llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --dry-run)"
+      "Bash(python -m pip install llama-cpp-python==0.3.19 --only-binary llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --dry-run)",
+      "Bash(python -c \"import docx; print\\('python-docx available'\\)\")",
+      "Bash(python convert_to_docx.py)",
+      "Read(//c/Users/LG/AppData/Local/Programs/OECS Teacher Assistant/resources/backend-bundle/python_libs/**)",
+      "Bash(./venv/Scripts/python.exe -c ':*)",
+      "Bash(timeout 60 ./python-embed/python.exe -c ':*)",
+      "Bash(du -sh *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

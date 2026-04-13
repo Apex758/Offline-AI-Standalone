@@ -57,9 +57,16 @@ if (Test-Path "backend\routes") {
 "[]" | Out-File -FilePath "$bundleDir\chat_history.json" -Encoding UTF8
 "[]" | Out-File -FilePath "$bundleDir\lesson_plan_history.json" -Encoding UTF8
 
-Write-Host "Copying llama-cli..." -ForegroundColor Yellow
+Write-Host "Copying llama-cli and required DLLs only..." -ForegroundColor Yellow
 if (Test-Path "backend\bin\Release") {
-    Copy-Item "backend\bin\Release\*" -Destination "$bundleDir\bin\Release" -Recurse
+    # Only copy llama-cli.exe and required DLLs (skip test-*.exe and other llama-*.exe)
+    $requiredFiles = @("llama-cli.exe", "*.dll")
+    foreach ($pattern in $requiredFiles) {
+        Get-ChildItem "backend\bin\Release\$pattern" -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item $_.FullName -Destination "$bundleDir\bin\Release"
+        }
+    }
+    Write-Host "Copied llama-cli.exe and DLLs (skipped test binaries and unused llama tools)" -ForegroundColor Green
 }
 
 # Find Python
@@ -193,6 +200,28 @@ if (Test-Path "backend\python-embed") {
     Write-Host "ERROR: python-embed not found!" -ForegroundColor Red
     exit 1
 }
+
+# Clean unnecessary files from python-embed to reduce bundle size
+Write-Host "Cleaning python-embed bloat..." -ForegroundColor Yellow
+$cleanupPaths = @(
+    "$bundleDir\python-embed\Scripts",
+    "$bundleDir\python-embed\Lib\site-packages\cmake",
+    "$bundleDir\python-embed\Lib\site-packages\setuptools",
+    "$bundleDir\python-embed\Lib\site-packages\pip"
+)
+foreach ($path in $cleanupPaths) {
+    if (Test-Path $path) {
+        Remove-Item $path -Recurse -Force
+        Write-Host "  Removed: $path" -ForegroundColor DarkYellow
+    }
+}
+# Remove protoc.exe from torch if present
+$protocPath = "$bundleDir\python-embed\Lib\site-packages\torch\bin\protoc.exe"
+if (Test-Path $protocPath) {
+    Remove-Item $protocPath -Force
+    Write-Host "  Removed: protoc.exe from torch" -ForegroundColor DarkYellow
+}
+Write-Host "Python-embed cleanup complete" -ForegroundColor Green
 
 # Copy bin contents
 $srcBin = "backend\bin"

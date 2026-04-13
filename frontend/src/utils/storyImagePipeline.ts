@@ -61,6 +61,15 @@ const DEFAULT_NEGATIVE =
   'text, words, letters, numbers, watermark, signature, deformed, distorted, blurry, ' +
   'extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, ugly, low quality';
 
+/** Extra prompt terms that help rembg cleanly separate the character from the background. */
+const CHARACTER_ISOLATION =
+  'solid pure white background, clean sharp outline, full body, single character isolated on white, ' +
+  'no background elements, no shadows on background, studio lighting, high contrast edges';
+
+/** Negative prompt specifically for character images — adds bg/scenery suppression. */
+const CHARACTER_NEGATIVE =
+  DEFAULT_NEGATIVE + ', background, scenery, landscape, gradient background, colored background, shadow on floor';
+
 function buildCharacterPrompt(
   characterDescriptions: Record<string, string>,
   characterScene: string,
@@ -69,7 +78,7 @@ function buildCharacterPrompt(
   // Combine all character descriptions (usually 1-2 characters per story)
   const descParts = Object.values(characterDescriptions);
   const descBlock = descParts.length > 0 ? descParts.join(', ') + ', ' : '';
-  return `${descBlock}${characterScene}, ${styleSuffix}, white background, centered`;
+  return `${descBlock}${characterScene}, ${styleSuffix}, ${CHARACTER_ISOLATION}`;
 }
 
 /** Build a prompt for a single named character (not all characters merged). */
@@ -78,7 +87,7 @@ function buildCharacterPromptForOne(
   characterScene: string,
   styleSuffix: string,
 ): string {
-  return `${characterDesc}, ${characterScene}, ${styleSuffix}, white background, centered`;
+  return `${characterDesc}, ${characterScene}, ${styleSuffix}, ${CHARACTER_ISOLATION}`;
 }
 
 function buildBackgroundPrompt(
@@ -109,7 +118,7 @@ export async function generateCharacterImage(
     // Use seed-pinned generation for consistency
     const res = await imageApi.generateImageFromSeed({
       prompt,
-      negativePrompt: DEFAULT_NEGATIVE,
+      negativePrompt: CHARACTER_NEGATIVE,
       width: 512,
       height: 512,
       seed,
@@ -120,7 +129,7 @@ export async function generateCharacterImage(
   // First character — let the backend pick a random seed
   const res = await imageApi.generateBatchImagesBase64({
     prompt,
-    negativePrompt: DEFAULT_NEGATIVE,
+    negativePrompt: CHARACTER_NEGATIVE,
     width: 512,
     height: 512,
     numImages: 1,
@@ -145,7 +154,7 @@ export async function generateCharacterFromReference(
   const prompt = buildCharacterPrompt(characterDescriptions, characterScene, styleSuffix);
   const res = await imageApi.generateImageFromSeed({
     prompt,
-    negativePrompt: DEFAULT_NEGATIVE,
+    negativePrompt: CHARACTER_NEGATIVE,
     width: 512,
     height: 512,
     seed,
@@ -174,15 +183,29 @@ export async function generateBackgroundImage(
 /** Remove the background from a character image and return transparent PNG data URI. */
 export async function removeCharacterBg(imageData: string): Promise<string> {
   const base64 = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+  console.log(`[StoryImagePipeline] removeCharacterBg: sending ${Math.round(base64.length / 1024)}KB to /api/remove-background-base64`);
   const res = await fetch(`${API_CONFIG.BASE_URL}/api/remove-background-base64`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: base64 }),
   });
-  if (!res.ok) throw new Error('Background removal failed');
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => '');
+    console.error(`[StoryImagePipeline] removeCharacterBg: HTTP ${res.status} - ${errorText}`);
+    throw new Error(`Background removal failed: HTTP ${res.status}`);
+  }
   const data = await res.json();
-  if (!data.image) throw new Error('Background removal returned no image data');
-  return `data:image/png;base64,${data.image}`;
+  const resultImage = data.image || data.imageData;
+  if (!resultImage) {
+    console.error('[StoryImagePipeline] removeCharacterBg: response has no image/imageData field. Keys:', Object.keys(data));
+    throw new Error('Background removal returned no image data');
+  }
+  console.log(`[StoryImagePipeline] removeCharacterBg: success, got ${Math.round(resultImage.length / 1024)}KB result`);
+  // Backend may already return a full data URI — avoid doubling the prefix
+  if (resultImage.startsWith('data:')) {
+    return resultImage;
+  }
+  return `data:image/png;base64,${resultImage}`;
 }
 
 // ─── Batch pipeline ─────────────────────────────────────────────────────────
@@ -336,8 +359,8 @@ export async function generateAllPageImages(
       // First generation for this character — use only their description
       const prompt = buildCharacterPromptForOne(charDesc, scene, styleSuffix);
       const res = seed != null
-        ? await imageApi.generateImageFromSeed({ prompt, negativePrompt: DEFAULT_NEGATIVE, width: 512, height: 512, seed })
-        : await imageApi.generateBatchImagesBase64({ prompt, negativePrompt: DEFAULT_NEGATIVE, width: 512, height: 512, numImages: 1 });
+        ? await imageApi.generateImageFromSeed({ prompt, negativePrompt: CHARACTER_NEGATIVE, width: 512, height: 512, seed })
+        : await imageApi.generateBatchImagesBase64({ prompt, negativePrompt: CHARACTER_NEGATIVE, width: 512, height: 512, numImages: 1 });
 
       if ('images' in res) {
         rawChar = res.images[0].imageData;
@@ -363,7 +386,8 @@ export async function generateAllPageImages(
     let finalChar: string;
     try {
       finalChar = await removeCharacterBg(rawChar);
-    } catch {
+    } catch (bgErr) {
+      console.error(`[StoryImagePipeline] BG removal failed for ${charName}, using raw image:`, bgErr);
       finalChar = rawChar;
     }
 
