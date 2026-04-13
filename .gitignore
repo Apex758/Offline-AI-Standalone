@@ -107,3 +107,6 @@ output
 trophies
 trophies-compressed
 trophies-processed
+
+.claude
+frontend/.claude

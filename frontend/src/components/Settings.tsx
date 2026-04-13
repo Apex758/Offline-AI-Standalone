@@ -309,6 +309,7 @@ import { TutorialButton } from './TutorialButton';
 import ScheduledTaskSettings from './ScheduledTaskSettings';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useLicense } from '../contexts/LicenseContext';
+import type { VoiceName } from '../types/storybook';
 import { FEATURE_CATALOG, CATEGORY_LABELS, type FeatureCategory } from '../data/featureDiscoveryData';
 import { useFeatureDetection } from '../hooks/useFeatureDetection';
 import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
@@ -466,6 +467,8 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
   const [importMessage, setImportMessage] = useState('');
   const importFileRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  // TTS voice availability (downloaded vs not)
+  const [voiceAvailability, setVoiceAvailability] = useState<Record<string, boolean>>({});
   const dragCounter = useRef(0);
 
   // File access state
@@ -592,6 +595,15 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
     fetchDownloadableModels();
     fetchOcrStatus();
     fetchAvailableOcrModels();
+    // Fetch TTS voice download status
+    fetch('http://localhost:8000/api/tts/voices')
+      .then(r => r.json())
+      .then((data: { voices: { key: string; available: boolean }[] }) => {
+        const map: Record<string, boolean> = {};
+        data.voices.forEach(v => { map[v.key] = v.available; });
+        setVoiceAvailability(map);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -980,7 +992,7 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
 
   const sections = [
     { id: 'profile' as const, label: t('settingsPage.profile.title'), icon: User, description: t('settingsPage.profile.description') },
-    { id: 'appearance' as const, label: t('settingsPage.appearance.title'), icon: Palette, description: t('settingsPage.appearance.description') },
+    { id: 'appearance' as const, label: t('settingsPage.appearance.title'), icon: Palette, description: t('settingsPage.appearance.description', { assistantName }) },
     { id: 'models' as const, label: t('settingsPage.models.title'), icon: Cpu, description: t('settingsPage.models.description') },
     { id: 'general' as const, label: t('settingsPage.general.title'), icon: Layers, description: t('settingsPage.general.description') },
     { id: 'features' as const, label: t('settingsPage.features.title'), icon: Sliders, description: t('settingsPage.features.description') },
@@ -2060,17 +2072,41 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
                     <CardDescription>Choose the voice used for text-to-speech throughout the app</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <NeuroSegment
-                      options={[
-                        { value: 'lessac', label: 'Lessac (F)' },
-                        { value: 'ryan', label: 'Ryan (M)' },
-                        { value: 'amy', label: 'Amy (F)' },
-                      ]}
+                    <select
+                      className="w-full px-4 py-2 border border-theme-strong rounded-md bg-theme-surface text-theme-label focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={settings.ttsVoice}
-                      onChange={(v) => updateSettings({ ttsVoice: v as 'lessac' | 'ryan' | 'amy' })}
-                      size="lg"
-                      className="w-full"
-                    />
+                      onChange={(e) => updateSettings({ ttsVoice: e.target.value as VoiceName })}
+                    >
+                      <optgroup label="English (US)">
+                        <option value="lessac">{`${voiceAvailability.lessac === false ? '\u25CB' : '\u25CF'} Lessac (Female)`}</option>
+                        <option value="ryan">{`${voiceAvailability.ryan === false ? '\u25CB' : '\u25CF'} Ryan (Male)`}</option>
+                        <option value="amy">{`${voiceAvailability.amy === false ? '\u25CB' : '\u25CF'} Amy (Female)`}</option>
+                        <option value="joe">{`${voiceAvailability.joe === false ? '\u25CB' : '\u25CF'} Joe (Male)`}</option>
+                        <option value="danny">{`${voiceAvailability.danny === false ? '\u25CB' : '\u25CF'} Danny (Male)`}</option>
+                        <option value="kusal">{`${voiceAvailability.kusal === false ? '\u25CB' : '\u25CF'} Kusal (Male)`}</option>
+                      </optgroup>
+                      <optgroup label="English (British)">
+                        <option value="jenny">{`${voiceAvailability.jenny === false ? '\u25CB' : '\u25CF'} Jenny (Female)`}</option>
+                        <option value="alan">{`${voiceAvailability.alan === false ? '\u25CB' : '\u25CF'} Alan (Male)`}</option>
+                        <option value="alba">{`${voiceAvailability.alba === false ? '\u25CB' : '\u25CF'} Alba (Female, Scottish)`}</option>
+                        <option value="cori">{`${voiceAvailability.cori === false ? '\u25CB' : '\u25CF'} Cori (Female)`}</option>
+                        <option value="northern">{`${voiceAvailability.northern === false ? '\u25CB' : '\u25CF'} Northern (Male)`}</option>
+                        <option value="southern">{`${voiceAvailability.southern === false ? '\u25CB' : '\u25CF'} Southern (Female)`}</option>
+                      </optgroup>
+                      <optgroup label="French">
+                        <option value="siwis">{`${voiceAvailability.siwis === false ? '\u25CB' : '\u25CF'} Siwis (Female)`}</option>
+                        <option value="gilles">{`${voiceAvailability.gilles === false ? '\u25CB' : '\u25CF'} Gilles (Male)`}</option>
+                      </optgroup>
+                      <optgroup label="Spanish">
+                        <option value="sharvard">{`${voiceAvailability.sharvard === false ? '\u25CB' : '\u25CF'} Sharvard (Female)`}</option>
+                        <option value="carlfm">{`${voiceAvailability.carlfm === false ? '\u25CB' : '\u25CF'} Carlfm (Male)`}</option>
+                      </optgroup>
+                    </select>
+                    <p className="mt-2 text-xs text-theme-muted">
+                      <span className="text-green-500">{'\u25CF'}</span> Downloaded
+                      <span className="mx-2">|</span>
+                      <span className="text-red-400">{'\u25CB'}</span> Requires internet to download
+                    </p>
                   </CardContent>
                 </Card>
 

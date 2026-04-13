@@ -305,7 +305,13 @@ export async function fetchTTSBlob(text: string, voice: string, language?: strin
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text, voice, ...(language ? { language } : {}) }),
   });
-  if (!res.ok) throw new Error('TTS failed');
+  if (!res.ok) {
+    const errData = await res.json().catch(() => null);
+    if (errData?.error === 'voice_not_downloaded') {
+      throw new Error('Voice not downloaded. Connect to the internet to download this voice.');
+    }
+    throw new Error('TTS failed');
+  }
   return res.blob();
 }
 

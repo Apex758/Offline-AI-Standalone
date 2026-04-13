@@ -9295,7 +9295,13 @@ async def text_to_speech(request: Request):
         if not text:
             return JSONResponse(status_code=400, content={"error": "Text is required"})
 
-        from tts_service import get_tts_service
+        from tts_service import get_tts_service, is_voice_available
+        if not is_voice_available(voice):
+            return JSONResponse(status_code=400, content={
+                "error": "voice_not_downloaded",
+                "message": "This voice is not downloaded. Please connect to the internet to download it.",
+            })
+
         tts = get_tts_service()
 
         # Run synthesis in thread pool to avoid blocking the event loop
@@ -9360,13 +9366,26 @@ async def tts_voices():
         tts = get_tts_service()
         voices = []
         display_names = {
-            "lessac": "Lessac (Female)",
-            "ryan":   "Ryan (Male)",
-            "amy":    "Amy (Female)",
-            "siwis":  "Siwis - French (Female)",
-            "gilles": "Gilles - French (Male)",
-            "sharvard": "Sharvard - Spanish (Female)",
-            "carlfm":   "Carlfm - Spanish (Male)",
+            # English - US
+            "lessac":   "Lessac (Female, US)",
+            "ryan":     "Ryan (Male, US)",
+            "amy":      "Amy (Female, US)",
+            "joe":      "Joe (Male, US)",
+            "danny":    "Danny (Male, US)",
+            "kusal":    "Kusal (Male, US)",
+            # English - GB
+            "jenny":    "Jenny (Female, British)",
+            "alan":     "Alan (Male, British)",
+            "alba":     "Alba (Female, Scottish)",
+            "cori":     "Cori (Female, British)",
+            "northern": "Northern (Male, British)",
+            "southern": "Southern (Female, British)",
+            # French
+            "siwis":    "Siwis (Female, French)",
+            "gilles":   "Gilles (Male, French)",
+            # Spanish
+            "sharvard": "Sharvard (Female, Spanish)",
+            "carlfm":   "Carlfm (Male, Spanish)",
         }
         for key in VOICE_REGISTRY:
             voices.append({

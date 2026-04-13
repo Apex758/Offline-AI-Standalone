@@ -1,6 +1,6 @@
 // @refresh reset
 import React, {
-  useState, useEffect, useRef, useCallback, useMemo,
+  useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import AIDisclaimer from './AIDisclaimer';
@@ -96,15 +96,33 @@ import {
   buildSpeechBubbleSVG, shouldUseBubble, getTailDirection,
 } from '../utils/speechBubble';
 import { NeuroSwitch } from './ui/NeuroSwitch';
+import { useNotification } from '../contexts/NotificationContext';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const WS_ENDPOINT = '/ws/storybook';
 
 const VOICE_LABELS: Record<VoiceName, string> = {
-  lessac: 'Lessac (Female)',
-  ryan:   'Ryan (Male)',
-  amy:    'Amy (Female)',
+  // English — US
+  lessac:   'Lessac (F, US)',
+  ryan:     'Ryan (M, US)',
+  amy:      'Amy (F, US)',
+  joe:      'Joe (M, US)',
+  danny:    'Danny (M, US)',
+  kusal:    'Kusal (M, US)',
+  // English — GB
+  jenny:    'Jenny (F, British)',
+  alan:     'Alan (M, British)',
+  alba:     'Alba (F, Scottish)',
+  cori:     'Cori (F, British)',
+  northern: 'Northern (M, British)',
+  southern: 'Southern (F, British)',
+  // French
+  siwis:    'Siwis (F, French)',
+  gilles:   'Gilles (M, French)',
+  // Spanish
+  sharvard: 'Sharvard (F, Spanish)',
+  carlfm:   'Carlfm (M, Spanish)',
 };
 
 const DEFAULT_SPEAKERS: SpeakerConfig[] = [
@@ -607,6 +625,15 @@ const SCENE_BG_COLORS: Record<string, string> = {
   weather: '#dbeafe',
 };
 
+const SCENE_BG_COLORS_DARK: Record<string, string> = {
+  outdoors: '#1a2e23',
+  indoors:  '#2a2517',
+  fantasy:  '#1f1a2e',
+  weather:  '#172033',
+};
+
+const DARK_PAGE_FALLBACK = '#1e1e1e';
+
 /** Scene category icons using HugeIcons */
 function SceneCategoryIcon({ category, className }: { category: string; className?: string }) {
   return <Icon icon={Image01IconData} className={className || 'w-4'} />;
@@ -965,6 +992,7 @@ function StreamingPagePreview({
   page,
   accentColor,
   liveSegment,
+  isDark = false,
 }: {
   page: StoryPage;
   accentColor: string;
@@ -978,12 +1006,14 @@ function StreamingPagePreview({
     text: string;
     speaker?: string;
   } | null;
+  isDark?: boolean;
 }) {
   const { t } = useTranslation();
   const bgScene = page.bundledSceneId
     ? BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)
     : null;
-  const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
+  const colorMap = isDark ? SCENE_BG_COLORS_DARK : SCENE_BG_COLORS;
+  const bgColor = bgScene ? colorMap[bgScene.category] : (isDark ? DARK_PAGE_FALLBACK : '#f3f4f6');
   const lastIdx = page.textSegments.length - 1;
   // Smoothly reveal the in-progress segment so multi-char token jumps
   // type in character-by-character instead of snapping 4-12 chars at a time.
@@ -1106,12 +1136,12 @@ function StreamingPagePreview({
 
 // ─── Skeleton Page Placeholder (ungenerated pages in editor) ─────────────────
 
-function SkeletonPagePreview() {
+function SkeletonPagePreview({ isDark = false }: { isDark?: boolean }) {
   const { t } = useTranslation();
   return (
     <div
       className="relative rounded-xl overflow-hidden border border-theme shadow-sm"
-      style={{ background: '#f3f4f6', aspectRatio: '297 / 210' }}
+      style={{ background: isDark ? DARK_PAGE_FALLBACK : '#f3f4f6', aspectRatio: '297 / 210' }}
     >
       <div className="relative z-10 p-6 space-y-4">
         {/* Skeleton text lines */}
@@ -1122,7 +1152,9 @@ function SkeletonPagePreview() {
             style={{
               width: `${w}%`,
               height: i === 0 ? 14 : 10,
-              background: 'linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 40%, #fafafa 50%, #f3f4f6 60%, #e5e7eb 100%)',
+              background: isDark
+                ? 'linear-gradient(90deg, #333 0%, #444 40%, #555 50%, #444 60%, #333 100%)'
+                : 'linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 40%, #fafafa 50%, #f3f4f6 60%, #e5e7eb 100%)',
               backgroundSize: '400px 100%',
               animation: 'skeletonShimmer 1.8s ease-in-out infinite',
             }}
@@ -1147,9 +1179,11 @@ function SkeletonPagePreview() {
 function CoverPagePreview({
   coverPage,
   accentColor,
+  isDark = false,
 }: {
   coverPage: CoverPage;
   accentColor: string;
+  isDark?: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -1159,7 +1193,9 @@ function CoverPagePreview({
         aspectRatio: '297 / 210',
         background: coverPage.coverImageData
           ? undefined
-          : `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
+          : isDark
+            ? `linear-gradient(135deg, ${accentColor}18, ${DARK_PAGE_FALLBACK})`
+            : `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
         fontFamily: 'Georgia, serif',
       }}
     >
@@ -1186,14 +1222,14 @@ function CoverPagePreview({
         )}
         <h1
           className="text-2xl font-bold leading-tight"
-          style={{ color: coverPage.coverImageData ? '#fff' : '#1f2937' }}
+          style={{ color: coverPage.coverImageData ? '#fff' : isDark ? '#e5e7eb' : '#1f2937' }}
         >
           {coverPage.title || t('storybook.untitledStory')}
         </h1>
         {coverPage.subtitle && (
           <p
             className="text-sm"
-            style={{ color: coverPage.coverImageData ? 'rgba(255,255,255,0.7)' : '#6b7280' }}
+            style={{ color: coverPage.coverImageData ? 'rgba(255,255,255,0.7)' : isDark ? '#9ca3af' : '#6b7280' }}
           >
             {coverPage.subtitle}
           </p>
@@ -1224,17 +1260,20 @@ function IntroductionPagePreview({
   accentColor,
   liveText,
   isStreaming,
+  isDark = false,
 }: {
   intro: IntroductionPage;
   accentColor: string;
   /** When set, render this partial text with caret + smooth reveal. */
   liveText?: string | null;
   isStreaming?: boolean;
+  isDark?: boolean;
 }) {
   const bgScene = intro.bundledSceneId
     ? BUNDLED_SCENES.find(s => s.id === intro.bundledSceneId)
     : null;
-  const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
+  const colorMap = isDark ? SCENE_BG_COLORS_DARK : SCENE_BG_COLORS;
+  const bgColor = bgScene ? colorMap[bgScene.category] : (isDark ? DARK_PAGE_FALLBACK : '#f3f4f6');
 
   // Smooth-reveal the live text so multi-char token jumps type in smoothly.
   const revealed = useSmoothReveal(liveText || '', !!liveText);
@@ -1316,14 +1355,17 @@ function IntroductionPagePreview({
 function PagePreview({
   page,
   accentColor,
+  isDark = false,
 }: {
   page: StoryPage;
   accentColor: string;
+  isDark?: boolean;
 }) {
   const bgScene = page.bundledSceneId
     ? BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)
     : null;
-  const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
+  const colorMap = isDark ? SCENE_BG_COLORS_DARK : SCENE_BG_COLORS;
+  const bgColor = bgScene ? colorMap[bgScene.category] : (isDark ? DARK_PAGE_FALLBACK : '#f3f4f6');
 
   const hasChar = page.characterImageData && page.imagePlacement !== 'none';
 
@@ -1503,11 +1545,50 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     return () => obs.disconnect();
   }, []);
 
+  // ── TTS voice availability ────────────────────────────────────────────────
+  const { toastOnly } = useNotification();
+  const [voiceAvailability, setVoiceAvailability] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    fetch('http://localhost:8000/api/tts/voices')
+      .then(r => r.json())
+      .then((data: { voices: { key: string; available: boolean }[] }) => {
+        const map: Record<string, boolean> = {};
+        data.voices.forEach(v => { map[v.key] = v.available; });
+        setVoiceAvailability(map);
+      })
+      .catch(() => {});
+  }, []);
+  // Listen for voice-not-downloaded events from the TTS hook
+  useEffect(() => {
+    const handler = () => toastOnly('This voice is not downloaded. Connect to the internet to download it.', 'error', 5000);
+    window.addEventListener('tts-voice-not-downloaded', handler);
+    return () => window.removeEventListener('tts-voice-not-downloaded', handler);
+  }, [toastOnly]);
+
   // ── State ──────────────────────────────────────────────────────────────────
   const [view, setViewState] = useState<View>('input');
   const viewRef = useRef<View>('input');
   const setView = (v: View) => { viewRef.current = v; setViewState(v); };
   const [formData, setFormData] = useState<StorybookFormData>(DEFAULT_FORM);
+  // Visual style pill
+  const sbVsContainerRef = useRef<HTMLDivElement>(null);
+  const sbVsBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [sbVsPill, setSbVsPill] = useState<{ left: number; width: number } | null>(null);
+  const updateSbVsPill = useCallback(() => {
+    const activeIdx = STYLE_PRESETS.findIndex(p => p.id === formData.stylePreset);
+    if (activeIdx === -1) return;
+    const btn = sbVsBtnRefs.current[activeIdx];
+    const container = sbVsContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setSbVsPill({ left: br.left - cr.left, width: br.width });
+  }, [formData.stylePreset]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => { updateSbVsPill(); }, [updateSbVsPill]);
+  useEffect(() => {
+    const t = setTimeout(updateSbVsPill, 0);
+    return () => clearTimeout(t);
+  }, [updateSbVsPill]);
   const [parsedBook, setParsedBook] = useState<ParsedStorybook | null>(null);
   const [livePages, setLivePages] = useState<StoryPage[]>([]);
   const [currentPageIdx, setCurrentPageIdx] = useState(0);
@@ -1600,7 +1681,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const setSpeakerCount = (count: 1 | 2 | 3) => {
     const speakers: SpeakerConfig[] = [];
     const roles: SpeakerRole[] = ['narrator', 'character1', 'character2'];
-    const voices: VoiceName[] = ['lessac', 'ryan', 'amy'];
+    const voices: VoiceName[] = ['lessac', 'ryan', 'amy', 'joe', 'jenny', 'alan'];
     for (let i = 0; i < count; i++) {
       speakers.push(formData.speakers[i] || { role: roles[i], voice: voices[i] });
     }
@@ -2771,11 +2852,12 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
             />
           </div>
 
-          {/* Style Preset — only when AI image mode */}
+          {/* Style Preset -- only when AI image mode */}
           {formData.imageMode === 'ai' && (
             <div>
               <label className="block text-sm font-medium text-theme-label mb-2">Visual Style</label>
               <div
+                ref={sbVsContainerRef}
                 className="ng-segment ng-rect w-full"
                 style={{
                   display: 'grid',
@@ -2783,11 +2865,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                   '--ng-accent': accentColor,
                 } as React.CSSProperties}
               >
-                {STYLE_PRESETS.map((preset) => {
+                {sbVsPill && (
+                  <div className="ng-segment-pill" style={{ left: sbVsPill.left, width: sbVsPill.width }} aria-hidden="true" />
+                )}
+                {STYLE_PRESETS.map((preset, idx) => {
                   const active = formData.stylePreset === preset.id;
                   return (
                     <button
                       key={preset.id}
+                      ref={el => { sbVsBtnRefs.current[idx] = el; }}
                       type="button"
                       onClick={() => updateForm('stylePreset', preset.id)}
                       className={`ng-segment-btn flex-col gap-0.5 py-2.5${active ? ' ng-seg-active' : ''}`}
@@ -2913,12 +2999,18 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       <p className="text-xs text-theme-muted mb-1">{t('storybook.voice')}</p>
                       <select
                         value={sp.voice}
-                        onChange={e => updateSpeaker(i, { voice: e.target.value as VoiceName })}
+                        onChange={e => {
+                          const newVoice = e.target.value as VoiceName;
+                          updateSpeaker(i, { voice: newVoice });
+                          if (voiceAvailability[newVoice] === false) {
+                            toastOnly('This voice is not downloaded yet. Connect to the internet to download it.', 'info', 5000);
+                          }
+                        }}
                         className="w-full px-2 py-1 text-sm border border-theme-strong rounded focus:ring-1 bg-theme"
                         style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
                       >
                         {Object.entries(VOICE_LABELS).map(([v, label]) => (
-                          <option key={v} value={v}>{label}</option>
+                          <option key={v} value={v}>{`${voiceAvailability[v] === false ? '\u25CB' : '\u25CF'} ${label}`}</option>
                         ))}
                       </select>
                     </div>
@@ -3353,7 +3445,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               const bgScene = page.bundledSceneId
                 ? BUNDLED_SCENES.find(s => s.id === page.bundledSceneId)
                 : null;
-              const bgColor = bgScene ? SCENE_BG_COLORS[bgScene.category] : '#f3f4f6';
+              const thumbColorMap = isDark ? SCENE_BG_COLORS_DARK : SCENE_BG_COLORS;
+              const bgColor = bgScene ? thumbColorMap[bgScene.category] : (isDark ? DARK_PAGE_FALLBACK : '#f3f4f6');
               return (
                 <button
                   key={i}
@@ -3367,7 +3460,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     style={{
                       aspectRatio: '297 / 210',
                       background: isThumbSkeleton
-                        ? 'linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%)'
+                        ? isDark
+                          ? 'linear-gradient(90deg, #333 0%, #444 50%, #333 100%)'
+                          : 'linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%)'
                         : bgColor,
                       ...(isThumbSkeleton ? { backgroundSize: '400px 100%', animation: 'skeletonShimmer 1.8s ease-in-out infinite' } : {}),
                     }}
@@ -3477,7 +3572,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               </div>
 
               {isCoverSelected && parsedBook.coverPage ? (
-                <CoverPagePreview coverPage={parsedBook.coverPage} accentColor={accentColor} />
+                <CoverPagePreview coverPage={parsedBook.coverPage} accentColor={accentColor} isDark={isDark} />
               ) : isIntroSelected ? (() => {
                 // Intro view. Source of truth:
                 //  - Live: during streaming, pull moodText from sbStreamingData.
@@ -3506,6 +3601,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       accentColor={accentColor}
                       liveText={''}
                       isStreaming
+                      isDark={isDark}
                     />
                   );
                 }
@@ -3522,6 +3618,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                     accentColor={accentColor}
                     liveText={sbIntroLiveText}
                     isStreaming={isStreaming}
+                    isDark={isDark}
                   />
                 );
               })() : currentPage ? (() => {
@@ -3587,7 +3684,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 const isSkeletonPage = isStreaming && !hasAnyStreamingContent;
 
                 if (isSkeletonPage) {
-                  return <SkeletonPagePreview />;
+                  return <SkeletonPagePreview isDark={isDark} />;
                 } else if (showStreamingView) {
                   // Build a synthetic "page" with the effective segments
                   // so StreamingPagePreview renders all segments already
@@ -3601,10 +3698,11 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       page={liveRenderPage}
                       accentColor={accentColor}
                       liveSegment={liveSegProp}
+                      isDark={isDark}
                     />
                   );
                 } else {
-                  return <PagePreview page={currentPage} accentColor={accentColor} />;
+                  return <PagePreview page={currentPage} accentColor={accentColor} isDark={isDark} />;
                 }
               })() : null}
 

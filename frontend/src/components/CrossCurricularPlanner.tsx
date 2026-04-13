@@ -549,13 +549,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const { guardOffline } = useOfflineGuard();
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
-  const streamingContent = useStreamingRenderer({
-    text: streamingPlan || generatedPlan,
-    isStreaming: !!(loading && streamingPlan),
-    fullFormatter: () => formatCrossCurricularText(streamingPlan || generatedPlan, tabColor),
-    accentColor: tabColor,
-  });
-
   const [historyOpen, setHistoryOpen] = useState(false);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [draftsExpanded, setDraftsExpanded] = useState(true);
@@ -687,6 +680,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     return '';
   });
   const generatedTitleRef = useRef<string | null>(null);
+
+  const streamingContent = useStreamingRenderer({
+    text: streamingPlan || generatedPlan,
+    isStreaming: !!(loading && streamingPlan),
+    fullFormatter: () => formatCrossCurricularText(streamingPlan || generatedPlan, tabColor),
+    accentColor: tabColor,
+  });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
 

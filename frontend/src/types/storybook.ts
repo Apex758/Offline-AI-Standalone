@@ -2,7 +2,11 @@ import type { ImageMode } from './index';
 
 // ─── Speaker / Voice ────────────────────────────────────────────────────────
 
-export type VoiceName = 'lessac' | 'ryan' | 'amy';
+export type VoiceName =
+  | 'lessac' | 'ryan' | 'amy' | 'joe' | 'danny' | 'kusal'
+  | 'jenny' | 'alan' | 'alba' | 'cori' | 'northern' | 'southern'
+  | 'siwis' | 'gilles'
+  | 'sharvard' | 'carlfm';
 export type SpeakerRole = 'narrator' | 'character1' | 'character2';
 
 export interface SpeakerConfig {
@@ -147,7 +151,7 @@ export interface StorybookFormData {
   pageCount: number;
   imageMode: ImageMode;
   /** Visual style preset for AI image generation */
-  stylePreset: 'cartoon_3d' | 'illustrated_painting' | 'realistic';
+  stylePreset: 'cartoon_3d' | 'line_art_bw' | 'illustrated_painting' | 'realistic';
   /** Number of unique backgrounds to generate, or 'auto' to let the AI decide */
   backgroundCount: number | 'auto';
   speakerCount: 1 | 2 | 3;

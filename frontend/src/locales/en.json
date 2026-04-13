@@ -814,7 +814,9 @@
       "redoSetup": "Redo Setup Wizard",
       "tellPearl": "Tell {{assistantName}} about yourself to personalize your experience",
       "displayNamePlaceholder": "e.g. Ms. Johnson",
-      "schoolPlaceholder": "e.g. Castries Primary School"
+      "schoolPlaceholder": "e.g. Castries Primary School",
+      "showingContentFor": "Showing content for",
+      "withSubjects": "with {{count}} subject(s)"
     },
     "appearance": {
       "title": "Appearance",

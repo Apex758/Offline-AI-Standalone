@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer, useRef } from 'react';
+import React, { useState, useEffect, useReducer, useRef, useCallback, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistoryMatching } from '../hooks/useHistoryMatching';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -65,6 +65,7 @@ import { deriveWorksheetPalette } from '../utils/worksheetColorUtils';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
+import { STYLE_PRESETS } from '../utils/imageStylePresets';
 import ExportButton from './ExportButton';
 import ClassPackExportButton from './ClassPackExportButton';
 import ScanTemplatePreview from './ScanTemplatePreview';
@@ -453,6 +454,25 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [assetId, setAssetId] = useState<string | null>(null);
   const [styleProfiles, setStyleProfiles] = useState<Record<string, StyleProfile>>({});
   const [loadingPresets, setLoadingPresets] = useState(false);
+  // Visual style pill
+  const wsVsContainerRef = useRef<HTMLDivElement>(null);
+  const wsVsBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [wsVsPill, setWsVsPill] = useState<{ left: number; width: number } | null>(null);
+  const updateWsVsPill = useCallback(() => {
+    const activeIdx = STYLE_PRESETS.findIndex(p => p.id === formData.imageStyle);
+    if (activeIdx === -1) return;
+    const btn = wsVsBtnRefs.current[activeIdx];
+    const container = wsVsContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setWsVsPill({ left: br.left - cr.left, width: br.width });
+  }, [formData.imageStyle]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => { updateWsVsPill(); }, [updateWsVsPill]);
+  useEffect(() => {
+    const t = setTimeout(updateWsVsPill, 0);
+    return () => clearTimeout(t);
+  }, [updateWsVsPill]);
 
   // Auto-select template when only one compatible option exists
   useEffect(() => {
@@ -1640,21 +1660,35 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Visual Style <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        value={formData.imageStyle}
-                        onChange={(e) => handleInputChange('imageStyle', e.target.value)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
+                      <div
+                        ref={wsVsContainerRef}
+                        className="ng-segment ng-rect w-full"
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: `repeat(${STYLE_PRESETS.length}, 1fr)`,
+                          '--ng-accent': worksheetTabColor,
+                        } as React.CSSProperties}
                       >
-                        <option value="cartoon_3d">3D Cartoon (Colorful, Pixar-like)</option>
-                        <option value="line_art_bw">Black & White Line Art (Coloring)</option>
-                        <option value="illustrated_painting">Illustrated Painting</option>
-                        <option value="realistic">Photorealistic</option>
-                      </select>
-                      {styleProfiles[formData.imageStyle || 'cartoon_3d'] && (
-                        <p className="text-xs text-theme-hint mt-1">
-                          {styleProfiles[formData.imageStyle || 'cartoon_3d'].description}
-                        </p>
-                      )}
+                        {wsVsPill && (
+                          <div className="ng-segment-pill" style={{ left: wsVsPill.left, width: wsVsPill.width }} aria-hidden="true" />
+                        )}
+                        {STYLE_PRESETS.map((preset, idx) => {
+                          const active = formData.imageStyle === preset.id;
+                          return (
+                            <button
+                              key={preset.id}
+                              ref={el => { wsVsBtnRefs.current[idx] = el; }}
+                              type="button"
+                              onClick={() => handleInputChange('imageStyle', preset.id)}
+                              className={`ng-segment-btn flex-col gap-0.5 py-2.5${active ? ' ng-seg-active' : ''}`}
+                              style={{ height: 'auto', borderRadius: '5px' }}
+                            >
+                              <span className="text-xs font-semibold leading-tight">{preset.label}</span>
+                              {active && <span className="text-[10px] leading-tight" style={{ opacity: 0.7 }}>{preset.hint}</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     <button

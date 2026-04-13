@@ -3,6 +3,7 @@ import { GradeSubjectMapping, SUBJECTS } from '../data/teacherConstants';
 import { FeatureModuleId, NudgeState } from '../types/feature-disclosure';
 import { getEnabledSidebarItems } from '../lib/featureModules';
 import { NUDGE_COOLDOWN_MS } from '../lib/nudgeRules';
+import type { VoiceName } from '../types/storybook';
 
 // TypeScript Interfaces
 export interface TabColors {
@@ -149,7 +150,7 @@ export interface Settings {
     dismissedProgressions: string[];
   };
   // Text-to-speech voice selection
-  ttsVoice: 'lessac' | 'ryan' | 'amy';
+  ttsVoice: VoiceName;
 }
 
 export interface SettingsContextValue {

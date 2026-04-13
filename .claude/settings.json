@@ -444,7 +444,8 @@
       "Bash(powershell -Command '$disk = Get-CimInstance Win32_LogicalDisk -Filter \"DeviceID='\\\\''C:'\\\\''\"; Write-Host \\('\\\\''Free: {0} GB / {1} GB total \\({2}% free\\)'\\\\'' -f [math]::Round\\($disk.FreeSpace/1GB,1\\), [math]::Round\\($disk.Size/1GB,1\\), [math]::Round\\($disk.FreeSpace/$disk.Size*100,1\\)\\)')",
       "Bash(npm ls:*)",
       "Bash(npm info:*)",
-      "Bash(node -e \"const fs = require\\('fs'\\); const p = 'c:/Users/LG/Desktop/Projects/Offline AI Standalone/node_modules/@hugeicons/core-free-icons'; if\\(fs.existsSync\\(p\\)\\) { const files = fs.readdirSync\\(p\\); console.log\\(files.join\\('\\\\n'\\)\\); } else { console.log\\('NOT FOUND'\\); }\")"
+      "Bash(node -e \"const fs = require\\('fs'\\); const p = 'c:/Users/LG/Desktop/Projects/Offline AI Standalone/node_modules/@hugeicons/core-free-icons'; if\\(fs.existsSync\\(p\\)\\) { const files = fs.readdirSync\\(p\\); console.log\\(files.join\\('\\\\n'\\)\\); } else { console.log\\('NOT FOUND'\\); }\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('tts_service.py', doraise=True\\); print\\('OK'\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

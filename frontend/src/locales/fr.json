@@ -813,7 +813,9 @@
       "redoSetup": "Relancer l'Assistant",
       "tellPearl": "Parlez de vous a {{assistantName}} pour personnaliser votre experience",
       "displayNamePlaceholder": "ex. Mme. Johnson",
-      "schoolPlaceholder": "ex. Ecole Primaire Castries"
+      "schoolPlaceholder": "ex. Ecole Primaire Castries",
+      "showingContentFor": "Affichage du contenu pour",
+      "withSubjects": "avec {{count}} matiere(s)"
     },
     "appearance": {
       "title": "Apparence",

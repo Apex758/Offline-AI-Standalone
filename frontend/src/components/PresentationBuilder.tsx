@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from
 import { useTranslation } from 'react-i18next';
 import AIDisclaimer from './AIDisclaimer';
 import type { ImageMode } from '../types';
+import type { StyleProfile } from '../types/scene';
+import { STYLE_PRESETS } from '../utils/imageStylePresets';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -1571,6 +1573,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
     if (saved === 'my-images' && !hasVision) return 'none';
     return saved;
   });
+  const [imageStyle, setImageStyle] = useState<string>(savedData?.imageStyle || 'cartoon_3d');
+  const [styleProfiles, setStyleProfiles] = useState<Record<string, StyleProfile>>({});
   const [slideCount, setSlideCount] = useState<number>(savedData?.slideCount ?? 8);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>(savedData?.presentationMode || 'kids');
   const presModeContainerRef = useRef<HTMLDivElement>(null);
@@ -1611,6 +1615,25 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
     const t = setTimeout(updatePresImgPill, 0);
     return () => clearTimeout(t);
   }, [updatePresImgPill]);
+  // Visual style pill
+  const vsContainerRef = useRef<HTMLDivElement>(null);
+  const vsBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [vsPill, setVsPill] = useState<{ left: number; width: number } | null>(null);
+  const updateVsPill = useCallback(() => {
+    const activeIdx = STYLE_PRESETS.findIndex(p => p.id === imageStyle);
+    if (activeIdx === -1) return;
+    const btn = vsBtnRefs.current[activeIdx];
+    const container = vsContainerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setVsPill({ left: br.left - cr.left, width: br.width });
+  }, [imageStyle, isActive]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => { updateVsPill(); }, [updateVsPill]);
+  useEffect(() => {
+    const t = setTimeout(updateVsPill, 0);
+    return () => clearTimeout(t);
+  }, [updateVsPill]);
   const [maxImages, setMaxImages] = useState<number>(savedData?.maxImages ?? 0); // 0 = auto (AI decides)
   const [uploadedImages, setUploadedImages] = useState<Array<{ id: string; dataUri: string; filename: string }>>(savedData?.uploadedImages || []);
   const [generationPhase, setGenerationPhase] = useState<'idle' | 'analyzing' | 'generating'>('idle');
@@ -1669,14 +1692,27 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
     presentationMode === 'professional' ? s.tag === 'PRO' : s.tag === 'KIDS'
   );
 
+  // Load style profiles for AI image generation
+  useEffect(() => {
+    const loadStyleProfiles = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/style-profiles');
+        setStyleProfiles(response.data.profiles || {});
+      } catch (error) {
+        console.error('Error loading style profiles:', error);
+      }
+    };
+    loadStyleProfiles();
+  }, []);
+
   // Persist state
   useEffect(() => {
     onDataChange({
       inputMode, formData, useCurriculum, selectedPlanId, freePrompt,
       slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount,
-      presentationMode, maxImages, suggestedImages, showSuggestionPanel,
+      presentationMode, maxImages, suggestedImages, showSuggestionPanel, imageStyle,
     });
-  }, [inputMode, formData, useCurriculum, selectedPlanId, freePrompt, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount, suggestedImages, showSuggestionPanel]);
+  }, [inputMode, formData, useCurriculum, selectedPlanId, freePrompt, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount, suggestedImages, showSuggestionPanel, imageStyle]);
 
   // Load lesson plan history
   useEffect(() => {
@@ -2103,8 +2139,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
       const styleHint = getAllStyles(t).find(st => st.id === styleId);
       const styleName = styleHint?.label || 'fun';
       const sceneDesc = s.content.imageScene || s.content.body || s.content.bullets?.join(', ') || s.content.headline || '';
-      const prompt = `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
-      const negativePrompt = 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
+      const profile = styleProfiles[imageStyle];
+      const styleSuffix = profile?.base_prompt_suffix || ', cartoon illustration, flat vector art, soft gradient colors, correct anatomy';
+      const profileNegative = profile?.negative_prompt || '';
+      const prompt = `${styleName} style illustration for children: ${sceneDesc}${styleSuffix}, no text, no words, no letters`;
+      const negativePrompt = profileNegative ? `${profileNegative}, text, words, letters, numbers, writing, labels, captions, watermark` : 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
       const placement = s.content.imagePlacement && s.content.imagePlacement !== 'none'
         ? s.content.imagePlacement
         : defaultPlacementForLayout(s.layout, slideIdx);
@@ -2190,12 +2229,15 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
       try {
         // Use imageScene directly — no separate LLM prompt-generation call needed
         const sceneDesc = slide.content.imageScene || slide.content.body || slide.content.bullets?.join(', ') || slide.content.headline || '';
+        const profile = styleProfiles[imageStyle];
+        const styleSuffix = profile?.base_prompt_suffix || ', cartoon illustration, flat vector art, soft gradient colors, correct anatomy';
+        const profileNegative = profile?.negative_prompt || '';
         const prompt = presentationMode === 'professional'
-          ? `${styleName} style professional illustration: ${sceneDesc}. Clean, modern, minimalist, corporate, high quality, no text, no words, no letters`
-          : `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
-        const negativePrompt = presentationMode === 'professional'
+          ? `${styleName} style professional illustration: ${sceneDesc}${styleSuffix}, no text, no words, no letters`
+          : `${styleName} style illustration for children: ${sceneDesc}${styleSuffix}, no text, no words, no letters`;
+        const negativePrompt = profileNegative ? `${profileNegative}, text, words, letters, numbers, writing, labels, captions, watermark` : (presentationMode === 'professional'
           ? 'text, words, letters, numbers, writing, labels, captions, watermark, signature, childish, cartoon, clipart, low quality'
-          : 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
+          : 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo');
         const placement = slide.content.imagePlacement && slide.content.imagePlacement !== 'none'
           ? slide.content.imagePlacement
           : defaultPlacementForLayout(slide.layout, index);
@@ -2756,6 +2798,42 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
                   <div className="flex justify-between text-[10px] text-theme-muted">
                     <span>{t('presentation.autoAiDecides')}</span>
                     <span>{t('presentation.allSlides', { n: slideCount })}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Visual Style -- only for AI image mode */}
+              {imageMode === 'ai' && (
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-semibold text-theme-heading">Visual Style</label>
+                  <div
+                    ref={vsContainerRef}
+                    className="ng-segment ng-rect w-full"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(${STYLE_PRESETS.length}, 1fr)`,
+                      '--ng-accent': tabColor,
+                    } as React.CSSProperties}
+                  >
+                    {vsPill && (
+                      <div className="ng-segment-pill" style={{ left: vsPill.left, width: vsPill.width }} aria-hidden="true" />
+                    )}
+                    {STYLE_PRESETS.map((preset, idx) => {
+                      const active = imageStyle === preset.id;
+                      return (
+                        <button
+                          key={preset.id}
+                          ref={el => { vsBtnRefs.current[idx] = el; }}
+                          type="button"
+                          onClick={() => setImageStyle(preset.id)}
+                          className={`ng-segment-btn flex-col gap-0.5 py-2.5${active ? ' ng-seg-active' : ''}`}
+                          style={{ height: 'auto', borderRadius: '5px' }}
+                        >
+                          <span className="text-xs font-semibold leading-tight">{preset.label}</span>
+                          {active && <span className="text-[10px] leading-tight" style={{ opacity: 0.7 }}>{preset.hint}</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

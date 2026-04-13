@@ -1,4 +1,4 @@
-export type StylePresetId = "cartoon_3d" | "illustrated_painting" | "realistic";
+export type StylePresetId = "cartoon_3d" | "line_art_bw" | "illustrated_painting" | "realistic";
 
 export interface StylePreset {
   id: StylePresetId;
@@ -11,6 +11,11 @@ export const STYLE_PRESETS: StylePreset[] = [
     id: "cartoon_3d",
     label: "Cartoon",
     hint: "Vibrant cartoon with bold colors and smooth shading",
+  },
+  {
+    id: "line_art_bw",
+    label: "Line Art",
+    hint: "Clean pencil sketch with fine linework",
   },
   {
     id: "illustrated_painting",
@@ -27,6 +32,8 @@ export const STYLE_PRESETS: StylePreset[] = [
 export const STYLE_SUFFIXES: Record<StylePresetId, string> = {
   cartoon_3d:
     ", cartoon illustration, flat vector art, soft gradient colors, correct anatomy, no text",
+  line_art_bw:
+    ", detailed pencil sketch, crosshatching, smooth gradients, no text",
   illustrated_painting:
     ", oil painting, moody and atmospheric, rich deep colors, no text",
   realistic:

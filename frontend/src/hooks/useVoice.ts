@@ -113,7 +113,13 @@ export function useTTS() {
       }),
       signal,
     });
-    if (!response.ok) throw new Error('TTS request failed');
+    if (!response.ok) {
+      const errData = await response.json().catch(() => null);
+      if (errData?.error === 'voice_not_downloaded') {
+        throw new Error('VOICE_NOT_DOWNLOADED');
+      }
+      throw new Error('TTS request failed');
+    }
     const blob = await response.blob();
     return URL.createObjectURL(blob);
   }, []);
@@ -136,7 +142,7 @@ export function useTTS() {
     // Resolve voice based on language. If the explicit voice is English-only
     // but the app language is non-English, switch to the language-default voice
     // so French/Spanish text isn't read by an English voice.
-    const ENGLISH_VOICES = ['lessac', 'ryan', 'amy'];
+    const ENGLISH_VOICES = ['lessac', 'ryan', 'amy', 'joe', 'danny', 'kusal', 'jenny', 'alan', 'alba', 'cori', 'northern', 'southern'];
     const LANG_DEFAULT_VOICE: Record<string, string> = { fr: 'siwis', es: 'sharvard' };
     let resolvedVoice: string | undefined;
     if (language && language !== 'en' && LANG_DEFAULT_VOICE[language]) {
@@ -197,7 +203,12 @@ export function useTTS() {
       }
     } catch (e: any) {
       if (e.name !== 'AbortError') {
-        console.error('[TTS] Piper error:', e);
+        if (e.message === 'VOICE_NOT_DOWNLOADED') {
+          console.warn('[TTS] Voice not downloaded — user needs internet to fetch it.');
+          window.dispatchEvent(new CustomEvent('tts-voice-not-downloaded'));
+        } else {
+          console.error('[TTS] Piper error:', e);
+        }
       }
       setIsSpeaking(false);
       onEndCallbackRef.current = null;

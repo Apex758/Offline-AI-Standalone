@@ -813,7 +813,9 @@
       "redoSetup": "Repetir Configuracion",
       "tellPearl": "Cuentele a {{assistantName}} sobre usted para personalizar su experiencia",
       "displayNamePlaceholder": "p. ej. Ms. Johnson",
-      "schoolPlaceholder": "p. ej. Escuela Primaria Castries"
+      "schoolPlaceholder": "p. ej. Escuela Primaria Castries",
+      "showingContentFor": "Mostrando contenido para",
+      "withSubjects": "con {{count}} materia(s)"
     },
     "appearance": {
       "title": "Apariencia",

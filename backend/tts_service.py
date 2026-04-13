@@ -22,16 +22,26 @@ logger = logging.getLogger(__name__)
 DEFAULT_VOICE = "en_US-lessac-high"
 
 VOICE_REGISTRY: dict[str, str] = {
-    # English
-    "lessac": "en_US-lessac-high",   # Female narrator (pre-installed)
-    "ryan":   "en_US-ryan-high",     # Male character voice
-    "amy":    "en_US-amy-medium",    # Female character voice (different tone)
+    # English — US
+    "lessac":  "en_US-lessac-high",     # Female narrator (pre-installed)
+    "ryan":    "en_US-ryan-high",       # Male character voice
+    "amy":     "en_US-amy-medium",      # Female character voice (different tone)
+    "joe":     "en_US-joe-medium",      # Male, warm/deep
+    "danny":   "en_US-danny-low",       # Male, low pitch
+    "kusal":   "en_US-kusal-medium",    # Male, clear/bright
+    # English — GB
+    "jenny":   "en_GB-jenny_dioco-medium",  # British female, clear
+    "alan":    "en_GB-alan-medium",         # British male, calm
+    "alba":    "en_GB-alba-medium",         # Scottish female
+    "cori":    "en_GB-cori-medium",         # British female, young
+    "northern":"en_GB-northern_english_male-medium",   # Northern English male
+    "southern":"en_GB-southern_english_female-medium",  # Southern English female
     # French
-    "siwis":  "fr_FR-siwis-medium",  # French female narrator
-    "gilles": "fr_FR-gilles-low",    # French male voice
+    "siwis":   "fr_FR-siwis-medium",    # French female narrator
+    "gilles":  "fr_FR-gilles-low",      # French male voice
     # Spanish
-    "sharvard": "es_ES-sharvard-medium",  # Spanish female narrator
-    "carlfm":   "es_ES-carlfm-x_low",    # Spanish male voice
+    "sharvard":"es_ES-sharvard-medium",  # Spanish female narrator
+    "carlfm":  "es_ES-carlfm-x_low",    # Spanish male voice
 }
 
 LANGUAGE_DEFAULT_VOICE: dict[str, str] = {
