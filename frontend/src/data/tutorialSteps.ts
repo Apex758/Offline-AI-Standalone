@@ -229,43 +229,40 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     description: 'Create comprehensive lesson plans',
     steps: [
       {
-        target: '[data-tutorial="lesson-planner-welcome"]',
+        target: '[data-tutorial="lp-welcome"]',
         title: 'Welcome to Lesson Planner',
-        description: 'Create detailed, standards-aligned lesson plans. Perfect for planning engaging and effective lessons.',
+        description: 'Create detailed, OECS-aligned lesson plans in 3 easy steps: Basic Info, Teaching Strategy, and Additional Details. Fill in the form fields, then click Generate to get a complete D-OHPC lesson plan.',
+        position: 'center'
+      },
+      {
+        target: '[data-tutorial="lp-class-selector"]',
+        title: 'Class Selector',
+        description: 'Pick a class from your Class Manager to auto-fill grade level, subject, duration, and teaching strategies. This saves time if you have already configured your classes.',
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="lesson-planner-basic-info"]',
-        title: 'Basic Information',
-        description: 'Start by selecting the grade level, subject, and lesson topic. This helps your Assistant generate relevant content.',
-        position: 'right'
+        target: '[data-tutorial="lp-basic-info"]',
+        title: 'Grade & Subject',
+        description: 'Select the grade level and subject for your lesson. Once both are set, curriculum alignment fields appear so you can link your lesson to specific OECS outcomes.',
+        position: 'bottom'
       },
       {
-        target: '[data-tutorial="lesson-planner-duration"]',
-        title: 'Lesson Duration',
-        description: 'Specify how long your lesson will be. This helps structure activities within the available time.',
-        position: 'right'
+        target: '[data-tutorial="lp-curriculum"]',
+        title: 'Curriculum Alignment',
+        description: 'Align your lesson to the OECS curriculum. Select a strand, then pick Essential Learning Outcomes (ELOs) and Specific Curriculum Outcomes (SCOs). Toggle "Align to curriculum" for full linking.',
+        position: 'bottom'
       },
       {
-        target: '[data-tutorial="lesson-planner-materials"]',
-        title: 'Materials Needed',
-        description: 'List materials and resources required for the lesson. Appropriate materials can be suggested based on your topic.',
-        position: 'right'
+        target: '[data-tutorial="lp-topic-row"]',
+        title: 'Topic, Students & Duration',
+        description: 'Enter a lesson topic (optional), your student count, and the lesson duration. These help the AI tailor activities, group sizes, and pacing.',
+        position: 'bottom'
       },
       {
-        target: '[data-tutorial="lesson-planner-activities"]',
-        title: 'Lesson Activities',
-        description: 'Plan your lesson procedures including introduction, main activities, and conclusion. Structured, time-appropriate activities will be generated.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="lesson-planner-generate"]',
-        title: 'Generate Lesson Plan',
-        description: 'Click to create a complete, detailed lesson plan based on your inputs.',
-        position: 'top',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
+        target: '[data-tutorial="lp-history"]',
+        title: 'Saved Plans & Next Steps',
+        description: 'Click the clock icon to browse your saved lesson plans and drafts. After completing this step, click Next to move to Teaching Strategy (select pedagogical approaches, learning styles, and materials) and then Additional Details (special needs, extra instructions). Finally, click Generate on the last step to create your D-OHPC lesson plan.',
+        position: 'bottom'
       }
     ]
   },

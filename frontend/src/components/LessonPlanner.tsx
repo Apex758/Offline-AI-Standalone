@@ -938,7 +938,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
  
   return (
-    <div className="flex h-full tab-content-bg relative" data-tutorial="lesson-planner-welcome">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="lp-welcome">
       <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan || loading) ? (
           <>
@@ -1117,6 +1117,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
+                data-tutorial="lp-history"
                 className="relative p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Lesson Plan History"
               >
@@ -1173,7 +1174,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     />
 
                     {/* Class picker — auto-fills all class-level fields from Class Manager */}
-                    <div className="rounded-xl p-4 border border-dashed" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
+                    <div className="rounded-xl p-4 border border-dashed" data-tutorial="lp-class-selector" style={{ borderColor: tabColor, backgroundColor: `${tabColor}10` }}>
                       <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: tabColor }}>
                         Class (auto-fills from Class Manager settings)
                       </label>
@@ -1208,7 +1209,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     <div className="grid grid-cols-2 gap-6">
                       {/* Left column - Form fields */}
                       <div className="space-y-4">
-                        <div data-tutorial="lesson-planner-basic-info">
+                        <div data-tutorial="lp-basic-info">
                           <label className="block text-sm font-medium text-theme-label mb-2">
                             {t('forms.gradeLevel')} <span className="text-red-500">*</span>
                           </label>
@@ -1258,6 +1259,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           </select>
                         </div>
 
+                        <div data-tutorial="lp-curriculum">
                         <CurriculumAlignmentFields
                           subject={formData.subject}
                           gradeLevel={formData.gradeLevel}
@@ -1274,6 +1276,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           completedELOs={curriculumCompletion.completedELOs}
                           completedSCOs={curriculumCompletion.completedSCOs}
                         />
+                        </div>
                       </div>
 
                       {/* Right column - Related Curriculum Box */}
@@ -1289,6 +1292,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     </div>
 
                     {/* Rest of the form fields below (full width) */}
+                    <div data-tutorial="lp-topic-row" className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         {t('forms.topic')} <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(optional)</span>
@@ -1320,7 +1324,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         />
                       </div>
 
-                      <div data-tutorial="lesson-planner-duration">
+                      <div data-tutorial="lp-duration">
                         <label className="block text-sm font-medium text-theme-label mb-2">
                           {t('forms.duration')} <span className="text-red-500">*</span>
                         </label>
@@ -1333,12 +1337,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         />
                       </div>
                     </div>
+                    </div>{/* end lp-topic-row */}
                   </div>
                 )}
 
                 {/* Step 2: Teaching Strategy */}
                 {displayStep === 2 && (
-                  <div className="space-y-6">
+                  <div className="space-y-6" data-tutorial="lp-strategies">
                     <h3 className="text-lg font-bold text-theme-heading">Teaching Strategy</h3>
 
                     {showBanner && (
@@ -1359,7 +1364,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     )}
 
                     <AutoFilledSection autoFilled={showBanner} overrideOpen={overrideOpen}>
-                    <div data-tutorial="lesson-planner-activities">
+                    <div data-tutorial="lp-pedagogical">
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Pedagogical Strategies <span className="text-red-500">*</span>
                       </label>
@@ -1465,7 +1470,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       />
                     </div>
 
-                    <div data-tutorial="lesson-planner-materials">
+                    <div data-tutorial="lp-materials">
                       <MaterialsSelector
                         value={formData.materials}
                         onChange={(val) => handleInputChange('materials', val)}
@@ -1493,7 +1498,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                 {/* Step 3: Additional Details */}
                 {displayStep === 3 && (
-                  <div className="space-y-6">
+                  <div className="space-y-6" data-tutorial="lp-additional">
                     <h3 className="text-lg font-bold text-theme-heading">Additional Details</h3>
 
                     <div>
@@ -1584,7 +1589,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       onClick={generateLessonPlan}
                       disabled={loading}
                       className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
-                      data-tutorial="lesson-planner-generate"
+                      data-tutorial="lp-generate"
                     >
                       {loading ? (
                         <>
