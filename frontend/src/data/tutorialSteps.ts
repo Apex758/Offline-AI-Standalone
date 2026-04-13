@@ -75,10 +75,10 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'left'
       },
       {
-        target: '[data-tutorial="resource-card"]',
-        title: 'Resource Cards',
-        description: 'Each card displays a summary of your resource. Click to view full details, or use the action buttons for quick operations.',
-        position: 'top'
+        target: '[data-tutorial="resource-content"]',
+        title: 'Your Resources',
+        description: 'Your saved lesson plans, quizzes, rubrics, and other materials appear here as cards. Click any card to view full details, or use the action buttons for quick operations. Start creating content and it will show up here automatically.',
+        position: 'center'
       },
 
     ]

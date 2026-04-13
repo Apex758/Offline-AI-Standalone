@@ -690,18 +690,28 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             </div>
           </div>
 
-          {/* Progress dots */}
+          {/* Progress dots — clickable to jump */}
           <div className="flex gap-1 mt-4 justify-center">
             {steps.map((_, index) => (
-              <div
+              <button
                 key={index}
-                className={`w-2 h-2 rounded-full transition-all ${
+                onClick={() => {
+                  if (index !== currentStep) {
+                    setHighlightRect(null);
+                    setTooltipPosition({});
+                    setWaitingForAction(false);
+                    setCurrentStep(index);
+                    onStepChange?.(index);
+                  }
+                }}
+                className={`h-2 rounded-full transition-all cursor-pointer hover:opacity-80 ${
                   index === currentStep
                     ? 'bg-blue-600 w-6'
                     : index < currentStep
-                    ? 'bg-blue-400'
-                    : 'bg-gray-300 dark:bg-gray-600'
+                    ? 'bg-blue-400 w-2'
+                    : 'bg-gray-300 dark:bg-gray-600 w-2'
                 }`}
+                title={`Step ${index + 1}: ${steps[index].title}`}
               />
             ))}
           </div>

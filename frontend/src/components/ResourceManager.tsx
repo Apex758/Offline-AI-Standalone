@@ -941,7 +941,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         )}
 
         {/* Resources Grid */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4" data-tutorial="resource-content">
           {/* Favorites Section */}
           {favoriteResources.length > 0 && (
             <div className="mb-6" data-tutorial="resource-favorites">

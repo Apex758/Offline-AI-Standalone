@@ -881,6 +881,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [assessmentToolsExpanded, setAssessmentToolsExpanded] = useState(false);
   const [myClassroomExpanded, setMyClassroomExpanded] = useState(false);
   const [showFirstTimeTutorial, setShowFirstTimeTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
 
@@ -3216,6 +3217,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         showFloatingButton={false}
         isSplitViewActive={splitView.isActive}
         onStepChange={(step) => {
+          setTutorialStep(step);
           // Step 6 is the lesson planner dropdown (0-indexed, so step 14 is the 15th step)
           if (step === 14) {
             setSidebarOpen(true); // Force sidebar open for lesson planner step
@@ -3251,6 +3253,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     const activeTab = tabs.find((t) => t.id === activeTabId);
 
+    // Force FAB expanded during tutorial steps that explain the sub-buttons (steps 20-24, indices 19-23)
+    const fabForceExpanded = showFirstTimeTutorial && tutorialStep >= 19 && tutorialStep <= 23;
+
     // If no tabs are open, show the welcome tutorial
     if (!activeTab) {
       return (
@@ -3262,6 +3267,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           onStickyNote={() => setFabPanelOpen(!fabPanelOpen)}
           stickyNoteCount={openNoteIds.length}
           position="bottom-right"
+          forceExpanded={fabForceExpanded}
         />
       );
     }
@@ -3277,6 +3283,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           onStickyNote={() => setFabPanelOpen(!fabPanelOpen)}
           stickyNoteCount={openNoteIds.length}
           position="bottom-right"
+          forceExpanded={fabForceExpanded}
         />
       );
     }
@@ -3293,12 +3300,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         onStickyNote={() => setFabPanelOpen(!fabPanelOpen)}
         stickyNoteCount={openNoteIds.length}
         position="bottom-right"
+        forceExpanded={fabForceExpanded}
       />
     );
   })()}
 
       {/* Sticky Notes Overlay — renders all visible sticky notes above content */}
-      <StickyNoteOverlay activeTabId={activeTabId} />
+      <StickyNoteOverlay activeTabId={activeTabId} tutorialActive={showFirstTimeTutorial} />
 
       {/* Sticky Notes FAB Panel — side popup for managing notes */}
       {fabPanelOpen && (

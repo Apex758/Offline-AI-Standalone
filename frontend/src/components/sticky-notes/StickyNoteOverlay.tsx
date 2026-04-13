@@ -6,9 +6,10 @@ import { StickyNoteGroup } from './StickyNoteGroup';
 interface Props {
   activeTabId: string | null;
   onNavigateAction?: (action: { toolType: string; settingsSection?: string }) => void;
+  tutorialActive?: boolean;
 }
 
-export const StickyNoteOverlay: React.FC<Props> = ({ activeTabId, onNavigateAction }) => {
+export const StickyNoteOverlay: React.FC<Props> = ({ activeTabId, onNavigateAction, tutorialActive = false }) => {
   const { notes, openNoteIds, groups, zOrder, createGroup, addNoteToGroup } = useStickyNotes();
 
   // Track which element is being hovered over during drag (note or group)
@@ -54,7 +55,7 @@ export const StickyNoteOverlay: React.FC<Props> = ({ activeTabId, onNavigateActi
   if (visibleNotes.length === 0 && visibleGroups.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0" style={{ zIndex: 900 }}>
+    <div className="pointer-events-none fixed inset-0" style={{ zIndex: 900, opacity: tutorialActive ? 0.15 : 1, transition: 'opacity 0.3s ease', pointerEvents: tutorialActive ? 'none' : undefined }}>
       <div className="pointer-events-auto">
         {visibleNotes.map(note => {
           const zi = zOrder.indexOf(note.id);

@@ -621,6 +621,28 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onNavi
           ) : null}
         </div>
 
+        {/* AI search hint */}
+        {!aiMode && !localStorage.getItem('cp-ai-hint-dismissed') && (
+          <div
+            className="flex items-center gap-2 px-4 py-2 text-xs"
+            style={{
+              background: 'linear-gradient(to right, rgba(34,197,94,0.08), transparent)',
+              borderBottom: '1px solid var(--border-default, #e5e7eb)',
+              color: 'var(--text-muted, #6b7280)',
+            }}
+          >
+            <Brain className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#22c55e' }} />
+            <span>Click the <strong style={{ color: '#22c55e' }}>brain icon</strong> to activate AI search, then type your question and press Enter. Press <strong>Esc</strong> or click outside to close.</span>
+            <button
+              onClick={() => { localStorage.setItem('cp-ai-hint-dismissed', 'true'); }}
+              className="ml-auto p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/10 flex-shrink-0"
+              title="Dismiss"
+            >
+              <X className="w-3 h-3" style={{ color: 'var(--text-hint, #6b7280)' }} />
+            </button>
+          </div>
+        )}
+
         {/* Results */}
         <div
           ref={listRef}

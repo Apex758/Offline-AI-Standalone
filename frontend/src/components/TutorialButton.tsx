@@ -42,6 +42,7 @@ interface TutorialButtonProps {
   stickyNoteCount?: number;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   ghost?: boolean;
+  forceExpanded?: boolean;
 }
 
 export const TutorialButton: React.FC<TutorialButtonProps> = ({
@@ -52,11 +53,13 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   onStickyNote,
   stickyNoteCount = 0,
   position = 'bottom-right',
-  ghost = false
+  ghost = false,
+  forceExpanded = false
 }) => {
   const { t } = useTranslation();
   const { settings, isTutorialCompleted, updateSettings } = useSettings();
   const [expanded, setExpanded] = useState(false);
+  const isExpanded = expanded || forceExpanded;
   const [displayPanelOpen, setDisplayPanelOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,9 +80,9 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
 
   const isCompleted = isTutorialCompleted(tutorialId);
 
-  // Close when clicking outside
+  // Close when clicking outside (skip when tutorial forces expanded)
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || forceExpanded) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setExpanded(false);
@@ -87,17 +90,17 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [expanded]);
+  }, [expanded, forceExpanded]);
 
-  // Close on Escape
+  // Close on Escape (skip when tutorial forces expanded)
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || forceExpanded) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setExpanded(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [expanded]);
+  }, [expanded, forceExpanded]);
 
   const positionStyles: Record<typeof position, string> = {
     'bottom-right': 'bottom-6 right-12',
@@ -115,22 +118,22 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   };
 
   const handleTutorialClick = () => {
-    setExpanded(false);
+    if (!forceExpanded) setExpanded(false);
     onStartTutorial();
   };
 
   const handleSearchClick = () => {
-    setExpanded(false);
+    if (!forceExpanded) setExpanded(false);
     onOpenSearch?.();
   };
 
   const handleScreenshotClick = async () => {
-    setExpanded(false);
+    if (!forceExpanded) setExpanded(false);
     onScreenshotTicket?.();
   };
 
   const handleStickyNoteClick = () => {
-    setExpanded(false);
+    if (!forceExpanded) setExpanded(false);
     onStickyNote?.();
   };
 
@@ -155,20 +158,20 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
 
   // Close display panel when FAB collapses
   useEffect(() => {
-    if (!expanded) setDisplayPanelOpen(false);
-  }, [expanded]);
+    if (!isExpanded) setDisplayPanelOpen(false);
+  }, [isExpanded]);
 
   const mainButtonStyle: React.CSSProperties = {
     width: '48px',
     height: '48px',
-    background: expanded
+    background: isExpanded
       ? 'linear-gradient(135deg, rgba(100,116,139,0.95), rgba(71,85,105,0.95))'
       : 'linear-gradient(135deg, #22c55e, #16a34a)',
     boxShadow: '0 8px 32px rgba(250,204,21,0.45), 0 2px 8px rgba(245,158,11,0.25)',
     backdropFilter: 'blur(8px)',
     border: '1px solid rgba(34,197,94,0.4)',
     transition: 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease, background 0.2s ease',
-    padding: expanded ? 0 : '6px',
+    padding: isExpanded ? 0 : '6px',
     overflow: 'hidden',
   };
 
@@ -185,9 +188,9 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
       ref={containerRef}
       data-tutorial="fab-container"
       className={`fixed ${positionStyles[position]} z-[9999] flex flex-col items-center gap-3 transition-opacity duration-200`}
-      style={ghost && !expanded ? { opacity: 0.15 } : { opacity: 1 }}
+      style={ghost && !isExpanded ? { opacity: 0.15 } : { opacity: 1 }}
       onMouseEnter={(e) => { if (ghost) e.currentTarget.style.opacity = '1'; }}
-      onMouseLeave={(e) => { if (ghost && !expanded) e.currentTarget.style.opacity = '0.15'; }}
+      onMouseLeave={(e) => { if (ghost && !isExpanded) e.currentTarget.style.opacity = '0.15'; }}
     >
       {/* Expanded sub-buttons — appear above the main FAB */}
       {onOpenSearch && (
@@ -200,13 +203,13 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
             style={{
               ...subButtonBase,
               background: 'linear-gradient(135deg, rgba(59,130,246,0.92), rgba(37,99,235,0.92))',
-              boxShadow: expanded
+              boxShadow: isExpanded
                 ? '0 6px 24px rgba(59,130,246,0.45), 0 2px 8px rgba(0,0,0,0.15)'
                 : '0 0 0 rgba(0,0,0,0)',
-              opacity: expanded ? 1 : 0,
-              transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
-              pointerEvents: expanded ? 'auto' : 'none',
-              transitionDelay: expanded ? '0.12s' : '0s',
+              opacity: isExpanded ? 1 : 0,
+              transform: isExpanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+              pointerEvents: isExpanded ? 'auto' : 'none',
+              transitionDelay: isExpanded ? '0.12s' : '0s',
             }}
             title={t('tutorialButton.searchShortcut')}
             aria-label={t('tutorialButton.search')}
@@ -244,15 +247,15 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
                 : (displayPanelOpen
                   ? 'linear-gradient(135deg, rgba(251,191,36,0.95), rgba(245,158,11,0.95))'
                   : 'linear-gradient(135deg, rgba(251,191,36,0.92), rgba(245,158,11,0.92))'),
-              boxShadow: expanded
+              boxShadow: isExpanded
                 ? (isDarkMode
                   ? '0 6px 24px rgba(99,102,241,0.45), 0 2px 8px rgba(0,0,0,0.15)'
                   : '0 6px 24px rgba(251,191,36,0.45), 0 2px 8px rgba(0,0,0,0.15)')
                 : '0 0 0 rgba(0,0,0,0)',
-              opacity: expanded ? 1 : 0,
-              transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
-              pointerEvents: expanded ? 'auto' : 'none',
-              transitionDelay: expanded ? '0.09s' : '0.01s',
+              opacity: isExpanded ? 1 : 0,
+              transform: isExpanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+              pointerEvents: isExpanded ? 'auto' : 'none',
+              transitionDelay: isExpanded ? '0.09s' : '0.01s',
             }}
             title={t('tutorialButton.displayControls')}
             aria-label={t('tutorialButton.displayControls')}
@@ -393,13 +396,13 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               style={{
                 ...subButtonBase,
                 background: 'linear-gradient(135deg, rgba(239,68,68,0.92), rgba(220,38,38,0.92))',
-                boxShadow: expanded
+                boxShadow: isExpanded
                   ? '0 6px 24px rgba(239,68,68,0.45), 0 2px 8px rgba(0,0,0,0.15)'
                   : '0 0 0 rgba(0,0,0,0)',
-                opacity: expanded ? 1 : 0,
-                transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
-                pointerEvents: expanded ? 'auto' : 'none',
-                transitionDelay: expanded ? '0.06s' : '0.02s',
+                opacity: isExpanded ? 1 : 0,
+                transform: isExpanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+                pointerEvents: isExpanded ? 'auto' : 'none',
+                transitionDelay: isExpanded ? '0.06s' : '0.02s',
               }}
               title={t('tutorialButton.reportIssue')}
               aria-label={t('tutorialButton.reportIssueDesc')}
@@ -433,13 +436,13 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               style={{
                 ...subButtonBase,
                 background: 'linear-gradient(135deg, rgba(251,191,36,0.72), rgba(234,179,8,0.82))',
-                boxShadow: expanded
+                boxShadow: isExpanded
                   ? '0 6px 24px rgba(234,179,8,0.45), 0 2px 8px rgba(0,0,0,0.15)'
                   : '0 0 0 rgba(0,0,0,0)',
-                opacity: expanded ? 1 : 0,
-                transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
-                pointerEvents: expanded ? 'auto' : 'none',
-                transitionDelay: expanded ? '0.04s' : '0.03s',
+                opacity: isExpanded ? 1 : 0,
+                transform: isExpanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+                pointerEvents: isExpanded ? 'auto' : 'none',
+                transitionDelay: isExpanded ? '0.04s' : '0.03s',
               }}
               title={t('tutorialButton.stickyNotes')}
               aria-label={t('tutorialButton.stickyNotes')}
@@ -485,13 +488,13 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
             style={{
               ...subButtonBase,
               background: 'linear-gradient(135deg, rgba(16,185,129,0.92), rgba(5,150,105,0.92))',
-              boxShadow: expanded
+              boxShadow: isExpanded
                 ? '0 6px 24px rgba(16,185,129,0.45), 0 2px 8px rgba(0,0,0,0.15)'
                 : '0 0 0 rgba(0,0,0,0)',
-              opacity: expanded ? 1 : 0,
-              transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
-              pointerEvents: expanded ? 'auto' : 'none',
-              transitionDelay: expanded ? '0.02s' : '0.04s',
+              opacity: isExpanded ? 1 : 0,
+              transform: isExpanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+              pointerEvents: isExpanded ? 'auto' : 'none',
+              transitionDelay: isExpanded ? '0.02s' : '0.04s',
             }}
             title={isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial')}
             aria-label={isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial')}
@@ -531,21 +534,21 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
         className="rounded-2xl flex items-center justify-center text-white group relative"
         style={mainButtonStyle}
         onMouseEnter={e => {
-          if (!expanded) {
+          if (!isExpanded) {
             (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1) translateY(-2px)';
             (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 12px 40px rgba(250,204,21,0.55), 0 4px 12px rgba(245,158,11,0.3)';
           }
         }}
         onMouseLeave={e => {
-          if (!expanded) {
+          if (!isExpanded) {
             (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1) translateY(0)';
             (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgba(250,204,21,0.45), 0 2px 8px rgba(245,158,11,0.25)';
           }
         }}
-        title={onOpenSearch ? (expanded ? t('tutorialButton.close') : t('tutorialButton.helpAndSearch')) : (isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial'))}
+        title={onOpenSearch ? (isExpanded ? t('tutorialButton.close') : t('tutorialButton.helpAndSearch')) : (isCompleted ? t('tutorialButton.replayTutorial') : t('tutorialButton.startTutorial'))}
         aria-label={onOpenSearch ? t('tutorialButton.helpAndSearch') : t('tutorialButton.tutorial')}
       >
-        {expanded ? (
+        {isExpanded ? (
           <X className="w-5 h-5" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))', transition: 'transform 0.2s ease', transform: 'rotate(0deg)' }} />
         ) : (
           <img
