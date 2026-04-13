@@ -55,7 +55,7 @@ export const StickyNoteOverlay: React.FC<Props> = ({ activeTabId, onNavigateActi
   if (visibleNotes.length === 0 && visibleGroups.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0" style={{ zIndex: 900, opacity: tutorialActive ? 0.15 : 1, transition: 'opacity 0.3s ease', pointerEvents: tutorialActive ? 'none' : undefined }}>
+    <div className="pointer-events-none fixed inset-0" style={{ zIndex: 900, opacity: tutorialActive ? 0.05 : 1, transition: 'opacity 0.3s ease', pointerEvents: tutorialActive ? 'none' : undefined }}>
       <div className="pointer-events-auto">
         {visibleNotes.map(note => {
           const zi = zOrder.indexOf(note.id);

@@ -656,7 +656,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const multiMode = indicators.length > 1;
 
   // Import the real tutorial context at the top level
-  const { startTutorial } = useTutorials();
+  const { startTutorial, activeTutorialId } = useTutorials();
   const { closeConnection, getIsTabBusy, getActiveStreams } = useWebSocket();
   const { unreadCount, registerNavigator } = useNotification();
   const { queue } = useQueue();
@@ -3306,7 +3306,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   })()}
 
       {/* Sticky Notes Overlay — renders all visible sticky notes above content */}
-      <StickyNoteOverlay activeTabId={activeTabId} tutorialActive={showFirstTimeTutorial} />
+      <StickyNoteOverlay activeTabId={activeTabId} tutorialActive={showFirstTimeTutorial || !!activeTutorialId} />
 
       {/* Sticky Notes FAB Panel — side popup for managing notes */}
       {fabPanelOpen && (
