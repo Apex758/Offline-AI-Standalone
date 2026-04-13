@@ -1946,7 +1946,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       return;
     }
     if (hasTriggeredPreloadRef.current) return;
-    if (formData.pageCount < 4 || formData.imageMode === 'none' || !hasDiffusion) return;
+    if (formData.pageCount < 4 || !hasDiffusion) return;
 
     const triggerIdx = formData.pageCount - 3; // 0-indexed: 2 pages before the last
     const fineReached = sbLiveTyping && sbLiveTyping.pageIdx >= triggerIdx;
@@ -1956,7 +1956,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       hasTriggeredPreloadRef.current = true;
       fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
     }
-  }, [isStreaming, sbLiveTyping, livePages.length, formData.pageCount, formData.imageMode, hasDiffusion]);
+  }, [isStreaming, sbLiveTyping, livePages.length, formData.pageCount, hasDiffusion]);
 
   // Sync the fine-parsed introductionPage.moodText into parsedBook
   // during streaming, so:
@@ -2149,7 +2149,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     if (!isStreaming && streamingContent) {
       // Fallback: ensure diffusion is preloaded when streaming ends (if not already triggered)
-      if (!hasTriggeredPreloadRef.current && formData.imageMode !== 'none' && hasDiffusion) {
+      if (!hasTriggeredPreloadRef.current && hasDiffusion) {
         hasTriggeredPreloadRef.current = true;
         fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
       }
@@ -2251,6 +2251,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       });
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
+      if (!data.image) throw new Error('BG removal returned no image data');
       const result = `data:image/png;base64,${data.image}`;
       updatePage(pageIdx, { characterImageData: result });
     } catch (e) {

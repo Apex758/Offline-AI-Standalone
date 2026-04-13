@@ -170,6 +170,7 @@ export async function removeCharacterBg(imageData: string): Promise<string> {
   });
   if (!res.ok) throw new Error('Background removal failed');
   const data = await res.json();
+  if (!data.image) throw new Error('Background removal returned no image data');
   return `data:image/png;base64,${data.image}`;
 }
 
