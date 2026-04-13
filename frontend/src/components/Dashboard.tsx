@@ -3242,6 +3242,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'settings': TUTORIAL_IDS.SETTINGS,
       'chat': TUTORIAL_IDS.CHAT,
       'class-management': TUTORIAL_IDS.CLASS_MANAGEMENT,
+      'educator-insights': TUTORIAL_IDS.EDUCATOR_INSIGHTS,
       'support': TUTORIAL_IDS.DASHBOARD_MAIN,
     };
 

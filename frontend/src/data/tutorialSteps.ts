@@ -21,6 +21,7 @@ export const TUTORIAL_IDS = {
   SETTINGS: 'settings',
   CHAT: 'chat',
   CLASS_MANAGEMENT: 'class-management',
+  EDUCATOR_INSIGHTS: 'educator-insights',
 } as const;
 
 // Type for tutorial IDs
@@ -976,6 +977,97 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         title: 'Report Cards',
         description: 'Generate professional PDF report cards for individual students or an entire class. Reports include quiz grades organized by subject with letter grades and averages.',
         position: 'left'
+      }
+    ]
+  },
+  [TUTORIAL_IDS.EDUCATOR_INSIGHTS]: {
+    id: TUTORIAL_IDS.EDUCATOR_INSIGHTS,
+    name: 'Educator Insights',
+    description: 'AI-powered analysis of your teaching data',
+    steps: [
+      {
+        target: '[data-tutorial="ei-header"]',
+        title: 'Welcome to Educator Insights',
+        description: 'AI-powered analysis of your teaching data. This tool reviews your curriculum progress, student performance, attendance, content creation, and achievements -- then gives you a detailed report with personalized recommendations.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="ei-generate-btn"]',
+        title: 'Generate a Report',
+        description: 'Click this button to run an AI analysis across 7 categories. You will see a progress bar as each analysis pass completes. Your first report may take a moment while the AI reviews all your data.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="ei-settings-btn"]',
+        title: 'Settings & Schedule',
+        description: 'Click the gear icon to choose which analysis passes to include in your report, and to set up automatic scheduled report generation.',
+        position: 'bottom',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: 'Click to open!'
+      },
+      {
+        target: '[data-tutorial="ei-pass-toggles"]',
+        title: 'Analysis Passes',
+        description: 'Toggle individual analysis passes on or off. There are 7 passes: Curriculum Coverage, Student Performance, Content Creation, Attendance & Engagement, Achievements, Teaching Recommendations, and Executive Summary. Some depend on others -- the system enforces this automatically.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="ei-graph-row"]',
+        title: 'Performance Over Time',
+        description: 'This chart tracks your composite score across reports. It shows trends and academic phase bands so you can see how your metrics change from term to term.',
+        position: 'center'
+      },
+      {
+        target: '[data-tutorial="ei-grade-badge"]',
+        title: 'Your Composite Score',
+        description: 'This badge shows your overall score and letter grade. Click it to open the Dimension Breakdown panel, which shows how each of the 5 metrics contributes to your score.',
+        position: 'left',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: 'Click to open!'
+      },
+      {
+        target: '[data-tutorial="ei-dimension-breakdown"]',
+        title: 'Dimension Breakdown',
+        description: 'Each dimension (Curriculum, Performance, Content, Attendance, Achievements) shows its score, trend, and weight. Expand any card to see what drives that score, and click "Talk to Coach" for focused advice on improving it.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="ei-toggle-arrow"]',
+        title: 'Switch Views',
+        description: 'Click this arrow to toggle between the performance graph and the detailed analysis cards. The analysis view shows the AI-generated report for each pass.',
+        position: 'top',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: 'Click to switch!'
+      },
+      {
+        target: '[data-tutorial="ei-analysis-section"]',
+        title: 'Analysis Cards',
+        description: 'Each card shows the AI-generated analysis for one of the 7 passes. Cards stream in live during generation. Look for amber reminder banners -- they flag recurring issues found across multiple consecutive reports.',
+        position: 'center'
+      },
+      {
+        target: '[data-tutorial="ei-coach-panel"]',
+        title: 'Educator Coach',
+        description: 'Your personal AI teaching coach. Pick a topic to start a conversation, or click "Talk to Coach" from any dimension breakdown card for focused advice. The coach has full context of your teaching data and report findings.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="ei-history-btn"]',
+        title: 'Report History',
+        description: 'Click the clock icon to browse all your past reports. You can load any previous report to compare findings over time, or delete reports you no longer need.',
+        position: 'bottom',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: 'Click to open!'
+      },
+      {
+        target: '[data-tutorial="ei-phases-toggle"]',
+        title: 'Academic Phases',
+        description: 'Toggle this to show a phase timeline sidebar in the graph view. Click any phase to scope your analysis to that specific term -- useful for comparing performance across different periods of the school year.',
+        position: 'bottom'
       }
     ]
   },

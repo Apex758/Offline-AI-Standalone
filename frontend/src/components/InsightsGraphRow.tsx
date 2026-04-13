@@ -146,6 +146,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
               {/* Grade badge — clicking toggles breakdown panel */}
               <button
                 onClick={() => setPanelOpen(p => !p)}
+                data-tutorial="ei-grade-badge"
                 title={panelOpen ? 'Hide breakdown' : 'Show dimension breakdown'}
                 className="w-14 h-14 rounded-xl flex flex-col items-center justify-center flex-shrink-0 transition-opacity hover:opacity-75"
                 style={{
@@ -252,6 +253,7 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
 
         {/* ── Right expansion panel ── */}
         <div
+          data-tutorial="ei-dimension-breakdown"
           className="border-l border-theme-border overflow-hidden flex-shrink-0 transition-all duration-[250ms] ease-in-out"
           style={{ width: panelOpen ? '18rem' : '0' }}
         >

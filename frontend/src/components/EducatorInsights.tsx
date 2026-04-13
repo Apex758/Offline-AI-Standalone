@@ -852,7 +852,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         }
       `}</style>
         {/* Header */}
-        <div className="flex-none px-6 py-4 border-b border-theme-border bg-theme-bg-secondary">
+        <div className="flex-none px-6 py-4 border-b border-theme-border bg-theme-bg-secondary" data-tutorial="ei-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
@@ -906,6 +906,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               </button>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
+                data-tutorial="ei-history-btn"
                 className={`p-2 rounded-lg transition-colors ${
                   historyOpen
                     ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
@@ -916,7 +917,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 <Icon icon={Clock01IconData} className="w-5" />
               </button>
               {/* Phase History toggle */}
-              <div className="flex items-center gap-1.5" title="Academic Phases">
+              <div className="flex items-center gap-1.5" title="Academic Phases" data-tutorial="ei-phases-toggle">
                 <span className="text-[11px] font-semibold text-theme-muted">Phases</span>
                 <NeuroSwitch
                   checked={showPhaseNav}
@@ -937,6 +938,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               <div ref={settingsBtnRef} style={{ position: 'relative' }}>
                 <button
                   onClick={() => { setSettingsOpen(o => !o); setScheduleOpen(false); }}
+                  data-tutorial="ei-settings-btn"
                   className={`p-2 rounded-lg transition-colors ${
                     settingsOpen || scheduleOpen
                       ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
@@ -949,7 +951,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
                 {/* Settings panel */}
                 {settingsOpen && !scheduleOpen && (
-                  <div className="ei-settings-dropdown">
+                  <div className="ei-settings-dropdown" data-tutorial="ei-pass-toggles">
                     <p className="ei-dropdown-label">Passes to run</p>
                     {PASS_NAMES.map(({ key, name }) => {
                       const isDisabledByDep = (
@@ -1034,6 +1036,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating || !hasAnyData}
+                data-tutorial="ei-generate-btn"
                 className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
                   isGenerating
                     ? 'bg-theme-bg-tertiary text-theme-muted cursor-not-allowed'
@@ -1108,6 +1111,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
       {/* ── Row 1: Performance Graph ── */}
       <div
+        data-tutorial="ei-graph-row"
         className={`relative overflow-hidden transition-all duration-300 ease-in-out ${
           graphExpanded ? 'flex-1 min-h-0' : 'flex-none h-0'
         }`}
@@ -1178,6 +1182,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         />
         <button
           className="ei-graph-toggle-arrow"
+          data-tutorial="ei-toggle-arrow"
           onClick={() => setGraphExpanded(e => !e)}
           title="Collapse graph"
         >
@@ -1234,7 +1239,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           </>
         )}
         {/* Analysis section */}
-        <div className="flex-1 overflow-y-auto px-6 pt-20 pb-4 space-y-4 min-w-0">
+        <div className="flex-1 overflow-y-auto px-6 pt-20 pb-4 space-y-4 min-w-0" data-tutorial="ei-analysis-section">
           {/* Error */}
           {error && (
             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">

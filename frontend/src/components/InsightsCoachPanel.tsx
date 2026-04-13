@@ -308,6 +308,7 @@ const InsightsCoachPanel: React.FC<InsightsCoachPanelProps> = ({
 
   return (
     <div
+      data-tutorial="ei-coach-panel"
       className="relative flex-shrink-0 border-l border-theme-border flex flex-col"
       style={{
         width: collapsed ? '3.5rem' : '40%',
