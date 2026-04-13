@@ -22,6 +22,7 @@ export const TUTORIAL_IDS = {
   CHAT: 'chat',
   CLASS_MANAGEMENT: 'class-management',
   EDUCATOR_INSIGHTS: 'educator-insights',
+  BRAIN_DUMP: 'brain-dump',
 } as const;
 
 // Type for tutorial IDs
@@ -1045,6 +1046,67 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         target: '[data-tutorial="ei-phases-toggle"]',
         title: 'Academic Phases',
         description: 'Toggle this to show a phase timeline sidebar in the graph view. Click any phase to scope your analysis to that specific term -- useful for comparing performance across different periods of the school year.',
+        position: 'bottom'
+      }
+    ]
+  },
+  [TUTORIAL_IDS.BRAIN_DUMP]: {
+    id: TUTORIAL_IDS.BRAIN_DUMP,
+    name: 'Brain Dump',
+    description: 'Capture thoughts and turn them into actions',
+    steps: [
+      {
+        target: '[data-tutorial="bd-header"]',
+        title: 'Welcome to Brain Dump',
+        description: 'Your free-form thought capture tool. Type or speak anything -- lesson ideas, quiz topics, reminders, to-dos -- and the AI will sort them into structured action cards that open the right tool pre-filled.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="bd-editor"]',
+        title: 'Your Thinking Space',
+        description: 'Type anything here. You can mention multiple things at once, like "make a quiz on fractions for grade 4, remind me to submit report cards Friday." The AI will recognize each intent separately.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="bd-mic"]',
+        title: 'Voice Input',
+        description: 'Click the microphone to speak instead of typing. Your speech is transcribed live into the editor. Click again to stop.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="bd-toolbar-toggle"]',
+        title: 'Rich Text Formatting',
+        description: 'Click this strip anytime to reveal formatting tools -- bold, italic, headings, bullet lists, numbered lists, quotes, links, and more.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="bd-analyze"]',
+        title: 'Turn Into Actions',
+        description: 'Click this to send your text to the AI. It analyzes everything and creates action cards for each recognized intent -- lesson plans, quizzes, calendar events, reminders, and 12 more types.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="bd-save"]',
+        title: 'Save as Note',
+        description: 'Save your raw text as a note without AI analysis. Great for quick thoughts you want to come back to later.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="bd-quick-tools"]',
+        title: 'Quick Tools',
+        description: 'Three handy utilities built right in -- Calculator, Stopwatch, and Timer. Toggle any of them without leaving Brain Dump.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="bd-help"]',
+        title: 'Action Types Guide',
+        description: 'Click this help button anytime to see all 16 action types the AI can recognize, with example phrases for each one.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="bd-saved-notes"]',
+        title: 'Saved Notes',
+        description: 'Click here to flip to your saved notes archive. You can review, edit, or re-analyze any previously saved dump. The character count badge appears as you type -- if your text is long, it will automatically split into sets for processing.',
         position: 'bottom'
       }
     ]

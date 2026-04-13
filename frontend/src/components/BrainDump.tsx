@@ -1607,7 +1607,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
           {/* ═══════ FRONT: Brain Dump Input ═══════ */}
           <div className="image-studio-flip-front p-4 md:p-6 space-y-5 relative">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" data-tutorial="bd-header">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl" style={{ background: `${accentColor}20`, boxShadow: `inset 0 0 0 1px ${accentColor}33` }}>
                   <Brain className="w-5 h-5" style={{ color: accentColor }} />
@@ -1620,6 +1620,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowHelp(!showHelp)}
+                  data-tutorial="bd-help"
                   className={`p-2 rounded-2xl text-xs transition-all active:scale-90 ring-1 ${
                     showHelp
                       ? 'text-purple-500 bg-purple-500/15 ring-purple-500/25'
@@ -1631,6 +1632,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                 </button>
                 <button
                   onClick={() => setFlipped(true)}
+                  data-tutorial="bd-saved-notes"
                   className="group flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold transition-all active:scale-95 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/15 hover:ring-amber-500/30"
                 >
                   <StickyNote className="w-3.5 h-3.5" />
@@ -1817,7 +1819,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       <div className={`flex rounded-2xl bg-theme-surface ring-1 ring-black/[0.04] dark:ring-white/[0.06] overflow-hidden transition-all ${activeTool ? 'max-h-[60px]' : ''}`}
                         style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
                         {/* Content-editable editor */}
-                        <div className="flex-1 relative">
+                        <div className="flex-1 relative" data-tutorial="bd-editor">
                           <div
                             ref={editorRef}
                             contentEditable={!loading}
@@ -1847,6 +1849,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           {/* Mic button */}
                           <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
                             <button
+                              data-tutorial="bd-mic"
                               onClick={toggleListening}
                               className={`p-3.5 rounded-2xl transition-all active:scale-90 ${
                                 isListening
@@ -1860,7 +1863,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           </div>
                           {/* Character count badge */}
                           {charCount > 0 && (
-                            <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-mono font-medium transition-all ${
+                            <div data-tutorial="bd-char-count" className={`absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-mono font-medium transition-all ${
                               needsSplitting
                                 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20'
                                 : charCount > tierCharLimit * 0.8
@@ -1881,6 +1884,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           <div className="flex">
                             {/* Toggle strip */}
                             <button
+                              data-tutorial="bd-toolbar-toggle"
                               onClick={() => setShowToolbar(!showToolbar)}
                               className="flex items-center justify-center w-8 border-l transition-all"
                               style={{
@@ -1953,6 +1957,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         <button
                           onClick={handleAnalyze}
                           disabled={!hasContent || loading}
+                          data-tutorial="bd-analyze"
                           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
                         >
                           {needsSplitting ? <Layers className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
@@ -1961,6 +1966,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         <button
                           onClick={handleSaveTextAsNote}
                           disabled={!hasContent || loading}
+                          data-tutorial="bd-save"
                           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/12 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/20 hover:ring-amber-500/35"
                           title="Save as note without analyzing"
                         >
@@ -1979,7 +1985,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                   )}
 
                   {/* ─── Quick Tools ─── */}
-                  <div className={`pt-2 transition-all duration-500 ease-in-out ${skeletonExpanded ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[500px] opacity-100'}`}>
+                  <div data-tutorial="bd-quick-tools" className={`pt-2 transition-all duration-500 ease-in-out ${skeletonExpanded ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[500px] opacity-100'}`}>
                     <h3 className="text-[11px] font-bold text-theme-hint uppercase tracking-widest mb-3">Quick Tools</h3>
                     <div className="grid grid-cols-3 gap-2">
                       {quickTools.map(tool => {
