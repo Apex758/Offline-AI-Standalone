@@ -163,17 +163,26 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   useEffect(() => {
     if (!isActive || !steps[currentStep]) return;
 
+    // Reset waiting state for non-interactive steps
+    const currentStepData = steps[currentStep];
+    if (!currentStepData.interactive || !currentStepData.waitForAction) {
+      setWaitingForAction(false);
+    }
+
+    let clickListenerAttached = false;
+
     const updateHighlight = () => {
       const element = document.querySelector(steps[currentStep].target);
       if (element) {
         highlightedElementRef.current = element;
         const rect = element.getBoundingClientRect();
         setHighlightRect(rect);
-        
-        // Set up action listeners if this step requires user interaction
+
+        // Set up action listeners if this step requires user interaction (only once)
         const step = steps[currentStep];
-        if (step.interactive && step.waitForAction) {
+        if (step.interactive && step.waitForAction && !clickListenerAttached) {
           setWaitingForAction(true);
+          clickListenerAttached = true;
           
           if (step.waitForAction === 'click') {
             const clickHandler = () => {
