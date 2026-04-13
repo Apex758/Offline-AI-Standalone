@@ -461,9 +461,12 @@ SUBJECTS = ["Mathematics", "Science", "Language Arts", "Social Studies"]
 # e.g. the teacher teaches Grade 1 Math, Grade 2 Science, Grade 2 Language Arts, Grade 4 Math
 CLASSES = [
     {"grade": "1", "subject": "Mathematics"},
+    {"grade": "1", "subject": "Language Arts"},
+    {"grade": "2", "subject": "Mathematics"},
     {"grade": "2", "subject": "Science"},
-    {"grade": "2", "subject": "Language Arts"},
     {"grade": "4", "subject": "Mathematics"},
+    {"grade": "4", "subject": "Language Arts"},
+    {"grade": "4", "subject": "Science"},
 ]
 
 # ── Caribbean 3-Term Calendar (2025-2026) ─────────────────────────────────────
@@ -729,7 +732,7 @@ def generate_class_configs():
             "grade_level": "1",
             "class_id": "demo-class-grade1",
             "config": {
-                "subject": "Multi-subject",
+                "subject": "Mathematics, Language Arts",
                 "strand": "",
                 "essentialOutcomes": "",
                 "specificOutcomes": "",
@@ -754,7 +757,7 @@ def generate_class_configs():
                 "includePointValues": False,
                 "gradingFocusAreas": ["Content accuracy", "Organization"],
                 "defaultQuestionTypes": ["Multiple Choice", "True/False"],
-                "defaultCognitiveLevels": ["Remember", "Understand"],
+                "defaultCognitiveLevels": ["Remember", "Understand", "Apply"],
                 "defaultTimeLimitPerQuestion": 90,
                 "availableMaterials": "Counting blocks, picture cards, whiteboards, chart paper, Chromebook cart (shared with Grade 2).",
                 "prerequisiteSkills": "Number recognition to 10; phonemic awareness of most consonant sounds.",
@@ -768,7 +771,7 @@ def generate_class_configs():
             "grade_level": "2",
             "class_id": "demo-class-grade2",
             "config": {
-                "subject": "Multi-subject",
+                "subject": "Mathematics, Science",
                 "strand": "",
                 "essentialOutcomes": "",
                 "specificOutcomes": "",
@@ -781,7 +784,7 @@ def generate_class_configs():
                 "customLearningStyles": "Class works well in pairs; several students are emerging readers who benefit from repeated exposure to new vocabulary.",
                 "hasSpecialNeeds": True,
                 "specialNeedsDetails": "1 student with ADHD - benefits from chunked instructions, visual checklists, and scheduled movement breaks.",
-                "culturallyResponsiveNotes": "Incorporate Saint Lucian folk stories and Caribbean geography when possible.",
+                "culturallyResponsiveNotes": "Incorporate Saint Lucian folk stories, Caribbean geography, and local ecosystems (mangroves, coral reefs, tropical forests) in Science lessons.",
                 "hasELLStudents": False,
                 "hasAdvancedLearners": True,
                 "behaviorSupportFocus": "Clear visual schedule posted; timer-based work blocks.",
@@ -807,7 +810,7 @@ def generate_class_configs():
             "grade_level": "4",
             "class_id": "demo-class-grade4",
             "config": {
-                "subject": "Multi-subject",
+                "subject": "Mathematics, Language Arts, Science",
                 "strand": "",
                 "essentialOutcomes": "",
                 "specificOutcomes": "",
@@ -835,7 +838,7 @@ def generate_class_configs():
                 "defaultQuestionTypes": ["Multiple Choice", "Short Answer", "Essay"],
                 "defaultCognitiveLevels": ["Understand", "Apply", "Analyze"],
                 "defaultTimeLimitPerQuestion": 150,
-                "availableMaterials": "Fraction tiles, rulers, atlases, leveled chapter books, dedicated Chromebook cart, smartboard.",
+                "availableMaterials": "Fraction tiles, rulers, atlases, leveled chapter books, dedicated Chromebook cart, smartboard, science lab equipment (magnifying glasses, scales, thermometers).",
                 "prerequisiteSkills": "Multiplication facts to 10x10; paragraph writing; map-reading with a key.",
                 "classPeriodDuration": "60 minutes",
                 "additionalInstructions": "When generating text-heavy content, also supply a simplified / decodable version for the dyslexic student and a vocabulary list for the ELL student.",
@@ -912,35 +915,32 @@ REAL_CURRICULUM_TOPICS = {
 
 LESSON_TOPICS = {
     ("Mathematics", "1"): ["Counting to 20", "Addition Facts", "Subtraction Intro", "Patterns", "Comparing Numbers"],
+    ("Language Arts", "1"): ["Letter Sounds", "Sight Words", "Simple Sentences", "Story Retelling", "Rhyming Words"],
     ("Mathematics", "2"): ["Place Value", "Adding Two-Digit Numbers", "Subtracting with Regrouping", "Skip Counting", "Telling Time"],
+    ("Science", "2"): ["Plant Parts", "Weather Patterns", "Water Cycle Basics", "Healthy Eating", "Materials and Properties"],
     ("Mathematics", "4"): ["Fractions", "Equivalent Fractions", "Long Multiplication", "Division with Remainders", "Area and Perimeter"],
-    ("Science", "1"): ["My Five Senses", "Animals Around Us", "Push and Pull", "Living vs Non-Living"],
-    ("Science", "2"): ["Plant Parts", "Weather Patterns", "Water Cycle Basics", "Healthy Eating"],
+    ("Language Arts", "4"): ["Paragraph Writing", "Reading Comprehension Strategies", "Grammar and Punctuation", "Narrative Writing", "Informational Text"],
     ("Science", "4"): ["Ecosystems", "Food Chains", "Simple Machines", "States of Matter", "The Solar System"],
-    ("Language Arts", "2"): ["Reading Comprehension", "Phonics Review", "Sentence Writing", "Story Elements", "Vocabulary Building"],
-    ("Social Studies", "2"): ["My Community", "Community Helpers", "Maps and Directions", "National Symbols", "Caribbean Traditions"],
 }
 
 QUIZ_TOPICS = {
     ("Mathematics", "1"): ["Counting Quiz", "Addition Facts Assessment"],
+    ("Language Arts", "1"): ["Letter Sounds Quiz", "Sight Words Test"],
     ("Mathematics", "2"): ["Place Value Quiz", "Addition & Subtraction Test"],
-    ("Mathematics", "4"): ["Fractions Quiz", "Multiplication Test", "Division Assessment"],
-    ("Science", "1"): ["Living Things Quiz"],
     ("Science", "2"): ["Plants Quiz", "Weather Quiz"],
+    ("Mathematics", "4"): ["Fractions Quiz", "Multiplication Test", "Division Assessment"],
+    ("Language Arts", "4"): ["Reading Comprehension Quiz", "Grammar Assessment", "Vocabulary Test"],
     ("Science", "4"): ["Ecosystems Quiz", "Simple Machines Test"],
-    ("Language Arts", "2"): ["Reading Comprehension Quiz", "Grammar Assessment", "Vocabulary Test"],
-    ("Social Studies", "2"): ["Community Helpers Quiz", "Maps Quiz", "National Symbols Test"],
 }
 
 WORKSHEET_TOPICS = {
     ("Mathematics", "1"): ["Counting Practice", "Addition Worksheet"],
+    ("Language Arts", "1"): ["Letter Tracing Practice", "Sight Words Worksheet", "Sentence Building"],
     ("Mathematics", "2"): ["Place Value Practice", "Subtraction Worksheet"],
+    ("Science", "2"): ["Plants Worksheet", "Weather Observation Sheet"],
     ("Mathematics", "4"): ["Fractions Worksheet", "Multiplication Practice", "Division Worksheet"],
-    ("Science", "1"): ["Animals Worksheet"],
-    ("Science", "2"): ["Plants Worksheet"],
+    ("Language Arts", "4"): ["Reading Comprehension Worksheet", "Paragraph Writing Practice", "Spelling Worksheet"],
     ("Science", "4"): ["Ecosystems Worksheet", "Machines Worksheet"],
-    ("Language Arts", "2"): ["Reading Comprehension Worksheet", "Sentence Building Practice", "Spelling Worksheet"],
-    ("Social Studies", "2"): ["Community Map Activity", "National Heroes Worksheet", "Caribbean Culture Worksheet"],
 }
 
 # Kindergarten topics
@@ -1008,6 +1008,152 @@ def generate_academic_phases():
             "created_at": iso(YEAR_START - timedelta(days=14)),
         })
     return phases
+
+
+def generate_timetable_slots():
+    """Generate a realistic weekly timetable for a multigrade teacher."""
+    slots = []
+    schedule = [
+        # Monday
+        ("Monday", "08:00", "08:45", "Mathematics", "Grade 1"),
+        ("Monday", "08:45", "09:30", "Language Arts", "Grade 1"),
+        ("Monday", "09:45", "10:30", "Mathematics", "Grade 2"),
+        ("Monday", "10:30", "11:15", "Science", "Grade 2"),
+        ("Monday", "12:00", "12:45", "Mathematics", "Grade 4"),
+        ("Monday", "12:45", "13:30", "Language Arts", "Grade 4"),
+        ("Monday", "13:30", "14:15", "Science", "Grade 4"),
+        # Tuesday
+        ("Tuesday", "08:00", "08:45", "Mathematics", "Grade 2"),
+        ("Tuesday", "08:45", "09:30", "Science", "Grade 2"),
+        ("Tuesday", "09:45", "10:30", "Mathematics", "Grade 4"),
+        ("Tuesday", "10:30", "11:15", "Science", "Grade 4"),
+        ("Tuesday", "12:00", "12:45", "Language Arts", "Grade 1"),
+        ("Tuesday", "12:45", "13:30", "Mathematics", "Grade 1"),
+        ("Tuesday", "13:30", "14:15", "Language Arts", "Grade 4"),
+        # Wednesday
+        ("Wednesday", "08:00", "08:45", "Mathematics", "Grade 4"),
+        ("Wednesday", "08:45", "09:30", "Language Arts", "Grade 4"),
+        ("Wednesday", "09:45", "10:30", "Mathematics", "Grade 1"),
+        ("Wednesday", "10:30", "11:15", "Language Arts", "Grade 1"),
+        ("Wednesday", "12:00", "12:45", "Science", "Grade 2"),
+        ("Wednesday", "12:45", "13:30", "Mathematics", "Grade 2"),
+        ("Wednesday", "13:30", "14:15", "Science", "Grade 4"),
+        # Thursday
+        ("Thursday", "08:00", "08:45", "Language Arts", "Grade 1"),
+        ("Thursday", "08:45", "09:30", "Mathematics", "Grade 1"),
+        ("Thursday", "09:45", "10:30", "Science", "Grade 4"),
+        ("Thursday", "10:30", "11:15", "Mathematics", "Grade 4"),
+        ("Thursday", "12:00", "12:45", "Mathematics", "Grade 2"),
+        ("Thursday", "12:45", "13:30", "Science", "Grade 2"),
+        ("Thursday", "13:30", "14:15", "Language Arts", "Grade 4"),
+        # Friday
+        ("Friday", "08:00", "08:45", "Science", "Grade 2"),
+        ("Friday", "08:45", "09:30", "Mathematics", "Grade 2"),
+        ("Friday", "09:45", "10:30", "Mathematics", "Grade 1"),
+        ("Friday", "10:30", "11:15", "Language Arts", "Grade 1"),
+        ("Friday", "12:00", "12:45", "Language Arts", "Grade 4"),
+        ("Friday", "12:45", "13:30", "Science", "Grade 4"),
+        ("Friday", "13:30", "14:15", "Mathematics", "Grade 4"),
+    ]
+    for day, start, end, subject, grade in schedule:
+        slots.append({
+            "id": uid(),
+            "teacher_id": TEACHER_ID,
+            "day_of_week": day,
+            "start_time": start,
+            "end_time": end,
+            "subject": subject,
+            "grade_level": grade,
+            "class_name": grade,
+            "notes": "",
+        })
+    return slots
+
+
+def generate_school_year_events():
+    """Generate Saint Lucia public holidays and school events for 2025-2026 academic year."""
+    events = []
+    base_ts = iso(YEAR_START - timedelta(days=14))
+
+    # Public holidays (event_type='holiday', blocks_classes=1)
+    holidays = [
+        ("2025-10-06", "Thanksgiving Day", "Saint Lucia Thanksgiving Day"),
+        ("2025-10-26", "Jounen Kweyol (Creole Day)", "Celebration of Saint Lucian Creole heritage and culture"),
+        ("2025-11-01", "All Saints Day", "All Saints Day public holiday"),
+        ("2025-11-02", "All Souls Day", "All Souls Day - schools closed"),
+        ("2025-12-13", "National Day", "Saint Lucia National Day - celebrating national pride and heritage"),
+        ("2025-12-25", "Christmas Day", "Christmas Day public holiday"),
+        ("2025-12-26", "Boxing Day", "Boxing Day public holiday"),
+        ("2026-01-01", "New Year's Day", "New Year's Day public holiday"),
+        ("2026-01-02", "New Year Holiday", "Additional New Year holiday"),
+        ("2026-02-22", "Independence Day", "Saint Lucia Independence Day - celebrating independence since 1979"),
+        ("2026-04-03", "Good Friday", "Good Friday public holiday"),
+        ("2026-04-06", "Easter Monday", "Easter Monday public holiday"),
+        ("2026-05-01", "Labour Day", "International Workers Day / Labour Day"),
+        ("2026-05-25", "Whit Monday", "Whit Monday public holiday"),
+        ("2026-06-04", "Corpus Christi", "Corpus Christi public holiday"),
+        ("2026-06-15", "Carnival Monday", "Saint Lucia Carnival Monday"),
+        ("2026-06-16", "Carnival Tuesday", "Saint Lucia Carnival Tuesday"),
+        ("2026-08-01", "Emancipation Day", "Emancipation Day - commemorating the abolition of slavery"),
+    ]
+
+    # School events (event_type='custom', blocks_classes=0)
+    school_events = [
+        ("2025-10-10", "Parent-Teacher Conference (Term 1)", "Term 1 parent-teacher meetings"),
+        ("2025-11-14", "Report Card Day (Mid-Term 1)", "Distribution of mid-term progress reports"),
+        ("2025-12-12", "End of Term 1 Awards Ceremony", "Awards ceremony and last day of Term 1"),
+        ("2026-01-05", "Term 2 Orientation", "Welcome back and Term 2 orientation day"),
+        ("2026-03-06", "Parent-Teacher Conference (Term 2)", "Term 2 parent-teacher meetings"),
+        ("2026-03-27", "End of Term 2 Awards Ceremony", "Awards ceremony and last day of Term 2"),
+        ("2026-04-13", "Term 3 Orientation", "Welcome back and Term 3 orientation day"),
+        ("2026-05-22", "Sports Day", "Annual school athletics and sports day"),
+        ("2026-06-05", "Science Fair", "Annual school science exhibition"),
+        ("2026-06-26", "Graduation Ceremony", "End of year graduation and awards ceremony"),
+    ]
+
+    # Add holidays
+    for date_str, title, desc in holidays:
+        events.append({
+            "id": uid(),
+            "config_id": SCHOOL_YEAR_CONFIG_ID,
+            "teacher_id": TEACHER_ID,
+            "title": title,
+            "description": desc,
+            "event_date": date_str,
+            "end_date": date_str,
+            "event_type": "holiday",
+            "color": "#DC2626",
+            "subject": "",
+            "grade_level": "",
+            "all_day": 1,
+            "reminders_enabled": 0,
+            "reminder_offsets": "[]",
+            "blocks_classes": 1,
+            "created_at": base_ts,
+        })
+
+    # Add school events
+    for date_str, title, desc in school_events:
+        events.append({
+            "id": uid(),
+            "config_id": SCHOOL_YEAR_CONFIG_ID,
+            "teacher_id": TEACHER_ID,
+            "title": title,
+            "description": desc,
+            "event_date": date_str,
+            "end_date": date_str,
+            "event_type": "custom",
+            "color": "#3B82F6",
+            "subject": "",
+            "grade_level": "",
+            "all_day": 1,
+            "reminders_enabled": 0,
+            "reminder_offsets": "[]",
+            "blocks_classes": 0,
+            "created_at": base_ts,
+        })
+
+    return events
 
 
 def generate_metric_snapshots(academic_phases):
@@ -1655,9 +1801,10 @@ def generate_milestones(academic_phases):
         print(f"  Warning: Could not load curriculum: {e}")
         all_pages = []
 
-    # Build topic list from ALL curriculum pages
-    # Teacher's grades get progressive completion; other grades get hidden
-    teacher_grades_db = {f"Grade {g}" for g in GRADES}
+    # Build topic list from ALL curriculum pages.
+    # Only the teacher's actual grade+subject assignments get progressive
+    # completion; everything else is hidden (is_hidden=1).
+    taught_pairs = {(c["grade"], c["subject"]) for c in CLASSES}
     taught_topics = []
     other_topics = []
     for page in all_pages:
@@ -1671,14 +1818,67 @@ def generate_milestones(academic_phases):
             "route": page.get('route', ''),
             "specific_outcomes": page.get('specificOutcomes', []),
         }
-        if page.get('grade', '') in teacher_grades_db:
+        if (grade_num, page.get('subject', '')) in taught_pairs:
             taught_topics.append(entry)
         else:
             other_topics.append(entry)
 
-    # Shuffle taught topics then progressively complete through the year
-    # ~65% completed, ~15% in-progress, ~20% not started
-    random.shuffle(taught_topics)
+    # ── Curriculum-aware strand sequencing ────────────────────────────
+    # Define the natural teaching order per subject: foundational strands
+    # first, more complex / applied strands later in the year.
+    STRAND_ORDER = {
+        "Mathematics": [
+            "Number Sense",
+            "Operations with Numbers",
+            "Patterns and Relationships",
+            "Measurement",
+            "Geometrical Thinking",
+            "Data Handling and Probability",
+        ],
+        "Language Arts": [
+            "Listening and Speaking",
+            "Reading and Viewing",
+            "Writing and Representing",
+        ],
+        "Science": [
+            # Grade 1
+            "Waves",
+            "Structure, Function, and Information Processing",
+            "Space Systems: Patterns and Cycles",
+            # Grade 2
+            "Structure and Properties of Matter",
+            "Interdependent Relationships in Ecosystems",
+            "Earth Systems",
+            "Engineering Design",
+            # Grade 4
+            "Energy",
+            # "Waves" already listed (Grade 1 reuse is fine)
+            # "Earth Systems" already listed (Grade 2 reuse is fine)
+        ],
+        "Social Studies": [
+            "Historical and Cultural Thinking",
+            "Civic Participation",
+            "Spatial Thinking",
+            "Economic Decision Making",
+        ],
+    }
+
+    def _strand_sort_key(topic):
+        """Return (fractional_position, grade, subject) for global ordering.
+        Fractional position = strand_index / total_strands_for_this_subject,
+        so foundational strands from ALL grade/subject combos cluster early."""
+        seq = STRAND_ORDER.get(topic["subject"], [])
+        try:
+            idx = seq.index(topic["strand"])
+        except ValueError:
+            idx = len(seq)  # unknown strands go last
+        total = max(len(seq), 1)
+        frac = idx / total  # 0.0 = first strand, ~1.0 = last strand
+        return (frac, topic["grade"], topic["subject"])
+
+    # Sort taught topics by curriculum sequence (not random)
+    taught_topics.sort(key=_strand_sort_key)
+
     n_total = len(taught_topics)
     n_completed = int(n_total * 0.65)
     n_in_progress = int(n_total * 0.15)
@@ -1688,9 +1888,9 @@ def generate_milestones(academic_phases):
     if not active_teaching_phases:
         active_teaching_phases = teaching_phases[:1]
 
-    # Process taught topics with progressive completion
-    all_topics = taught_topics  # these get status progression
-    for i, topic in enumerate(all_topics):
+    # Map each topic to a phase based on its position in the curriculum
+    # sequence rather than random assignment.
+    for i, topic in enumerate(taught_topics):
         topic_id = topic["topic_id"]
         display_name = topic["display_name"]
         subject = topic["subject"]
@@ -1700,9 +1900,9 @@ def generate_milestones(academic_phases):
 
         if i < n_completed:
             status = "completed"
+            # Spread completed topics across active phases proportionally
             phase_idx = min(int(i / n_completed * len(active_teaching_phases)), len(active_teaching_phases) - 1)
             phase_key, _, _, _, phase_start, phase_end = active_teaching_phases[phase_idx]
-            # Clamp phase_end to today for current phase
             effective_end = min(phase_end, today)
             completed_at = random_date_in_range(phase_start, effective_end)
             completed_str = f"{completed_at.isoformat()} {random.randint(10,16)}:{random.randint(0,59):02d}:00"
@@ -1711,6 +1911,7 @@ def generate_milestones(academic_phases):
         elif i < n_completed + n_in_progress:
             status = "in-progress"
             completed_str = None
+            # In-progress topics land in the most recent active phases
             phase_idx = min(len(active_teaching_phases) - 1, max(0, len(active_teaching_phases) - 2 + (i - n_completed) % 2))
             phase_key, _, _, _, phase_start, phase_end = active_teaching_phases[phase_idx]
             due_date = phase_end.isoformat()
@@ -1718,10 +1919,18 @@ def generate_milestones(academic_phases):
         else:
             status = "not_started"
             completed_str = None
-            phase_start = YEAR_START
-            phase_end = YEAR_END
-            due_date = None
-            milestone_phase_id = None
+            # Not-started topics go to the next upcoming phase if available
+            future_phases = [(k, l, s, o, st, en) for k, l, s, o, st, en in teaching_phases if st > today]
+            if future_phases:
+                fp_idx = min((i - n_completed - n_in_progress) % len(future_phases), len(future_phases) - 1)
+                phase_key, _, _, _, phase_start, phase_end = future_phases[fp_idx]
+                due_date = phase_end.isoformat()
+                milestone_phase_id = phase_key_to_id.get(phase_key)
+            else:
+                phase_start = YEAR_START
+                phase_end = YEAR_END
+                due_date = None
+                milestone_phase_id = None
 
         # Build checklist from REAL specific outcomes using the same key extraction
         # as MilestoneDB._extract_key_and_text() so keys match during sync merge
@@ -1947,24 +2156,329 @@ def generate_chats():
 
 
 def generate_brain_dumps():
-    """Generate brain dump entries across phases."""
+    """Generate rich brain dump entries with parsed actions and suggestions across phases."""
     dumps = []
-    dump_texts = [
-        "Need to prepare fractions worksheets for next week. Also should check if the manipulatives kit has enough fraction tiles.",
-        "Parent of Marcus mentioned he's struggling with reading at home. Should coordinate with the reading specialist.",
-        "Great idea for a science experiment - growing beans in different conditions. Need to get supplies.",
-        "Midterm coming up. Need to review all topics covered so far and create a study guide.",
-        "Christmas concert planning - need to coordinate with the music teacher.",
-        "New term resolutions: more hands-on activities, better attendance tracking, weekly brain dumps.",
-        "Should try the jigsaw method for the next group activity. Worked well in the workshop.",
-        "Term 2 midterms need to include more application questions, not just recall.",
-        "Easter break - good time to reorganize classroom library and update bulletin boards.",
-        "Need to plan end-of-year celebrations. Maybe a science fair combined with a math competition?",
-        "Final exam schedule needs to be communicated to parents early. Draft the letter this week.",
-        "Reflection: students improved significantly in fractions this year. The hands-on approach worked.",
+
+    dump_entries = [
+        # (text, actions, suggestions)
+        (
+            "Grade 4 students are struggling with equivalent fractions. Need to create a visual worksheet using fraction tiles and number lines. Also quiz them on Friday to see where they stand.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "worksheet",
+                    "title": "Equivalent Fractions Visual Worksheet",
+                    "description": "Create a worksheet using fraction tiles and number lines for Grade 4 students struggling with equivalent fractions",
+                    "details": {"subject": "Mathematics", "gradeLevel": "4", "topic": "Equivalent Fractions", "strand": "number-sense"},
+                    "status": "accepted",
+                    "priority": "high"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "quiz",
+                    "title": "Equivalent Fractions Assessment",
+                    "description": "Friday quiz to assess Grade 4 understanding of equivalent fractions",
+                    "details": {"subject": "Mathematics", "gradeLevel": "4", "topic": "Equivalent Fractions"},
+                    "status": "accepted",
+                    "priority": "high"
+                }
+            ],
+            []
+        ),
+        (
+            "Monday morning assembly ran long so Grade 1 Language Arts got cut short. Need to double up on sight words tomorrow. Aaron is making progress with his hearing support - the visual cue cards are working well. Should note that in his file.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "lesson-plan",
+                    "title": "Extended Sight Words Lesson",
+                    "description": "Double lesson on sight words for Grade 1 to make up for Monday's shortened class",
+                    "details": {"subject": "Language Arts", "gradeLevel": "1", "topic": "Sight Words", "duration": "60"},
+                    "status": "accepted",
+                    "priority": "high"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "class-management",
+                    "title": "Update Aaron Williams IEP Notes",
+                    "description": "Record progress with visual cue cards for hearing support accommodation",
+                    "details": {"studentName": "Aaron Williams", "gradeLevel": "1"},
+                    "status": "accepted",
+                    "priority": "normal"
+                }
+            ],
+            []
+        ),
+        (
+            "Science fair is coming up in June. Grade 4 students need to start brainstorming project ideas around energy and simple machines. Maybe a cross-curricular project linking Science and Mathematics? Also should update the curriculum tracker - we covered energy transfer last week.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "cross-curricular-plan",
+                    "title": "Science Fair Prep: Energy and Simple Machines",
+                    "description": "Cross-curricular project linking Grade 4 Science (energy/machines) with Mathematics for the science fair",
+                    "details": {"primarySubject": "Science", "supportingSubjects": "Mathematics", "gradeLevel": "4"},
+                    "status": "accepted",
+                    "priority": "normal"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "curriculum-tracker",
+                    "title": "Mark Energy Transfer as Completed",
+                    "description": "Update curriculum tracker - energy transfer topic covered last week in Grade 4 Science",
+                    "details": {"subject": "Science", "gradeLevel": "4", "strand": "energy"},
+                    "status": "accepted",
+                    "priority": "normal"
+                }
+            ],
+            []
+        ),
+        (
+            "Term 2 midterms next week. Need a Grade 2 Math quiz on place value and addition with regrouping. Also need to prep a review worksheet for Grade 4 multiplication. Attendance has been low this week - check with parents of absent students.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "quiz",
+                    "title": "Grade 2 Place Value and Addition Quiz",
+                    "description": "Midterm quiz covering place value and addition with regrouping for Grade 2",
+                    "details": {"subject": "Mathematics", "gradeLevel": "2", "topic": "Place Value and Addition"},
+                    "status": "accepted",
+                    "priority": "urgent"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "worksheet",
+                    "title": "Grade 4 Multiplication Review",
+                    "description": "Review worksheet for long multiplication before midterm exams",
+                    "details": {"subject": "Mathematics", "gradeLevel": "4", "topic": "Long Multiplication"},
+                    "status": "accepted",
+                    "priority": "urgent"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "attendance",
+                    "title": "Follow Up on Absent Students",
+                    "description": "Check with parents about student absences this week",
+                    "details": {},
+                    "status": "pending",
+                    "priority": "high"
+                }
+            ],
+            []
+        ),
+        (
+            "Great class today! Grade 1 students loved the counting song for addition facts. Need to plan more musical activities. Jade in Grade 2 had a rough day - her ADHD was really affecting her focus. The movement breaks helped but we might need to adjust the schedule for her.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "lesson-plan",
+                    "title": "Musical Addition Activities for Grade 1",
+                    "description": "Plan more musical and song-based activities for teaching addition facts to Grade 1",
+                    "details": {"subject": "Mathematics", "gradeLevel": "1", "topic": "Addition Facts"},
+                    "status": "accepted",
+                    "priority": "normal"
+                }
+            ],
+            [
+                {
+                    "id": f"sug-{uid()[:12]}",
+                    "text": "Jade in Grade 2 had a rough day - her ADHD was really affecting her focus. The movement breaks helped but we might need to adjust the schedule for her.",
+                    "suggestedTypes": ["class-management"],
+                    "confidence": "medium",
+                    "selectedType": None,
+                    "status": "pending"
+                }
+            ]
+        ),
+        (
+            "Need to create a rubric for the Grade 4 narrative writing assignment due next week. Students should be assessed on story structure, character development, grammar, and creativity. Also the Reading Comprehension unit is almost done - time to move to informational text.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "rubric",
+                    "title": "Narrative Writing Rubric - Grade 4",
+                    "description": "Rubric for Grade 4 narrative writing covering story structure, character development, grammar, and creativity",
+                    "details": {"subject": "Language Arts", "gradeLevel": "4"},
+                    "status": "accepted",
+                    "priority": "high"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "curriculum-tracker",
+                    "title": "Complete Reading Comprehension Unit",
+                    "description": "Mark Reading Comprehension Strategies as completed and begin Informational Text unit",
+                    "details": {"subject": "Language Arts", "gradeLevel": "4"},
+                    "status": "accepted",
+                    "priority": "normal"
+                }
+            ],
+            []
+        ),
+        (
+            "Parent of Samuel Victor called - wants to know how he is doing in English since he is an ELL student. Should prepare a progress summary. Also thinking about creating a presentation for the Term 1 parent night showing class progress across all three grades.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "class-management",
+                    "title": "Samuel Victor Progress Summary",
+                    "description": "Prepare ELL progress summary for Samuel Victor's parent",
+                    "details": {"studentName": "Samuel Victor", "gradeLevel": "4"},
+                    "status": "accepted",
+                    "priority": "high"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "presentation",
+                    "title": "Term 1 Parent Night Presentation",
+                    "description": "Create presentation showing class progress across Grade 1, 2, and 4 for parent night",
+                    "details": {},
+                    "status": "accepted",
+                    "priority": "normal"
+                }
+            ],
+            []
+        ),
+        (
+            "Grade 2 Science experiment on plant growth went really well. Students measured their bean plants and recorded data. Should create a follow-up worksheet connecting the measurements to the math we did on standard units. Priya needs the simplified text version as usual.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "worksheet",
+                    "title": "Plant Growth Measurement Worksheet",
+                    "description": "Follow-up worksheet connecting Grade 2 Science plant measurement data to Mathematics standard units",
+                    "details": {"subject": "Science", "gradeLevel": "2", "topic": "Plant Growth and Measurement"},
+                    "status": "accepted",
+                    "priority": "normal"
+                }
+            ],
+            [
+                {
+                    "id": f"sug-{uid()[:12]}",
+                    "text": "Priya needs the simplified text version as usual.",
+                    "suggestedTypes": ["class-management", "worksheet"],
+                    "confidence": "low",
+                    "selectedType": None,
+                    "status": "pending"
+                }
+            ]
+        ),
+        (
+            "Independence Day is coming up on Feb 22. Want to do something special with all three grades - maybe a multigrade lesson on Saint Lucia's history and national symbols. Could tie in Language Arts with writing about what independence means to them.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "multigrade-plan",
+                    "title": "Independence Day Multigrade Lesson",
+                    "description": "Multigrade lesson for Grades 1, 2, and 4 on Saint Lucia's history, national symbols, and independence",
+                    "details": {"subject": "Social Studies", "gradeRange": "1-4", "topic": "Saint Lucia Independence Day"},
+                    "status": "accepted",
+                    "priority": "high"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "calendar-task",
+                    "title": "Plan Independence Day Activities",
+                    "description": "Coordinate Independence Day celebration activities across all grades",
+                    "details": {"date": "2026-02-20", "priority": "high"},
+                    "status": "accepted",
+                    "priority": "high"
+                }
+            ],
+            []
+        ),
+        (
+            "End of term coming up. Need to grade the last batch of Grade 4 Science quizzes on ecosystems. Also should create a fun review game for Grade 1 Math - maybe a counting competition. The storybook project for Grade 1 Language Arts turned out great, students love The Mango Tree.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "grade-quiz",
+                    "title": "Grade Ecosystems Quizzes",
+                    "description": "Grade the final batch of Grade 4 Science quizzes on ecosystems",
+                    "details": {"subject": "Science", "gradeLevel": "4"},
+                    "status": "accepted",
+                    "priority": "urgent"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "lesson-plan",
+                    "title": "Grade 1 Math Review Game",
+                    "description": "Fun counting competition review game for Grade 1 Mathematics end of term",
+                    "details": {"subject": "Mathematics", "gradeLevel": "1", "topic": "End of Term Review"},
+                    "status": "accepted",
+                    "priority": "normal"
+                }
+            ],
+            []
+        ),
+        (
+            "Jounen Kweyol next week! Should incorporate Creole heritage into lessons. Grade 2 Science could study local plants and traditional uses. Grade 4 can write about Creole food culture in Language Arts. Need to check which students are performing in the cultural show.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "lesson-plan",
+                    "title": "Local Plants and Traditional Uses",
+                    "description": "Grade 2 Science lesson on local Saint Lucian plants and their traditional Creole uses for Jounen Kweyol",
+                    "details": {"subject": "Science", "gradeLevel": "2", "topic": "Local Plants"},
+                    "status": "accepted",
+                    "priority": "high"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "lesson-plan",
+                    "title": "Creole Food Culture Writing",
+                    "description": "Grade 4 Language Arts lesson on writing about Creole food culture for Jounen Kweyol",
+                    "details": {"subject": "Language Arts", "gradeLevel": "4", "topic": "Cultural Writing"},
+                    "status": "accepted",
+                    "priority": "high"
+                }
+            ],
+            [
+                {
+                    "id": f"sug-{uid()[:12]}",
+                    "text": "Need to check which students are performing in the cultural show.",
+                    "suggestedTypes": ["calendar-task", "class-management"],
+                    "confidence": "low",
+                    "selectedType": None,
+                    "status": "pending"
+                }
+            ]
+        ),
+        (
+            "Final exams approaching. Grade 4 Math needs a comprehensive review covering fractions, multiplication, and division. Grade 2 needs a Science review on all topics covered. Should also prepare image resources for the exam study guides - diagrams for plant parts and the water cycle.",
+            [
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "worksheet",
+                    "title": "Grade 4 Math Comprehensive Review",
+                    "description": "End of year review worksheet covering fractions, multiplication, and division for Grade 4",
+                    "details": {"subject": "Mathematics", "gradeLevel": "4", "topic": "Comprehensive Review"},
+                    "status": "accepted",
+                    "priority": "urgent"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "quiz",
+                    "title": "Grade 2 Science Review Quiz",
+                    "description": "Comprehensive review quiz covering all Grade 2 Science topics for end of year",
+                    "details": {"subject": "Science", "gradeLevel": "2", "topic": "Year Review"},
+                    "status": "accepted",
+                    "priority": "urgent"
+                },
+                {
+                    "id": f"action-{uid()[:12]}",
+                    "type": "image-studio",
+                    "title": "Study Guide Diagrams",
+                    "description": "Create plant parts and water cycle diagrams for Grade 2 Science exam study guides",
+                    "details": {"subject": "Science", "gradeLevel": "2"},
+                    "status": "accepted",
+                    "priority": "high"
+                }
+            ],
+            []
+        ),
     ]
 
-    for i, text in enumerate(dump_texts):
+    for i, (text, actions, suggestions) in enumerate(dump_entries):
         phase_idx = i % len(PHASES)
         key, label, semester, order, start, end = PHASES[phase_idx]
         dump_date = random_date_in_range(start, end)
@@ -1973,8 +2487,8 @@ def generate_brain_dumps():
             "id": f"entry-{ts}",
             "text": text,
             "timestamp": iso(dump_date),
-            "actions": [],
-            "suggestions": [],
+            "actions": actions,
+            "suggestions": suggestions,
         })
     return dumps
 
@@ -2165,9 +2679,9 @@ def generate_settings():
                 "displayName": TEACHER_NAME,
                 "school": SCHOOL_NAME,
                 "gradeSubjects": {
-                    "1": ["Mathematics"],
-                    "2": ["Science", "Language Arts"],
-                    "4": ["Mathematics"],
+                    "1": ["Mathematics", "Language Arts"],
+                    "2": ["Mathematics", "Science"],
+                    "4": ["Mathematics", "Language Arts", "Science"],
                 },
                 "filterContentByProfile": True,
             },
@@ -2247,11 +2761,13 @@ def main():
     quiz_grades = generate_quiz_grades(students, quiz_refs)
     worksheet_grades = generate_worksheet_grades(students, ws_refs)
     milestones = generate_milestones(academic_phases)
+    timetable_slots = generate_timetable_slots()
     achievements = generate_achievements()
     tasks = generate_tasks()
     chats = generate_chats()
     brain_dumps = generate_brain_dumps()
     calendar = generate_calendar(quiz_refs, ws_refs)
+    school_year_events = generate_school_year_events()
     sticky_notes = generate_sticky_notes()
     presentations = generate_presentations()
     storybooks = generate_storybooks()
@@ -2309,7 +2825,8 @@ def main():
                 "school_year_config": [generate_school_year_config()],
                 "academic_phases": academic_phases,
                 "academic_phase_summaries": phase_summaries,
-                "school_year_events": [],
+                "school_year_events": school_year_events,
+                "timetable_slots": timetable_slots,
             },
         },
     }
@@ -2337,6 +2854,7 @@ def main():
     print(f"  Quiz grades: {len(quiz_grades)}")
     print(f"  Worksheet grades: {len(worksheet_grades)}")
     print(f"  Milestones: {len(milestones)}")
+    print(f"  Timetable slots: {len(timetable_slots)}")
     print(f"  Achievements earned: {len(achievements['all_earned'])}")
     print(f"  Activity log entries: {len(achievements['activity_log'])}")
     print(f"  Tasks: {len(tasks)}")

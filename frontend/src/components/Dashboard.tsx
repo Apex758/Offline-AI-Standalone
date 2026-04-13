@@ -1023,7 +1023,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         { id: 'setup_photo', text: 'Upload a profile photo', completed: hasPhoto },
         { id: 'setup_calendar', text: 'Set up your school year calendar', completed: false },
         { id: 'explore_lesson', text: 'Open the Lesson Planner', completed: false },
-        { id: 'try_search', text: 'Try AI Search (Ctrl+F)', completed: false },
+        { id: 'try_search', text: 'Try AI Search -- click the brain icon first to activate AI search, then type your query (Ctrl+F)', completed: false },
       ],
       color: '#fef08a',
       pinned: true,

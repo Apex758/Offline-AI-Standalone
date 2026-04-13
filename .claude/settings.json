@@ -454,7 +454,10 @@
       "Read(//c/Users/LG/AppData/Local/Programs/OECS Teacher Assistant/resources/backend-bundle/python_libs/**)",
       "Bash(./venv/Scripts/python.exe -c ':*)",
       "Bash(timeout 60 ./python-embed/python.exe -c ':*)",
-      "Bash(du -sh *)"
+      "Bash(du -sh *)",
+      "Bash(python -m py_compile generate_demo_data.py)",
+      "Bash(awk '/^def generate_brain_dumps/,/^def [^[:space:]]/ {print NR\": \"$0}' backend/generate_demo_data.py)",
+      "Bash(python -m py_compile backend/generate_demo_data.py)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

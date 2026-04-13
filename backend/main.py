@@ -10444,6 +10444,7 @@ async def export_data(categories: str = ""):
                 phases = [dict(r) for r in sy_conn.execute('SELECT * FROM academic_phases').fetchall()]
                 summaries = [dict(r) for r in sy_conn.execute('SELECT * FROM academic_phase_summaries').fetchall()]
                 events = [dict(r) for r in sy_conn.execute('SELECT * FROM school_year_events').fetchall()]
+                slots = [dict(r) for r in sy_conn.execute('SELECT * FROM timetable_slots').fetchall()]
             finally:
                 sy_conn.close()
             result["teacher_metrics"] = {
@@ -10452,10 +10453,11 @@ async def export_data(categories: str = ""):
                 "academic_phases": phases,
                 "academic_phase_summaries": summaries,
                 "school_year_events": events,
+                "timetable_slots": slots,
             }
         except Exception as e:
             logging.warning(f"Failed to export teacher_metrics: {e}")
-            result["teacher_metrics"] = {"snapshots": [], "school_year_config": [], "academic_phases": [], "academic_phase_summaries": [], "school_year_events": []}
+            result["teacher_metrics"] = {"snapshots": [], "school_year_config": [], "academic_phases": [], "academic_phase_summaries": [], "school_year_events": [], "timetable_slots": []}
 
     return {
         "exportDate": datetime.now().isoformat(),
@@ -10843,6 +10845,16 @@ async def import_data(payload: dict):
                     col_names = ','.join(cols)
                     try:
                         sy_conn.execute(f'INSERT OR IGNORE INTO school_year_events ({col_names}) VALUES ({placeholders})', vals)
+                    except Exception:
+                        pass
+
+                for slot in tm_data.get("timetable_slots", []):
+                    cols = list(slot.keys())
+                    vals = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in slot.values()]
+                    placeholders = ','.join(['?' for _ in cols])
+                    col_names = ','.join(cols)
+                    try:
+                        sy_conn.execute(f'INSERT OR IGNORE INTO timetable_slots ({col_names}) VALUES ({placeholders})', vals)
                     except Exception:
                         pass
 

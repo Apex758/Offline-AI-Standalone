@@ -60,6 +60,15 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   const { settings } = useSettings();
   const [currentStep, setCurrentStep] = useState(0);
   const [isActive, setIsActive] = useState(autoStart);
+
+  // Sync isActive when autoStart prop changes (e.g. welcome modal triggers tour)
+  useEffect(() => {
+    if (autoStart) {
+      setIsActive(true);
+      setCurrentStep(0);
+    }
+  }, [autoStart]);
+
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<React.CSSProperties>({});
   const [waitingForAction, setWaitingForAction] = useState(false);

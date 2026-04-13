@@ -89,7 +89,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
           {/* Action buttons */}
           <div className="flex justify-center">
             <button
-              onClick={handleSkip}
+              onClick={onStartTour}
               className="px-6 py-3 rounded-lg font-medium transition-all hover:scale-105"
               style={{
                 backgroundColor: '#1D362D',
