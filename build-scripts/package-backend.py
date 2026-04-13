@@ -145,30 +145,63 @@ def install_python_dependencies(bundle_dir):
     has_gpu = detect_nvidia_gpu()
 
     try:
-        # Install all dependencies
+        # Create a filtered requirements file without llama-cpp-python (needs special handling)
+        filtered_reqs = os.path.join(bundle_dir, "requirements-no-llama.txt")
+        with open(requirements_file, "r") as f:
+            lines = [line for line in f if "llama-cpp-python" not in line.lower()]
+        with open(filtered_reqs, "w") as f:
+            f.writelines(lines)
+
+        # Install all dependencies except llama-cpp-python
         subprocess.run([
             sys.executable, "-m", "pip", "install",
-            "-r", requirements_file,
+            "-r", filtered_reqs,
             "--target", python_libs_dir,
             "--upgrade"
         ], check=True, capture_output=True, text=True)
 
-        # Reinstall llama-cpp-python with CUDA if GPU available
+        os.remove(filtered_reqs)
+
+        # Install llama-cpp-python separately using pre-built wheels (no compiler needed)
         if has_gpu:
-            print_step("Reinstalling llama-cpp-python with CUDA support...")
+            print_step("Installing llama-cpp-python with CUDA support (pre-built wheel)...")
             result = subprocess.run([
                 sys.executable, "-m", "pip", "install",
-                "llama-cpp-python==0.3.16",
+                "llama-cpp-python==0.3.19",
                 "--target", python_libs_dir,
                 "--force-reinstall", "--no-deps",
+                "--only-binary", "llama-cpp-python",
                 "--extra-index-url", "https://abetlen.github.io/llama-cpp-python/whl/cu124"
             ], capture_output=True, text=True)
             if result.returncode == 0:
                 print_success("llama-cpp-python (CUDA) installed successfully")
             else:
-                print_warning("CUDA install failed, keeping CPU-only llama-cpp-python")
+                print_warning("CUDA install failed, falling back to CPU pre-built wheel...")
+                subprocess.run([
+                    sys.executable, "-m", "pip", "install",
+                    "llama-cpp-python==0.3.19",
+                    "--target", python_libs_dir,
+                    "--no-deps",
+                    "--only-binary", "llama-cpp-python",
+                    "--extra-index-url", "https://abetlen.github.io/llama-cpp-python/whl/cpu"
+                ], check=True, capture_output=True, text=True)
         else:
-            print_step("Using CPU-only llama-cpp-python")
+            print_step("Installing CPU-only llama-cpp-python (pre-built wheel)...")
+            subprocess.run([
+                sys.executable, "-m", "pip", "install",
+                "llama-cpp-python==0.3.19",
+                "--target", python_libs_dir,
+                "--no-deps",
+                "--only-binary", "llama-cpp-python",
+                "--extra-index-url", "https://abetlen.github.io/llama-cpp-python/whl/cpu"
+            ], check=True, capture_output=True, text=True)
+
+        # Verify llama-cpp-python was installed
+        llama_cpp_dir = os.path.join(python_libs_dir, "llama_cpp")
+        if not os.path.isdir(llama_cpp_dir):
+            print_error("llama-cpp-python not found in python_libs after install!")
+            return False
+        print_success("llama-cpp-python verified in python_libs")
 
         # Also install for embedded Python if it exists
         embedded_python = os.path.join(bundle_dir, "python-embed", "python.exe")

@@ -118,32 +118,73 @@ if (-not $hasNvidiaGpu) {
 }
 
 # Install dependencies (excluding llama-cpp-python, which needs special handling)
-Write-Host "Installing dependencies..." -ForegroundColor Yellow
+Write-Host "Installing dependencies (excluding llama-cpp-python)..." -ForegroundColor Yellow
+
+# Create a temporary requirements file without llama-cpp-python
+$tempReqs = "$bundleDir\requirements-no-llama.txt"
+Get-Content "backend/requirements-lock.txt" | Where-Object { $_ -notmatch "llama-cpp-python" } | Set-Content $tempReqs
+
 & $pythonCmd -m pip install `
-    -r backend/requirements-lock.txt `
+    -r $tempReqs `
     --target "$bundleDir\python_libs" `
     --no-warn-script-location `
     --disable-pip-version-check
 
-# Reinstall llama-cpp-python with GPU support if available
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Failed to install dependencies!" -ForegroundColor Red
+    exit 1
+}
+
+Remove-Item $tempReqs -ErrorAction SilentlyContinue
+
+# Install llama-cpp-python separately using pre-built wheels (no compiler needed)
 if ($hasNvidiaGpu) {
-    Write-Host "Installing llama-cpp-python with CUDA support..." -ForegroundColor Cyan
+    Write-Host "Installing llama-cpp-python with CUDA support (pre-built wheel)..." -ForegroundColor Cyan
     & $pythonCmd -m pip install `
-        llama-cpp-python==0.3.20 `
+        llama-cpp-python==0.3.19 `
         --target "$bundleDir\python_libs" `
         --force-reinstall --no-deps `
         --no-warn-script-location `
         --disable-pip-version-check `
+        --only-binary llama-cpp-python `
         --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "llama-cpp-python (CUDA) installed successfully" -ForegroundColor Green
     } else {
-        Write-Host "CUDA install failed, falling back to CPU-only llama-cpp-python" -ForegroundColor Yellow
+        Write-Host "CUDA install failed, falling back to CPU pre-built wheel..." -ForegroundColor Yellow
+        & $pythonCmd -m pip install `
+            llama-cpp-python==0.3.19 `
+            --target "$bundleDir\python_libs" `
+            --no-deps `
+            --no-warn-script-location `
+            --disable-pip-version-check `
+            --only-binary llama-cpp-python `
+            --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
     }
 } else {
-    Write-Host "Using CPU-only llama-cpp-python (from requirements-lock.txt)" -ForegroundColor Yellow
+    Write-Host "Installing CPU-only llama-cpp-python (pre-built wheel)..." -ForegroundColor Yellow
+    & $pythonCmd -m pip install `
+        llama-cpp-python==0.3.19 `
+        --target "$bundleDir\python_libs" `
+        --no-deps `
+        --no-warn-script-location `
+        --disable-pip-version-check `
+        --only-binary llama-cpp-python `
+        --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: llama-cpp-python failed to install! No pre-built wheel found for this Python version." -ForegroundColor Red
+        exit 1
+    }
 }
+
+# Verify llama-cpp-python was installed
+if (-not (Test-Path "$bundleDir\python_libs\llama_cpp")) {
+    Write-Host "ERROR: llama-cpp-python not found in python_libs after install!" -ForegroundColor Red
+    exit 1
+}
+Write-Host "llama-cpp-python verified in python_libs" -ForegroundColor Green
 
 Write-Host "Copying embedded Python..." -ForegroundColor Yellow
 if (Test-Path "backend\python-embed") {

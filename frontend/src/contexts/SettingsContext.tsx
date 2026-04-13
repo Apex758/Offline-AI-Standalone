@@ -638,7 +638,6 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
         tutorials: {
           ...prev.tutorials,
           hasCompletedSetup: true,
-          hasSeenWelcome: true,
           enabledModules: modules,
         },
         profile: profile

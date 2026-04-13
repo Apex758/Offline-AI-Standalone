@@ -39,11 +39,18 @@ function buildPageHtml(page: StoryPage, accentColor = '#a855f7'): string {
   const charSide = page.imagePlacement === 'left' ? 'float:left;margin-right:16px;' :
                    page.imagePlacement === 'right' ? 'float:right;margin-left:16px;' : '';
 
-  // Build character image + speech bubble as a positioned block
+  // Char 2 is on the opposite side of char 1
+  const char2OppositePlacement = page.imagePlacement === 'left' ? 'right' :
+                                  page.imagePlacement === 'right' ? 'left' : null;
+  const hasChar2 = !!(page.characterImageData2 && page.imagePlacement !== 'none' && char2OppositePlacement);
+  const char2Side = char2OppositePlacement === 'left' ? 'float:left;margin-right:16px;' :
+                    char2OppositePlacement === 'right' ? 'float:right;margin-left:16px;' : '';
+
+  // Build character 1 image + speech bubble as a positioned block
   let charHtml = '';
   if (hasChar) {
     const tailDir = getTailDirection(page);
-    // Find last character dialogue for the static PDF bubble
+    // Find last character 1 dialogue for the static PDF bubble
     const charSegs = page.textSegments.filter(s => shouldUseBubble(s, page));
     const bubbleSeg = charSegs.length > 0 ? charSegs[charSegs.length - 1] : null;
     const bubbleSvg = bubbleSeg
@@ -55,12 +62,32 @@ function buildPageHtml(page: StoryPage, accentColor = '#a855f7'): string {
     </div>`;
   }
 
+  // Build character 2 image + speech bubble on the opposite side
+  let char2Html = '';
+  if (hasChar2) {
+    // Tail points toward character 2, so it points away from char 2's side
+    const tail2Dir = char2OppositePlacement === 'left' ? 'left' : 'right';
+    const char2Segs = page.textSegments.filter(s => s.speaker === page.characterName2 && s.speaker !== 'narrator');
+    const bubble2Seg = char2Segs.length > 0 ? char2Segs[char2Segs.length - 1] : null;
+    const bubble2Svg = bubble2Seg
+      ? `<div style="margin-bottom:4px;">${buildSpeechBubbleSVGText({ text: bubble2Seg.text, tailDirection: tail2Dir, context: 'pdf' })}</div>`
+      : '';
+    char2Html = `<div style="${char2Side}width:180px;">
+      ${bubble2Svg}
+      <img src="${page.characterImageData2}" style="width:140px;border-radius:8px;" />
+    </div>`;
+  }
+
   // Narrator text (and fallback character text when no image)
+  // Also skip char2 segments that are rendered as bubbles
+  const char2BubbleSpeaker = hasChar2 ? page.characterName2 : null;
   const textHtml = page.textSegments.map(seg => {
     const isNarrator = seg.speaker === 'narrator';
     const isBubbled = shouldUseBubble(seg, page);
     // Skip character segments that are rendered as bubbles
     if (isBubbled) return '';
+    // Skip char2 segments that appear in char2's bubble
+    if (char2BubbleSpeaker && seg.speaker === char2BubbleSpeaker) return '';
     return `<p style="font-family:Georgia,serif;font-size:14pt;line-height:1.7;margin:0 0 8px 0;${isNarrator ? 'font-style:italic;' : 'font-weight:600;'}">
       ${isNarrator ? '' : `<span style="display:block;font-size:9pt;font-weight:bold;color:${accentColor};font-style:normal;">${seg.speaker}:</span>`}
       ${isNarrator ? seg.text : `&ldquo;${seg.text}&rdquo;`}
@@ -76,6 +103,7 @@ function buildPageHtml(page: StoryPage, accentColor = '#a855f7'): string {
       ${page.backgroundImageData ? `<div style="position:absolute;inset:0;background:rgba(255,255,255,0.55);border-radius:inherit;"></div>` : ''}
       <div style="position:relative;z-index:1;">
         ${charHtml}
+        ${char2Html}
         <div style="overflow:hidden;">${textHtml}</div>
         <div style="clear:both;"></div>
         <div style="margin-top:12px;text-align:right;font-size:8pt;color:#9ca3af;">${page.pageNumber}</div>
@@ -218,17 +246,22 @@ export async function exportStorybookPPTX(
     }
 
     // Character image + speech bubble
-    const hasCharPptx = page.characterImageData && page.imagePlacement !== 'none';
+    const hasCharPptx = !!(page.characterImageData && page.imagePlacement !== 'none');
+    const char2PptxPlacement = page.imagePlacement === 'left' ? 'right' :
+                                page.imagePlacement === 'right' ? 'left' : null;
+    const hasChar2Pptx = !!(page.characterImageData2 && page.imagePlacement !== 'none' && char2PptxPlacement);
+
     if (hasCharPptx) {
       const imgX = page.imagePlacement === 'right' ? 7.2 : 0.2;
       slide.addImage({ data: page.characterImageData, x: imgX, y: 0.5, w: 2.2, h: 3.5 });
 
-      // Speech bubble for last character dialogue
+      // Speech bubble for last character 1 dialogue
       const charSegsPptx = page.textSegments.filter(s => shouldUseBubble(s, page));
       if (charSegsPptx.length > 0) {
         const bubbleSeg = charSegsPptx[charSegsPptx.length - 1];
-        const bubbleX = page.imagePlacement === 'left' ? 2.5 : 4.5;
-        const bubbleW = 3.2;
+        // If both sides occupied, shrink bubble to leave space for char2
+        const bubbleX = page.imagePlacement === 'left' ? 2.5 : (hasChar2Pptx ? 3.8 : 4.5);
+        const bubbleW = hasChar2Pptx ? 2.6 : 3.2;
         const bubbleH = Math.min(1.8, 0.5 + bubbleSeg.text.length * 0.012);
         slide.addShape('roundRect' as any, {
           x: bubbleX, y: 0.3, w: bubbleW, h: bubbleH,
@@ -245,12 +278,57 @@ export async function exportStorybookPPTX(
       }
     }
 
+    // Character 2 image + speech bubble on the opposite side
+    if (hasChar2Pptx) {
+      const img2X = char2PptxPlacement === 'right' ? 7.2 : 0.2;
+      slide.addImage({ data: page.characterImageData2!, x: img2X, y: 0.5, w: 2.2, h: 3.5 });
+
+      // Speech bubble for last character 2 dialogue
+      const char2SegsPptx = page.textSegments.filter(s => s.speaker === page.characterName2 && s.speaker !== 'narrator');
+      if (char2SegsPptx.length > 0) {
+        const bubble2Seg = char2SegsPptx[char2SegsPptx.length - 1];
+        // Bubble appears toward center from char2's side
+        const bubble2X = char2PptxPlacement === 'left' ? 2.5 : 3.8;
+        const bubble2W = 2.6;
+        const bubble2H = Math.min(1.8, 0.5 + bubble2Seg.text.length * 0.012);
+        slide.addShape('roundRect' as any, {
+          x: bubble2X, y: 1.8, w: bubble2W, h: bubble2H,
+          fill: { color: 'FFFFFF' },
+          line: { color: 'D1D5DB', width: 1 },
+          rectRadius: 0.15,
+          shadow: { type: 'outer', blur: 6, offset: 2, color: '000000', opacity: 0.15 },
+        });
+        slide.addText(bubble2Seg.text, {
+          x: bubble2X + 0.15, y: 1.9, w: bubble2W - 0.3, h: bubble2H - 0.2,
+          fontSize: 13, fontFace: 'Georgia',
+          color: '1F2937', wrap: true, valign: 'middle',
+        });
+      }
+    }
+
     // Text — narrator segments + fallback character text (when no char image)
-    const textX = hasCharPptx && page.imagePlacement === 'left' ? 2.8 : 0.4;
-    const textW = hasCharPptx ? 6.4 : 9.2;
+    // When both sides are occupied, centre the text in the middle ~40% of the slide
+    const bothSidesOccupied = hasCharPptx && hasChar2Pptx;
+    const char2PptxSpeaker = hasChar2Pptx ? page.characterName2 : null;
+    let textX: number;
+    let textW: number;
+    if (bothSidesOccupied) {
+      textX = 2.8;
+      textW = 3.8;
+    } else if (hasCharPptx && page.imagePlacement === 'left') {
+      textX = 2.8;
+      textW = 6.4;
+    } else {
+      textX = 0.4;
+      textW = hasCharPptx ? 6.4 : 9.2;
+    }
 
     const textContent = page.textSegments
-      .filter(seg => !shouldUseBubble(seg, page))
+      .filter(seg => {
+        if (shouldUseBubble(seg, page)) return false;
+        if (char2PptxSpeaker && seg.speaker === char2PptxSpeaker) return false;
+        return true;
+      })
       .map(seg => {
         const isNarrator = seg.speaker === 'narrator';
         return isNarrator ? seg.text : `${seg.speaker}: "${seg.text}"`;
@@ -366,20 +444,29 @@ export async function exportAnimatedHTML(
   onProgress?.({ current: totalSegments, total: totalSegments, label: 'Building HTML...' });
 
   // Build page data JSON (embedded in HTML)
-  const pagesData = book.pages.map((page, pi) => ({
-    pageNumber: page.pageNumber,
-    bgColor: getPageBgColor(page),
-    bgImage: page.backgroundImageData || null,
-    charImage: (page.characterImageData && page.imagePlacement !== 'none') ? page.characterImageData : null,
-    charSide: page.imagePlacement,
-    charAnim: page.characterAnimation || 'fadeIn',
-    segments: page.textSegments.map((seg, si) => ({
-      speaker: seg.speaker,
-      text: seg.text,
-      isNarrator: seg.speaker === 'narrator',
-      audio: audioData.find(a => a.pageIdx === pi && a.segIdx === si)?.base64 || null,
-    })),
-  }));
+  const pagesData = book.pages.map((page, pi) => {
+    const hasChar2Html = !!(page.characterImageData2 && page.imagePlacement !== 'none');
+    const char2SideVal = page.imagePlacement === 'left' ? 'right' :
+                         page.imagePlacement === 'right' ? 'left' : null;
+    return {
+      pageNumber: page.pageNumber,
+      bgColor: getPageBgColor(page),
+      bgImage: page.backgroundImageData || null,
+      charImage: (page.characterImageData && page.imagePlacement !== 'none') ? page.characterImageData : null,
+      charSide: page.imagePlacement,
+      charAnim: page.characterAnimation || 'fadeIn',
+      charImage2: (hasChar2Html && char2SideVal) ? page.characterImageData2 : null,
+      charSide2: char2SideVal || null,
+      charAnim2: page.characterAnimation || 'fadeIn',
+      charName2: page.characterName2 || null,
+      segments: page.textSegments.map((seg, si) => ({
+        speaker: seg.speaker,
+        text: seg.text,
+        isNarrator: seg.speaker === 'narrator',
+        audio: audioData.find(a => a.pageIdx === pi && a.segIdx === si)?.base64 || null,
+      })),
+    };
+  });
 
   const gradeLabel = formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`;
 
@@ -403,9 +490,14 @@ body { font-family: Georgia, serif; background: #111; color: #fff; overflow: hid
 #content { position: relative; z-index: 1; width: 100%; max-width: 900px; padding: 32px 48px; display: flex; align-items: center; gap: 32px; min-height: 60vh; }
 #char-wrap { flex-shrink: 0; width: 180px; position: relative; }
 #char-wrap img { width: 100%; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+#char-wrap-2 { flex-shrink: 0; width: 180px; position: relative; }
+#char-wrap-2 img { width: 100%; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
 #bubble-wrap { position: absolute; top: -10px; z-index: 5; pointer-events: none; transition: opacity 0.3s; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
 #bubble-wrap.bubble-left { left: 100%; margin-left: 8px; }
 #bubble-wrap.bubble-right { right: 100%; margin-right: 8px; }
+#bubble-wrap-2 { position: absolute; top: -10px; z-index: 5; pointer-events: none; transition: opacity 0.3s; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+#bubble-wrap-2.bubble-left { left: 100%; margin-left: 8px; }
+#bubble-wrap-2.bubble-right { right: 100%; margin-right: 8px; }
 #text-wrap { flex: 1; }
 .seg { font-size: 20px; line-height: 1.7; margin-bottom: 12px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.8); transition: opacity 0.4s; }
 .seg.dim { opacity: 0.3; }
@@ -456,6 +548,9 @@ body { font-family: Georgia, serif; background: #111; color: #fff; overflow: hid
         <div id="bubble-wrap" style="display:none"></div>
       </div>
       <div id="text-wrap"></div>
+      <div id="char-wrap-2" style="display:none">
+        <div id="bubble-wrap-2" style="display:none"></div>
+      </div>
     </div>
     <button id="nav-left" onclick="prevPage()">&#8592;</button>
     <button id="nav-right" onclick="nextPage()">&#8594;</button>
@@ -534,32 +629,55 @@ function showPage(idx) {
     ? \`<img src="\${page.bgImage}">\`
     : \`<div style="position:absolute;inset:0;background:\${page.bgColor}"></div>\`;
 
-  // Character
+  // Character 1
   const cw = document.getElementById('char-wrap');
-  const bw = document.getElementById('bubble-wrap');
   if (page.charImage && page.charSide !== 'none') {
     cw.style.display = 'block';
     cw.style.order = page.charSide === 'right' ? '2' : '0';
     cw.innerHTML = \`<img class="animate__animated animate__\${page.charAnim}" src="\${page.charImage}"><div id="bubble-wrap" style="display:none"></div>\`;
     // Position bubble on opposite side of character
-    const bw2 = document.getElementById('bubble-wrap');
-    if (bw2) {
-      bw2.className = page.charSide === 'left' ? 'bubble-left' : 'bubble-right';
-      bw2.style.position = 'absolute';
-      bw2.style.top = '-10px';
-      bw2.style.zIndex = '5';
-      bw2.style.pointerEvents = 'none';
-      bw2.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))';
+    const bwInner = document.getElementById('bubble-wrap');
+    if (bwInner) {
+      bwInner.className = page.charSide === 'left' ? 'bubble-left' : 'bubble-right';
+      bwInner.style.position = 'absolute';
+      bwInner.style.top = '-10px';
+      bwInner.style.zIndex = '5';
+      bwInner.style.pointerEvents = 'none';
+      bwInner.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))';
     }
   } else {
     cw.style.display = 'none';
     cw.innerHTML = '<div id="bubble-wrap" style="display:none"></div>';
   }
 
-  // Determine tail direction (tail points toward character)
+  // Character 2
+  const cw2 = document.getElementById('char-wrap-2');
+  if (page.charImage2 && page.charSide2 && page.charSide2 !== 'none') {
+    cw2.style.display = 'block';
+    cw2.style.order = page.charSide2 === 'right' ? '2' : '0';
+    cw2.innerHTML = \`<img class="animate__animated animate__\${page.charAnim2}" src="\${page.charImage2}"><div id="bubble-wrap-2" style="display:none"></div>\`;
+    const bw2Inner = document.getElementById('bubble-wrap-2');
+    if (bw2Inner) {
+      bw2Inner.className = page.charSide2 === 'left' ? 'bubble-left' : 'bubble-right';
+      bw2Inner.style.position = 'absolute';
+      bw2Inner.style.top = '-10px';
+      bw2Inner.style.zIndex = '5';
+      bw2Inner.style.pointerEvents = 'none';
+      bw2Inner.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))';
+    }
+  } else {
+    cw2.style.display = 'none';
+    cw2.innerHTML = '<div id="bubble-wrap-2" style="display:none"></div>';
+  }
+
+  // Determine tail directions (tail points toward character from bubble)
   const tailDir = page.charSide === 'right' ? 'right' : 'left';
+  const tailDir2 = page.charSide2 === 'right' ? 'right' : 'left';
   window._bubbleTailDir = tailDir;
+  window._bubbleTailDir2 = tailDir2;
   window._hasCharBubble = !!(page.charImage && page.charSide !== 'none');
+  window._hasChar2Bubble = !!(page.charImage2 && page.charSide2 && page.charSide2 !== 'none');
+  window._charName2 = page.charName2 || null;
 
   // Text — narrator segments always in text-wrap, character segments only as fallback when no char image
   const tw = document.getElementById('text-wrap');
@@ -582,10 +700,13 @@ function showQuestionSlide(item) {
   const bg = document.getElementById('bg');
   bg.innerHTML = '<div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e)"></div>';
 
-  // Hide character
+  // Hide characters
   const cw = document.getElementById('char-wrap');
   cw.style.display = 'none';
   cw.innerHTML = '';
+  const cw2 = document.getElementById('char-wrap-2');
+  cw2.style.display = 'none';
+  cw2.innerHTML = '';
 
   // Flashcard content
   const tw = document.getElementById('text-wrap');
@@ -621,28 +742,45 @@ function playSegment(i) {
     if (el) el.classList.toggle('dim', j > i);
   });
   if (i >= page.segments.length) {
-    // Hide bubble when page finishes
+    // Hide bubbles when page finishes
     const bw = document.getElementById('bubble-wrap');
     if (bw) { bw.style.display = 'none'; bw.innerHTML = ''; }
+    const bw2 = document.getElementById('bubble-wrap-2');
+    if (bw2) { bw2.style.display = 'none'; bw2.innerHTML = ''; }
     done = true; if (autoPlay && pageIdx < PAGES.length-1) setTimeout(() => showPage(pageIdx+1), 1800); return;
   }
   const seg = page.segments[i];
 
-  // Speech bubble: show for character segments, hide for narrator
+  // Speech bubble: show for character 1 segments, hide for narrator
   const bw = document.getElementById('bubble-wrap');
+  const isChar2Seg = window._charName2 && seg.speaker === window._charName2;
   if (bw && window._hasCharBubble) {
-    if (!seg.isNarrator) {
+    if (!seg.isNarrator && !isChar2Seg) {
       bw.style.display = 'block';
       bw.style.opacity = '0';
       bw.innerHTML = buildBubble(seg.text, window._bubbleTailDir);
-      // Trigger fade-in
       requestAnimationFrame(() => { bw.style.transition = 'opacity 0.3s'; bw.style.opacity = '1'; });
-      // Dim the text-wrap version for character segments
       const segEl = document.getElementById('seg-'+i);
       if (segEl) segEl.style.opacity = '0.3';
     } else {
       bw.style.opacity = '0';
       setTimeout(() => { bw.style.display = 'none'; bw.innerHTML = ''; }, 300);
+    }
+  }
+
+  // Speech bubble: show for character 2 segments
+  const bw2 = document.getElementById('bubble-wrap-2');
+  if (bw2 && window._hasChar2Bubble) {
+    if (isChar2Seg) {
+      bw2.style.display = 'block';
+      bw2.style.opacity = '0';
+      bw2.innerHTML = buildBubble(seg.text, window._bubbleTailDir2);
+      requestAnimationFrame(() => { bw2.style.transition = 'opacity 0.3s'; bw2.style.opacity = '1'; });
+      const segEl2 = document.getElementById('seg-'+i);
+      if (segEl2) segEl2.style.opacity = '0.3';
+    } else {
+      bw2.style.opacity = '0';
+      setTimeout(() => { bw2.style.display = 'none'; bw2.innerHTML = ''; }, 300);
     }
   }
 

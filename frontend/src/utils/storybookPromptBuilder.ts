@@ -49,15 +49,23 @@ function buildImageInstructions(imageMode: ImageMode): string {
   switch (imageMode) {
     case 'ai':
       return `For each page, provide:
-- "characterScene": a short 8-15 word image prompt describing the character(s) action/pose (e.g., "a golden puppy jumping joyfully in green grass"). This will be sent to an AI image generator.
+- "characterName": the name of the primary character on this page (must match a key in characterDescriptions).
+- "characterScene": a short 8-15 word image prompt describing that character's action/pose (e.g., "a golden puppy jumping joyfully in green grass"). This will be sent to an AI image generator. Describe ONLY this one character.
 - "imagePlacement": either "left" or "right" — alternate between pages for visual variety.
-- "characterAnimation": one of slideInLeft, slideInRight, bounceIn, fadeIn, zoomIn (match direction with imagePlacement).`;
+- "characterAnimation": one of slideInLeft, slideInRight, bounceIn, fadeIn, zoomIn (match direction with imagePlacement).
+- If a SECOND character also appears and has dialogue or action on this page, ALSO include:
+  - "characterName2": the name of the second character.
+  - "characterScene2": a short 8-15 word image prompt for the second character's action/pose. The second character will be placed on the OPPOSITE side of the first character automatically.
+- If only one character is active on the page, omit characterName2 and characterScene2.
+- If a character is narrator-only on the page (no dialogue, not the subject of action), do NOT include them.`;
 
     case 'suggested':
       return `For each page, provide:
-- "characterScene": a 15-25 word description of what image would best illustrate this page (e.g., "A small golden puppy with a red collar looking up at a tall tree, surprised expression, outdoor setting"). This guides the teacher in finding or creating an image.
+- "characterName": the name of the primary character on this page.
+- "characterScene": a 15-25 word description of what image would best illustrate this character (e.g., "A small golden puppy with a red collar looking up at a tall tree, surprised expression, outdoor setting"). This guides the teacher in finding or creating an image.
 - "imagePlacement": either "left" or "right" — alternate between pages.
-- "characterAnimation": one of slideInLeft, slideInRight, bounceIn, fadeIn, zoomIn.`;
+- "characterAnimation": one of slideInLeft, slideInRight, bounceIn, fadeIn, zoomIn.
+- If a SECOND character also appears on this page, include "characterName2" and "characterScene2" with the same format.`;
 
     case 'my-images':
       return `For each page, provide:
@@ -196,8 +204,11 @@ function buildExampleJSON(formData: StorybookFormData, hasCurriculum: boolean): 
       "pageNumber": 1,
       "textSegments": ${textSegmentsExample},
       "sceneId": "park",
+      "characterName": ${charNames.length > 0 ? `"${charNames[0]}"` : '"character"'},
       "characterScene": "8-15 word image prompt describing the character action",
-      "imagePlacement": "right"
+      "imagePlacement": "right"${charNames.length >= 2 ? `,
+      "characterName2": "${charNames[1]}",
+      "characterScene2": "8-15 word image prompt for second character action"` : ''}
     }
   ]
 }`;
@@ -248,7 +259,7 @@ export function buildStorybookPrompt(formData: StorybookFormData, language?: str
   const speakerInstruction = hasMultipleSpeakers
     ? `SPEAKERS (exactly ${formData.speakerCount} total — no more, no fewer):
 ${speakerLines}
-IMPORTANT: Use ONLY these ${formData.speakerCount} speakers. Do NOT invent additional characters who speak. Do NOT rename these characters. Tag every text segment with the correct speaker name exactly as listed above. Narrator reads scene/action text. Characters only speak in dialogue. The "voiceAssignments" object must contain exactly these speakers and no others.`
+IMPORTANT: Use ONLY these ${formData.speakerCount} speakers. Do NOT invent additional characters — no extra friends, siblings, classmates, pets, or side characters. The ONLY named characters in the entire story are the ones listed above. Do NOT rename these characters. Tag every text segment with the correct speaker name exactly as listed above. Narrator reads scene/action text. Characters only speak in dialogue. The "voiceAssignments" object must contain exactly these speakers and no others.`
     : `SPEAKER: Single narrator only. All text uses speaker: "narrator". Do NOT create any speaking characters. The entire story must be narrated in third person by the narrator. The "voiceAssignments" object must contain only: {"narrator": "${formData.speakers[0]?.voice || 'lessac'}"}.`;
 
   const imageInstructions = buildImageInstructions(formData.imageMode);
@@ -345,7 +356,7 @@ export function buildNarrativePrompt(formData: StorybookFormData): string {
     .filter(s => s.role !== 'narrator' && s.characterName)
     .map(s => s.characterName);
   const characterNote = speakerNames.length > 0
-    ? `Use ONLY these characters: ${speakerNames.join(', ')}. Do NOT rename them or add new speaking characters.`
+    ? `Use ONLY these characters: ${speakerNames.join(', ')}. Do NOT rename them or add ANY new characters — no extra friends, siblings, classmates, pets, or side characters. The ONLY named characters in the entire story are the ones listed here.`
     : 'Create 1-2 named characters for the story.';
 
   // Build dialogue example using actual character names (not hardcoded names)

@@ -185,6 +185,9 @@ function tryParsePartialPages(raw: string, scanFrom: number = 0): { pages: Story
              textSegments: obj.textSegments,
              sceneId: obj.sceneId || 'default',
              characterScene: obj.characterScene,
+             characterName: obj.characterName,
+             characterScene2: obj.characterScene2,
+             characterName2: obj.characterName2,
              imagePlacement: placement,
              characterAnimation: charAnim,
              textAnimation: 'fadeIn',
@@ -848,7 +851,9 @@ function PlaybackView({
   }, [phase, autoPlay, pageIdx, totalSlides, nextPage, isQuestionSlide]);
 
   const charAnim = page?.characterAnimation || 'fadeIn';
+  const charAnim2 = page?.imagePlacement === 'left' ? 'slideInRight' : 'slideInLeft';
   const hasChar = page && (page.characterImageData || page.characterScene) && page.imagePlacement !== 'none';
+  const hasChar2 = page && page.characterImageData2 && page.imagePlacement !== 'none';
 
   // Page label
   const pageLabel = isQuestionSlide
@@ -912,13 +917,19 @@ function PlaybackView({
           </div>
         ) : (
         <div className="relative z-10 w-full max-w-4xl mx-auto px-8 py-6 flex items-center gap-8 min-h-[60vh]">
-          {/* Character */}
+          {/* Character left slot */}
           {hasChar && page!.imagePlacement === 'left' && (
             <div className={`flex-shrink-0 w-48 animate__animated animate__${charAnim} ${phase === 'char' || phase === 'text' || phase === 'done' ? '' : 'invisible'}`}>
               {page!.characterImageData
-                ? <img src={page!.characterImageData} alt="character" className="w-full drop-shadow-2xl" />
+                ? <img src={page!.characterImageData} alt={page!.characterName || 'character'} className="w-full drop-shadow-2xl" />
                 : <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center"><Icon icon={UserIconData} className="w-16" style={{ color: 'rgba(255,255,255,0.5)' }} /></div>
               }
+            </div>
+          )}
+          {/* Character 2 on left (when char 1 is right) */}
+          {hasChar2 && page!.imagePlacement === 'right' && (
+            <div className={`flex-shrink-0 w-48 animate__animated animate__${charAnim2} ${phase === 'char' || phase === 'text' || phase === 'done' ? '' : 'invisible'}`}>
+              <img src={page!.characterImageData2!} alt={page!.characterName2 || 'character 2'} className="w-full drop-shadow-2xl" />
             </div>
           )}
 
@@ -939,11 +950,17 @@ function PlaybackView({
             ))}
           </div>
 
+          {/* Character 2 on right (when char 1 is left) */}
+          {hasChar2 && page!.imagePlacement === 'left' && (
+            <div className={`flex-shrink-0 w-48 animate__animated animate__${charAnim2} ${phase === 'char' || phase === 'text' || phase === 'done' ? '' : 'invisible'}`}>
+              <img src={page!.characterImageData2!} alt={page!.characterName2 || 'character 2'} className="w-full drop-shadow-2xl" />
+            </div>
+          )}
           {/* Character right */}
           {hasChar && page!.imagePlacement === 'right' && (
             <div className={`flex-shrink-0 w-48 animate__animated animate__${charAnim} ${phase === 'char' || phase === 'text' || phase === 'done' ? '' : 'invisible'}`}>
               {page!.characterImageData
-                ? <img src={page!.characterImageData} alt="character" className="w-full drop-shadow-2xl" />
+                ? <img src={page!.characterImageData} alt={page!.characterName || 'character'} className="w-full drop-shadow-2xl" />
                 : <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center"><Icon icon={UserIconData} className="w-16" style={{ color: 'rgba(255,255,255,0.5)' }} /></div>
               }
             </div>
@@ -1368,15 +1385,35 @@ function PagePreview({
   const bgColor = bgScene ? colorMap[bgScene.category] : (isDark ? DARK_PAGE_FALLBACK : '#f3f4f6');
 
   const hasChar = page.characterImageData && page.imagePlacement !== 'none';
+  const hasChar2 = page.characterImageData2 && page.imagePlacement !== 'none';
+  const char2Placement = page.imagePlacement === 'left' ? 'right' : 'left';
 
   // Separate narrator vs character segments for bubble rendering
-  const narratorSegments = hasChar
-    ? page.textSegments.filter(seg => !shouldUseBubble(seg, page))
+  const anyCharImage = hasChar || hasChar2;
+  const narratorSegments = anyCharImage
+    ? page.textSegments.filter(seg => seg.speaker === 'narrator')
     : page.textSegments.filter(seg => seg.speaker === 'narrator');
-  const characterSegments = page.textSegments.filter(seg => shouldUseBubble(seg, page));
-  // Show the last character speech bubble (static preview shows most recent)
-  const activeBubbleSeg = characterSegments.length > 0 ? characterSegments[characterSegments.length - 1] : null;
+  // Character 1 bubble: last dialogue segment matching characterName (or any non-narrator if no name set)
+  const char1Segments = page.textSegments.filter(seg =>
+    seg.speaker !== 'narrator' && hasChar &&
+    (!page.characterName || seg.speaker === page.characterName)
+  );
+  const activeBubbleSeg = char1Segments.length > 0 ? char1Segments[char1Segments.length - 1] : null;
   const tailDir = getTailDirection(page);
+  // Character 2 bubble: last dialogue segment matching characterName2
+  const char2Segments = page.textSegments.filter(seg =>
+    seg.speaker !== 'narrator' && hasChar2 && page.characterName2 && seg.speaker === page.characterName2
+  );
+  const activeBubbleSeg2 = char2Segments.length > 0 ? char2Segments[char2Segments.length - 1] : null;
+  const tailDir2: 'left' | 'right' = char2Placement === 'left' ? 'right' : 'left';
+
+  // Character segments that don't have an image (rendered as text fallback)
+  const unimaginedCharSegments = page.textSegments.filter(seg => {
+    if (seg.speaker === 'narrator') return false;
+    if (hasChar && (!page.characterName || seg.speaker === page.characterName)) return false;
+    if (hasChar2 && page.characterName2 && seg.speaker === page.characterName2) return false;
+    return true;
+  });
 
   return (
     <div
@@ -1387,7 +1424,7 @@ function PagePreview({
         <img src={page.backgroundImageData} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
       )}
       <div className="relative z-10 p-6">
-        {/* Character + speech bubble layout */}
+        {/* Character 1 + speech bubble */}
         {hasChar && (
           <div
             className={`${page.imagePlacement === 'left' ? 'float-left mr-4' : 'float-right ml-4'} mb-2`}
@@ -1395,7 +1432,7 @@ function PagePreview({
           >
             <img
               src={page.characterImageData!}
-              alt="character"
+              alt={page.characterName || 'character'}
               className="rounded-lg shadow-md"
               style={{ width: 120, shapeOutside: `url(${page.characterImageData})`, shapeMargin: '12px' }}
             />
@@ -1421,6 +1458,40 @@ function PagePreview({
             )}
           </div>
         )}
+        {/* Character 2 + speech bubble (opposite side) */}
+        {hasChar2 && (
+          <div
+            className={`${char2Placement === 'left' ? 'float-left mr-4' : 'float-right ml-4'} mb-2`}
+            style={{ position: 'relative', width: 120 }}
+          >
+            <img
+              src={page.characterImageData2!}
+              alt={page.characterName2 || 'character 2'}
+              className="rounded-lg shadow-md"
+              style={{ width: 120, shapeOutside: `url(${page.characterImageData2})`, shapeMargin: '12px' }}
+            />
+            {activeBubbleSeg2 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -8,
+                  [char2Placement === 'left' ? 'left' : 'right']: '100%',
+                  marginLeft: char2Placement === 'left' ? 4 : undefined,
+                  marginRight: char2Placement === 'right' ? 4 : undefined,
+                  zIndex: 20,
+                  filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))',
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: buildSpeechBubbleSVG({
+                    text: activeBubbleSeg2.text,
+                    tailDirection: tailDir2,
+                    context: 'editor',
+                  }),
+                }}
+              />
+            )}
+          </div>
+        )}
         <div className="space-y-2">
           {narratorSegments.map((seg, i) => (
             <p key={i} className="leading-relaxed text-gray-800 dark:text-gray-200 italic text-base">
@@ -1428,7 +1499,7 @@ function PagePreview({
             </p>
           ))}
           {/* Fallback: character dialogue without image rendered as text */}
-          {!hasChar && page.textSegments.filter(s => s.speaker !== 'narrator').map((seg, i) => (
+          {unimaginedCharSegments.map((seg, i) => (
             <p key={`char-${i}`} className="leading-relaxed text-gray-800 dark:text-gray-200 font-semibold text-base">
               <span className="text-xs font-bold text-purple-600 not-italic block">{seg.speaker}:</span>
               {`"${seg.text}"`}
@@ -2341,6 +2412,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               ...page,
               ...(pageResult.characterImageData && { characterImageData: pageResult.characterImageData }),
               ...(pageResult.characterSeed != null && { characterSeed: pageResult.characterSeed }),
+              ...(pageResult.characterImageData2 && { characterImageData2: pageResult.characterImageData2 }),
+              ...(pageResult.characterSeed2 != null && { characterSeed2: pageResult.characterSeed2 }),
               ...(pageResult.backgroundImageData && { backgroundImageData: pageResult.backgroundImageData }),
             };
             return { ...prev, pages: updatedPages };
@@ -2378,23 +2451,28 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     }
   }, [guardOffline, parsedBook, isGeneratingImages, formData.speakerCount]);
 
-  /** Generate a single page's character image. */
-  const handleGeneratePageImage = useCallback(async (pageIdx: number) => {
+  /** Generate a single page's character image. Pass which=2 for 2nd character. */
+  const handleGeneratePageImage = useCallback(async (pageIdx: number, which: 1 | 2 = 1) => {
     if (guardOffline()) return;
     if (!parsedBook) return;
     const page = parsedBook.pages[pageIdx];
-    if (!page?.characterScene) return;
+
+    // Determine which character scene + name to use
+    const scene = which === 2 ? page?.characterScene2 : page?.characterScene;
+    const charName = which === 2 ? (page?.characterName2 || '') : (page?.characterName || Object.keys(parsedBook.characterDescriptions || {})[0] || 'default');
+    if (!scene) return;
 
     setIsRemovingBg(pageIdx); // reuse spinner state
 
     const styleSuffix = parsedBook.styleSuffix || STYLE_SUFFIXES[formData.stylePreset || 'cartoon_3d'] || STORYBOOK_STYLE_SUFFIX;
     const charDescs = parsedBook.characterDescriptions || {};
 
-    // Try to reuse seed and reference image from prior generation for consistency
-    const existingSeed = parsedBook.pages.find(p => p.characterSeed)?.characterSeed;
-    const existingRef = parsedBook.characterReferenceImages
-      ? Object.values(parsedBook.characterReferenceImages)[0]
-      : undefined;
+    // Per-character seed and reference
+    const existingSeed = which === 2
+      ? parsedBook.pages.find(p => p.characterSeed2)?.characterSeed2
+      : parsedBook.pages.find(p => p.characterSeed)?.characterSeed;
+    const existingRef = parsedBook.characterReferenceImages?.[charName]
+      || (which === 1 ? Object.values(parsedBook.characterReferenceImages || {})[0] : undefined);
 
     try {
       let rawChar: string;
@@ -2402,21 +2480,22 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
       if (existingRef && existingSeed != null) {
         // Use img2img from reference for consistent character with new pose
+        const singleDesc = charDescs[charName] ? { [charName]: charDescs[charName] } : charDescs;
         const result = await generateCharacterFromReference(
-          charDescs, page.characterScene, styleSuffix, existingSeed, existingRef, 0.55,
+          singleDesc, scene, styleSuffix, existingSeed, existingRef, 0.55,
         );
         rawChar = result.imageData;
         seed = result.seed;
       } else {
         // First character generation — create fresh and save as reference
+        const singleDesc = charDescs[charName] ? { [charName]: charDescs[charName] } : charDescs;
         const result = await generateCharacterImage(
-          charDescs, page.characterScene, styleSuffix, existingSeed,
+          singleDesc, scene, styleSuffix, existingSeed,
         );
         rawChar = result.imageData;
         seed = result.seed;
 
         // Store as reference for future generations
-        const charName = Object.keys(charDescs)[0] || 'default';
         setParsedBook(prev => {
           if (!prev) return prev;
           return { ...prev, characterReferenceImages: { ...prev.characterReferenceImages, [charName]: rawChar } };
@@ -2429,11 +2508,19 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
       } catch {
         finalChar = rawChar;
       }
-      updatePage(pageIdx, {
-        characterImageData: finalChar,
-        characterSeed: seed,
-        imagePlacement: page.imagePlacement === 'none' ? 'right' : page.imagePlacement,
-      });
+
+      if (which === 2) {
+        updatePage(pageIdx, {
+          characterImageData2: finalChar,
+          characterSeed2: seed,
+        });
+      } else {
+        updatePage(pageIdx, {
+          characterImageData: finalChar,
+          characterSeed: seed,
+          imagePlacement: page.imagePlacement === 'none' ? 'right' : page.imagePlacement,
+        });
+      }
     } catch (e) {
       console.error(`[StoryBook] Failed to generate image for page ${pageIdx + 1}:`, e);
       setSaveToast(`Character image failed for page ${pageIdx + 1}`);
@@ -2610,13 +2697,17 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
               const coverPage = prev.coverPage
                 ? { ...prev.coverPage, coverImageData: coverImageData ?? prev.coverPage.coverImageData }
                 : prev.coverPage;
+              // Validate data URIs — reject corrupted entries like "data:image/png;base64,undefined"
+              const validDataUri = (uri: string | undefined) =>
+                uri && uri.startsWith('data:image/') && !uri.endsWith(',undefined') ? uri : undefined;
               return {
                 ...prev,
                 coverPage,
                 pages: prev.pages.map((p, i) => ({
                   ...p,
-                  characterImageData: imageMap.get(`${i}:character`) ?? p.characterImageData,
-                  backgroundImageData: imageMap.get(`${i}:background`) ?? p.backgroundImageData,
+                  characterImageData: validDataUri(imageMap.get(`${i}:character`)) ?? p.characterImageData,
+                  characterImageData2: validDataUri(imageMap.get(`${i}:character2`)) ?? p.characterImageData2,
+                  backgroundImageData: validDataUri(imageMap.get(`${i}:background`)) ?? p.backgroundImageData,
                 })),
               };
             });
@@ -3228,7 +3319,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
           <button
             onClick={() => {
               if (parsedBook) {
-                const missing = parsedBook.pages.some(p => !p.backgroundImageData || (!p.characterImageData && p.characterScene && p.imagePlacement !== 'none'));
+                const missing = parsedBook.pages.some(p => !p.backgroundImageData || (!p.characterImageData && p.characterScene && p.imagePlacement !== 'none') || (!p.characterImageData2 && p.characterScene2 && p.imagePlacement !== 'none'));
                 if (missing) {
                   setSaveToast('Some pages are missing images');
                   setTimeout(() => setSaveToast(null), 3000);
@@ -3979,13 +4070,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
             {/* Character image */}
             <div>
-              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">{t('storybook.characterImage')}</label>
+              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">
+                {t('storybook.characterImage')}{currentPage.characterName ? ` - ${currentPage.characterName}` : ''}
+              </label>
               <div className="space-y-2">
                 {currentPage.characterImageData && (
                   <div className="relative">
                     <img
                       src={currentPage.characterImageData}
-                      alt="character"
+                      alt={currentPage.characterName || 'character'}
                       className="w-full max-h-32 object-contain rounded-lg border border-theme"
                     />
                     <button
@@ -4008,19 +4101,6 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                       ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
                       : <Icon icon={Image01IconData} className="w-4" />}
                     {t('storybook.generateAICharacter')}
-                  </button>
-                )}
-                {hasDiffusion && (
-                  <button
-                    onClick={() => handleGenerateAllImages(undefined, { skipBackgrounds: true })}
-                    disabled={isGeneratingImages}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm disabled:opacity-60"
-                    style={{ color: accentColor }}
-                  >
-                    {isGeneratingImages && imageGenProgress?.stage === 'character'
-                      ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
-                      : <Icon icon={Image01IconData} className="w-4" />}
-                    Generate All Characters
                   </button>
                 )}
                 <button
@@ -4064,6 +4144,60 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
                 </div>
               </div>
             </div>
+
+            {/* Character 2 image (when page has a second character) */}
+            {currentPage.characterScene2 && currentPage.characterName2 && (
+            <div>
+              <label className="block text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2">
+                {t('storybook.characterImage')} - {currentPage.characterName2}
+              </label>
+              <div className="space-y-2">
+                {currentPage.characterImageData2 && (
+                  <div className="relative">
+                    <img
+                      src={currentPage.characterImageData2}
+                      alt={currentPage.characterName2}
+                      className="w-full max-h-32 object-contain rounded-lg border border-theme"
+                    />
+                    <button
+                      onClick={() => updatePage(currentPageIdx, { characterImageData2: undefined })}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                    >
+                      <Icon icon={Cancel01IconData} className="w-3" />
+                    </button>
+                  </div>
+                )}
+                {hasDiffusion && (
+                  <button
+                    onClick={() => handleGeneratePageImage(currentPageIdx, 2)}
+                    disabled={isRemovingBg === currentPageIdx || isGeneratingImages}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm disabled:opacity-60"
+                    style={{ color: accentColor }}
+                  >
+                    {isRemovingBg === currentPageIdx
+                      ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
+                      : <Icon icon={Image01IconData} className="w-4" />}
+                    {t('storybook.generateAICharacter')} - {currentPage.characterName2}
+                  </button>
+                )}
+              </div>
+            </div>
+            )}
+
+            {/* Generate All Characters batch button */}
+            {hasDiffusion && (
+            <button
+              onClick={() => handleGenerateAllImages(undefined, { skipBackgrounds: true })}
+              disabled={isGeneratingImages}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-theme-strong hover:bg-theme-secondary text-sm disabled:opacity-60"
+              style={{ color: accentColor }}
+            >
+              {isGeneratingImages && imageGenProgress?.stage === 'character'
+                ? <Icon icon={Loading03IconData} className="w-4 animate-spin" />
+                : <Icon icon={Image01IconData} className="w-4" />}
+              Generate All Characters
+            </button>
+            )}
 
             {/* Text segments editor */}
             <div>

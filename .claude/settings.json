@@ -445,7 +445,10 @@
       "Bash(npm ls:*)",
       "Bash(npm info:*)",
       "Bash(node -e \"const fs = require\\('fs'\\); const p = 'c:/Users/LG/Desktop/Projects/Offline AI Standalone/node_modules/@hugeicons/core-free-icons'; if\\(fs.existsSync\\(p\\)\\) { const files = fs.readdirSync\\(p\\); console.log\\(files.join\\('\\\\n'\\)\\); } else { console.log\\('NOT FOUND'\\); }\")",
-      "Bash(python -c \"import py_compile; py_compile.compile\\('tts_service.py', doraise=True\\); print\\('OK'\\)\")"
+      "Bash(python -c \"import py_compile; py_compile.compile\\('tts_service.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\" --version)",
+      "Bash(python -m pip install llama-cpp-python==0.3.20 --only-binary llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --dry-run)",
+      "Bash(python -m pip install llama-cpp-python==0.3.19 --only-binary llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --dry-run)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

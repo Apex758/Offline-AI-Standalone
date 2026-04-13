@@ -42,6 +42,8 @@ export interface PageImageResult {
   pageIndex: number;
   characterImageData?: string;
   characterSeed?: number;
+  characterImageData2?: string;
+  characterSeed2?: number;
   backgroundImageData?: string;
 }
 
@@ -68,6 +70,15 @@ function buildCharacterPrompt(
   const descParts = Object.values(characterDescriptions);
   const descBlock = descParts.length > 0 ? descParts.join(', ') + ', ' : '';
   return `${descBlock}${characterScene}, ${styleSuffix}, white background, centered`;
+}
+
+/** Build a prompt for a single named character (not all characters merged). */
+function buildCharacterPromptForOne(
+  characterDesc: string,
+  characterScene: string,
+  styleSuffix: string,
+): string {
+  return `${characterDesc}, ${characterScene}, ${styleSuffix}, white background, centered`;
 }
 
 function buildBackgroundPrompt(
@@ -254,11 +265,17 @@ export async function generateAllPageImages(
     }
   }
 
-  // ── Step 2: Character images (per page) ────────────────────────────────────
+  // ── Step 2: Character images (per page, per character) ─────────────────────
   const results: PageImageResult[] = [];
-  let currentSeed = initialSeed;
-  let referenceImage: string | undefined = existingRefs ? Object.values(existingRefs)[0] : undefined;
+  // Per-character seed and reference tracking (keyed by character name)
+  const charSeeds: Record<string, number> = {};
   const charRefs: Record<string, string> = { ...(existingRefs || {}) };
+
+  // Seed initial values from existing refs
+  if (initialSeed != null) {
+    const firstName = Object.keys(charDescs)[0];
+    if (firstName) charSeeds[firstName] = initialSeed;
+  }
 
   // In narrator-only mode, skip all character generation — backgrounds already include the subject
   if (narratorOnly) {
@@ -269,87 +286,131 @@ export async function generateAllPageImages(
         results.push({ pageIndex: i, backgroundImageData: bg });
       }
     }
-    return { pages: results, characterSeed: currentSeed, characterReferenceImages: charRefs };
+    return { pages: results, characterSeed: Object.values(charSeeds)[0], characterReferenceImages: charRefs };
   }
 
-  // Pages that need character generation
+  // Pages that need character generation (either char 1 or char 2)
   const charPages = skipCharacters
     ? []
     : book.pages
         .map((p, i) => ({ page: p, index: i }))
         .filter(({ page }) => page.characterScene && page.imagePlacement !== 'none');
 
+  // Count total character images to generate (char1 + char2 where applicable)
+  let charTotal = 0;
+  for (const { page } of charPages) {
+    charTotal++; // character 1
+    if (page.characterScene2 && page.characterName2) charTotal++; // character 2
+  }
   let charDone = 0;
-  const charTotal = charPages.length;
+
+  /** Generate a single character image with per-character seed/ref tracking. */
+  async function generateOneCharacter(
+    charName: string,
+    scene: string,
+  ): Promise<{ imageData: string; seed: number }> {
+    const charDesc = charDescs[charName];
+    const ref = charRefs[charName];
+    const seed = charSeeds[charName];
+
+    let rawChar: string;
+    let resultSeed: number;
+
+    if (ref && seed != null) {
+      // img2img from per-character reference for pose variation
+      // Vary the seed per call so the noise pattern differs — otherwise
+      // same seed + same ref = identical pose regardless of prompt.
+      const variedSeed = seed + Math.floor(Math.random() * 10000);
+      const singleDesc = charDesc ? { [charName]: charDesc } : charDescs;
+      const result = await generateCharacterFromReference(
+        singleDesc,
+        scene,
+        styleSuffix,
+        variedSeed,
+        ref,
+        0.75,
+      );
+      rawChar = result.imageData;
+      resultSeed = result.seed;
+    } else if (charDesc) {
+      // First generation for this character — use only their description
+      const prompt = buildCharacterPromptForOne(charDesc, scene, styleSuffix);
+      const res = seed != null
+        ? await imageApi.generateImageFromSeed({ prompt, negativePrompt: DEFAULT_NEGATIVE, width: 512, height: 512, seed })
+        : await imageApi.generateBatchImagesBase64({ prompt, negativePrompt: DEFAULT_NEGATIVE, width: 512, height: 512, numImages: 1 });
+
+      if ('images' in res) {
+        rawChar = res.images[0].imageData;
+        resultSeed = res.images[0].seed;
+      } else {
+        rawChar = res.imageData;
+        resultSeed = res.seed;
+      }
+
+      // Save as reference for future pages
+      charSeeds[charName] = resultSeed;
+      charRefs[charName] = rawChar;
+    } else {
+      // Fallback: use all descriptions merged (legacy behavior)
+      const result = await generateCharacterImage(charDescs, scene, styleSuffix, seed);
+      rawChar = result.imageData;
+      resultSeed = result.seed;
+      charSeeds[charName] = resultSeed;
+      charRefs[charName] = rawChar;
+    }
+
+    // Remove background
+    let finalChar: string;
+    try {
+      finalChar = await removeCharacterBg(rawChar);
+    } catch {
+      finalChar = rawChar;
+    }
+
+    return { imageData: finalChar, seed: resultSeed };
+  }
 
   for (const { page, index } of charPages) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
+    const pageResult: PageImageResult = {
+      pageIndex: index,
+      backgroundImageData: bgCache.get(page.sceneId),
+    };
+
+    // ── Character 1 ──
+    const char1Name = page.characterName || Object.keys(charDescs)[0] || 'default';
     try {
-      let rawChar: string;
-      let seed: number;
-
-      if (referenceImage && currentSeed != null) {
-        // ── Subsequent pages: img2img from reference for pose variation ──
-        const result = await generateCharacterFromReference(
-          charDescs,
-          page.characterScene!,
-          styleSuffix,
-          currentSeed,
-          referenceImage,
-          0.55,
-        );
-        rawChar = result.imageData;
-        seed = result.seed;
-      } else {
-        // ── First character: generate fresh, capture as reference ──
-        const result = await generateCharacterImage(
-          charDescs,
-          page.characterScene!,
-          styleSuffix,
-          currentSeed,
-        );
-        rawChar = result.imageData;
-        seed = result.seed;
-
-        // Pin seed and save reference for subsequent pages
-        currentSeed = seed;
-        referenceImage = rawChar;
-        const charName = Object.keys(charDescs)[0] || 'default';
-        charRefs[charName] = rawChar;
-      }
-
-      // Remove background
-      let finalChar: string;
-      try {
-        finalChar = await removeCharacterBg(rawChar);
-      } catch {
-        // If bg removal fails, use raw image
-        finalChar = rawChar;
-      }
-
-      const pageResult: PageImageResult = {
-        pageIndex: index,
-        characterImageData: finalChar,
-        characterSeed: seed,
-        backgroundImageData: bgCache.get(page.sceneId),
-      };
-      results.push(pageResult);
-      onPageResult?.(pageResult);
+      const char1 = await generateOneCharacter(char1Name, page.characterScene!);
+      pageResult.characterImageData = char1.imageData;
+      pageResult.characterSeed = char1.seed;
     } catch (e) {
-      console.error(`[StoryImagePipeline] Failed to generate character for page ${index + 1}:`, e);
-      onError?.(`Character image failed for page ${index + 1}`);
-      // Still attach background if available
-      const pageResult: PageImageResult = {
-        pageIndex: index,
-        backgroundImageData: bgCache.get(page.sceneId),
-      };
-      results.push(pageResult);
-      onPageResult?.(pageResult);
+      console.error(`[StoryImagePipeline] Failed to generate ${char1Name} for page ${index + 1}:`, e);
+      onError?.(`Character image failed for ${char1Name} on page ${index + 1}`);
     }
 
     charDone++;
     onProgress?.(charDone, charTotal, 'character');
+
+    // ── Character 2 (if present) ──
+    if (page.characterScene2 && page.characterName2) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
+      try {
+        const char2 = await generateOneCharacter(page.characterName2, page.characterScene2);
+        pageResult.characterImageData2 = char2.imageData;
+        pageResult.characterSeed2 = char2.seed;
+      } catch (e) {
+        console.error(`[StoryImagePipeline] Failed to generate ${page.characterName2} for page ${index + 1}:`, e);
+        onError?.(`Character image failed for ${page.characterName2} on page ${index + 1}`);
+      }
+
+      charDone++;
+      onProgress?.(charDone, charTotal, 'character');
+    }
+
+    results.push(pageResult);
+    onPageResult?.(pageResult);
   }
 
   // For pages that didn't need characters but still need backgrounds
@@ -365,5 +426,5 @@ export async function generateAllPageImages(
     }
   }
 
-  return { pages: results, characterSeed: currentSeed, characterReferenceImages: charRefs };
+  return { pages: results, characterSeed: Object.values(charSeeds)[0], characterReferenceImages: charRefs };
 }

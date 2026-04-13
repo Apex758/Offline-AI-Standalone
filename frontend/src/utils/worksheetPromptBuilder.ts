@@ -966,7 +966,7 @@ ${effectiveImageMode === 'suggested'
 
 ` : '';
 
-  const prompt = `You are creating an educational worksheet for Grade ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}).
+  let prompt = `You are creating an educational worksheet for Grade ${formData.gradeLevel} students (${gradeSpec.name}, typically aged ${gradeSpec.ageRange}).
 
 CURRICULUM CONTEXT:
 - Subject: ${formData.subject}

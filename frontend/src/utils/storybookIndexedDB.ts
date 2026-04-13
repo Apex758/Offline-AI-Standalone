@@ -87,6 +87,14 @@ export async function saveStorybookImages(storybookId: string, pages: StoryPage[
         blob: dataURItoBlob(page.characterImageData),
       });
     }
+    if (page.characterImageData2) {
+      store.put({
+        storybookId,
+        pageIndex: i,
+        type: 'character2',
+        blob: dataURItoBlob(page.characterImageData2),
+      });
+    }
     if (page.backgroundImageData) {
       store.put({
         storybookId,

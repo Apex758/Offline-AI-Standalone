@@ -1253,6 +1253,14 @@ app.whenReady().then(async () => {
     // === Start backend ===
     await startBackend();
     log.info('Backend started successfully');
+
+    // Preload the LLM during splash screen so it's warm by the time the UI loads
+    const http = require('http');
+    const preloadReq = http.request('http://127.0.0.1:8000/api/model/preload', { method: 'POST' }, (res) => {
+      log.info(`Model preload triggered during splash (status: ${res.statusCode})`);
+    });
+    preloadReq.on('error', (err) => log.warn('Model preload during splash failed (non-blocking):', err.message));
+    preloadReq.end();
     
     // Send IPC message to splashscreen that backend is ready.
     // If the splash page is still loading (common in dev where backend starts fast),

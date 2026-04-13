@@ -46,6 +46,16 @@ export interface StoryPage {
   characterAnimation?: 'slideInLeft' | 'slideInRight' | 'bounceIn' | 'fadeIn' | 'zoomIn';
   /** animate.css class hint for text entrance */
   textAnimation?: 'fadeIn' | 'slideInUp';
+  /** Name of the character whose image is in characterImageData */
+  characterName?: string;
+  /** Short diffusion prompt for the 2nd character (when two characters on page) */
+  characterScene2?: string;
+  /** base64 PNG of the 2nd character with background removed */
+  characterImageData2?: string;
+  /** Seed used for 2nd character image generation */
+  characterSeed2?: number;
+  /** Name of the 2nd character (e.g., "Alice") */
+  characterName2?: string;
 }
 
 export interface StoryScene {

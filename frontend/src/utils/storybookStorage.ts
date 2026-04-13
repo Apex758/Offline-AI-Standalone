@@ -118,6 +118,7 @@ function stripImageData(book: ParsedStorybook): ParsedStorybook {
     pages: book.pages.map(p => ({
       ...p,
       characterImageData: undefined,
+      characterImageData2: undefined,
       backgroundImageData: undefined,
     })),
     coverPage: book.coverPage ? { ...book.coverPage, coverImageData: undefined } : undefined,
