@@ -183,6 +183,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   return (
     <div
       ref={containerRef}
+      data-tutorial="fab-container"
       className={`fixed ${positionStyles[position]} z-[9999] flex flex-col items-center gap-3 transition-opacity duration-200`}
       style={ghost && !expanded ? { opacity: 0.15 } : { opacity: 1 }}
       onMouseEnter={(e) => { if (ghost) e.currentTarget.style.opacity = '1'; }}
@@ -194,6 +195,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
           {/* Search button */}
           <button
             onClick={handleSearchClick}
+            data-tutorial="fab-search"
             className="rounded-2xl flex items-center justify-center text-white group/sub relative"
             style={{
               ...subButtonBase,
@@ -231,6 +233,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
           {/* Display controls button */}
           <button
             onClick={() => setDisplayPanelOpen(prev => !prev)}
+            data-tutorial="fab-display"
             className="rounded-2xl flex items-center justify-center text-white group/sub relative"
             style={{
               ...subButtonBase,
@@ -385,6 +388,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
           {onScreenshotTicket && (
             <button
               onClick={handleScreenshotClick}
+              data-tutorial="fab-screenshot"
               className="rounded-2xl flex items-center justify-center text-white group/sub relative"
               style={{
                 ...subButtonBase,
@@ -424,6 +428,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
           {onStickyNote && (
             <button
               onClick={handleStickyNoteClick}
+              data-tutorial="fab-sticky"
               className="rounded-2xl flex items-center justify-center text-white group/sub relative"
               style={{
                 ...subButtonBase,
@@ -475,6 +480,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
           {/* Tutorial button */}
           <button
             onClick={handleTutorialClick}
+            data-tutorial="fab-tutorial"
             className="rounded-2xl flex items-center justify-center text-white group/sub relative"
             style={{
               ...subButtonBase,
@@ -521,6 +527,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
       {/* Main FAB */}
       <button
         onClick={handleMainClick}
+        data-tutorial="fab-main"
         className="rounded-2xl flex items-center justify-center text-white group relative"
         style={mainButtonStyle}
         onMouseEnter={e => {

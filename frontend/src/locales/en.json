@@ -1626,6 +1626,38 @@
       "step18": {
         "title": "Your Workspace",
         "description": "This is your main workspace where your active tool or split view will appear. You are all set to create amazing teaching resources!"
+      },
+      "step19": {
+        "title": "The Action Button",
+        "description": "This green button in the bottom-right corner is your quick-access hub. Click it to expand and see all the tools available to you.",
+        "actionHint": "Click to expand!"
+      },
+      "step20": {
+        "title": "Search (Ctrl+F)",
+        "description": "Quickly find any tool, setting, or feature. Supports both regular search and AI-powered search -- click the brain icon inside to activate AI mode.",
+        "actionHint": "Try it!"
+      },
+      "step21": {
+        "title": "Display Controls",
+        "description": "Adjust brightness, warm tone, and toggle dark/light mode. Great for reducing eye strain during long planning sessions.",
+        "actionHint": "Try it!"
+      },
+      "step22": {
+        "title": "Report an Issue",
+        "description": "Take a screenshot and report a bug or suggestion. The screenshot is captured automatically and attached to your ticket."
+      },
+      "step23": {
+        "title": "Sticky Notes",
+        "description": "Create and manage sticky notes that float over your workspace. Pin reminders, checklists, or quick thoughts right where you need them."
+      },
+      "step24": {
+        "title": "Tool Tutorials",
+        "description": "Start or replay the tutorial for whichever tool you have open. To replay this welcome tutorial, close all tabs first, then click this button."
+      },
+      "step25": {
+        "title": "Collapse the Menu",
+        "description": "Click the button again to collapse it. You are all set! Explore the tools in the sidebar and remember -- this button is always here to help.",
+        "actionHint": "Click to close!"
       }
     }
   },
