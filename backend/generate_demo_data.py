@@ -449,7 +449,7 @@ def llm_storybook_pages(title, subject, grade, description, num_pages):
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-TEACHER_ID = "default_teacher"
+TEACHER_ID = "admin"
 TEACHER_NAME = "Ms. Claudette Joseph"
 SCHOOL_NAME = "Castries Combined School"
 COUNTRY = "Saint Lucia"
@@ -2689,7 +2689,7 @@ def generate_settings():
         "user": {
             "username": TEACHER_ID,
             "name": TEACHER_NAME,
-            "email": "claudette.joseph@example.com",
+            "email": "admin@example.com",
             "role": "teacher",
             "school": SCHOOL_NAME,
             "country": COUNTRY,

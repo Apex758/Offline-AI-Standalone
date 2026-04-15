@@ -409,20 +409,32 @@ async function startBackend() {
       }
     });
     
-    // Timeout with health check
-    setTimeout(async () => {
-      if (!serverStarted) {
-        // Try health check
-        const http = require('http');
-        http.get(`http://127.0.0.1:${BACKEND_PORT}/api/health`, (res) => {
-          log.info('Backend health check successful!');
-          resolve();
-        }).on('error', () => {
-          log.error('Backend failed to start within timeout');
-          reject(new Error('Backend startup timeout'));
-        });
+    // Poll health endpoint until deadline (cold start can take 2-3 min on fresh install)
+    const http = require('http');
+    const DEADLINE_MS = 240000; // 4 min hard ceiling
+    const POLL_INTERVAL_MS = 2000;
+    const startTime = Date.now();
+    const pollHealth = () => {
+      if (serverStarted) return;
+      if (Date.now() - startTime > DEADLINE_MS) {
+        log.error(`Backend failed to start within ${DEADLINE_MS}ms`);
+        reject(new Error('Backend startup timeout'));
+        return;
       }
-    }, 45000);
+      const req = http.get(`http://127.0.0.1:${BACKEND_PORT}/api/health`, (res) => {
+        if (res.statusCode === 200) {
+          log.info(`Backend health check successful after ${Date.now() - startTime}ms`);
+          serverStarted = true;
+          resolve();
+        } else {
+          setTimeout(pollHealth, POLL_INTERVAL_MS);
+        }
+        res.resume();
+      });
+      req.on('error', () => setTimeout(pollHealth, POLL_INTERVAL_MS));
+      req.setTimeout(1500, () => req.destroy());
+    };
+    setTimeout(pollHealth, 3000);
   });
 }
  

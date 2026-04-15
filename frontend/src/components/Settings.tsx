@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { API_CONFIG } from '../config/api.config';
 import { SettingsPanelSkeleton } from './ui/SettingsPanelSkeleton';
 import { resetStepsCache } from '../lib/imageApi';
+import { getTeacherId } from '../lib/teacherId';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
 import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
@@ -1371,9 +1372,32 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       const frontendOnlyCats = ['settings', 'brain_dumps', 'tasks', 'sticky_notes', 'storybooks'];
       // Filter to only import the categories the user has selected
       const catsToImport = parsed.categories.filter((c: string) => importSelected.has(c));
-      const filteredData: Record<string, unknown> = {};
+      let filteredData: Record<string, unknown> = {};
       for (const cat of catsToImport) {
         if (parsed.data[cat]) filteredData[cat] = parsed.data[cat];
+      }
+
+      // Remap demo teacher_id to the current user's actual teacher_id.
+      // Demo data is generated with a fixed teacher_id (e.g. "admin") but the
+      // logged-in user may have a different id. Without remapping, all
+      // teacher-specific data (school year, milestones, timetable, etc.) would
+      // be stored under the wrong id and never appear in the UI.
+      const currentTeacherId = getTeacherId();
+      const demoTeacherId: string =
+        (parsed.data?.settings?.user?.username as string) || 'admin';
+      if (demoTeacherId && demoTeacherId !== currentTeacherId) {
+        try {
+          let jsonStr = JSON.stringify(filteredData);
+          // Replace teacher_id field values (exact string match within JSON)
+          jsonStr = jsonStr.split(`"teacher_id":"${demoTeacherId}"`).join(`"teacher_id":"${currentTeacherId}"`);
+          // Replace milestone / achievement IDs that use the pattern demoId_<topic>
+          jsonStr = jsonStr.split(`"id":"${demoTeacherId}_`).join(`"id":"${currentTeacherId}_`);
+          // Replace username in the settings user object
+          jsonStr = jsonStr.split(`"username":"${demoTeacherId}"`).join(`"username":"${currentTeacherId}"`);
+          filteredData = JSON.parse(jsonStr);
+        } catch {
+          // If remapping fails for any reason, proceed with original data
+        }
       }
 
       // Import settings locally
@@ -1535,6 +1559,15 @@ const Settings: React.FC<SettingsProps> = ({ savedData, onNavigateToTool }) => {
       // any newly-earned trophies pop up immediately instead of waiting for the
       // user to navigate to the Achievements tab.
       triggerAchievementCheck();
+
+      // If settings were imported, the teacher identity in localStorage may have
+      // changed. All mounted components captured getTeacherId() at render time and
+      // won't re-read it automatically. A full reload forces every component to
+      // reinitialize with the correct teacher_id so School Year Calendar, Timetable,
+      // Insights, and Milestones all reflect the imported data.
+      if (catsToImport.includes('settings') || catsToImport.includes('teacher_metrics')) {
+        setTimeout(() => window.location.reload(), 1500);
+      }
     } catch (error) {
       console.error('Import failed:', error);
       setImportMessage(t('settingsPage.dangerZone.importFailed'));

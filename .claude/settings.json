@@ -457,7 +457,15 @@
       "Bash(du -sh *)",
       "Bash(python -m py_compile generate_demo_data.py)",
       "Bash(awk '/^def generate_brain_dumps/,/^def [^[:space:]]/ {print NR\": \"$0}' backend/generate_demo_data.py)",
-      "Bash(python -m py_compile backend/generate_demo_data.py)"
+      "Bash(python -m py_compile backend/generate_demo_data.py)",
+      "Bash(curl -s \"http://localhost:8000/api/school-year/config/admin/active\")",
+      "Bash(curl -s \"http://localhost:8000/api/teacher-metrics/snapshots/admin\")",
+      "Bash(curl -s \"http://localhost:8000/api/teacher-metrics/history?teacher_id=admin\")",
+      "Read(//c/Users/LG/AppData/Local/Programs/OECS Teacher Assistant/resources/backend-bundle/python-embed/Lib/site-packages/**)",
+      "Bash(\"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend-bundle/python-embed/python.exe\" -m pip install --target \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend-bundle/python-embed/Lib/site-packages\" \"qrcode[pil]==7.4.2\" \"pypng==0.20220715.0\")",
+      "Bash(\"C:/Users/LG/AppData/Local/Programs/OECS Teacher Assistant/resources/backend-bundle/python-embed/python.exe\" -m pip install --target \"C:/Users/LG/AppData/Local/Programs/OECS Teacher Assistant/resources/backend-bundle/python-embed/Lib/site-packages\" \"qrcode[pil]==7.4.2\" \"pypng==0.20220715.0\")",
+      "Bash([ -e \"$SRC/$d\" ])",
+      "Bash(cp -r 'c:/Users/LG/Desktop/Projects/Offline AI Standalone/backend-bundle/python-embed/Lib/site-packages/__TRACKED_VAR__' 'C:/Users/LG/AppData/Local/Programs/OECS Teacher Assistant/resources/backend-bundle/python-embed/Lib/site-packages/')"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
