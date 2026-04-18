@@ -158,6 +158,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   const [chartDims, setChartDims] = useState({ width: 0, height: 0 });
   const chartWidth = chartDims.width;
   const chartContainerHeight = chartDims.height;
+  const hasData = data.length > 0;
 
   useEffect(() => {
     const el = chartContainerRef.current;
@@ -185,7 +186,7 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
       observer.disconnect();
       window.removeEventListener('resize', onResize);
     };
-  }, []);
+  }, [hasData]);
 
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
   const instanceId = useId().replace(/:/g, '');

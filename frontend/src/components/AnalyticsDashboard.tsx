@@ -305,6 +305,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       setMilestoneStats(_cacheMilestoneStats);
       setUpcomingMilestones(_cacheUpcomingMilestones);
       setProgressBreakdown(_cacheProgressBreakdown);
+      setMetricsHistory(_cacheMetricsHistory);
+      setLiveTeacherMetrics(_cacheLiveTeacherMetrics);
       setLoading(false);
       return;
     }
@@ -399,6 +401,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         const metricsRes = await axios.get(`http://localhost:8000/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId || 'default_teacher')}`);
         if (Array.isArray(metricsRes.data?.history)) {
           setMetricsHistory(metricsRes.data.history);
+          _cacheMetricsHistory = metricsRes.data.history;
         }
       } catch (metricsErr) {
         console.error('Failed to load teacher metrics history:', metricsErr);
@@ -408,6 +411,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         const liveRes = await axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId || 'default_teacher')}&user_id=${encodeURIComponent(teacherId || 'default_teacher')}`);
         if (liveRes.data?.metrics) {
           setLiveTeacherMetrics(liveRes.data.metrics);
+          _cacheLiveTeacherMetrics = liveRes.data.metrics;
         }
       } catch (liveErr) {
         console.error('Failed to load live teacher metrics:', liveErr);
