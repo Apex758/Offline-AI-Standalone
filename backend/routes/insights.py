@@ -12,8 +12,9 @@ router = APIRouter(prefix="/api/insights", tags=["insights"])
 
 # ── Schedule helpers ──────────────────────────────────────────────────────────
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCHEDULE_FILE = os.path.join(BASE_DIR, "insights_schedule.json")
+def _get_schedule_file() -> str:
+    from main import get_data_directory
+    return os.path.join(str(get_data_directory()), "insights_schedule.json")
 
 class ScheduleConfig(BaseModel):
     mode: str          # "manual" | "daily" | "interval"
@@ -23,8 +24,9 @@ class ScheduleConfig(BaseModel):
 
 def _load_schedule() -> dict:
     try:
-        if os.path.exists(SCHEDULE_FILE):
-            with open(SCHEDULE_FILE, "r", encoding="utf-8") as f:
+        path = _get_schedule_file()
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)
     except Exception:
         pass
@@ -33,7 +35,8 @@ def _load_schedule() -> dict:
 
 def _save_schedule(config: dict):
     try:
-        with open(SCHEDULE_FILE, "w", encoding="utf-8") as f:
+        path = _get_schedule_file()
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
     except Exception as e:
         logger.error(f"Failed to save schedule: {e}")

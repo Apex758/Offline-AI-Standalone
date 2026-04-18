@@ -87,8 +87,9 @@ soupsieve==2.8
 # ========================================
 # OPTIONAL: GGUF Stable Diffusion backend
 # ========================================
-# Required only when using GGUF-format diffusion models (SDXL-Turbo GGUF, SD 3.5 GGUF, etc.)
-#   pip install stable-diffusion-cpp-python>=0.4.0
+# Required only when using GGUF-format diffusion models (SDXL-Turbo GGUF, SD 3.5 GGUF,
+# Z-Image Turbo, FLUX.2 Klein, etc.)  >=0.4.6 required for llm_path (Qwen3 encoder).
+#   pip install stable-diffusion-cpp-python>=0.4.6
 
 # ========================================
 # OPTIONAL: Gemma API backend

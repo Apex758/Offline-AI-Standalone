@@ -269,7 +269,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
   const loadEvents = useCallback(async (configId: string) => {
     try {
-      const res = await axios.get(`/api/school-year/events/${configId}`);
+      const res = await axios.get(`${API_CONFIG.BASE_URL}/api/school-year/events/${configId}`);
       setEvents(res.data.events || []);
     } catch (e) {
       console.error('Failed to load events:', e);
@@ -304,13 +304,13 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
 
   const loadConfig = useCallback(async () => {
     try {
-      const res = await axios.get(`/api/school-year/config/${teacherId}/active`);
+      const res = await axios.get(`${API_CONFIG.BASE_URL}/api/school-year/config/${teacherId}/active`);
       const cfg = res.data.config;
       if (cfg) {
         setConfig(cfg);
       } else {
         // No config yet — check if any exist at all (use the first one)
-        const listRes = await axios.get(`/api/school-year/config/${teacherId}`);
+        const listRes = await axios.get(`${API_CONFIG.BASE_URL}/api/school-year/config/${teacherId}`);
         const configs = listRes.data.configs || [];
         if (configs.length > 0) {
           setConfig(configs[0]);
@@ -571,7 +571,7 @@ const SchoolYearCalendar: React.FC<SchoolYearCalendarProps> = ({ tabId, savedDat
   const handleDeleteEvent = async (eventId: string) => {
     if (!config) return;
     try {
-      await axios.delete(`/api/school-year/events/${eventId}`);
+      await axios.delete(`${API_CONFIG.BASE_URL}/api/school-year/events/${eventId}`);
       loadEvents(config.id);
     } catch (e) {
       console.error('Failed to delete event:', e);

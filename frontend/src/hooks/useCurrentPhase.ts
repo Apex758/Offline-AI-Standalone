@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_CONFIG } from '../config/api.config';
 import { parseISO, differenceInCalendarDays, isWithinInterval } from 'date-fns';
 import type { AcademicPhase } from '../types/insights';
 
@@ -54,7 +55,7 @@ export function useCurrentPhase(teacherId: string) {
 
     let cancelled = false;
 
-    axios.get(`/api/teacher-metrics/academic-phases?teacher_id=${encodeURIComponent(teacherId)}`)
+    axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/academic-phases?teacher_id=${encodeURIComponent(teacherId)}`)
       .then(res => {
         if (cancelled) return;
         const phases: AcademicPhase[] = res.data.phases || [];

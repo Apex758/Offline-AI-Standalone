@@ -27,6 +27,7 @@ import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, GRADE_VALUE_MAP, getTeacherGra
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import { useNotification } from '../contexts/NotificationContext';
 import axios from 'axios';
+import { API_CONFIG } from '../config/api.config';
 import { format } from 'date-fns';
 import { milestoneApi } from '../lib/milestoneApi';
 import type { MilestoneStats, Milestone } from '../types/milestone';
@@ -44,6 +45,8 @@ let _cacheMilestoneStats: MilestoneStats | null = null;
 let _cacheUpcomingMilestones: Milestone[] = [];
 let _cacheProgressBreakdown: Array<{ grade: string; subject: string; total: number; completed: number; in_progress: number }> = [];
 let _cacheTeacherId: string | null = null;
+let _cacheMetricsHistory: import('../types/insights').MetricSnapshot[] = [];
+let _cacheLiveTeacherMetrics: import('../types/insights').TeacherMetrics | null = null;
 
 function isCacheValid(teacherId: string | null): boolean {
   return (
@@ -402,7 +405,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       }
       // Load live teacher metrics for badge score
       try {
-        const liveRes = await axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId || 'default_teacher')}&user_id=${encodeURIComponent(teacherId || 'default_teacher')}`);
+        const liveRes = await axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId || 'default_teacher')}&user_id=${encodeURIComponent(teacherId || 'default_teacher')}`);
         if (liveRes.data?.metrics) {
           setLiveTeacherMetrics(liveRes.data.metrics);
         }

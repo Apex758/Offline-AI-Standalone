@@ -483,6 +483,132 @@ def _load_wan_gguf(model_path: Path, gguf_file: str = None):
     return StableDiffusion(**kwargs)
 
 
+def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
+    """Load Z-Image Turbo GGUF via stable-diffusion-cpp-python (CPU).
+
+    Z-Image Turbo is a 6B DiT model using Qwen3 as text encoder and FLUX VAE.
+    """
+    from stable_diffusion_cpp import StableDiffusion
+
+    if gguf_file is None:
+        gguf_file = "z_image_turbo-Q4_0.gguf"
+
+    # Resolve file paths from registry extra_files or defaults
+    try:
+        from config import get_image_model_info
+        info = get_image_model_info("z-image-turbo-q4")
+        extra = info.get("extra_files", {})
+    except Exception:
+        extra = {}
+
+    model_file = str(model_path / gguf_file)
+    llm_file   = str(model_path / extra.get("llm_file", "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"))
+    vae_file   = str(model_path / extra.get("vae_file", "ae.safetensors"))
+
+    for fpath, label in [
+        (model_file, "Z-Image Turbo diffusion model"),
+        (llm_file,   "Qwen3 text encoder"),
+        (vae_file,   "VAE (ae.safetensors)"),
+    ]:
+        if not Path(fpath).exists():
+            raise FileNotFoundError(f"Z-Image Turbo {label} not found: {fpath}")
+
+    n_threads = _get_physical_core_count()
+    logger.info(f"Loading Z-Image Turbo GGUF: {gguf_file}, threads={n_threads}")
+
+    import inspect
+    sd_params = inspect.signature(StableDiffusion.__init__).parameters
+
+    kwargs = dict(
+        vae_path=vae_file,
+        vae_decode_only=True,
+        n_threads=n_threads,
+    )
+    # Use diffusion_model_path for DiT-based models
+    if "diffusion_model_path" in sd_params:
+        kwargs["diffusion_model_path"] = model_file
+    else:
+        kwargs["model_path"] = model_file
+    # Qwen3 as text encoder via llm_path
+    if "llm_path" in sd_params:
+        kwargs["llm_path"] = llm_file
+    else:
+        logger.warning("stable-diffusion-cpp-python does not support llm_path — upgrade to >=0.4.6")
+        raise RuntimeError("stable-diffusion-cpp-python >=0.4.6 required for Z-Image (llm_path support)")
+    if "diffusion_flash_attn" in sd_params:
+        kwargs["diffusion_flash_attn"] = True
+        logger.info("Enabled diffusion_flash_attn for Z-Image Turbo")
+    elif "flash_attn" in sd_params:
+        kwargs["flash_attn"] = True
+    if "vae_conv_direct" in sd_params:
+        kwargs["vae_conv_direct"] = True
+    if "offload_params_to_cpu" in sd_params:
+        kwargs["offload_params_to_cpu"] = True
+
+    return StableDiffusion(**kwargs)
+
+
+def _load_flux2_klein_gguf(model_path: Path, gguf_file: str = None):
+    """Load FLUX.2 Klein 4B GGUF via stable-diffusion-cpp-python (CPU).
+
+    FLUX.2 Klein uses Qwen3 as text encoder and FLUX2 VAE.
+    """
+    from stable_diffusion_cpp import StableDiffusion
+
+    if gguf_file is None:
+        gguf_file = "flux-2-klein-4b-Q4_0.gguf"
+
+    try:
+        from config import get_image_model_info
+        info = get_image_model_info("flux2-klein-4b-q4")
+        extra = info.get("extra_files", {})
+    except Exception:
+        extra = {}
+
+    model_file = str(model_path / gguf_file)
+    llm_file   = str(model_path / extra.get("llm_file", "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"))
+    vae_file   = str(model_path / extra.get("vae_file", "flux2_ae.safetensors"))
+
+    for fpath, label in [
+        (model_file, "FLUX.2 Klein diffusion model"),
+        (llm_file,   "Qwen3 text encoder"),
+        (vae_file,   "FLUX.2 VAE"),
+    ]:
+        if not Path(fpath).exists():
+            raise FileNotFoundError(f"FLUX.2 Klein {label} not found: {fpath}")
+
+    n_threads = _get_physical_core_count()
+    logger.info(f"Loading FLUX.2 Klein GGUF: {gguf_file}, threads={n_threads}")
+
+    import inspect
+    sd_params = inspect.signature(StableDiffusion.__init__).parameters
+
+    kwargs = dict(
+        vae_path=vae_file,
+        vae_decode_only=True,
+        n_threads=n_threads,
+    )
+    if "diffusion_model_path" in sd_params:
+        kwargs["diffusion_model_path"] = model_file
+    else:
+        kwargs["model_path"] = model_file
+    if "llm_path" in sd_params:
+        kwargs["llm_path"] = llm_file
+    else:
+        raise RuntimeError("stable-diffusion-cpp-python >=0.4.6 required for FLUX.2 Klein (llm_path support)")
+    if "diffusion_flash_attn" in sd_params:
+        kwargs["diffusion_flash_attn"] = True
+        logger.info("Enabled diffusion_flash_attn for FLUX.2 Klein")
+    elif "flash_attn" in sd_params:
+        kwargs["flash_attn"] = True
+    if "vae_conv_direct" in sd_params:
+        kwargs["vae_conv_direct"] = True
+    if "offload_params_to_cpu" in sd_params:
+        kwargs["offload_params_to_cpu"] = True
+
+    return StableDiffusion(**kwargs)
+
+
 # Map backend key → loader function
 _LOADERS = {
     "openvino":            _load_openvino,
@@ -490,6 +616,8 @@ _LOADERS = {
     "sd_cpp_sdxl":         _load_sdxl_turbo_gguf,
     "sd_cpp_sd3":          _load_sd3_gguf,
     "sd_cpp_wan":          _load_wan_gguf,
+    "sd_cpp_zimage":       _load_zimage_turbo_gguf,
+    "sd_cpp_flux2klein":   _load_flux2_klein_gguf,
 }
 
 
@@ -651,7 +779,7 @@ class ImageService:
             try:
                 print(f"[IMAGE-DEBUG] Loading pipeline: model={self.model_key}, backend={backend}, path={self.model_path}", flush=True)
                 logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
-                if backend in ("sd_cpp_sdxl", "sd_cpp_sd3", "sd_cpp_wan"):
+                if backend in ("sd_cpp_sdxl", "sd_cpp_sd3", "sd_cpp_wan", "sd_cpp_zimage", "sd_cpp_flux2klein"):
                     self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
                 else:
                     self.pipeline = loader(self.model_path)
@@ -939,6 +1067,26 @@ class ImageService:
                     def __init__(self, images):
                         self.images = images
                 result = _SDCppResultSDXL(output)
+
+            elif backend in ("sd_cpp_zimage", "sd_cpp_flux2klein"):
+                # Z-Image Turbo / FLUX.2 Klein — DiT models via sd.cpp, no negative prompt or img2img
+                if init_image is not None:
+                    logger.warning(f"{backend} does not support img2img — init_image ignored")
+                gen_kwargs = dict(
+                    prompt=prompt,
+                    negative_prompt="",
+                    width=width,
+                    height=height,
+                    cfg_scale=guidance_scale,
+                    sample_steps=num_inference_steps,
+                    seed=seed if seed is not None else -1,
+                    vae_tiling=True,
+                )
+                output = self.pipeline.generate_image(**gen_kwargs)
+                class _SDCppResultDiT:
+                    def __init__(self, images):
+                        self.images = images
+                result = _SDCppResultDiT(output)
 
             elif backend in ("sd_cpp_sd3", "sd_cpp_wan"):
                 # SD 3.5 / Wan GGUF — text-to-image only, uses same sd.cpp interface

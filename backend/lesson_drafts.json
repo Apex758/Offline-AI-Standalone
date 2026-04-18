@@ -1,0 +1,30 @@
+[
+  {
+    "id": "draft_lesson-planner-1776114018130_1776335931354",
+    "title": "2",
+    "timestamp": "2026-04-16T10:38:51.354Z",
+    "plannerType": "lesson",
+    "formData": {
+      "subject": "",
+      "gradeLevel": "2",
+      "topic": "",
+      "strand": "",
+      "essentialOutcomes": "",
+      "specificOutcomes": "",
+      "studentCount": "",
+      "duration": "",
+      "pedagogicalStrategies": [],
+      "learningStyles": [],
+      "learningPreferences": [],
+      "multipleIntelligences": [],
+      "customLearningStyles": "",
+      "materials": "",
+      "prerequisiteSkills": "",
+      "specialNeeds": false,
+      "specialNeedsDetails": "",
+      "additionalInstructions": ""
+    },
+    "step": 1,
+    "curriculumMatches": []
+  }
+]

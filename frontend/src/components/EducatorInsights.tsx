@@ -296,7 +296,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     if (!insightsData && !dataLoading && !hasInitialized.current) {
       hasInitialized.current = true;
       setDataLoading(true);
-      axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}${gradeSubjectsParam ? `&grade_subjects=${gradeSubjectsParam}` : ''}`)
+      axios.get(`${API_CONFIG.BASE_URL}/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}${gradeSubjectsParam ? `&grade_subjects=${gradeSubjectsParam}` : ''}`)
         .then(res => {
           setInsightsData(res.data);
           persistState({ insightsData: res.data });
@@ -339,7 +339,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   // Load teacher metrics on mount
   useEffect(() => {
     if (!teacherMetrics) {
-      axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+      axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
         .then(res => {
           const m = res.data?.metrics;
           if (m) {
@@ -351,7 +351,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
     }
     // Load metrics history
     if (metricsHistory.length === 0) {
-      axios.get(`/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
+      axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
         .then(res => {
           const h = res.data?.history;
           if (Array.isArray(h)) {
@@ -362,7 +362,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
         .catch(() => {});
     }
     // Load phase history
-    axios.get(`/api/teacher-metrics/history-by-phase?teacher_id=${encodeURIComponent(teacherId)}`)
+    axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/history-by-phase?teacher_id=${encodeURIComponent(teacherId)}`)
       .then(res => {
         const ph = res.data?.phases;
         if (Array.isArray(ph) && ph.length > 0) {
@@ -506,9 +506,9 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             setPreviousMetrics(teacherMetrics);
             setTeacherMetrics(msg.report.metrics);
           }
-          axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+          axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
             .then(res => { if (res.data?.metrics) { setPreviousMetrics(teacherMetrics); setTeacherMetrics(res.data.metrics); } }).catch(() => {});
-          axios.get(`/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
+          axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
             .then(res => { if (Array.isArray(res.data?.history)) setMetricsHistory(res.data.history); }).catch(() => {});
 
           // Reset nudge dismiss so it re-evaluates after new report
@@ -643,9 +643,9 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
             setPreviousMetrics(teacherMetrics);
             setTeacherMetrics(msg.report.metrics);
           }
-          axios.get(`/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
+          axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/current?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}`)
             .then(res => { if (res.data?.metrics) { setPreviousMetrics(teacherMetrics); setTeacherMetrics(res.data.metrics); } }).catch(() => {});
-          axios.get(`/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
+          axios.get(`${API_CONFIG.BASE_URL}/api/teacher-metrics/history?teacher_id=${encodeURIComponent(teacherId)}`)
             .then(res => { if (Array.isArray(res.data?.history)) setMetricsHistory(res.data.history); }).catch(() => {});
 
           setNudgeDismissed(false);
@@ -672,7 +672,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
   // Delete a report from history
   const handleDeleteReport = useCallback((reportId: string) => {
-    axios.delete(`/api/insights/reports/${reportId}`)
+    axios.delete(`${API_CONFIG.BASE_URL}/api/insights/reports/${reportId}`)
       .then(() => {
         setReportHistory(prev => prev.filter(r => r.id !== reportId));
         if (report?.id === reportId) {
@@ -702,7 +702,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   // Refresh summary card data
   const handleRefreshData = useCallback(() => {
     setDataLoading(true);
-    axios.get(`/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}${gradeSubjectsParam ? `&grade_subjects=${gradeSubjectsParam}` : ''}`)
+    axios.get(`${API_CONFIG.BASE_URL}/api/insights/data?teacher_id=${encodeURIComponent(teacherId)}&user_id=${encodeURIComponent(userId)}${gradeSubjectsParam ? `&grade_subjects=${gradeSubjectsParam}` : ''}`)
       .then(res => {
         setInsightsData(res.data);
         persistState({ insightsData: res.data });
