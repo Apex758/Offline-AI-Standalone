@@ -501,7 +501,10 @@
       "Read(//c/msys64/usr/bin/**)",
       "Read(//c/msys64/mingw64/bin//**)",
       "Bash(cmd.exe //c \"c:\\\\\\\\tmp\\\\\\\\install_gcc.bat\")",
-      "Bash(grep -l \"useStreaming.*Quiz\\\\|useStreaming.*quiz\" \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone/frontend/src/hooks\"/*)"
+      "Bash(grep -l \"useStreaming.*Quiz\\\\|useStreaming.*quiz\" \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone/frontend/src/hooks\"/*)",
+      "Bash(find backend *)",
+      "Bash(ls -la backend/venv/Lib/site-packages/pyzbar/*.dll)",
+      "Bash(python -c \"import qrcode; print\\(qrcode.__file__\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

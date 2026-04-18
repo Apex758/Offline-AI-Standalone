@@ -21,7 +21,7 @@ import ArrowLeft02IconData from '@hugeicons/core-free-icons/ArrowLeft02Icon';
 import axios from 'axios';
 import { API_CONFIG, getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import { achievementApi } from '../lib/achievementApi';
-import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot, PhaseHistoryEntry, AcademicPhase, SchoolYearConfig } from '../types/insights';
+import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, MetricSnapshot, PhaseHistoryEntry, AcademicPhase, SchoolYearConfig, SchoolPhase } from '../types/insights';
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useNotification } from '../contexts/NotificationContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -31,6 +31,7 @@ import MetricsNudgeBanner from './MetricsNudgeBanner';
 import InsightsGraphRow, { type DimensionClickContext } from './InsightsGraphRow';
 import InsightsCoachPanel from './InsightsCoachPanel';
 import PhaseHistoryNav from './PhaseHistoryNav';
+import YearPhasePopover from './charts/YearPhasePopover';
 import PhaseBreakdownModal from './PhaseBreakdownModal';
 import { useCurrentPhase } from '../hooks/useCurrentPhase';
 import { DashboardSkeleton } from './ui/DashboardSkeleton';
@@ -174,6 +175,9 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
 
   // Phase scoping for insights
   const [insightsPhaseScope, setInsightsPhaseScope] = useState<string | null>(null); // null = full, or phase_id
+  const [headerPhasePopoverOpen, setHeaderPhasePopoverOpen] = useState(false);
+  const [showPhaseBands, setShowPhaseBands] = useState(true);
+  const headerPhaseBadgeRef = useRef<HTMLDivElement>(null);
 
   // Schedule form state
   const [schedMode, setSchedMode] = useState<'manual' | 'daily' | 'interval'>('manual');
@@ -863,30 +867,42 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
                 <p className="text-sm text-theme-secondary">AI-powered analysis of your teaching data</p>
               </div>
               {activePhase && (
-                <div
-                  onClick={() => setInsightsPhaseScope(insightsPhaseScope ? null : activePhase.id)}
-                  title={insightsPhaseScope ? 'Click to clear phase scope' : 'Click to scope insights to this phase'}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '4px 12px',
-                    borderRadius: 9999,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    background: insightsPhaseScope ? `${activePhase.color}25` : `${activePhase.color}15`,
-                    border: `1px solid ${insightsPhaseScope ? activePhase.color : `${activePhase.color}40`}`,
-                    color: activePhase.color,
-                    marginLeft: 12,
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: activePhase.color, flexShrink: 0 }} />
-                  Currently in: {activePhase.phase_label}
-                  <span style={{ opacity: 0.5 }}>&bull;</span>
-                  {activePhase.days_remaining}d left
+                <div ref={headerPhaseBadgeRef} style={{ position: 'relative', display: 'inline-flex', marginLeft: 12 }}>
+                  <button
+                    onMouseDown={e => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+                    onClick={() => setHeaderPhasePopoverOpen(p => !p)}
+                    title="View academic phases"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '4px 12px',
+                      borderRadius: 9999,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: insightsPhaseScope ? `${activePhase.color}25` : `${activePhase.color}15`,
+                      border: `1px solid ${insightsPhaseScope ? activePhase.color : `${activePhase.color}40`}`,
+                      color: activePhase.color,
+                      whiteSpace: 'nowrap',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: activePhase.color, flexShrink: 0 }} />
+                    Currently in: {activePhase.phase_label}
+                    <span style={{ opacity: 0.5 }}>&bull;</span>
+                    {activePhase.days_remaining}d left
+                  </button>
+                  {headerPhasePopoverOpen && (
+                    <YearPhasePopover
+                      currentPhase={activePhase.phase_key as SchoolPhase}
+                      onClose={() => setHeaderPhasePopoverOpen(false)}
+                      anchorTop={36}
+                      anchorLeft={0}
+                      showPhaseBands={showPhaseBands}
+                      onTogglePhaseBands={() => setShowPhaseBands(p => !p)}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -1152,6 +1168,7 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
           insightsData={insightsData}
           loading={dataLoading && !teacherMetrics}
           tabColor={tabColor}
+          showPhaseBands={showPhaseBands}
           onDimensionClick={(dim, ctx) => {
             // Store context and reset conversation so each click gets a fresh focused session
             setCoachTriggerDimension(dim);

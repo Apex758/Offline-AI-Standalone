@@ -33,8 +33,6 @@ interface TeacherMetricsChartProps {
   data: MetricSnapshot[];
   height?: number;
   compact?: boolean;
-  phaseBadgeRef?: React.Ref<HTMLButtonElement>;
-  onPhaseClick?: () => void;
   showPhaseBands?: boolean;
   onChartMouseEnter?: () => void;
   onChartMouseLeave?: () => void;
@@ -144,8 +142,6 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
   data,
   height = 340,
   compact = false,
-  phaseBadgeRef,
-  onPhaseClick,
   showPhaseBands = true,
   onChartMouseEnter,
   onChartMouseLeave,
@@ -397,24 +393,6 @@ const TeacherMetricsChart: React.FC<TeacherMetricsChartProps> = ({
       {!compact && (
         <div className="flex items-center gap-2 mb-2">
           <h3 className="text-base font-bold" style={{ color: 'var(--dash-text)' }}>{t('charts.teachingEffectiveness')}</h3>
-          {chartData.length > 0 && onPhaseClick && (
-            <button
-              ref={phaseBadgeRef}
-              onClick={onPhaseClick}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border transition-opacity hover:opacity-80"
-              style={{
-                backgroundColor: 'var(--dash-card-bg)',
-                borderColor: 'var(--dash-border)',
-                color: 'var(--dash-text-sub)',
-              }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: PHASE_COLORS_SOLID[chartData[chartData.length - 1].phase] || '#6b7280' }}
-              />
-              {chartData[chartData.length - 1].phase_label}
-            </button>
-          )}
         </div>
       )}
 

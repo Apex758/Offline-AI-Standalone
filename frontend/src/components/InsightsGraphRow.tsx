@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
@@ -11,7 +11,6 @@ import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import type { TeacherMetrics, MetricSnapshot, InsightsData } from '../types/insights';
 import TeacherMetricsChart from './charts/TeacherMetricsChart';
-import YearPhasePopover from './charts/YearPhasePopover';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -61,6 +60,7 @@ interface InsightsGraphRowProps {
   loading?: boolean;
   onDimensionClick?: (dimension: string, ctx: DimensionClickContext) => void;
   tabColor?: string;
+  showPhaseBands?: boolean;
 }
 
 const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
@@ -71,14 +71,12 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
   loading = false,
   onDimensionClick,
   tabColor,
+  showPhaseBands = true,
 }) => {
   const { t } = useTranslation();
   const [panelOpen, setPanelOpen] = useState(false);
-  const [phasePopoverOpen, setPhasePopoverOpen] = useState(false);
   const [chartAreaHovered, setChartAreaHovered] = useState(false);
-  const [showPhaseBands, setShowPhaseBands] = useState(true);
   const [expandedDimension, setExpandedDimension] = useState<string | null>(null);
-  const phaseBadgeRef = useRef<HTMLButtonElement>(null);
 
   // Loading skeleton
   if (loading && !metrics) {
@@ -101,30 +99,9 @@ const InsightsGraphRow: React.FC<InsightsGraphRowProps> = ({
       <div className="flex h-full">
         {/* ── Graph area ── */}
         <div className="flex-1 relative min-w-0 px-2 pt-2 pb-1">
-          {/* Year phase popover */}
-          {phasePopoverOpen && metrics && phaseBadgeRef.current && (() => {
-            const btn = phaseBadgeRef.current;
-            const container = btn.closest('.relative') as HTMLElement | null;
-            if (!container) return null;
-            const btnRect = btn.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            return (
-              <YearPhasePopover
-                currentPhase={metrics.phase.phase}
-                onClose={() => setPhasePopoverOpen(false)}
-                anchorTop={btnRect.top - containerRect.top}
-                anchorLeft={btnRect.right - containerRect.left}
-                showPhaseBands={showPhaseBands}
-                onTogglePhaseBands={() => setShowPhaseBands(p => !p)}
-              />
-            );
-          })()}
-
           {metricsHistory.length > 0 ? (
             <TeacherMetricsChart
               data={metricsHistory}
-              phaseBadgeRef={phaseBadgeRef}
-              onPhaseClick={() => setPhasePopoverOpen(p => !p)}
               showPhaseBands={showPhaseBands}
               onChartMouseEnter={() => setChartAreaHovered(true)}
               onChartMouseLeave={() => setChartAreaHovered(false)}
