@@ -409,7 +409,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   // Subscribe to streaming updates so component re-renders as tokens arrive
   useEffect(() => {
+    let renderCount = 0;
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
+      renderCount++;
+      if (renderCount <= 5 || renderCount % 20 === 0) {
+        console.log(`[QUIZ-STREAM-DIAG] QuizGenerator re-render #${renderCount}, streamingQuiz length=${getStreamingContent(tabId, ENDPOINT)?.length || 0}, isStreaming=${getIsStreaming(tabId, ENDPOINT)}`);
+      }
       forceRender({});
     });
     return unsubscribe;

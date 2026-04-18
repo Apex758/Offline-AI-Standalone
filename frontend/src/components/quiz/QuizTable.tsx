@@ -35,6 +35,8 @@ export default function QuizTable({
 }: Props) {
   const { t } = useTranslation();
 
+  if (!quiz?.metadata) return null;
+
   const patchQuestion = useCallback(
     (idx: number, update: Partial<QuizQuestion>) => {
       if (!onChange) return;
@@ -62,7 +64,7 @@ export default function QuizTable({
   const addQuestion = useCallback(() => {
     if (!onChange) return;
     const newQ: QuizQuestion = {
-      id: `q_${Date.now()}_${quiz.questions.length}`,
+      id: `q_${Date.now()}_${quiz.questions.length}_${Math.random().toString(36).slice(2, 8)}`,
       type: "multiple-choice",
       question: "",
       options: ["", "", "", ""],

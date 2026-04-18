@@ -114,10 +114,23 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           conn.streamingContent += data.content;
           conn.isStreaming = true;
 
+          // 🔍 DIAG: log token arrival for quiz streaming debug
+          if (key.includes('quiz')) {
+            const totalLen = conn.streamingContent.length;
+            const listeners = conn.listeners.size;
+            if (totalLen < 100 || totalLen % 200 < data.content.length) {
+              console.log(`[QUIZ-STREAM-DIAG] token arrived: +${data.content.length} chars, total=${totalLen}, listeners=${listeners}`);
+            }
+          }
+
           // ✅ Schedule batched update instead of immediate forceUpdate
           scheduleUpdate(key);
         } else if (data.type === 'done' || data.type === 'cancelled') {
           conn.isStreaming = false;
+          // 🔍 DIAG: log completion
+          if (key.includes('quiz')) {
+            console.log(`[QUIZ-STREAM-DIAG] ${data.type}: final content length=${conn.streamingContent.length}, listeners=${conn.listeners.size}`);
+          }
           // ✅ Force immediate update on completion
           const existingTimer = updateTimersRef.current.get(key);
           if (existingTimer) {

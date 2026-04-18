@@ -259,6 +259,23 @@ foreach ($folder in $gtkFolders) {
 }
 Write-Host "Verified GTK runtime folders (bin, etc, lib, share, ssl) from backend/ to backend-bundle" -ForegroundColor Green
 
+# Copy pyzbar DLLs to bin/ so they're on PATH at runtime
+$pyzbarDir = "$bundleDir\python_libs\pyzbar"
+if (Test-Path $pyzbarDir) {
+    Get-ChildItem "$pyzbarDir\*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+        Copy-Item $_.FullName -Destination "$bundleDir\bin\" -Force
+        Write-Host "Copied pyzbar DLL: $($_.Name) to bin/" -ForegroundColor Cyan
+    }
+    # Also check for DLLs in a nested folder (some pyzbar versions)
+    Get-ChildItem "$pyzbarDir\*\*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+        Copy-Item $_.FullName -Destination "$bundleDir\bin\" -Force
+        Write-Host "Copied pyzbar DLL: $($_.Name) to bin/" -ForegroundColor Cyan
+    }
+    Write-Host "pyzbar DLLs copied to bin/ for runtime discovery" -ForegroundColor Green
+} else {
+    Write-Host "Warning: pyzbar not found in python_libs - QR scanning may not work in packaged app" -ForegroundColor Yellow
+}
+
 # Create startup script
 @"
 import os

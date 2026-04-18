@@ -2208,6 +2208,10 @@ async def quiz_websocket(websocket: WebSocket):
                 # Stream tokens as they are generated
                 _token_buf = ""
                 _last_flush = time.monotonic()
+                _quiz_stream_start = time.monotonic()
+                _quiz_token_count = 0
+                _quiz_flush_count = 0
+                logger.info(f"[QUIZ-STREAM-DIAG] Starting quiz generation stream (jobId={job_id})")
                 async for chunk in inference.generate_stream(
                     tool_name="quiz",
                     input_data=prompt,
@@ -2242,6 +2246,8 @@ async def quiz_websocket(websocket: WebSocket):
                         if _token_buf:
                             try: await websocket.send_json({"type": "token", "content": _token_buf})
                             except: pass
+                        _elapsed = time.monotonic() - _quiz_stream_start
+                        logger.info(f"[QUIZ-STREAM-DIAG] Stream DONE: {_quiz_token_count} tokens, {_quiz_flush_count} flushes, {_elapsed:.2f}s elapsed, {_quiz_token_count/_elapsed:.1f} tok/s")
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)
@@ -2250,9 +2256,15 @@ async def quiz_websocket(websocket: WebSocket):
                         break
 
                     if chunk.get("token"):
+                        _quiz_token_count += 1
                         _token_buf += chunk["token"]
                         _now = time.monotonic()
                         if (_now - _last_flush) >= 0.030 or '\n' in chunk["token"]:
+                            _quiz_flush_count += 1
+                            _buf_len = len(_token_buf)
+                            _gap = _now - _last_flush
+                            if _quiz_flush_count <= 5 or _quiz_flush_count % 20 == 0:
+                                logger.info(f"[QUIZ-STREAM-DIAG] Flush #{_quiz_flush_count}: {_buf_len} chars, gap={_gap:.3f}s, total_tokens={_quiz_token_count}, elapsed={_now - _quiz_stream_start:.2f}s")
                             try:
                                 await websocket.send_json({"type": "token", "content": _token_buf})
                                 await asyncio.sleep(0)

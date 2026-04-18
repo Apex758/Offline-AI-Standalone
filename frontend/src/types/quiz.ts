@@ -228,7 +228,7 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
     
     console.log(`Found ${matches.length} questions in text format`);
     
-    matches.forEach((match) => {
+    matches.forEach((match, arrayIndex) => {
       const questionNumber = match[1];
       const firstLine = match[2].trim();
       const questionContent = match[3].trim();
@@ -286,7 +286,7 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
         .replace(/\s*Example of a good response:.*$/i, '')
         .trim();
       
-      const index = parseInt(questionNumber) - 1;
+      const index = arrayIndex;
       let parsedQuestion: QuizQuestion | null = null;
       
       switch (questionType) {
@@ -368,11 +368,12 @@ export function parseQuizFromAI(aiResponse: string): ParsedQuiz | null {
 
 // Convert ParsedQuiz to display text (parser-compatible format)
 export function quizToDisplayText(quiz: ParsedQuiz): string {
+  if (!quiz?.metadata) return '';
   let text = `# Generated Quiz\n\n`;
   text += `**Subject:** ${quiz.metadata.subject} | `;
   text += `**Grade:** ${quiz.metadata.gradeLevel} | `;
   text += `**Questions:** ${quiz.metadata.totalQuestions}\n\n`;
-  
+
   if (quiz.metadata.instructions) {
     text += `${quiz.metadata.instructions}\n\n`;
   }
