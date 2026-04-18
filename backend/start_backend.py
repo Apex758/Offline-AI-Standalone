@@ -20,6 +20,19 @@ print("Starting backend server...")
 print(f"Python: {sys.executable}")
 print(f"Backend dir: {script_dir}")
 
+# Lower backend priority so UI (Electron) preempts during generation.
+# BELOW_NORMAL on Windows, nice=10 on POSIX. Safe no-op if psutil missing.
+try:
+    import psutil
+    proc = psutil.Process(os.getpid())
+    if sys.platform == "win32":
+        proc.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
+    else:
+        proc.nice(10)
+    print(f"Backend priority lowered: {proc.nice()}")
+except Exception as e:
+    print(f"Priority adjust skipped: {e}")
+
 try:
     import uvicorn
     from main import app
