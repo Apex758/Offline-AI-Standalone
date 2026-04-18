@@ -274,6 +274,79 @@ def _get_physical_core_count() -> int:
         return os.cpu_count() or 4
 
 
+_cached_vulkan_info: Optional[Dict[str, Any]] = None
+
+
+def _detect_vulkan_gpu() -> Dict[str, Any]:
+    """Detect first Vulkan device and its VRAM. Returns dict with keys:
+      available (bool), device_name (str), vram_gb (int).
+    Works vendor-agnostic: Intel, NVIDIA, AMD, Apple, Qualcomm.
+    Cached per-process.
+    """
+    global _cached_vulkan_info
+    if _cached_vulkan_info is not None:
+        return _cached_vulkan_info
+
+    info = {"available": False, "device_name": "", "vram_gb": 0}
+    try:
+        import subprocess, re
+        # --summary for device name (fast)
+        proc = subprocess.run(
+            ["vulkaninfo", "--summary"],
+            capture_output=True, text=True, timeout=8,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"vulkaninfo exit {proc.returncode}")
+        name_m = re.search(r"deviceName\s*=\s*(.+)", proc.stdout)
+        if name_m:
+            info["device_name"] = name_m.group(1).strip()
+            info["available"] = True
+
+        # Full dump for heap sizes (slower but only once per process)
+        full = subprocess.run(
+            ["vulkaninfo"],
+            capture_output=True, text=True, timeout=15,
+        )
+        if full.returncode == 0:
+            # Pick largest heap size across all devices
+            heap_sizes = re.findall(r"size\s*=\s*(\d+)\s*\(0x[0-9a-f]+\)\s*\([\d.]+\s*GiB\)",
+                                     full.stdout)
+            if heap_sizes:
+                info["vram_gb"] = max(int(s) for s in heap_sizes) // (1024 ** 3)
+    except FileNotFoundError:
+        logger.debug("vulkaninfo not found — no Vulkan runtime")
+    except Exception as e:
+        logger.debug(f"Vulkan detection failed: {e}")
+
+    _cached_vulkan_info = info
+    if info["available"]:
+        logger.info(
+            f"[gpu] Vulkan device: {info['device_name']} ({info['vram_gb']}GB VRAM)"
+        )
+    else:
+        logger.info("[gpu] No Vulkan device — CPU inference path")
+    return info
+
+
+def _apply_vulkan_kwargs(kwargs: dict, sd_params, small_gpu_threshold_gb: int = 8) -> None:
+    """Apply Vulkan-aware kwargs to sd.cpp StableDiffusion constructor.
+    No-op if no Vulkan GPU detected. Falls back cleanly on CPU.
+    """
+    gpu = _detect_vulkan_gpu()
+    if not gpu["available"]:
+        return
+    if gpu["vram_gb"] > 0 and gpu["vram_gb"] < small_gpu_threshold_gb:
+        if "keep_clip_on_cpu" in sd_params:
+            kwargs["keep_clip_on_cpu"] = True
+            logger.info(
+                f"[gpu] Small GPU ({gpu['vram_gb']}GB) — text encoder stays on CPU"
+            )
+        if "keep_vae_on_cpu" in sd_params:
+            kwargs["keep_vae_on_cpu"] = False  # VAE fits
+    else:
+        logger.info(f"[gpu] Large GPU ({gpu['vram_gb']}GB) — full offload")
+
+
 def _detect_cpu_features() -> dict:
     """Detect CPU features relevant to OpenVINO optimization."""
     features = {"bf16": False, "avx512": False}
@@ -374,6 +447,7 @@ def _load_sdxl_turbo_gguf(model_path: Path, gguf_file: str = None):
     if "vae_conv_direct" in sd_params:
         kwargs["vae_conv_direct"] = True
         logger.info("Enabled vae_conv_direct for SDXL GGUF")
+    _apply_vulkan_kwargs(kwargs, sd_params)
 
     sd = StableDiffusion(**kwargs)
     return sd
@@ -448,6 +522,7 @@ def _load_sd3_gguf(model_path: Path, gguf_file: str = None):
     if "vae_conv_direct" in sd_params:
         kwargs["vae_conv_direct"] = True
         logger.info("Enabled vae_conv_direct for SD3.5 GGUF")
+    _apply_vulkan_kwargs(kwargs, sd_params)
 
     return StableDiffusion(**kwargs)
 
@@ -479,6 +554,7 @@ def _load_wan_gguf(model_path: Path, gguf_file: str = None):
     if "vae_conv_direct" in sd_params:
         kwargs["vae_conv_direct"] = True
         logger.info("Enabled vae_conv_direct for Wan GGUF")
+    _apply_vulkan_kwargs(kwargs, sd_params)
 
     return StableDiffusion(**kwargs)
 
@@ -513,7 +589,11 @@ def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
         if not Path(fpath).exists():
             raise FileNotFoundError(f"Z-Image Turbo {label} not found: {fpath}")
 
-    n_threads = _get_physical_core_count()
+    try:
+        from cpu_info import optimal_thread_count
+        n_threads = optimal_thread_count()
+    except Exception:
+        n_threads = _get_physical_core_count()
     logger.info(f"Loading Z-Image Turbo GGUF: {gguf_file}, threads={n_threads}")
 
     import inspect
@@ -542,8 +622,9 @@ def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
         kwargs["flash_attn"] = True
     if "vae_conv_direct" in sd_params:
         kwargs["vae_conv_direct"] = True
-    if "offload_params_to_cpu" in sd_params:
-        kwargs["offload_params_to_cpu"] = True
+    if "enable_mmap" in sd_params:
+        kwargs["enable_mmap"] = True
+    _apply_vulkan_kwargs(kwargs, sd_params)
 
     return StableDiffusion(**kwargs)
 
@@ -605,6 +686,7 @@ def _load_flux2_klein_gguf(model_path: Path, gguf_file: str = None):
         kwargs["vae_conv_direct"] = True
     if "offload_params_to_cpu" in sd_params:
         kwargs["offload_params_to_cpu"] = True
+    _apply_vulkan_kwargs(kwargs, sd_params)
 
     return StableDiffusion(**kwargs)
 
@@ -1080,7 +1162,7 @@ class ImageService:
                     cfg_scale=guidance_scale,
                     sample_steps=num_inference_steps,
                     seed=seed if seed is not None else -1,
-                    vae_tiling=True,
+                    vae_tiling=width > 512 or height > 512,
                 )
                 output = self.pipeline.generate_image(**gen_kwargs)
                 class _SDCppResultDiT:

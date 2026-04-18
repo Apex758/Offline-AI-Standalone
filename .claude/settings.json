@@ -504,7 +504,21 @@
       "Bash(grep -l \"useStreaming.*Quiz\\\\|useStreaming.*quiz\" \"c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone/frontend/src/hooks\"/*)",
       "Bash(find backend *)",
       "Bash(ls -la backend/venv/Lib/site-packages/pyzbar/*.dll)",
-      "Bash(python -c \"import qrcode; print\\(qrcode.__file__\\)\")"
+      "Bash(python -c \"import qrcode; print\\(qrcode.__file__\\)\")",
+      "Bash(wmic cpu *)",
+      "Bash(venv/Scripts/python.exe -c \"import inspect; from stable_diffusion_cpp import StableDiffusion; p = inspect.signature\\(StableDiffusion.__init__\\).parameters; [print\\(k\\) for k in p if 'mmap' in k.lower\\(\\) or 'keep' in k.lower\\(\\) or 'lazy' in k.lower\\(\\)]\")",
+      "Bash(venv/Scripts/python.exe -c \"import stable_diffusion_cpp; print\\(stable_diffusion_cpp.__version__ if hasattr\\(stable_diffusion_cpp, '__version__'\\) else 'no version attr'\\)\")",
+      "Bash(venv/Scripts/pip show *)",
+      "Bash(where cl *)",
+      "Bash(vulkaninfo --summary)",
+      "Bash(where vulkaninfo *)",
+      "Read(//c//**)",
+      "PowerShell($env:VULKAN_SDK; Write-Output \"---\"; Test-Path \"C:\\\\VulkanSDK\"; Get-ChildItem \"C:\\\\VulkanSDK\" -ErrorAction SilentlyContinue | Select-Object Name; Write-Output \"---CL---\"; $cl = Get-Command cl.exe -ErrorAction SilentlyContinue; if \\($cl\\) { $cl.Source } else { \"cl.exe not on PATH — need VS dev prompt\" }; Write-Output \"---CMAKE---\"; cmake --version 2>&1 | Select-Object -First 1)",
+      "Bash(venv/Scripts/python.exe -c \"import ast; ast.parse\\(open\\('image_service.py'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(venv/Scripts/python.exe -c ' *)",
+      "Bash(vulkaninfo)",
+      "Bash(cmd.exe /c \"rebuild_vulkan.bat > rebuild.log 2>&1\")",
+      "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c `\"C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\\\\rebuild_vulkan.bat > C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\backend\\\\rebuild.log 2>&1`\"\" -NoNewWindow -PassThru)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",
