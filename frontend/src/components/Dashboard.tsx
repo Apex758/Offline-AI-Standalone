@@ -939,16 +939,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // and auto-unload after 5 min when all image tabs are closed
   const diffusionUnloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const diffusionPreloading = useRef(false);
+  // All tabs that may eventually use diffusion — kept for the idle-unload timer.
   const IMAGE_TAB_TYPES = useMemo(() => new Set(['image-studio', 'storybook']), []);
+  // Only tabs that should EAGERLY preload diffusion on focus. Storybook is
+  // excluded because its LLM-first phase needs full RAM for the text model;
+  // its image pipeline will swap diffusion in on demand via storyImagePipeline.
+  const IMAGE_TAB_TYPES_EAGER = useMemo(() => new Set(['image-studio']), []);
   const DIFFUSION_IDLE_MS = 5 * 60 * 1000; // 5 minutes
 
   useEffect(() => {
     const hasImageTab = tabs.some(t => IMAGE_TAB_TYPES.has(t.type));
     const activeTab = activeTabId ? tabs.find(t => t.id === activeTabId) : null;
     const activeIsImage = activeTab ? IMAGE_TAB_TYPES.has(activeTab.type) : false;
+    const activeShouldEagerPreload = activeTab ? IMAGE_TAB_TYPES_EAGER.has(activeTab.type) : false;
 
-    // Preload when switching to an image tab (only if Brain is online)
-    if (activeIsImage && engineStatus === 'online') {
+    // Preload when switching to an eager-preload image tab (only if Brain is online)
+    if (activeShouldEagerPreload && engineStatus === 'online') {
       if (diffusionUnloadTimer.current) {
         clearTimeout(diffusionUnloadTimer.current);
         diffusionUnloadTimer.current = null;
@@ -979,7 +985,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         diffusionUnloadTimer.current = null;
       }, DIFFUSION_IDLE_MS);
     }
-  }, [activeTabId, tabs, IMAGE_TAB_TYPES, engineStatus, studioStatus]);
+  }, [activeTabId, tabs, IMAGE_TAB_TYPES, IMAGE_TAB_TYPES_EAGER, engineStatus, studioStatus]);
 
   // Auto-scroll sidebar to the active tool when sidebar opens
   useEffect(() => {

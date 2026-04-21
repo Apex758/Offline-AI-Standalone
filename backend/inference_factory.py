@@ -100,6 +100,15 @@ def _get_local_singleton():
         if _local_instance is not None and _local_instance.is_loaded:
             return _local_instance
 
+        # Safety-net: if diffusion is currently resident and the observed
+        # generation mode is 'queued', free it before loading the LLM so we
+        # don't blow out RAM on 16GB boxes. No-op in 'simultaneous' mode.
+        try:
+            from model_swap import auto_unload_image_if_needed_sync
+            auto_unload_image_if_needed_sync()
+        except Exception as e:
+            logger.debug(f"auto_unload_image probe failed (non-fatal): {e}")
+
         logger.info("Loading local Llama model (singleton)...")
         from llama_inference import LlamaInference
         clip_path = resolve_vision_projector_path(get_selected_model())
@@ -125,6 +134,12 @@ def reload_local_model():
             except Exception:
                 pass
             _local_instance = None
+        # Safety-net: unload diffusion first if mode is 'queued'.
+        try:
+            from model_swap import auto_unload_image_if_needed_sync
+            auto_unload_image_if_needed_sync()
+        except Exception as e:
+            logger.debug(f"auto_unload_image probe failed (non-fatal): {e}")
         logger.info("Reloading local model...")
         from llama_inference import LlamaInference
         from config import get_model_path, resolve_vision_projector_path, get_selected_model, MODEL_N_CTX

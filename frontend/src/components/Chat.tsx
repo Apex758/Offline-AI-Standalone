@@ -75,6 +75,8 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
+import { useNotification } from '../contexts/NotificationContext';
+import { confirmImageStudioClose } from '../lib/swapApi';
 import FilePreviewModal from './FilePreviewModal';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
 import { useAchievementTrigger } from '../contexts/AchievementContext';
@@ -237,6 +239,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   // Files panel state
   const [filesTab, setFilesTab] = useState<FilesTab>('on-pc');
   const { settings, updateSettings, getProfileSnapshot } = useSettings();
+  const { toastOnly } = useNotification();
   const { hasVision } = useCapabilities();
   const triggerCheck = useAchievementTrigger();
   const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
@@ -866,8 +869,17 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() || loading || generatingPlan || executingPlan) return;
+
+    // If Image Studio is still the active workspace, prompt the user to
+    // close it before we load the LLM (avoids RAM double-load in queued mode).
+    // Also surfaces a toast when diffusion is mid-inference so the chat
+    // doesn't silently block on the inference lock.
+    const canProceed = await confirmImageStudioClose(settings.generationMode, () => {
+      toastOnly('Images still generating — try again when the batch finishes.', 'info', 4000);
+    });
+    if (!canProceed) return;
 
     const text = input.trim();
     const userMessage: Message = {

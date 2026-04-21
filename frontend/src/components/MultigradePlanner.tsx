@@ -51,6 +51,7 @@ import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
 import { extractGeneratedTitle } from '../utils/titleExtractor';
 import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../types/multigrade'; 
 import { useSettings } from '../contexts/SettingsContext';
+import { guardLlmReady } from '../lib/swapApi';
 import { filterSubjects, filterGradeRanges } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
@@ -879,7 +880,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     return Object.keys(errors).length === 0;
   };
 
-  const generatePlan = () => {
+  const generatePlan = async () => {
+    const ready = await guardLlmReady(settings.generationMode);
+    if (!ready) return;
     if (guardOffline()) return;
     if (!validateStep()) return;
     // Reset generated title ref for new generation

@@ -26,7 +26,8 @@ import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { imageApi } from '../lib/imageApi';
-import { swapApi } from '../lib/swapApi';
+import { swapApi, guardLlmReady } from '../lib/swapApi';
+import { useNotification } from '../contexts/NotificationContext';
 import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson, buildPresentationPromptFromFreeInput } from '../utils/presentationPromptBuilder';
 import type { PresentationFormData, ParsedLessonInput } from '../utils/presentationPromptBuilder';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
@@ -1671,6 +1672,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   const { guardOffline } = useOfflineGuard();
+  const { toastOnly } = useNotification();
 
   const theme = deriveTheme(primaryColor, bgColor);
 
@@ -1981,6 +1983,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
   };
 
   const handleGenerate = async () => {
+    const ready = await guardLlmReady(settings.generationMode, () => {
+      toastOnly('Images still generating — try again when the batch finishes.', 'info', 4000);
+    });
+    if (!ready) return;
     if (guardOffline()) return;
     setError(null);
     setLoading(true);
@@ -2136,6 +2142,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
     const s = slides[slideIdx];
     if (!s) return;
     setImageLoading(prev => ({ ...prev, [slideIdx]: true }));
+    await swapApi.toImage(settings.generationMode);
     try {
       const styleHint = getAllStyles(t).find(st => st.id === styleId);
       const styleName = styleHint?.label || 'fun';
@@ -2162,6 +2169,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
       console.error('Image generation failed:', e);
     }
     setImageLoading(prev => ({ ...prev, [slideIdx]: false }));
+    swapApi.toLlm(settings.generationMode).catch(() => {});
   };
 
   // Batch image generation — only for slides with imageScene descriptions

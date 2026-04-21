@@ -25,6 +25,7 @@ import type { InsightsData, InsightsReport, InsightsPassResult, TeacherMetrics, 
 import { useOfflineGuard } from '../hooks/useOfflineGuard';
 import { useNotification } from '../contexts/NotificationContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { guardLlmReady } from '../lib/swapApi';
 import { useQueue } from '../contexts/QueueContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import MetricsNudgeBanner from './MetricsNudgeBanner';
@@ -378,7 +379,9 @@ const EducatorInsights: React.FC<EducatorInsightsProps> = ({ tabId, savedData, o
   }, []);
 
   // Generate insights via WebSocket
-  const handleGenerate = useCallback(() => {
+  const handleGenerate = useCallback(async () => {
+    const ready = await guardLlmReady(settings.generationMode);
+    if (!ready) return;
     if (guardOffline()) return;
     if (isGenerating) return;
 

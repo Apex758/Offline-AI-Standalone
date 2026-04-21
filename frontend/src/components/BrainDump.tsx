@@ -60,6 +60,7 @@ import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { guardLlmReady } from '../lib/swapApi';
 import { useTranslation } from 'react-i18next';
 import { useQueue } from '../contexts/QueueContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
@@ -1113,7 +1114,9 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   }, [revealActions, actions.length]);
 
   // Analyze brain dump via WebSocket
-  const handleAnalyze = useCallback(() => {
+  const handleAnalyze = useCallback(async () => {
+    const ready = await guardLlmReady(settings.generationMode);
+    if (!ready) return;
     if (guardOffline()) return;
     const text = getPlainText();
     if (!text || loading) return;
@@ -1290,7 +1293,9 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   }, [guardOffline, getPlainText, loading, tabId, getConnection, parseActions, queueEnabled, enqueue, settings.generationMode, tier]);
 
   // ── Generate all task sets sequentially (Tier 1) ──
-  const handleGenerateAllSets = useCallback(() => {
+  const handleGenerateAllSets = useCallback(async () => {
+    const ready = await guardLlmReady(settings.generationMode);
+    if (!ready) return;
     if (guardOffline()) return;
     setShowReviewSets(false);
     setActions([]);

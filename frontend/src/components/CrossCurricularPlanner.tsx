@@ -51,6 +51,7 @@ import axios from 'axios';
 import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilder';
 import { extractGeneratedTitle } from '../utils/titleExtractor';
 import { useSettings } from '../contexts/SettingsContext';
+import { guardLlmReady } from '../lib/swapApi';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
@@ -1055,7 +1056,9 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     return Object.keys(errors).length === 0;
   };
 
-  const generatePlan = () => {
+  const generatePlan = async () => {
+    const ready = await guardLlmReady(settings.generationMode);
+    if (!ready) return;
     if (guardOffline()) return;
     if (!validateStep()) return;
     generatedTitleRef.current = null;

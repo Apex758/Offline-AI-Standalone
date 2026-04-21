@@ -68,6 +68,7 @@ import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
 import { extractGeneratedTitle } from '../utils/titleExtractor';
 import { useSettings } from '../contexts/SettingsContext';
+import { guardLlmReady } from '../lib/swapApi';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -736,7 +737,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   }, [streamingPlan, curriculumReferences, isStreaming, tabId, ENDPOINT, clearStreaming, formData]);
 
-  const generateLessonPlan = () => {
+  const generateLessonPlan = async () => {
+    const ready = await guardLlmReady(settings.generationMode);
+    if (!ready) return;
     if (guardOffline()) return;
     const refs = useCurriculum ? curriculumMatches : [];
     setCurriculumReferences(refs);

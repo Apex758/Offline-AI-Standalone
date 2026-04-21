@@ -678,7 +678,8 @@ async def swap_endpoint_to_image(request: Request):
         body = await request.json()
     except Exception:
         body = {}
-    from model_swap import swap_to_image
+    from model_swap import swap_to_image, set_observed_mode
+    set_observed_mode(body.get("generationMode"))
     result = await swap_to_image(
         mode=body.get("generationMode"),
         force=bool(body.get("force", False)),
@@ -701,7 +702,8 @@ async def swap_endpoint_to_llm(request: Request):
         body = await request.json()
     except Exception:
         body = {}
-    from model_swap import swap_to_llm
+    from model_swap import swap_to_llm, set_observed_mode
+    set_observed_mode(body.get("generationMode"))
     result = await swap_to_llm(
         mode=body.get("generationMode"),
         force=bool(body.get("force", False)),
@@ -713,9 +715,16 @@ async def swap_endpoint_to_llm(request: Request):
 
 @app.get("/api/swap/state")
 async def swap_endpoint_state():
-    """Current residency: 'llm' | 'image' | 'both' | 'none'."""
-    from model_swap import get_state, last_swap_age_seconds
-    return {"state": get_state(), "lastSwapAgeSec": last_swap_age_seconds()}
+    """Current residency: 'llm' | 'image' | 'both' | 'none'. Also exposes
+    `imageBusy` so the frontend can short-circuit chat actions with a toast
+    instead of blocking on the inference lock."""
+    from model_swap import get_state, last_swap_age_seconds, is_image_busy, get_observed_mode
+    return {
+        "state": get_state(),
+        "lastSwapAgeSec": last_swap_age_seconds(),
+        "imageBusy": is_image_busy(),
+        "observedMode": get_observed_mode(),
+    }
 
 
 # ============================================================================

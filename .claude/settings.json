@@ -551,7 +551,8 @@
       "Bash(python -c \"import image_service; print\\('OK'\\)\")",
       "Bash(python -c \"import image_service, config; print\\(list\\(config.IMAGE_MODEL_REGISTRY.keys\\(\\)\\)\\); print\\([k for k in image_service._LOADERS]\\)\")",
       "Bash(curl -sS -o /dev/null -w \"%{http_code}\" http://localhost:8000/api/health)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(node_modules/.bin/tsc --noEmit --project tsconfig.json)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

@@ -636,15 +636,21 @@ class ImageService:
             self._cancel_load.clear()
             return False
 
-        # Gate: Brain (LLM) must be loaded before diffusion can start
+        # Safety-net: in 'queued' mode the LLM and diffusion take turns in RAM.
+        # If the LLM is currently loaded, free it before we allocate the
+        # diffusion pipeline. No-op in 'simultaneous' mode (caller opted in to
+        # concurrent residency).
+        #
+        # NOTE: this replaces an older "brain must be loaded first" gate that
+        # deferred diffusion init when the LLM wasn't resident. That gate
+        # conflicted with the swap manager — swap deliberately unloads the
+        # LLM before image generation, which the gate then interpreted as
+        # "not ready" and blocked the diffusion load entirely.
         try:
-            import inference_factory as _inf_mod
-            if _inf_mod._local_instance is None or not _inf_mod._local_instance.is_loaded:
-                logger.warning("Brain model not loaded yet -- deferring pipeline init")
-                return False
-        except Exception:
-            logger.warning("Cannot verify brain status -- deferring pipeline init")
-            return False
+            from model_swap import auto_unload_llm_if_needed_sync
+            auto_unload_llm_if_needed_sync()
+        except Exception as e:
+            logger.debug(f"auto_unload_llm probe failed (non-fatal): {e}")
 
         with self._pipeline_lock:
             # Double-check after acquiring lock

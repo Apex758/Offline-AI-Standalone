@@ -49,6 +49,7 @@ import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import AIDisclaimer from './AIDisclaimer';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
+import { guardLlmReady } from '../lib/swapApi';
 import { filterLearningDomains } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -1005,7 +1006,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     }
   };
 
-  const generatePlan = () => {
+  const generatePlan = async () => {
+    const ready = await guardLlmReady(settings.generationMode);
+    if (!ready) return;
     if (guardOffline()) return;
     if (!validateForm()) {
       return;

@@ -55,7 +55,8 @@ const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
 import { getCurriculumSync } from '../data/curriculumLoader';
 import { imageApi } from '../lib/imageApi';
-import { swapApi } from '../lib/swapApi';
+import { swapApi, guardLlmReady } from '../lib/swapApi';
+import { useNotification } from '../contexts/NotificationContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
@@ -228,6 +229,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const { enqueue, queueEnabled } = useQueue();
   // Curriculum data is loaded per grade+subject via CurriculumAlignmentFields
   const { settings } = useSettings();
+  const { toastOnly } = useNotification();
   const worksheetTabColor = settings.tabColors['worksheet-generator'] ?? '#8b5cf6';
   const LOCAL_STORAGE_KEY = `worksheet_state_${tabId}`;
 
@@ -815,6 +817,10 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   const handleGenerate = async () => {
     console.log('handleGenerate called');
+    const ready = await guardLlmReady(settings.generationMode, () => {
+      toastOnly('Images still generating — try again when the batch finishes.', 'info', 4000);
+    });
+    if (!ready) return;
     if (guardOffline()) return;
 
     if (!validateForm()) {

@@ -28,7 +28,70 @@ logger = logging.getLogger(__name__)
 _swap_lock = asyncio.Lock()
 _last_swap_ts: float = 0.0
 
+# Server-wide observed generation mode. Updated whenever a frontend caller
+# hits one of the /api/swap/* endpoints (mode flows in the request body).
+# Used by the sync safety-net helpers below so that model load paths
+# (inference_factory._get_local_singleton, image_service.initialize_pipeline)
+# can decide whether to auto-unload the other model without needing an async
+# context or a per-request mode hand-off. Defaults to 'queued' → swap-on.
+_observed_mode: str = "queued"
+
 State = Literal["llm", "image", "none", "both"]
+
+
+def set_observed_mode(mode: Optional[str]) -> None:
+    """Remember the latest generationMode seen from the frontend. Called from
+    the /api/swap/* endpoints. Defaults to 'queued' on unknown values."""
+    global _observed_mode
+    m = (mode or "").strip().lower()
+    if m in ("queued", "simultaneous"):
+        _observed_mode = m
+
+
+def get_observed_mode() -> str:
+    return _observed_mode
+
+
+def auto_unload_image_if_needed_sync() -> bool:
+    """Sync safety-net: called from the LLM load path. If diffusion is
+    currently resident AND the observed mode is not 'simultaneous', unload
+    the diffusion pipeline to make room for the LLM. Returns True if a
+    pipeline was actually unloaded.
+
+    Safe to call from non-async code (unload_pipeline is threading.Lock-based).
+    Swallows all errors — this is a best-effort hint, not a hard barrier.
+    """
+    if _observed_mode == "simultaneous":
+        return False
+    if not _is_image_loaded():
+        return False
+    try:
+        from image_service import get_image_service
+        svc = get_image_service()
+        svc.unload_pipeline()
+        logger.info("[swap] auto_unload_image: diffusion pipeline unloaded before LLM load")
+        return True
+    except Exception as e:
+        logger.warning(f"[swap] auto_unload_image failed: {e}")
+        return False
+
+
+def auto_unload_llm_if_needed_sync() -> bool:
+    """Sync safety-net: called from the diffusion load path. If the LLM is
+    currently resident AND observed mode is not 'simultaneous', unload it.
+    Returns True if the LLM was actually unloaded."""
+    if _observed_mode == "simultaneous":
+        return False
+    if not _is_llm_loaded():
+        return False
+    try:
+        from inference_factory import unload_all_models
+        unload_all_models()
+        logger.info("[swap] auto_unload_llm: LLM released before diffusion load")
+        return True
+    except Exception as e:
+        logger.warning(f"[swap] auto_unload_llm failed: {e}")
+        return False
 
 
 def _is_llm_loaded() -> bool:
@@ -182,3 +245,23 @@ def last_swap_age_seconds() -> float:
     if _last_swap_ts == 0.0:
         return float("inf")
     return time.time() - _last_swap_ts
+
+
+def is_image_busy() -> bool:
+    """True when a diffusion inference is in progress (_inference_lock held).
+    Frontend checks this before firing LLM actions so it can show a 'Images
+    still generating' toast instead of blocking the user in a long queue."""
+    try:
+        from image_service import get_image_service
+        svc = get_image_service()
+        lock = getattr(svc, "_inference_lock", None)
+        if lock is None:
+            return False
+        acquired = lock.acquire(blocking=False)
+        if acquired:
+            lock.release()
+            return False
+        return True
+    except Exception as e:
+        logger.debug(f"[swap] is_image_busy probe failed: {e}")
+        return False

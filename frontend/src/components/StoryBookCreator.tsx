@@ -97,6 +97,7 @@ import {
 } from '../utils/speechBubble';
 import { NeuroSwitch } from './ui/NeuroSwitch';
 import { useNotification } from '../contexts/NotificationContext';
+import { guardLlmReady } from '../lib/swapApi';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1797,7 +1798,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     return true;
   };
 
-  const handleGenerate = useCallback(() => {
+  const handleGenerate = useCallback(async () => {
+    // Pre-flight: if image model is currently loaded / Image Studio is open,
+    // prompt the user to swap back to the LLM before we trip guardOffline.
+    const ready = await guardLlmReady(settings.generationMode, () => {
+      toastOnly('Images still generating — try again when the batch finishes.', 'info', 4000);
+    });
+    if (!ready) return;
     if (guardOffline()) return;
     if (!validate()) return;
     clearStreaming(tabId, WS_ENDPOINT);
@@ -1882,12 +1889,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     // then preload again ~2 pages before the end (see useEffect below).
     // For short books (< 4 pages), keep the old preload behavior since
     // the unload/reload cycle isn't worth it for brief generations.
+    // In 'queued' mode the swap manager handles diffusion lifecycle — do not
+    // preemptively preload diffusion while the LLM is streaming or we'll
+    // trigger the safety-net that unloads the LLM mid-generation.
     if (hasDiffusion && formData.pageCount >= 4) {
       fetch('http://localhost:8000/api/image-service/unload', { method: 'POST' }).catch(() => {});
-    } else if (formData.imageMode !== 'none' && hasDiffusion) {
+    } else if (formData.imageMode !== 'none' && hasDiffusion && settings.generationMode === 'simultaneous') {
       fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
     }
-  }, [guardOffline, formData, tabId, tier, hasDiffusion, getConnection, clearStreaming]);
+  }, [guardOffline, formData, tabId, tier, hasDiffusion, getConnection, clearStreaming, settings.generationMode, toastOnly]);
 
   // Pre-create the connection on mount so the subscribe below finds it immediately
   useEffect(() => {
@@ -2025,9 +2035,13 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     if (fineReached || coarseReached) {
       hasTriggeredPreloadRef.current = true;
-      fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
+      // Queued mode: pipeline swap-to-image handles this; preloading here
+      // would unload the still-streaming LLM via the safety-net guard.
+      if (settings.generationMode === 'simultaneous') {
+        fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
+      }
     }
-  }, [isStreaming, sbLiveTyping, livePages.length, formData.pageCount, hasDiffusion]);
+  }, [isStreaming, sbLiveTyping, livePages.length, formData.pageCount, hasDiffusion, settings.generationMode]);
 
   // Sync the fine-parsed introductionPage.moodText into parsedBook
   // during streaming, so:
@@ -2220,7 +2234,8 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
 
     if (!isStreaming && streamingContent) {
       // Fallback: ensure diffusion is preloaded when streaming ends (if not already triggered)
-      if (!hasTriggeredPreloadRef.current && hasDiffusion) {
+      // In queued mode the pipeline manages diffusion lifecycle via swapApi.
+      if (!hasTriggeredPreloadRef.current && hasDiffusion && settings.generationMode === 'simultaneous') {
         hasTriggeredPreloadRef.current = true;
         fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
       }

@@ -471,7 +471,14 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     }, 800);
     return () => clearTimeout(timer);
   }, [prompt]);
-  const [imageSlots, setImageSlots] = useState<Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}>>([]);
+  const [imageSlots, setImageSlots] = useState<Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'enhancing' | 'completed' | 'error'}>>([]);
+  const [autoEnhance, setAutoEnhance] = useState<boolean>(() => {
+    try { return localStorage.getItem('oai.image.autoEnhance') === 'true'; } catch { return false; }
+  });
+  const [pendingAutoEnhance, setPendingAutoEnhance] = useState<boolean>(false);
+  useEffect(() => {
+    try { localStorage.setItem('oai.image.autoEnhance', String(autoEnhance)); } catch {}
+  }, [autoEnhance]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1099,7 +1106,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     generateQueueIdRef.current = queueId;
 
     // Initialize image slots
-    const slots: Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}> = Array.from({ length: numImages }, () => ({
+    const slots: Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'enhancing' | 'completed' | 'error'}> = Array.from({ length: numImages }, () => ({
       imageData: null,
       seed: null,
       status: 'pending'
@@ -1132,15 +1139,37 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           });
 
           if (response.success && response.imageData) {
-            setImageSlots(prev => {
-              const newSlots = [...prev];
-              newSlots[index] = {
-                imageData: response.imageData,
-                seed: Math.floor(Math.random() * 1000000), // Generate a random seed for display
-                status: 'completed'
-              };
-              return newSlots;
-            });
+            const seed = Math.floor(Math.random() * 1000000);
+            if (autoEnhance) {
+              // Stage 1: show generated image in "enhancing" state
+              setImageSlots(prev => {
+                const newSlots = [...prev];
+                newSlots[index] = { imageData: response.imageData, seed, status: 'enhancing' };
+                return newSlots;
+              });
+              try {
+                const enh = await imageApi.enhanceImage({ image: response.imageData, scale: 2 });
+                const finalImage = enh.success && enh.imageData ? enh.imageData : response.imageData;
+                setImageSlots(prev => {
+                  const newSlots = [...prev];
+                  newSlots[index] = { imageData: finalImage, seed, status: 'completed' };
+                  return newSlots;
+                });
+              } catch (enhErr) {
+                console.warn('Auto-enhance failed, keeping original:', enhErr);
+                setImageSlots(prev => {
+                  const newSlots = [...prev];
+                  newSlots[index] = { imageData: response.imageData, seed, status: 'completed' };
+                  return newSlots;
+                });
+              }
+            } else {
+              setImageSlots(prev => {
+                const newSlots = [...prev];
+                newSlots[index] = { imageData: response.imageData, seed, status: 'completed' };
+                return newSlots;
+              });
+            }
           } else {
             setImageSlots(prev => {
               const newSlots = [...prev];
@@ -1934,6 +1963,19 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   };
 
   // ========================================
+  // Open the Image Editor on the Enhance tool, load the given image, and
+  // auto-fire the enhancement on arrival. Default scale = 2x.
+  const handleEnhanceFromGenerator = (imageData: string) => {
+    if (!imageData) return;
+    setUploadedImage(imageData);
+    setHistory({ original: imageData, current: imageData, undoStack: [], redoStack: [] });
+    setEnhanceScale(2);
+    setEditorTool('enhance');
+    setShowBeforeAfter(false);
+    setActiveTab('editor');
+    setPendingAutoEnhance(true);
+  };
+
   // EDITOR: Image Enhancement (Real-ESRGAN)
   // ========================================
   const handleEnhance = async () => {
@@ -1957,6 +1999,21 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       setIsEnhancing(false);
     }
   };
+
+  // Auto-fire enhance when arriving at the editor via the Enhance button.
+  // Waits for the editor tab to be active, the enhance tool selected, and
+  // history.current populated, then fires once.
+  useEffect(() => {
+    if (!pendingAutoEnhance) return;
+    if (activeTab !== 'editor') return;
+    if (editorTool !== 'enhance') return;
+    if (!history.current) return;
+    if (isEnhancing) return;
+    setPendingAutoEnhance(false);
+    handleEnhance();
+    // handleEnhance is stable enough in this component; deps below guard re-fires
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAutoEnhance, activeTab, editorTool, history.current, isEnhancing]);
 
   // ========================================
   // EDITOR: Coloring Page Generator (v2)
@@ -2586,6 +2643,18 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   </div>
                   )}
 
+                  {/* Auto-Enhance toggle */}
+                  <label className="flex items-center gap-2 text-sm text-theme-label cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={autoEnhance}
+                      onChange={(e) => setAutoEnhance(e.target.checked)}
+                      className="w-4 h-4 accent-teal-600"
+                    />
+                    <span>Auto-enhance output (2x)</span>
+                    <span className="text-xs text-theme-hint ml-auto">Adds ~30-60s per image</span>
+                  </label>
+
                   {/* Generate Button + Time Estimate */}
                   <button
                     onClick={handleGenerate}
@@ -2625,7 +2694,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   {imageSlots.map((slot, i) => (
                     <div key={i} className="border border-theme-strong rounded-lg p-4 bg-theme-secondary">
                       <div className="relative">
-                        {slot.status === 'completed' && slot.imageData ? (
+                        {(slot.status === 'completed' || slot.status === 'enhancing') && slot.imageData ? (
                           <>
                             <img loading="lazy"
                               src={slot.imageData}
@@ -2639,7 +2708,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                             <div className="text-xs text-theme-hint mb-2">
                               Seed: {slot.seed}
                             </div>
-                            <div className="flex gap-2">
+                            {slot.status === 'enhancing' ? (
+                              <div className="flex items-center justify-center py-2">
+                                <HeartbeatLoader className="w-5 h-5 text-teal-600 mr-2" />
+                                <span className="text-sm text-theme-hint">Enhancing 2x...</span>
+                              </div>
+                            ) : (
+                            <div className="flex gap-2 flex-wrap">
                               <button
                                 onClick={() => handleDownloadGenerated(slot.imageData!)}
                                 className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center text-sm"
@@ -2665,7 +2740,16 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 <Pencil className="w-4 h-4 mr-1" />
                                 Edit
                               </button>
+                              <button
+                                onClick={() => handleEnhanceFromGenerator(slot.imageData!)}
+                                className="flex-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center justify-center text-sm"
+                                title="Upscale 2x via Real-ESRGAN in the Image Editor"
+                              >
+                                <RefreshCw className="w-4 h-4 mr-1" />
+                                Enhance
+                              </button>
                             </div>
+                            )}
                           </>
                         ) : slot.status === 'generating' ? (
                           <div className="flex flex-col items-center justify-center h-[300px]">
@@ -2752,7 +2836,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   {imageSlots.map((slot, i) => (
                     <div key={i} className="border border-theme-strong rounded-lg p-4 bg-theme-secondary">
                       <div className="relative">
-                        {slot.status === 'completed' && slot.imageData ? (
+                        {(slot.status === 'completed' || slot.status === 'enhancing') && slot.imageData ? (
                           <>
                             <img loading="lazy"
                               src={slot.imageData}
@@ -2766,7 +2850,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                             <div className="text-xs text-theme-hint mb-2">
                               Seed: {slot.seed}
                             </div>
-                            <div className="flex gap-2">
+                            {slot.status === 'enhancing' ? (
+                              <div className="flex items-center justify-center py-2">
+                                <HeartbeatLoader className="w-5 h-5 text-teal-600 mr-2" />
+                                <span className="text-sm text-theme-hint">Enhancing 2x...</span>
+                              </div>
+                            ) : (
+                            <div className="flex gap-2 flex-wrap">
                               <button
                                 onClick={() => handleDownloadGenerated(slot.imageData!)}
                                 className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center text-sm"
@@ -2792,7 +2882,16 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 <Pencil className="w-4 h-4 mr-1" />
                                 Edit
                               </button>
+                              <button
+                                onClick={() => handleEnhanceFromGenerator(slot.imageData!)}
+                                className="flex-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center justify-center text-sm"
+                                title="Upscale 2x via Real-ESRGAN in the Image Editor"
+                              >
+                                <RefreshCw className="w-4 h-4 mr-1" />
+                                Enhance
+                              </button>
                             </div>
+                            )}
                           </>
                         ) : slot.status === 'generating' ? (
                           <div className="flex flex-col items-center justify-center h-[300px] cursor-pointer" onClick={() => setSelectedImage(null)}>
