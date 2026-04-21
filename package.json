@@ -128,14 +128,6 @@
         ]
       },
       {
-        "from": "models/PaddleOCR-VL-1.5-Q4_K_M.gguf",
-        "to": "models/PaddleOCR-VL-1.5-Q4_K_M.gguf"
-      },
-      {
-        "from": "models/mmproj-PaddleOCR-VL-1.5-Q8_0.gguf",
-        "to": "models/mmproj-PaddleOCR-VL-1.5-Q8_0.gguf"
-      },
-      {
         "from": "models/tts_voices",
         "to": "models/tts_voices",
         "filter": [

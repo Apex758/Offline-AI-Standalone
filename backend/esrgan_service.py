@@ -247,8 +247,14 @@ class ESRGANService:
         candidate = Path(__file__).parent.parent / "models" / "image_generation" / "realesrgan" / filename
         if candidate.exists():
             return candidate
-        # 3. Electron resource path env var
         import os
+        # 3. MODELS_DIR env var (packaged apps: user data directory)
+        models_env = os.environ.get("MODELS_DIR")
+        if models_env:
+            mp = Path(models_env) / "image_generation" / "realesrgan" / filename
+            if mp.exists():
+                return mp
+        # 4. Electron resource path env var
         res = os.environ.get("ELECTRON_RESOURCE_PATH")
         if res:
             ep = Path(res) / "models" / "image_generation" / "realesrgan" / filename

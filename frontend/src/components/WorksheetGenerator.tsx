@@ -55,6 +55,7 @@ const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
 import { getCurriculumSync } from '../data/curriculumLoader';
 import { imageApi } from '../lib/imageApi';
+import { swapApi } from '../lib/swapApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
@@ -1211,6 +1212,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setGeneratingImages(true);
     setImageError(null);
 
+    // Free LLM RAM before diffusion. No-op in simultaneous mode.
+    await swapApi.toImage(settings.generationMode);
+
     try {
       const response = await imageApi.generateImageBase64({
         prompt: imagePrompt,
@@ -1230,6 +1234,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       setImageError(error.response?.data?.error || error.message || 'Failed to generate image');
     } finally {
       setGeneratingImages(false);
+      swapApi.toLlm(settings.generationMode).catch(() => {});
     }
   };
 

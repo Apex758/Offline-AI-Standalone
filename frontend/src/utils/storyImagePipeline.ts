@@ -12,6 +12,7 @@
  */
 
 import { imageApi } from '../lib/imageApi';
+import { swapApi, type GenerationMode } from '../lib/swapApi';
 import type { ParsedStorybook, StoryPage } from '../types/storybook';
 import { API_CONFIG } from '../config/api.config';
 
@@ -36,6 +37,8 @@ export interface ImagePipelineOptions {
   narratorOnly?: boolean;
   /** AbortSignal to cancel mid-pipeline */
   signal?: AbortSignal;
+  /** Generation mode — 'simultaneous' skips the LLM↔diffusion swap. */
+  generationMode?: GenerationMode;
 }
 
 export interface PageImageResult {
@@ -238,8 +241,13 @@ export async function generateAllPageImages(
     skipCharacters = false,
     narratorOnly = false,
     signal,
+    generationMode = 'queued',
   } = options;
 
+  // Free LLM RAM before diffusion wakes. No-op in simultaneous mode.
+  await swapApi.toImage(generationMode);
+
+  try {
   const styleSuffix = book.styleSuffix || "flat vector illustration, children's book style, bold outlines, pastel colors, bright and cheerful, simple shapes, no text";
   const charDescs = book.characterDescriptions || {};
 
@@ -309,7 +317,8 @@ export async function generateAllPageImages(
         results.push({ pageIndex: i, backgroundImageData: bg });
       }
     }
-    return { pages: results, characterSeed: Object.values(charSeeds)[0], characterReferenceImages: charRefs };
+    const narratorResult: PipelineResult = { pages: results, characterSeed: Object.values(charSeeds)[0], characterReferenceImages: charRefs };
+    return narratorResult;
   }
 
   // Pages that need character generation (either char 1 or char 2)
@@ -451,4 +460,8 @@ export async function generateAllPageImages(
   }
 
   return { pages: results, characterSeed: Object.values(charSeeds)[0], characterReferenceImages: charRefs };
+  } finally {
+    // Reload LLM + unload diffusion after batch done (or on error). Best-effort.
+    swapApi.toLlm(generationMode).catch(() => {});
+  }
 }

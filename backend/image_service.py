@@ -7,6 +7,7 @@ import threading
 import requests
 import time
 import atexit
+import math
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 import base64
@@ -364,201 +365,6 @@ def _detect_cpu_features() -> dict:
     return features
 
 
-def _load_flux_schnell_ov(model_path: Path):
-    """Load FLUX.1 Schnell INT4 via OpenVINO.
-
-    Uses OVDiffusionPipeline with a reshape skip to work around a shape
-    inference bug in optimum-intel's dynamic reshape for FLUX transformers.
-    Configures OpenVINO for optimal CPU latency with model caching.
-    """
-    from optimum.intel.openvino import modeling_diffusion, OVDiffusionPipeline
-
-    # Build OpenVINO config for optimal CPU inference latency
-    cache_dir = str(model_path / ".ov_cache_v1")
-    physical_cores = _get_physical_core_count()
-
-    # Detect CPU capabilities for precision selection
-    cpu_features = _detect_cpu_features()
-    precision = "bf16" if cpu_features.get("bf16") else "f16"
-
-    ov_config = {
-        "CACHE_DIR": cache_dir,
-        "PERFORMANCE_HINT": "LATENCY",
-        "NUM_STREAMS": "1",
-        "INFERENCE_PRECISION_HINT": precision,
-        "INFERENCE_NUM_THREADS": str(physical_cores),
-        "ENABLE_HYPER_THREADING": "NO",
-    }
-    # AFFINITY was removed in OpenVINO 2024.x — only set if supported
-    try:
-        import openvino as ov
-        core = ov.Core()
-        supported = core.get_property("CPU", "SUPPORTED_PROPERTIES")
-        if "AFFINITY" in supported:
-            ov_config["AFFINITY"] = "CORE"
-    except Exception:
-        pass
-    logger.info(
-        f"OpenVINO Flux config: threads={physical_cores}, precision={precision}, "
-        f"bf16={cpu_features.get('bf16')}, cache={cache_dir}"
-    )
-
-    # Skip the automatic reshape in __init__ which fails on FLUX models
-    _orig_reshape = modeling_diffusion.OVDiffusionPipeline.reshape
-    modeling_diffusion.OVDiffusionPipeline.reshape = lambda self, *a, **kw: None
-    try:
-        pipe = OVDiffusionPipeline.from_pretrained(
-            str(model_path), compile=False, ov_config=ov_config
-        )
-    finally:
-        modeling_diffusion.OVDiffusionPipeline.reshape = _orig_reshape
-
-    pipe.compile()
-    return pipe
-
-
-def _load_sdxl_turbo_gguf(model_path: Path, gguf_file: str = None):
-    """Load SDXL-Turbo GGUF via stable-diffusion-cpp-python (CPU)."""
-    from stable_diffusion_cpp import StableDiffusion
-
-    if gguf_file is None:
-        gguf_file = "sdxl-turbo-q4_k_m.gguf"
-
-    model_file = str(model_path / gguf_file)
-
-    if not Path(model_file).exists():
-        raise FileNotFoundError(f"SDXL-Turbo GGUF not found: {model_file}")
-
-    n_threads = _get_physical_core_count()
-    logger.info(f"Loading SDXL-Turbo GGUF: {gguf_file}, threads={n_threads}")
-
-    # vae_decode_only=False to retain VAE encoder for img2img support
-    import inspect
-    sd_params = inspect.signature(StableDiffusion.__init__).parameters
-
-    kwargs = dict(
-        model_path=model_file,
-        n_threads=n_threads,
-        vae_decode_only=False,
-    )
-    if "flash_attn" in sd_params:
-        kwargs["flash_attn"] = True
-        logger.info("Enabled flash_attn for SDXL GGUF")
-    if "vae_conv_direct" in sd_params:
-        kwargs["vae_conv_direct"] = True
-        logger.info("Enabled vae_conv_direct for SDXL GGUF")
-    _apply_vulkan_kwargs(kwargs, sd_params)
-
-    sd = StableDiffusion(**kwargs)
-    return sd
-
-
-def _load_sd3_gguf(model_path: Path, gguf_file: str = None):
-    """Load SD 3.5 GGUF via stable-diffusion-cpp-python (CPU)."""
-    from stable_diffusion_cpp import StableDiffusion
-
-    if gguf_file is None:
-        gguf_file = "sd3.5_medium-Q5_K_M.gguf"
-
-    model_file  = str(model_path / gguf_file)
-    clip_l_path = str(model_path / "clip_l.safetensors")
-    clip_g_path = str(model_path / "clip_g.safetensors")
-    t5xxl_path  = str(model_path / "t5xxl_fp16.safetensors")
-
-    for fpath, label in [
-        (model_file,  "SD 3.5 diffusion model"),
-        (clip_l_path, "CLIP-L"),
-        (clip_g_path, "CLIP-G"),
-        (t5xxl_path,  "T5-XXL"),
-    ]:
-        if not Path(fpath).exists():
-            raise FileNotFoundError(f"SD3.5 {label} not found: {fpath}")
-
-    n_threads = _get_physical_core_count()
-    logger.info(f"Loading SD3.5 GGUF: {gguf_file}, threads={n_threads}")
-
-    import inspect
-    sd_params = inspect.signature(StableDiffusion.__init__).parameters
-
-    kwargs = dict(
-        clip_l_path=clip_l_path,
-        t5xxl_path=t5xxl_path,
-        vae_decode_only=True,
-        n_threads=n_threads,
-    )
-    # SD3.5 uses flow matching — must be set explicitly since sd.cpp cannot
-    # auto-detect the prediction type from a quantised GGUF file.
-    if "diffusion_model_path" in sd_params:
-        # Prefer diffusion_model_path for standalone diffusion GGUFs
-        kwargs["diffusion_model_path"] = model_file
-    else:
-        kwargs["model_path"] = model_file
-    if "prediction" in sd_params:
-        kwargs["prediction"] = "flow"
-        logger.info("Set prediction=flow for SD3.5 (flow matching)")
-    # clip_g is required for SD3.5 — only pass if the binding supports it
-    if "clip_g_path" in sd_params:
-        kwargs["clip_g_path"] = clip_g_path
-    # VAE is required for GGUF diffusion-only models (VAE tensors are not in the GGUF).
-    # Support full VAE (sd3_vae.safetensors) or Tiny AutoEncoder (taesd3_decoder.safetensors).
-    vae_path = model_path / "sd3_vae.safetensors"
-    taesd_path = model_path / "taesd3_decoder.safetensors"
-    if vae_path.exists() and "vae_path" in sd_params:
-        kwargs["vae_path"] = str(vae_path)
-        logger.info(f"Using separate VAE: {vae_path}")
-    elif taesd_path.exists() and "taesd_path" in sd_params:
-        kwargs["taesd_path"] = str(taesd_path)
-        logger.info(f"Using TAESD3 (Tiny AutoEncoder): {taesd_path}")
-    elif "diffusion_model_path" in kwargs:
-        # GGUF diffusion-only file won't have VAE tensors embedded
-        raise FileNotFoundError(
-            "SD3.5 requires a VAE decoder but none was found. "
-            "Place one of the following in " + str(model_path) + ": "
-            "sd3_vae.safetensors (full VAE, ~300MB) or "
-            "taesd3_decoder.safetensors (Tiny AutoEncoder, ~5MB)"
-        )
-    if "flash_attn" in sd_params:
-        kwargs["flash_attn"] = True
-    if "vae_conv_direct" in sd_params:
-        kwargs["vae_conv_direct"] = True
-        logger.info("Enabled vae_conv_direct for SD3.5 GGUF")
-    _apply_vulkan_kwargs(kwargs, sd_params)
-
-    return StableDiffusion(**kwargs)
-
-
-def _load_wan_gguf(model_path: Path, gguf_file: str = None):
-    """Load Wan 2.1 GGUF via stable-diffusion-cpp-python (CPU)."""
-    from stable_diffusion_cpp import StableDiffusion
-
-    if gguf_file is None:
-        gguf_file = "wan2.1-t2v-1.3B-Q5_K_M.gguf"
-
-    model_file = str(model_path / gguf_file)
-    if not Path(model_file).exists():
-        raise FileNotFoundError(f"Wan GGUF not found: {model_file}")
-
-    n_threads = _get_physical_core_count()
-    logger.info(f"Loading Wan GGUF: {gguf_file}, threads={n_threads}")
-
-    import inspect
-    sd_params = inspect.signature(StableDiffusion.__init__).parameters
-
-    kwargs = dict(
-        model_path=model_file,
-        vae_decode_only=True,
-        n_threads=n_threads,
-    )
-    if "flash_attn" in sd_params:
-        kwargs["flash_attn"] = True
-    if "vae_conv_direct" in sd_params:
-        kwargs["vae_conv_direct"] = True
-        logger.info("Enabled vae_conv_direct for Wan GGUF")
-    _apply_vulkan_kwargs(kwargs, sd_params)
-
-    return StableDiffusion(**kwargs)
-
-
 def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
     """Load Z-Image Turbo GGUF via stable-diffusion-cpp-python (CPU).
 
@@ -578,7 +384,7 @@ def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
         extra = {}
 
     model_file = str(model_path / gguf_file)
-    llm_file   = str(model_path / extra.get("llm_file", "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"))
+    llm_file   = str(model_path / extra.get("llm_file", "Qwen3-4B-Instruct-2507-UD-Q3_K_XL.gguf"))
     vae_file   = str(model_path / extra.get("vae_file", "ae.safetensors"))
 
     for fpath, label in [
@@ -601,7 +407,7 @@ def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
 
     kwargs = dict(
         vae_path=vae_file,
-        vae_decode_only=True,
+        vae_decode_only=True,  # txt2img only, save RAM
         n_threads=n_threads,
     )
     # Use diffusion_model_path for DiT-based models
@@ -629,77 +435,10 @@ def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
     return StableDiffusion(**kwargs)
 
 
-def _load_flux2_klein_gguf(model_path: Path, gguf_file: str = None):
-    """Load FLUX.2 Klein 4B GGUF via stable-diffusion-cpp-python (CPU).
-
-    FLUX.2 Klein uses Qwen3 as text encoder and FLUX2 VAE.
-    """
-    from stable_diffusion_cpp import StableDiffusion
-
-    if gguf_file is None:
-        gguf_file = "flux-2-klein-4b-Q4_0.gguf"
-
-    try:
-        from config import get_image_model_info
-        info = get_image_model_info("flux2-klein-4b-q4")
-        extra = info.get("extra_files", {})
-    except Exception:
-        extra = {}
-
-    model_file = str(model_path / gguf_file)
-    llm_file   = str(model_path / extra.get("llm_file", "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"))
-    vae_file   = str(model_path / extra.get("vae_file", "flux2_ae.safetensors"))
-
-    for fpath, label in [
-        (model_file, "FLUX.2 Klein diffusion model"),
-        (llm_file,   "Qwen3 text encoder"),
-        (vae_file,   "FLUX.2 VAE"),
-    ]:
-        if not Path(fpath).exists():
-            raise FileNotFoundError(f"FLUX.2 Klein {label} not found: {fpath}")
-
-    n_threads = _get_physical_core_count()
-    logger.info(f"Loading FLUX.2 Klein GGUF: {gguf_file}, threads={n_threads}")
-
-    import inspect
-    sd_params = inspect.signature(StableDiffusion.__init__).parameters
-
-    kwargs = dict(
-        vae_path=vae_file,
-        vae_decode_only=True,
-        n_threads=n_threads,
-    )
-    if "diffusion_model_path" in sd_params:
-        kwargs["diffusion_model_path"] = model_file
-    else:
-        kwargs["model_path"] = model_file
-    if "llm_path" in sd_params:
-        kwargs["llm_path"] = llm_file
-    else:
-        raise RuntimeError("stable-diffusion-cpp-python >=0.4.6 required for FLUX.2 Klein (llm_path support)")
-    if "diffusion_flash_attn" in sd_params:
-        kwargs["diffusion_flash_attn"] = True
-        logger.info("Enabled diffusion_flash_attn for FLUX.2 Klein")
-    elif "flash_attn" in sd_params:
-        kwargs["flash_attn"] = True
-    if "vae_conv_direct" in sd_params:
-        kwargs["vae_conv_direct"] = True
-    if "offload_params_to_cpu" in sd_params:
-        kwargs["offload_params_to_cpu"] = True
-    _apply_vulkan_kwargs(kwargs, sd_params)
-
-    return StableDiffusion(**kwargs)
-
-
 # Map backend key → loader function
 _LOADERS = {
     "openvino":            _load_openvino,
-    "openvino_flux":       _load_flux_schnell_ov,
-    "sd_cpp_sdxl":         _load_sdxl_turbo_gguf,
-    "sd_cpp_sd3":          _load_sd3_gguf,
-    "sd_cpp_wan":          _load_wan_gguf,
     "sd_cpp_zimage":       _load_zimage_turbo_gguf,
-    "sd_cpp_flux2klein":   _load_flux2_klein_gguf,
 }
 
 
@@ -743,16 +482,16 @@ class ImageService:
             else:
                 # Legacy path: sdxl_model_path provided directly
                 self.model_path = Path(sdxl_model_path)
-                self.model_key = "flux-schnell"
+                self.model_key = "sdxl-turbo-int8"
                 self.model_info = IMAGE_MODEL_REGISTRY.get(self.model_key, {})
         except ImportError:
             # Fallback if config not available
             if sdxl_model_path:
                 self.model_path = Path(sdxl_model_path)
             else:
-                self.model_path = get_resource_path("../models/image_generation/flux-schnell")
-            self.model_key = "flux-schnell"
-            self.model_info = {"backend": "openvino_flux", "steps": 1, "guidance": 0.0}
+                self.model_path = get_resource_path("../models/image_generation/sdxl-turbo-int8")
+            self.model_key = "sdxl-turbo-int8"
+            self.model_info = {"backend": "openvino", "steps": 2, "guidance": 0.0}
 
         # Resolve LaMa model path
         self.lama_model_path = self._resolve_lama_path()
@@ -861,7 +600,7 @@ class ImageService:
             try:
                 print(f"[IMAGE-DEBUG] Loading pipeline: model={self.model_key}, backend={backend}, path={self.model_path}", flush=True)
                 logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
-                if backend in ("sd_cpp_sdxl", "sd_cpp_sd3", "sd_cpp_wan", "sd_cpp_zimage", "sd_cpp_flux2klein"):
+                if backend == "sd_cpp_zimage":
                     self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
                 else:
                     self.pipeline = loader(self.model_path)
@@ -880,7 +619,7 @@ class ImageService:
 
                 # Warmup: run a tiny dummy inference to pre-allocate buffers.
                 # Hold _inference_lock so generate_image waits until warmup finishes.
-                if backend in ("openvino_flux", "openvino"):
+                if backend == "openvino":
                     with self._inference_lock:
                         # Final cancellation check before warmup
                         if self._cancel_load.is_set():
@@ -892,8 +631,7 @@ class ImageService:
                             gc.collect()
                             return False
                         try:
-                            _label = "Flux" if backend == "openvino_flux" else "SDXL"
-                            logger.info(f"Running warmup inference for {_label} OpenVINO...")
+                            logger.info("Running warmup inference for SDXL OpenVINO...")
                             _warmup_start = time.time()
                             self.pipeline(
                                 prompt="warmup",
@@ -996,8 +734,16 @@ class ImageService:
             _holds_inference_lock = True
 
             # Use model defaults if caller didn't specify
+            default_steps = self.model_info.get("steps", 2)
+            max_steps = self.model_info.get("max_steps")
             if num_inference_steps is None:
-                num_inference_steps = self.model_info.get("steps", 2)
+                num_inference_steps = default_steps
+            elif max_steps is not None and num_inference_steps > max_steps:
+                # Clamp absurd step counts for turbo/distilled models.
+                # Why: stale frontend value can request 8 steps on a model designed
+                # for 2-6, turning a 60s gen into 4+ minutes for zero quality gain.
+                logger.warning(f"Clamping steps {num_inference_steps} -> {max_steps} for {self.model_key}")
+                num_inference_steps = max_steps
             if guidance_scale is None:
                 guidance_scale = self.model_info.get("guidance", 0.0)
 
@@ -1084,77 +830,12 @@ class ImageService:
                         output_type="np",
                     )
 
-            elif backend == "openvino_flux":
-                # FLUX INT4 OpenVINO — no negative_prompt or img2img support
-                # Note: OpenVINO infer requests are NOT thread-safe / reentrant,
-                # so we call the pipeline directly instead of doing a separate
-                # encode_prompt + pipeline(prompt_embeds=...) which races on the
-                # same T5 inference request and raises "Infer Request is busy".
+            elif backend == "sd_cpp_zimage":
+                # Z-Image Turbo — DiT model via sd.cpp, txt2img only
+                # (upstream sd.cpp z_image backend does not honor init_image)
                 if init_image is not None:
-                    logger.warning("FLUX Schnell does not support img2img — init_image ignored")
-
-                result = self.pipeline(
-                    prompt=prompt,
-                    num_inference_steps=num_inference_steps,
-                    guidance_scale=guidance_scale,
-                    height=height, width=width,
-                    output_type="np",
-                )
-
-            elif backend == "sd_cpp_sdxl":
-                # SDXL-Turbo GGUF via stable-diffusion.cpp — supports negative_prompt + img2img
-                if init_image is not None:
-                    try:
-                        import io as _io
-                        init_pil = Image.open(_io.BytesIO(init_image)).convert("RGB")
-                        if init_pil.width != width or init_pil.height != height:
-                            logger.info(f"Resizing init image {init_pil.width}x{init_pil.height} -> {width}x{height}")
-                            init_pil = init_pil.resize((width, height), Image.LANCZOS)
-                        output = self.pipeline.img_to_img(
-                            image=init_pil,
-                            prompt=prompt,
-                            negative_prompt=negative_prompt,
-                            width=width,
-                            height=height,
-                            cfg_scale=guidance_scale,
-                            sample_steps=num_inference_steps,
-                            strength=strength,
-                            seed=seed if seed is not None else -1,
-                            vae_tiling=width > 512 or height > 512,
-                        )
-                    except Exception as img2img_err:
-                        logger.warning(f"SDXL GGUF img2img failed, falling back to txt2img: {img2img_err}")
-                        output = self.pipeline.generate_image(
-                            prompt=prompt,
-                            negative_prompt=negative_prompt,
-                            width=width,
-                            height=height,
-                            cfg_scale=guidance_scale,
-                            sample_steps=num_inference_steps,
-                            seed=seed if seed is not None else -1,
-                            vae_tiling=width > 512 or height > 512,
-                        )
-                else:
-                    output = self.pipeline.generate_image(
-                        prompt=prompt,
-                        negative_prompt=negative_prompt,
-                        width=width,
-                        height=height,
-                        cfg_scale=guidance_scale,
-                        sample_steps=num_inference_steps,
-                        seed=seed if seed is not None else -1,
-                        vae_tiling=width > 512 or height > 512,
-                    )
-                class _SDCppResultSDXL:
-                    def __init__(self, images):
-                        self.images = images
-                result = _SDCppResultSDXL(output)
-
-            elif backend in ("sd_cpp_zimage", "sd_cpp_flux2klein"):
-                # Z-Image Turbo / FLUX.2 Klein — DiT models via sd.cpp, no negative prompt or img2img
-                if init_image is not None:
-                    logger.warning(f"{backend} does not support img2img — init_image ignored")
-                gen_kwargs = dict(
+                    logger.warning("Z-Image Turbo does not support img2img — init_image ignored. Use SDXL-Turbo for reference images.")
+                output = self.pipeline.generate_image(
                     prompt=prompt,
                     negative_prompt="",
                     width=width,
@@ -1164,38 +845,10 @@ class ImageService:
                     seed=seed if seed is not None else -1,
                     vae_tiling=width > 512 or height > 512,
                 )
-                output = self.pipeline.generate_image(**gen_kwargs)
                 class _SDCppResultDiT:
                     def __init__(self, images):
                         self.images = images
                 result = _SDCppResultDiT(output)
-
-            elif backend in ("sd_cpp_sd3", "sd_cpp_wan"):
-                # SD 3.5 / Wan GGUF — text-to-image only, uses same sd.cpp interface
-                if init_image is not None:
-                    logger.warning(f"{backend} does not support img2img — init_image ignored")
-                neg = negative_prompt if (negative_prompt and self.model_info.get("supports_negative_prompt")) else ""
-                gen_kwargs = dict(
-                    prompt=prompt,
-                    negative_prompt=neg,
-                    width=width,
-                    height=height,
-                    cfg_scale=guidance_scale,
-                    sample_steps=num_inference_steps,
-                    seed=seed if seed is not None else -1,
-                    vae_tiling=True,
-                )
-                # SD3.5 flow models use a separate 'guidance' param (distilled guidance scale)
-                if backend == "sd_cpp_sd3":
-                    import inspect as _insp
-                    gen_params = _insp.signature(self.pipeline.generate_image).parameters
-                    if "guidance" in gen_params:
-                        gen_kwargs["guidance"] = guidance_scale
-                output = self.pipeline.generate_image(**gen_kwargs)
-                class _SDCppResultSD3:
-                    def __init__(self, images):
-                        self.images = images
-                result = _SDCppResultSD3(output)
 
             else:
                 print(f"[IMAGE-DEBUG] Unknown backend: {backend}", flush=True)

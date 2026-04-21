@@ -62,11 +62,12 @@ def get_default_voice_for_language(lang: str) -> str:
 
 def _get_voices_dir() -> Path:
     """Get the directory where Piper voice models are stored."""
-    if os.environ.get("MODELS_DIR"):
-        base = Path(os.environ["MODELS_DIR"])
+    if os.environ.get("TTS_VOICES_DIR"):
+        voices_dir = Path(os.environ["TTS_VOICES_DIR"])
+    elif os.environ.get("MODELS_DIR"):
+        voices_dir = Path(os.environ["MODELS_DIR"]) / "tts_voices"
     else:
-        base = Path(__file__).parent.parent / "models"
-    voices_dir = base / "tts_voices"
+        voices_dir = Path(__file__).parent.parent / "models" / "tts_voices"
     voices_dir.mkdir(parents=True, exist_ok=True)
     return voices_dir
 

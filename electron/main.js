@@ -265,8 +265,8 @@ async function startBackend() {
     startScript = 'start_backend.py';
     log.info(`Production mode - Backend path: ${backendPath}`);
     
-    // Set models directory for production (LLaMA models in resources/models)
-    const modelsPath = path.join(process.resourcesPath, 'models');
+    // Set models directory for production (LLM/diffusion models in user data)
+    const modelsPath = path.join(app.getPath('userData'), 'models');
     log.info(`Production mode - LLaMA models path: ${modelsPath}`);
     
     // Verify files exist
@@ -288,10 +288,15 @@ async function startBackend() {
     
     // In production, set environment variables for backend
     if (!isDev) {
-      const modelsPath = path.join(process.resourcesPath, 'models');
+      const modelsPath = path.join(app.getPath('userData'), 'models');
       env.MODELS_DIR = modelsPath;
       log.info(`Set MODELS_DIR environment variable: ${modelsPath}`);
-      
+
+      // TTS voices bundled with installer (read-only resources)
+      const ttsVoicesPath = path.join(process.resourcesPath, 'models', 'tts_voices');
+      env.TTS_VOICES_DIR = ttsVoicesPath;
+      log.info(`Set TTS_VOICES_DIR environment variable: ${ttsVoicesPath}`);
+
       // Set ELECTRON_RESOURCE_PATH for image service
       env.ELECTRON_RESOURCE_PATH = process.resourcesPath;
       log.info(`Set ELECTRON_RESOURCE_PATH environment variable: ${process.resourcesPath}`);
@@ -1258,9 +1263,6 @@ app.whenReady().then(async () => {
 
     // === Create main window with splashscreen ===
     createWindow();
-
-    // === Setup image generation models (first run only) ===
-    setupImageGenerationModels().catch(err => log.error('Image model setup error (non-blocking):', err));
 
     // === Start backend ===
     await startBackend();

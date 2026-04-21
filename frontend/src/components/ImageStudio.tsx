@@ -60,6 +60,7 @@ const RefreshCw: React.FC<{ className?: string; style?: React.CSSProperties }> =
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
+import { swapApi } from '../lib/swapApi';
 import { fetchClasses, fetchClassConfig, ClassSummary, ClassConfig } from '../lib/classConfig';
 import { useNotification } from '../contexts/NotificationContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -414,7 +415,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const triggerCheck = useAchievementTrigger();
   const { notify } = useNotification();
   const { hasDiffusion, hasLama } = useCapabilities();
-  const { guardOffline } = useOfflineGuard();
+  const { guardOffline } = useOfflineGuard('studio');
   const { settings } = useSettings();
   const tabColor = settings.tabColors['image-studio'] ?? '#ec4899';
 
@@ -440,6 +441,19 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [generationState, setGenerationState] = useState<'input' | 'generating' | 'results'>('input');
   const setTabProcessingImg = useTabProcessing('image-generation');
   useEffect(() => { setTabProcessingImg(generationState === 'generating'); }, [generationState, setTabProcessingImg]);
+
+  // LLM↔diffusion RAM swap: when Image Studio mounts, free LLM RAM so
+  // diffusion has headroom. We DO NOT reload the LLM on unmount — the user
+  // may return to this tab; next LLM request elsewhere will auto-reload
+  // via the backend safety-net guard. Flag on window lets other components
+  // (or a future "Done with Image Studio?" modal) detect the tab is open.
+  useEffect(() => {
+    swapApi.toImage(settings.generationMode);
+    (window as any).__imageStudioActive = true;
+    return () => {
+      (window as any).__imageStudioActive = false;
+    };
+  }, []);
 
   // Queue panel integration: track current generation so it appears in the
   // global queue panel and can be cancelled from there.
@@ -758,8 +772,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         // Reset steps to model-appropriate default when switching models
         if ((data.modelName || '').startsWith('sdxl-turbo')) {
           setNumInferenceSteps(2);
+        } else if ((data.modelName || '').startsWith('z-image')) {
+          setNumInferenceSteps(4);
         } else {
           setNumInferenceSteps(2);
+        }
+        // Bump res to model's native default (avoid mushy low-res output)
+        if (data.default_width && data.default_height) {
+          setWidth(data.default_width);
+          setHeight(data.default_height);
         }
         // Clear reference images if model doesn't support img2img
         if (!caps.supports_img2img) {
@@ -1024,6 +1045,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
     setGenerationState('generating');
     setError(null);
+
+    // Guarantee LLM is unloaded before we hit diffusion — mount-time swap may
+    // have missed (app startup race). Await so the swap completes before any
+    // image request reaches the backend.
+    await swapApi.toImage(settings.generationMode);
 
     // Set up cancellation + queue panel entry for this batch (one entry per batch).
     const abortController = new AbortController();
@@ -2509,10 +2535,14 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       options={activeModelName.startsWith('sdxl-turbo') ? [
                         { value: '2',  label: 'Fast' },
                         { value: '3',  label: 'Quality' },
+                      ] : activeModelName.startsWith('z-image') ? [
+                        { value: '2', label: 'Fast' },
+                        { value: '4', label: 'Balanced' },
+                        { value: '8', label: 'Quality' },
                       ] : [
                         { value: '2',  label: 'Fast' },
-                        { value: '8',  label: 'Balanced' },
-                        { value: '16', label: 'Quality' },
+                        { value: '4',  label: 'Balanced' },
+                        { value: '8', label: 'Quality' },
                       ]}
                       value={String(numInferenceSteps)}
                       onChange={(v) => setNumInferenceSteps(Number(v))}

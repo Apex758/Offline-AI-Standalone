@@ -664,6 +664,60 @@ async def model_status():
         logger.error(f"Model status check failed: {e}")
         return {"loaded": False, "error": str(e)}
 
+
+# ── LLM ↔ Diffusion RAM swap (low-memory boxes) ─────────────────────────────
+# Skipped when generationMode=="simultaneous". See backend/model_swap.py.
+
+@app.post("/api/swap/to-image")
+async def swap_endpoint_to_image(request: Request):
+    """Unload LLM to free RAM before image generation.
+
+    Body: { "generationMode": "queued" | "simultaneous", "force": bool? }
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    from model_swap import swap_to_image
+    result = await swap_to_image(
+        mode=body.get("generationMode"),
+        force=bool(body.get("force", False)),
+    )
+    logger.info(f"[swap] /api/swap/to-image mode={body.get('generationMode')} → {result}")
+    return result
+
+
+@app.post("/api/swap/to-llm")
+async def swap_endpoint_to_llm(request: Request):
+    """Unload diffusion pipeline and (optionally) warm-reload the LLM.
+
+    Body: {
+      "generationMode": "queued" | "simultaneous",
+      "force": bool?,
+      "preload": bool?  # default true; false = leave LLM lazy-loaded
+    }
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    from model_swap import swap_to_llm
+    result = await swap_to_llm(
+        mode=body.get("generationMode"),
+        force=bool(body.get("force", False)),
+        preload=bool(body.get("preload", True)),
+    )
+    logger.info(f"[swap] /api/swap/to-llm mode={body.get('generationMode')} → {result}")
+    return result
+
+
+@app.get("/api/swap/state")
+async def swap_endpoint_state():
+    """Current residency: 'llm' | 'image' | 'both' | 'none'."""
+    from model_swap import get_state, last_swap_age_seconds
+    return {"state": get_state(), "lastSwapAgeSec": last_swap_age_seconds()}
+
+
 # ============================================================================
 # Shared Prompt Builder — model-aware formatting
 # ============================================================================
@@ -8315,6 +8369,10 @@ async def get_active_diffusion_model():
             "guidance": model_info.get("guidance", 0.0),
             "supports_negative_prompt": model_info.get("supports_negative_prompt", True),
             "supports_img2img": model_info.get("supports_img2img", True),
+            "default_width": model_info.get("default_width", 512),
+            "default_height": model_info.get("default_height", 512),
+            "max_width": model_info.get("max_width", 1024),
+            "max_height": model_info.get("max_height", 1024),
         })
     except Exception as e:
         logger.error(f"Error getting active diffusion model: {e}")

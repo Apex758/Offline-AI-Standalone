@@ -2429,6 +2429,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         skipBackgrounds: opts?.skipBackgrounds,
         skipCharacters: opts?.skipCharacters,
         signal: abort.signal,
+        generationMode: settings.generationMode,
       });
 
       // Store character reference images for future regeneration

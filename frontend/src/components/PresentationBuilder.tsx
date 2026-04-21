@@ -26,6 +26,7 @@ import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { imageApi } from '../lib/imageApi';
+import { swapApi } from '../lib/swapApi';
 import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson, buildPresentationPromptFromFreeInput } from '../utils/presentationPromptBuilder';
 import type { PresentationFormData, ParsedLessonInput } from '../utils/presentationPromptBuilder';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
@@ -2219,6 +2220,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
 
     setBatchImageProgress({ current: 0, total: slidesNeedingImages.length, generating: true });
 
+    // Free LLM RAM before diffusion batch. No-op in simultaneous mode.
+    await swapApi.toImage(settings.generationMode);
+
+    try {
     const styleHint = getAllStyles(t).find(st => st.id === styleId);
     const styleName = styleHint?.label || 'fun';
 
@@ -2257,6 +2262,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange, is
     }
 
     setBatchImageProgress({ current: 0, total: 0, generating: false });
+    } finally {
+      swapApi.toLlm(settings.generationMode).catch(() => {});
+    }
   };
 
   // PPTX Export
