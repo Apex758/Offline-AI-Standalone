@@ -548,7 +548,10 @@
       "Bash(curl -s http://localhost:8000/api/image-service/status)",
       "Bash(python -c \"from stable_diffusion_cpp import StableDiffusion; import inspect; print\\(inspect.signature\\(StableDiffusion.generate_image\\)\\)\")",
       "Bash(python -c \"import config; print\\(list\\(config.IMAGE_MODEL_REGISTRY.keys\\(\\)\\)\\)\")",
-      "Bash(python -c \"import image_service; print\\('OK'\\)\")"
+      "Bash(python -c \"import image_service; print\\('OK'\\)\")",
+      "Bash(python -c \"import image_service, config; print\\(list\\(config.IMAGE_MODEL_REGISTRY.keys\\(\\)\\)\\); print\\([k for k in image_service._LOADERS]\\)\")",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\" http://localhost:8000/api/health)",
+      "Bash(python -c ' *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\LG\\Desktop\\Projects\\Offline AI Standalone\\trophies",

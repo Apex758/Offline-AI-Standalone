@@ -759,39 +759,49 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // Fetch model capabilities from backend
   // ========================================
   useEffect(() => {
+    let lastModelName = '';
     const loadModelCapabilities = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/diffusion-models/active');
         const data = await response.json();
+        const newModel = data.modelName || '';
+        const modelChanged = newModel !== lastModelName;
+        lastModelName = newModel;
         const caps = {
           supports_negative_prompt: data.supports_negative_prompt ?? true,
           supports_img2img: data.supports_img2img ?? true,
         };
         setModelCapabilities(caps);
-        setActiveModelName(data.modelName || '');
-        // Reset steps to model-appropriate default when switching models
-        if ((data.modelName || '').startsWith('sdxl-turbo')) {
-          setNumInferenceSteps(2);
-        } else if ((data.modelName || '').startsWith('z-image')) {
-          setNumInferenceSteps(4);
-        } else {
-          setNumInferenceSteps(2);
-        }
-        // Bump res to model's native default (avoid mushy low-res output)
-        if (data.default_width && data.default_height) {
-          setWidth(data.default_width);
-          setHeight(data.default_height);
-        }
-        // Clear reference images if model doesn't support img2img
-        if (!caps.supports_img2img) {
-          setReferenceImage(null);
-          setQueueReferenceImage(null);
+        setActiveModelName(newModel);
+        // Only reset per-model defaults when the model actually changed
+        // (avoid clobbering user's in-progress edits on every poll tick)
+        if (modelChanged) {
+          if (newModel.startsWith('sdxl-turbo')) {
+            setNumInferenceSteps(2);
+          } else if (newModel.startsWith('z-image')) {
+            setNumInferenceSteps(4);
+          } else if (newModel.startsWith('flux2-klein')) {
+            setNumInferenceSteps(4);
+          } else {
+            setNumInferenceSteps(2);
+          }
+          if (data.default_width && data.default_height) {
+            setWidth(data.default_width);
+            setHeight(data.default_height);
+          }
+          if (!caps.supports_img2img) {
+            setReferenceImage(null);
+            setQueueReferenceImage(null);
+          }
         }
       } catch (error) {
         console.error('Failed to load model capabilities:', error);
       }
     };
     loadModelCapabilities();
+    // Poll every 30s — model swaps are rare, no need to hammer the API
+    const interval = setInterval(loadModelCapabilities, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // ========================================
@@ -800,19 +810,38 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   useEffect(() => {
     const profile = styleProfiles[selectedStyle];
     if (!profile) return;
-    
+
     // Update negative prompt (unless user has manually edited it)
     if (!useManualNegative) {
       setNegativePrompt(profile.negative_prompt);
     }
-    
-    // Update dimensions
-    setWidth(profile.sdxl_settings.width);
-    setHeight(profile.sdxl_settings.height);
+
+    // Skip dim override for models that have large native resolutions.
+    // Style profiles default to 512 which produces mushy output on DiT models.
+    const usesLargeRes = activeModelName.startsWith('z-image') || activeModelName.startsWith('flux2-klein');
+    if (!usesLargeRes) {
+      setWidth(profile.sdxl_settings.width);
+      setHeight(profile.sdxl_settings.height);
+    }
     setNumInferenceSteps(profile.sdxl_settings.num_inference_steps);
-    
+
     console.log(`✅ Applied style settings for: ${profile.name}`);
-  }, [selectedStyle, styleProfiles, useManualNegative]);
+  }, [selectedStyle, styleProfiles, useManualNegative, activeModelName]);
+
+  // Auto-drop to Fast preset + 512 res when ref image present on FLUX.2 Klein.
+  // Edit mode attention is O(N^2) with tokens — 512 is ~5x faster per step than 768.
+  // Restore 768 default when ref cleared.
+  useEffect(() => {
+    if (!activeModelName.startsWith('flux2-klein')) return;
+    if (referenceImage) {
+      setNumInferenceSteps(2);
+      setWidth(512);
+      setHeight(512);
+    } else {
+      setWidth(768);
+      setHeight(768);
+    }
+  }, [referenceImage, activeModelName]);
 
   // ========================================
   // Modified: Restore saved state
@@ -2539,6 +2568,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         { value: '2', label: 'Fast' },
                         { value: '4', label: 'Balanced' },
                         { value: '8', label: 'Quality' },
+                      ] : activeModelName.startsWith('flux2-klein') ? [
+                        { value: '2', label: 'Fast' },
+                        { value: '4', label: 'Balanced' },
+                        { value: '6', label: 'Quality' },
                       ] : [
                         { value: '2',  label: 'Fast' },
                         { value: '4',  label: 'Balanced' },

@@ -145,7 +145,6 @@ def get_diffusion_model_path():
         return str(user_model_path)
     # Fall back to bundled
     bundled_path = IMAGE_MODELS_DIR / selected
-    print(f"[OK] [CONFIG] Using bundled diffusion model: {bundled_path}", flush=True)
     return str(bundled_path)
 
 def scan_diffusion_models():
@@ -267,6 +266,34 @@ IMAGE_MODEL_REGISTRY = {
         "extra_files": {
             "llm_file": "Qwen3-4B-Instruct-2507-UD-Q3_K_XL.gguf",
             "vae_file": "ae.safetensors",
+        },
+    },
+    "flux2-klein-4b-q4": {
+        "folder":      "flux2-klein-gguf",
+        "backend":     "sd_cpp_flux2klein",
+        "gguf_file":   "flux-2-klein-4b-Q4_0.gguf",
+        "description": "FLUX.2 Klein 4B Q4 — 4-step DiT with native img2img/ref",
+        "steps":       4,
+        "guidance":    1.0,
+        "default_width":  768,
+        "default_height": 768,
+        "max_width":      1024,
+        "max_height":     1024,
+        "supports_negative_prompt": False,
+        "supports_img2img":        True,
+        "ram_required_gb":  8,
+        "vram_required_mb": 0,
+        "downloadable":     True,
+        "download_size_gb": 4.9,
+        "download_label":   "FLUX.2 Klein 4B (4-step, Q4)",
+        "download_files": [
+            {"hf_repo": "unsloth/FLUX.2-klein-4B-GGUF",         "filename": "flux-2-klein-4b-Q4_0.gguf"},
+            {"hf_repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",  "filename": "Qwen3-4B-Instruct-2507-Q2_K.gguf"},
+            {"hf_repo": "ai-toolkit/flux2_vae",                 "filename": "ae.safetensors", "local_name": "flux2_ae.safetensors"},
+        ],
+        "extra_files": {
+            "llm_file": "Qwen3-4B-Instruct-2507-Q2_K.gguf",
+            "vae_file": "flux2_ae.safetensors",
         },
     },
 }
@@ -590,7 +617,7 @@ DEFAULT_TIER_CONFIG = {
     "tier2_models": [],
     "ocr_models": ["PaddleOCR-VL-1.5-Q4_K_M"],
     "tier2_diffusion_models": ["sdxl-turbo-int8"],
-    "tier4_diffusion_models": ["z-image-turbo-q4"],
+    "tier4_diffusion_models": ["z-image-turbo-q4", "flux2-klein-4b-q4"],
     "dual_model": {
         "enabled": False,
         "fast_model": None,

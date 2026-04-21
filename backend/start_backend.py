@@ -35,7 +35,17 @@ except Exception as e:
 
 try:
     import uvicorn
+    import logging as _logging
     from main import app
+
+    # Silence noisy poll endpoints in access log (UI polls these every 1-5s)
+    class _NoisyEndpointFilter(_logging.Filter):
+        _SILENT = ("/api/health", "/api/diffusion-models/active")
+        def filter(self, record: _logging.LogRecord) -> bool:
+            msg = record.getMessage()
+            return not any(ep in msg for ep in self._SILENT)
+    _logging.getLogger("uvicorn.access").addFilter(_NoisyEndpointFilter())
+
     extra_kwargs = {}
     if sys.platform != "win32":
         extra_kwargs["loop"] = "uvloop"

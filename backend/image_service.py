@@ -435,10 +435,80 @@ def _load_zimage_turbo_gguf(model_path: Path, gguf_file: str = None):
     return StableDiffusion(**kwargs)
 
 
+def _load_flux2_klein_gguf(model_path: Path, gguf_file: str = None):
+    """Load FLUX.2 Klein 4B GGUF via stable-diffusion-cpp-python (CPU).
+
+    FLUX.2 Klein uses Qwen3 text encoder + FLUX2 VAE. Supports multi-ref
+    editing via `ref_images` kwarg (different from sd_cpp_sdxl's init_image).
+    """
+    from stable_diffusion_cpp import StableDiffusion
+
+    if gguf_file is None:
+        gguf_file = "flux-2-klein-4b-Q4_0.gguf"
+
+    try:
+        from config import get_image_model_info
+        info = get_image_model_info("flux2-klein-4b-q4")
+        extra = info.get("extra_files", {})
+    except Exception:
+        extra = {}
+
+    model_file = str(model_path / gguf_file)
+    llm_file   = str(model_path / extra.get("llm_file", "Qwen3-4B-Instruct-2507-UD-Q3_K_XL.gguf"))
+    vae_file   = str(model_path / extra.get("vae_file", "flux2_ae.safetensors"))
+
+    for fpath, label in [
+        (model_file, "FLUX.2 Klein diffusion model"),
+        (llm_file,   "Qwen3 text encoder"),
+        (vae_file,   "FLUX.2 VAE"),
+    ]:
+        if not Path(fpath).exists():
+            raise FileNotFoundError(f"FLUX.2 Klein {label} not found: {fpath}")
+
+    try:
+        from cpu_info import optimal_thread_count
+        n_threads = optimal_thread_count()
+    except Exception:
+        n_threads = _get_physical_core_count()
+    logger.info(f"Loading FLUX.2 Klein GGUF: {gguf_file}, threads={n_threads}")
+
+    import inspect
+    sd_params = inspect.signature(StableDiffusion.__init__).parameters
+
+    kwargs = dict(
+        vae_path=vae_file,
+        vae_decode_only=False,  # need VAE encoder for ref_images (img2img)
+        n_threads=n_threads,
+    )
+    if "diffusion_model_path" in sd_params:
+        kwargs["diffusion_model_path"] = model_file
+    else:
+        kwargs["model_path"] = model_file
+    if "llm_path" in sd_params:
+        kwargs["llm_path"] = llm_file
+    else:
+        raise RuntimeError("stable-diffusion-cpp-python >=0.4.6 required for FLUX.2 Klein (llm_path support)")
+    if "diffusion_flash_attn" in sd_params:
+        kwargs["diffusion_flash_attn"] = True
+        logger.info("Enabled diffusion_flash_attn for FLUX.2 Klein")
+    elif "flash_attn" in sd_params:
+        kwargs["flash_attn"] = True
+    if "vae_conv_direct" in sd_params:
+        kwargs["vae_conv_direct"] = True
+    # offload_params_to_cpu intentionally NOT set — 4B model fits 16GB RAM
+    # and offload costs ~2-3x per-step latency (layer swap per step)
+    if "enable_mmap" in sd_params:
+        kwargs["enable_mmap"] = True
+    _apply_vulkan_kwargs(kwargs, sd_params)
+
+    return StableDiffusion(**kwargs)
+
+
 # Map backend key → loader function
 _LOADERS = {
     "openvino":            _load_openvino,
     "sd_cpp_zimage":       _load_zimage_turbo_gguf,
+    "sd_cpp_flux2klein":   _load_flux2_klein_gguf,
 }
 
 
@@ -600,7 +670,7 @@ class ImageService:
             try:
                 print(f"[IMAGE-DEBUG] Loading pipeline: model={self.model_key}, backend={backend}, path={self.model_path}", flush=True)
                 logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
-                if backend == "sd_cpp_zimage":
+                if backend in ("sd_cpp_zimage", "sd_cpp_flux2klein"):
                     self.pipeline = loader(self.model_path, gguf_file=self.model_info.get("gguf_file"))
                 else:
                     self.pipeline = loader(self.model_path)
@@ -849,6 +919,46 @@ class ImageService:
                     def __init__(self, images):
                         self.images = images
                 result = _SDCppResultDiT(output)
+
+            elif backend == "sd_cpp_flux2klein":
+                # FLUX.2 Klein 4B — DiT with native multi-ref editing via ref_images
+                import inspect as _insp
+                gen_params = _insp.signature(self.pipeline.generate_image).parameters
+
+                # VAE tiling adds ~20s at 768. Only tile when truly needed (>896).
+                gen_kwargs = dict(
+                    prompt=prompt,
+                    negative_prompt="",
+                    width=width,
+                    height=height,
+                    cfg_scale=guidance_scale,
+                    sample_steps=num_inference_steps,
+                    seed=seed if seed is not None else -1,
+                    vae_tiling=width > 896 or height > 896,
+                )
+                if init_image is not None:
+                    if "ref_images" not in gen_params:
+                        logger.warning("sd.cpp binding lacks ref_images param — upgrade stable-diffusion-cpp-python. Falling back to txt2img.")
+                    else:
+                        try:
+                            import io as _io
+                            ref_pil = Image.open(_io.BytesIO(init_image)).convert("RGB")
+                            # Resize so ref matches target canvas (FLUX.2 wants matching dims)
+                            if ref_pil.width != width or ref_pil.height != height:
+                                ref_pil = ref_pil.resize((width, height), Image.LANCZOS)
+                            gen_kwargs["ref_images"] = [ref_pil]
+                            if "auto_resize_ref_image" in gen_params:
+                                gen_kwargs["auto_resize_ref_image"] = True
+                            logger.info(f"FLUX.2 Klein img2img: ref_images=1, size={width}x{height}, steps={num_inference_steps}")
+                        except Exception as e:
+                            logger.warning(f"FLUX.2 Klein ref_image decode failed, falling back to txt2img: {e}")
+                            gen_kwargs.pop("ref_images", None)
+                logger.info(f"[IMAGE-DEBUG] FLUX.2 Klein kwargs keys: {list(gen_kwargs.keys())}")
+                output = self.pipeline.generate_image(**gen_kwargs)
+                class _SDCppResultFlux2:
+                    def __init__(self, images):
+                        self.images = images
+                result = _SDCppResultFlux2(output)
 
             else:
                 print(f"[IMAGE-DEBUG] Unknown backend: {backend}", flush=True)
