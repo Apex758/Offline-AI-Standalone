@@ -464,6 +464,59 @@ ${exampleJSON}
 IMPORTANT: Preserve the story text exactly as written above. Put the introduction between ---INTRODUCTION--- and ---INTRO END--- into introductionPage.moodText. Split everything AFTER ---INTRO END--- into pages matching the ---PAGE BREAK--- markers. Tag each sentence with the correct speaker using the EXACT names from the SPEAKERS list. Return ONLY the JSON object.`;
 }
 
+// ─── V2 payload builder (two-pass backend pipeline) ──────────────────────────
+//
+// Backend owns all prompting in v2 — frontend only bundles user inputs into
+// the websocket payload. Keep this alongside the v1 builders during
+// incremental migration; the v1 functions above will be deleted once the
+// component flips to v2-only.
+
+/** Map v1 gradeLevel ("K"|"1"|"2") to the v2 target age tier. */
+function gradeToTargetAge(grade: 'K' | '1' | '2'): '3-5' | '6-8' | '9-12' {
+  if (grade === 'K') return '3-5';
+  if (grade === '1' || grade === '2') return '6-8';
+  return '6-8';
+}
+
+export interface StorybookV2Payload {
+  brief: string;
+  pageCount: number;
+  targetAge: '3-5' | '6-8' | '9-12';
+  curriculumInfo: string;
+}
+
+/** Bundle the teacher's form into the /ws/storybook v2 payload. */
+export function buildStorybookV2Payload(
+  formData: StorybookFormData,
+): StorybookV2Payload {
+  // Compose a brief that folds in everything the bible-writer needs — the LLM
+  // owns the remaining prompt shaping on the backend.
+  const parts: string[] = [];
+  if (formData.title) parts.push(`Title: "${formData.title}"`);
+  parts.push(`Description: ${formData.description}`);
+  if (formData.subject) parts.push(`Subject: ${formData.subject}`);
+  if (formData.authorName) parts.push(`Author: ${formData.authorName}`);
+
+  // Pull speaker names into the brief so the bible keeps the teacher's
+  // intended cast (backend does not know form types).
+  const speakerNames = formData.speakers
+    .filter(s => s.role !== 'narrator' && s.characterName)
+    .map(s => s.characterName!);
+  if (speakerNames.length > 0) {
+    parts.push(
+      `Required characters: ${speakerNames.join(', ')}. Do not add any other named characters.`,
+    );
+  }
+  if (formData.stylePreset) parts.push(`Style preset: ${formData.stylePreset}`);
+
+  return {
+    brief: parts.join('\n'),
+    pageCount: formData.pageCount,
+    targetAge: gradeToTargetAge(formData.gradeLevel),
+    curriculumInfo: buildCurriculumInfo(formData),
+  };
+}
+
 // ─── Curriculum Info Builder (for comprehension questions pass) ────────────────
 
 /**

@@ -57,7 +57,13 @@ import KidsStorybookSkeletonNight from './KidsStorybookSkeletonNight';
 import SmartInput from './SmartInput';
 import SmartTextArea from './SmartTextArea';
 import { filterSubjects, filterGrades } from '../data/teacherConstants';
-import { buildStorybookPrompt, buildNarrativePrompt, buildStructurePromptTemplate, buildCurriculumInfo, STORYBOOK_STYLE_SUFFIX } from '../utils/storybookPromptBuilder';
+import { buildStorybookPrompt, buildNarrativePrompt, buildStructurePromptTemplate, buildCurriculumInfo, STORYBOOK_STYLE_SUFFIX, buildStorybookV2Payload } from '../utils/storybookPromptBuilder';
+import { useStorybookV2 } from '../hooks/useStorybookV2';
+import BibleSheet from './storybook/BibleSheet';
+import StorybookV2LiveView from './storybook/StorybookV2LiveView';
+import type { StorybookBible as StorybookBibleV2, StorybookPagesV2 } from '../types/storybook';
+// Raw partial-JSON parser (same one useStreamingJson uses internally).
+import { parsePartialJsonWithProgress } from '../utils/partialJsonParse';
 import { STYLE_PRESETS, STYLE_SUFFIXES, type StylePresetId } from '../utils/imageStylePresets';
 import { BUNDLED_SCENES, findBestScene, getScenesByCategory, SCENE_CATEGORY_LABELS } from '../data/storybookScenes';
 import { compressImage, compressTransparentImage } from '../utils/imageCompression';
@@ -102,6 +108,11 @@ import { guardLlmReady } from '../lib/swapApi';
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const WS_ENDPOINT = '/ws/storybook';
+
+// Feature flag: route generation through the new two-pass (Bible + Pages +
+// per-page unified scene image) pipeline. When true, buildStorybookV2Payload
+// + useStorybookV2 own the flow; the legacy v1 streaming path is bypassed.
+const USE_V2 = true;
 
 const VOICE_LABELS: Record<VoiceName, string> = {
   // English — US
@@ -1604,6 +1615,9 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
   const { settings } = useSettings();
   const { hasDiffusion, hasVision, tier } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+
+  // V2 two-pass pipeline state. Active when USE_V2 === true.
+  const storybookV2 = useStorybookV2();
   const { enqueue, queueEnabled } = useQueue();
   const { speak, stop: stopTTS, isSpeaking } = useTTS();
   const { guardOffline } = useOfflineGuard();
@@ -1812,6 +1826,15 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     setGenerationPhase('idle');
     setView('streaming');
 
+    // ── V2 two-pass pipeline path ───────────────────────────────────────────
+    // Bypasses legacy WebSocket streaming hook. The useStorybookV2 hook
+    // opens its own socket to /ws/storybook-v2 and drives all state.
+    if (USE_V2) {
+      const payload = buildStorybookV2Payload(formData);
+      storybookV2.send(payload, { generationMode: settings.generationMode });
+      return;
+    }
+
     if (queueEnabled) {
       const prompt = buildStorybookPrompt(formData, settings.language);
       enqueue({
@@ -1897,7 +1920,7 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
     } else if (formData.imageMode !== 'none' && hasDiffusion && settings.generationMode === 'simultaneous') {
       fetch('http://localhost:8000/api/image-service/preload', { method: 'POST' }).catch(() => {});
     }
-  }, [guardOffline, formData, tabId, tier, hasDiffusion, getConnection, clearStreaming, settings.generationMode, toastOnly]);
+  }, [guardOffline, formData, tabId, tier, hasDiffusion, getConnection, clearStreaming, settings.generationMode, toastOnly, storybookV2]);
 
   // Pre-create the connection on mount so the subscribe below finds it immediately
   useEffect(() => {
@@ -3195,6 +3218,143 @@ export default function StoryBookCreator({ tabId, savedData, onDataChange }: Sto
         formData={formData as unknown as Record<string, any>}
         onMatchCount={setStoryMatchCount}
       />
+      </div>
+    );
+  }
+
+  // ─── Render: V2 streaming view ─────────────────────────────────────────────
+  // Three phases:
+  //   1. Pass 1 (planning): skeleton backdrop + BibleSheet paper overlay that
+  //      fills in with bullet notes as the bible JSON streams.
+  //   2. Pass 2 onward (writing_pages / rendering_images / packaging / done):
+  //      skeleton with livePages wired from the streaming pages JSON. Text
+  //      fills in on each flipping page as tokens arrive. Intro comes first,
+  //      then the numbered story pages.
+  //   3. Images render concurrently with "done" status — a small corner
+  //      counter shows progress.
+  if (view === 'streaming' && USE_V2) {
+    const v2 = storybookV2.state;
+
+    // Progressive parse of whichever stream is active. The pages parse also
+    // surfaces the JSON path + partial value of the field currently being
+    // typed so we can render a live caret / shimmer on the correct segment.
+    const bibleParsed = v2.bibleText
+      ? parsePartialJsonWithProgress<StorybookBibleV2>(v2.bibleText).data
+      : null;
+    const pagesParseResult = v2.pagesText
+      ? parsePartialJsonWithProgress<StorybookPagesV2>(v2.pagesText)
+      : null;
+    const pagesParsed = pagesParseResult?.data ?? null;
+    const liveTypingPath = pagesParseResult?.inProgressPath ?? null;
+    const liveTypingValue = pagesParseResult?.inProgressValue ?? null;
+
+    // Turn parsed pages + intro into the LivePage shape the skeleton consumes.
+    // Intro is rendered first so the skeleton starts with narrator scene-setting,
+    // then flips to the numbered story pages as their segments commit.
+    const livePagesForSkeleton: { textSegments: { speaker: string; text: string }[] }[] = [];
+    const introFromState = v2.introductionPage ?? pagesParsed?.introduction_page;
+    if (introFromState && introFromState.text_segments) {
+      livePagesForSkeleton.push({
+        textSegments: introFromState.text_segments
+          .filter(s => s && s.text)
+          .map(s => ({ speaker: s.speaker || 'narrator', text: s.text })),
+      });
+    }
+    const storyPages = v2.pages.length > 0 ? v2.pages : (pagesParsed?.pages ?? []);
+    for (const p of storyPages) {
+      if (!p || !p.text_segments) continue;
+      livePagesForSkeleton.push({
+        textSegments: p.text_segments
+          .filter(s => s && s.text)
+          .map(s => ({ speaker: s.speaker || 'narrator', text: s.text })),
+      });
+    }
+
+    // Has any on-page text landed yet? The bible stays pinned until the first
+    // segment of the intro or a story page commits so the user keeps the plan
+    // in view during the brief gap between Pass 1 end and Pass 2 first token.
+    const hasAnyPageText =
+      (v2.introductionPage?.text_segments?.some(s => s?.text)) ||
+      (v2.pages?.some(p => p.text_segments?.some(s => s?.text))) ||
+      (pagesParsed?.introduction_page?.text_segments?.some(s => s?.text)) ||
+      (pagesParsed?.pages?.some(p => p?.text_segments?.some(s => s?.text))) ||
+      false;
+
+    const inBiblePhase = (
+      v2.status === 'idle' ||
+      v2.status === 'connecting' ||
+      v2.status === 'planning' ||
+      (v2.status === 'writing_pages' && !hasAnyPageText)
+    );
+
+    const imageCount = Object.keys(v2.pageImages).length;
+    const expectedImages = storyPages.length || formData.pageCount;
+
+    const statusText =
+      v2.status === 'error'       ? `Error: ${v2.errorMessage ?? 'unknown'}` :
+      v2.status === 'cancelled'   ? 'Cancelled' :
+      v2.status === 'connecting'  ? 'Connecting…' :
+      v2.status === 'planning'    ? 'Planning the story bible…' :
+      v2.status === 'writing_pages' ? 'Writing pages…' :
+      v2.status === 'rendering_images' ? `Rendering images (${imageCount}/${expectedImages})` :
+      v2.status === 'packaging'   ? 'Packaging manifest…' :
+      v2.status === 'done'        ? 'Done' :
+      'Starting…';
+
+    // Switch to the live page grid once Pass 2 starts producing text, or
+    // once we've moved beyond writing_pages altogether.
+    const inLivePageView = hasAnyPageText
+      || v2.status === 'rendering_images'
+      || v2.status === 'packaging'
+      || v2.status === 'done';
+
+    return (
+      <div className="h-full relative overflow-hidden">
+        {inLivePageView ? (
+          <StorybookV2LiveView
+            bible={v2.bible ?? bibleParsed ?? null}
+            introductionPage={v2.introductionPage ?? pagesParsed?.introduction_page ?? null}
+            pages={v2.pages.length > 0 ? v2.pages : ((pagesParsed?.pages ?? []) as any)}
+            comprehensionQuestions={
+              v2.comprehensionQuestions.length > 0
+                ? v2.comprehensionQuestions
+                : ((pagesParsed?.comprehension_questions ?? []) as any)
+            }
+            pageImages={v2.pageImages}
+            status={v2.status}
+            isDark={isDark}
+            pageCountGoal={formData.pageCount}
+            accentColor={accentColor}
+            liveTypingPath={liveTypingPath}
+            liveTypingValue={liveTypingValue}
+          />
+        ) : (
+          <>
+            {isDark
+              ? <KidsStorybookSkeletonNight livePages={[]} />
+              : <KidsStorybookSkeletonDay livePages={[]} />}
+          </>
+        )}
+
+        {inBiblePhase && (
+          <BibleSheet
+            bible={bibleParsed}
+            isDark={isDark}
+          />
+        )}
+
+        {/* Status pill */}
+        <div className="absolute top-4 left-4 z-10 text-xs px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm text-white/90">
+          {statusText}
+        </div>
+
+        {/* Cancel button */}
+        <button
+          onClick={() => { storybookV2.cancel(); storybookV2.reset(); setView('input'); }}
+          className="absolute bottom-4 right-4 z-10 text-sm px-3 py-1.5 rounded-lg bg-black/20 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/30 transition-colors"
+        >
+          {t('common.cancel')}
+        </button>
       </div>
     );
   }

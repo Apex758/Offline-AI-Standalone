@@ -149,6 +149,122 @@ export interface ComprehensionQuestion {
   outcomeRef?: string;
 }
 
+// ─── V2 (two-pass pipeline) ──────────────────────────────────────────────────
+//
+// New shape produced by backend/storybook_generator.py. One image per page,
+// characters embedded in the scene. Coexists with v1 during incremental
+// migration; v1 types above will be removed once the frontend is fully cut
+// over.
+
+export type TargetAgeTier = '3-5' | '6-8' | '9-12';
+
+export interface StorybookOutlineBeat {
+  page: number;
+  beat: string;
+  purpose: string;
+}
+
+export interface StorybookCharacter {
+  id: string;
+  name: string;
+  species_or_type: string;
+  visual_description: string;
+  personality: string;
+  role: string;
+}
+
+export interface StorybookWorld {
+  setting: string;
+  time_period: string;
+  mood: string;
+  color_palette: string;
+  recurring_locations: string[];
+}
+
+export interface StorybookBible {
+  title: string;
+  learning_objective: string;
+  target_age: TargetAgeTier;
+  style_anchor: string;
+  outline: StorybookOutlineBeat[];
+  characters: StorybookCharacter[];
+  world: StorybookWorld;
+}
+
+export interface TextSegmentV2 {
+  /** 'narrator' or a character.id from the bible. */
+  speaker: string;
+  text: string;
+}
+
+export interface IntroductionPageV2 {
+  text_segments: TextSegmentV2[];
+  scene_description: string;
+  location: string;
+}
+
+export interface StoryPageV2 {
+  page: number;
+  text_segments: TextSegmentV2[];
+  scene_description: string;
+  characters_present: string[];
+  emotion: string;
+  action: string;
+  location: string;
+}
+
+export interface ComprehensionQuestionV2 {
+  question: string;
+  answer: string;
+  outcome_ref: string;
+}
+
+/** Full Pass 2 payload shape (matches backend StorybookPages schema). */
+export interface StorybookPagesV2 {
+  introduction_page: IntroductionPageV2;
+  pages: StoryPageV2[];
+  comprehension_questions: ComprehensionQuestionV2[];
+}
+
+export interface StorybookManifestPage {
+  page: number;
+  text_segments: TextSegmentV2[];
+  image_path: string | null;
+  placeholder: boolean;
+  characters_present: string[];
+  emotion: string;
+  action: string;
+  location: string;
+  scene_description: string;
+}
+
+export interface StorybookManifest {
+  bookId: string;
+  metadata: {
+    title: string;
+    learning_objective: string;
+    target_age: TargetAgeTier;
+    style_anchor: string;
+  };
+  introduction_page: IntroductionPageV2;
+  pages: StorybookManifestPage[];
+  comprehension_questions: ComprehensionQuestionV2[];
+  bible: StorybookBible;
+}
+
+/** WS event shapes emitted by /ws/storybook (v2). */
+export type StorybookV2Event =
+  | { type: 'status'; status: 'planning' | 'writing_pages' | 'rendering_images' | 'packaging'; jobId?: string; bookId?: string }
+  | { type: 'bible_token'; content: string; jobId?: string }
+  | { type: 'bible'; content: StorybookBible; jobId?: string }
+  | { type: 'pages_token'; content: string; jobId?: string }
+  | { type: 'pages'; content: { introduction_page: IntroductionPageV2; pages: StoryPageV2[]; comprehension_questions: ComprehensionQuestionV2[] }; jobId?: string }
+  | { type: 'page_image'; page: number; image_path?: string; absolute_path?: string; placeholder?: boolean; error?: string; jobId?: string }
+  | { type: 'manifest'; manifest: StorybookManifest; jobId?: string }
+  | { type: 'done'; bookId?: string; jobId?: string }
+  | { type: 'error'; message: string; jobId?: string }
+  | { type: 'cancelled'; jobId?: string };
+
 // ─── Form Data ───────────────────────────────────────────────────────────────
 
 export interface StorybookFormData {

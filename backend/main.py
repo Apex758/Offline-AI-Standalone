@@ -718,10 +718,17 @@ async def swap_endpoint_state():
     """Current residency: 'llm' | 'image' | 'both' | 'none'. Also exposes
     `imageBusy` so the frontend can short-circuit chat actions with a toast
     instead of blocking on the inference lock."""
+    import math
     from model_swap import get_state, last_swap_age_seconds, is_image_busy, get_observed_mode
+    age = last_swap_age_seconds()
+    # Strict-JSON FastAPI response cannot encode NaN/inf floats. Coerce any
+    # non-finite age (e.g. when no swap has ever occurred and the impl
+    # returns math.inf) to null so the frontend gets a valid payload.
+    if isinstance(age, float) and not math.isfinite(age):
+        age = None
     return {
         "state": get_state(),
-        "lastSwapAgeSec": last_swap_age_seconds(),
+        "lastSwapAgeSec": age,
         "imageBusy": is_image_busy(),
         "observedMode": get_observed_mode(),
     }
@@ -3417,6 +3424,113 @@ async def storybook_websocket(websocket: WebSocket):
         logger.info("Storybook WebSocket disconnected")
     except Exception as e:
         logger.error(f"Storybook WebSocket error: {str(e)}")
+
+
+@app.websocket("/ws/storybook-v2")
+async def storybook_v2_websocket(websocket: WebSocket):
+    """Two-pass storybook generator (v2): Bible -> Pages -> per-page images -> manifest.
+
+    Payload:
+        {
+          brief: str,                    # teacher description
+          pageCount: int,                # hard constraint passed to both passes
+          targetAge: "3-5"|"6-8"|"9-12",
+          curriculumInfo?: str,          # optional — grounds objective + questions
+          jobId?: str,
+          generationMode?: "queued"|"simultaneous",
+        }
+    """
+    await websocket.accept()
+    from generation_gate import acquire_generation_slot, release_generation_slot
+    from storybook_generator import generate_storybook
+
+    cancelled_job_ids = set()
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            # Cancellation control frame
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
+            brief = (data.get("brief") or data.get("prompt") or "").strip()
+            page_count = int(data.get("pageCount") or data.get("pages") or 8)
+            target_age = data.get("targetAge") or data.get("target_age") or "6-8"
+            if target_age not in ("3-5", "6-8", "9-12"):
+                target_age = "6-8"
+            curriculum_info = data.get("curriculumInfo") or data.get("curriculum_info") or ""
+            job_id = data.get("jobId") or data.get("id") or f"storybook_{int(time.time())}"
+            generation_mode = data.get("generationMode", "queued")
+
+            if not brief:
+                await websocket.send_json({"type": "error", "message": "Missing 'brief' in payload."})
+                continue
+
+            from tier1_prompts import get_tier1_gen_params
+            tier_info = compute_effective_tier()
+            is_tier1 = tier_info["tier"] == 1
+            t1_params = get_tier1_gen_params("storybook") if is_tier1 else {}
+            max_tokens = t1_params.get("max_tokens", 3000) if is_tier1 else 3500
+            temperature = t1_params.get("temperature", 0.7) if is_tier1 else 0.7
+            repeat_penalty = t1_params.get("repeat_penalty", 1.1) if is_tier1 else 1.1
+
+            slot_mode = None
+            try:
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = (
+                    resolve_inference_for_task("storybook")
+                    if generation_mode == "queued"
+                    else get_inference_instance(use_singleton=False)
+                )
+
+                def _is_cancelled() -> bool:
+                    return job_id in cancelled_job_ids
+
+                async for ev in generate_storybook(
+                    inference=inference,
+                    brief=brief,
+                    page_count=page_count,
+                    target_age=target_age,
+                    curriculum_info=curriculum_info,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    repeat_penalty=repeat_penalty,
+                    generation_mode=generation_mode,
+                    is_cancelled=_is_cancelled,
+                ):
+                    ev = {**ev, "jobId": job_id} if "jobId" not in ev else ev
+                    try:
+                        await websocket.send_json(ev)
+                        await asyncio.sleep(0)
+                    except Exception as send_err:
+                        logger.error(f"WS send failed, aborting storybook v2 job: {send_err}")
+                        break
+                    if ev.get("type") in ("done", "error", "cancelled"):
+                        break
+
+            except Exception as e:
+                logger.error(f"Storybook v2 generation error: {e}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                try:
+                    await websocket.send_json({"type": "error", "message": "An error occurred during generation"})
+                except:
+                    logger.error("Could not send error message - connection closed")
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
+    except WebSocketDisconnect:
+        logger.info("Storybook v2 WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Storybook v2 WebSocket error: {str(e)}")
 
 
 # ─── Brain Dump: category keyword map & helpers ──────────────────────────────
